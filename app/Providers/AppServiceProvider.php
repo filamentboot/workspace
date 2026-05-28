@@ -2,6 +2,10 @@
 
 namespace App\Providers;
 
+use App\Listeners\LogAdminLogin;
+use Illuminate\Auth\Events\Failed;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +23,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // 记录管理员登录日志
+        Event::listen(Login::class, LogAdminLogin::class);
+        Event::listen(Failed::class, LogAdminLogin::class);
     }
 }
