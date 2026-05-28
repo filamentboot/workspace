@@ -2,6 +2,7 @@
 
 namespace App\Providers\Filament;
 
+use App\Filament\Pages\Auth\Login;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -18,7 +19,13 @@ use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
+use Stephenjude\FilamentTwoFactorAuthentication\TwoFactorAuthenticationPlugin;
 
+/**
+ * 管理员面板服务提供者
+ *
+ * 配置 Filament 管理员面板，使用自定义登录页和 admin guard。
+ */
 class AdminPanelProvider extends PanelProvider
 {
     public function panel(Panel $panel): Panel
@@ -27,7 +34,14 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login()
+            ->login(Login::class)           // 使用自定义登录页（支持 username/email）
+            ->authGuard('admin')            // 使用 admin guard
+            ->authPasswordBroker('admin_users')
+            ->plugin(
+                TwoFactorAuthenticationPlugin::make()
+                    ->enableTwoFactorAuthentication() // 启用 TOTP 双因素认证（用户可选启用）
+                    ->addTwoFactorMenuItem()          // 在用户菜单中添加 2FA 管理入口
+            )
             ->colors([
                 'primary' => Color::Amber,
             ])
