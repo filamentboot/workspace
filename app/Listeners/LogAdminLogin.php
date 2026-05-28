@@ -2,6 +2,7 @@
 
 namespace App\Listeners;
 
+use App\Models\AdminUser;
 use App\Models\LoginLog;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
@@ -21,7 +22,7 @@ class LogAdminLogin
         $status = $event instanceof Login ? 'success' : 'failed';
 
         LoginLog::create([
-            'admin_user_id'  => $event->user?->id,
+            'admin_user_id'  => $event->user instanceof AdminUser ? $event->user->id : null,
             'username'       => $this->extractUsername($event),
             'status'         => $status,
             'ip_address'     => request()->ip() ?? '127.0.0.1',

@@ -2,10 +2,6 @@
 
 namespace App\Providers;
 
-use App\Listeners\LogAdminLogin;
-use Illuminate\Auth\Events\Failed;
-use Illuminate\Auth\Events\Login;
-use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -20,11 +16,12 @@ class AppServiceProvider extends ServiceProvider
 
     /**
      * Bootstrap any application services.
+     *
+     * 注意：登录日志监听器（LogAdminLogin）通过 Laravel 自动发现机制注册，
+     * 无需在此处手动 Event::listen。
      */
     public function boot(): void
     {
-        // 记录管理员登录日志
-        Event::listen(Login::class, LogAdminLogin::class);
-        Event::listen(Failed::class, LogAdminLogin::class);
+        //
     }
 }

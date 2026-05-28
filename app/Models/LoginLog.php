@@ -2,12 +2,29 @@
 
 namespace App\Models;
 
+use Database\Factories\LoginLogFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Support\Carbon;
 
+/**
+ * 登录日志模型
+ *
+ * 记录每次登录尝试（成功与失败），不含更新时间戳。
+ *
+ * @property int $id
+ * @property int|null $admin_user_id
+ * @property string|null $username
+ * @property string $status
+ * @property string|null $ip_address
+ * @property string|null $user_agent
+ * @property string|null $failure_reason
+ * @property Carbon|null $created_at
+ */
 class LoginLog extends Model
 {
+    /** @use HasFactory<LoginLogFactory> */
     use HasFactory;
 
     /**
@@ -31,6 +48,8 @@ class LoginLog extends Model
 
     /**
      * 关联到管理员用户
+     *
+     * @return BelongsTo<AdminUser, $this>
      */
     public function adminUser(): BelongsTo
     {
