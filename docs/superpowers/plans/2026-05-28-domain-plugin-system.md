@@ -1,18 +1,105 @@
 # 插件系统 实现计划
 
+> 修订记录：2026-05-29 根据审查问题清单修复 15 项问题（保留完整范围，含远程市场）。
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 实现双轨制插件系统（工具型 package + 业务模块型 module），包含插件扫描、后台启停管理、Panel 层动态注册和远程插件市场浏览。
+**Goal:** 实现完整的插件系统：本地 `plugins/` 目录存放插件源码（每个插件含 `plugin.json` 清单），数据库 `plugins` 表记录运行时状态，远程市场支持浏览/下载/安装插件包。
 
-**Architecture:** plugins 表记录所有已安装插件的状态。scan-plugins 命令扫描 Composer 包（extra.filament-admin 字段）和 Modules/ 目录，写入 plugins 表。AdminPanelProvider 启动时根据 plugins.is_enabled 动态注册插件。远程市场从 GitHub Raw 读取 JSON 索引，网络失败时静默降级。
+**Architecture（双轨 source-of-truth 明确划分）:**
 
-**Tech Stack:** nwidart/laravel-modules ^11.0, Pest
+- **`plugins/{vendor}/{name}/plugin.json`**：插件作者声明（不可变，随插件包发行）。包含 name / slug / version / namespace / plugin_class / requires / description 等元数据。
+- **数据库 `plugins` 表**：运行时状态（is_enabled / installed_version / installed_at / config_overrides / source 来源 等）。
+- **同步规则**：`php artisan plugin:scan` 命令扫描 `plugins/` 目录，对比 `plugin.json` 与 DB 记录，**新增/更新** DB 行（以 `plugin.json` 的元数据为准刷新 name/version/plugin_class/requires/description，但**保留 DB 的 is_enabled / config_overrides** 等运行时字段）。启停操作只改 DB，**不改 plugin.json**。
+
+**Tech Stack:** Pest 4 / Filament 5 / Spatie Permission / Shield
+
+**Tag：** 完成后打 `v0.8.0-插件系统`（全文统一）。
+
+---
+
+## Task 0: 配置与目录约定
+
+- [ ] 在 `config/filament-admin.php` 中新增配置 key（不存在则创建该配置文件）：
+
+```php
+<?php
+
+return [
+    /**
+     * 插件相关配置
+     */
+    'plugins' => [
+        /** 插件根目录（相对 base_path） */
+        'path' => base_path('plugins'),
+        /** 插件命名空间前缀，作者必须遵循 Plugins\{Vendor}\{Name}\ */
+        'namespace_prefix' => 'Plugins\\',
+    ],
+
+    /**
+     * 远程插件市场配置
+     */
+    'marketplace' => [
+        /** 市场 API base url，例如 https://market.example.com/api */
+        'url' => env('FILAMENT_MARKETPLACE_URL', 'https://market.example.com/api'),
+        /** 请求超时秒数 */
+        'timeout' => 10,
+        /** 列表缓存时长（秒） */
+        'cache_ttl' => 300,
+    ],
+];
+```
+
+- [ ] 在项目根新建目录：
+  - `plugins/`（提交进 git，存放本地已安装插件）
+  - `storage/app/plugins/downloads/`（远程下载临时目录，加入 `.gitignore`）
+
+- [ ] **命名空间冲突方案（选定）**：每个插件 namespace 必须以 `Plugins\{Vendor}\{Name}\` 开头（在 `plugin.json` 的 `namespace` 字段声明）。**实现方式**：在 `composer.json` 的 `autoload.psr-4` 静态注入一行 `"Plugins\\": "plugins/"`（项目初始化时一次性写入），各插件按目录结构 `plugins/{vendor}/{name}/src/...` 自动遵循 PSR-4。**不**在运行时动态修改 `composer.json` 或调用 `composer dump-autoload`，避免并发与权限问题。如果某插件的 `vendor/name` 与目录大小写不一致，由 PluginManager 在 `enable` 时通过 `spl_autoload_register` 注册兜底加载器。
+
+```json
+{
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "Database\\Factories\\": "database/factories/",
+            "Database\\Seeders\\": "database/seeders/",
+            "Plugins\\": "plugins/"
+        }
+    }
+}
+```
+
+- [ ] **bootstrap 动态 providers 方案（选定）**：**不**修改 `bootstrap/providers.php`（git 跟踪文件，并发写入危险）。新建 `bootstrap/plugin-providers.php`，由 PluginManager 维护，加入 `.gitignore`：
+
+```php
+// bootstrap/plugin-providers.php （由 PluginManager 自动生成，请勿手动编辑）
+<?php
+
+return [
+    // Plugins\Acme\Blog\BlogServiceProvider::class,
+];
+```
+
+并在 `bootstrap/app.php` 引入：
+
+```php
+->withProviders([
+    ...require __DIR__.'/plugin-providers.php',
+])
+```
+
+`.gitignore` 加入：
+
+```
+bootstrap/plugin-providers.php
+storage/app/plugins/
+```
 
 ---
 
 ## Task 1: plugins 表迁移和 Plugin 模型
 
-- [ ] 创建迁移文件 `database/migrations/xxxx_xx_xx_create_plugins_table.php`：
+- [ ] 创建迁移 `database/migrations/xxxx_xx_xx_create_plugins_table.php`：
 
 ```php
 <?php
@@ -31,14 +118,19 @@ return new class extends Migration
         Schema::create('plugins', function (Blueprint $table) {
             $table->id();
             $table->string('name');
-            $table->string('slug')->unique();
-            $table->enum('type', ['package', 'module'])->default('package');
-            $table->string('version')->nullable();
-            $table->text('description')->nullable();
-            $table->boolean('is_enabled')->default(false);
+            $table->string('slug')->unique()->comment('插件唯一标识，对应 plugin.json.slug');
+            $table->string('vendor')->comment('插件作者/组织');
+            $table->string('namespace')->comment('PSR-4 命名空间，必须以 Plugins\\ 开头');
             $table->string('plugin_class')->nullable()->comment('Filament Plugin 类全限定名');
-            $table->string('settings_class')->nullable()->comment('Settings 类全限定名');
+            $table->string('installed_version')->nullable();
+            $table->text('description')->nullable();
             $table->json('requires')->nullable()->comment('依赖的其他插件 slug 列表');
+            $table->json('config_overrides')->nullable()->comment('运行时配置覆盖');
+            $table->string('source')->default('local')->comment('local | marketplace');
+            $table->string('source_hash', 64)->nullable()->comment('远程下载时的 sha256');
+            $table->boolean('is_enabled')->default(false);
+            $table->timestamp('installed_at')->nullable();
+            $table->timestamp('enabled_at')->nullable();
             $table->timestamps();
         });
     }
@@ -53,51 +145,63 @@ return new class extends Migration
 };
 ```
 
-- [ ] 创建 Plugin 模型 `app/Models/Plugin.php`：
+- [ ] 创建 `app/Models/Plugin.php`：
 
 ```php
 <?php
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Casts\AsArrayObject;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 插件模型
+ * 插件运行时状态模型
  *
  * @property int $id
  * @property string $name
  * @property string $slug
- * @property string $type  package|module
- * @property string|null $version
- * @property string|null $description
- * @property bool $is_enabled
+ * @property string $vendor
+ * @property string $namespace
  * @property string|null $plugin_class
- * @property string|null $settings_class
+ * @property string|null $installed_version
+ * @property string|null $description
  * @property array|null $requires
+ * @property array|null $config_overrides
+ * @property string $source
+ * @property string|null $source_hash
+ * @property bool $is_enabled
+ * @property \Illuminate\Support\Carbon|null $installed_at
+ * @property \Illuminate\Support\Carbon|null $enabled_at
  */
 class Plugin extends Model
 {
     protected $fillable = [
         'name',
         'slug',
-        'type',
-        'version',
-        'description',
-        'is_enabled',
+        'vendor',
+        'namespace',
         'plugin_class',
-        'settings_class',
+        'installed_version',
+        'description',
         'requires',
+        'config_overrides',
+        'source',
+        'source_hash',
+        'is_enabled',
+        'installed_at',
+        'enabled_at',
     ];
 
     protected $casts = [
-        'is_enabled' => 'boolean',
-        'requires'   => 'array',
+        'requires'         => 'array',
+        'config_overrides' => 'array',
+        'is_enabled'       => 'boolean',
+        'installed_at'     => 'datetime',
+        'enabled_at'       => 'datetime',
     ];
 
     /**
-     * 获取所有已启用的插件
+     * 已启用插件
      */
     public function scopeEnabled($query)
     {
@@ -105,130 +209,300 @@ class Plugin extends Model
     }
 
     /**
-     * 获取所有 package 类型插件
+     * 插件源码绝对路径
      */
-    public function scopePackages($query)
+    public function getPath(): string
     {
-        return $query->where('type', 'package');
-    }
-
-    /**
-     * 获取所有 module 类型插件
-     */
-    public function scopeModules($query)
-    {
-        return $query->where('type', 'module');
+        return rtrim(config('filament-admin.plugins.path'), '/') . "/{$this->vendor}/{$this->slug}";
     }
 }
 ```
 
-- [ ] 运行迁移：`php artisan migrate`
+- [ ] 执行 `php artisan migrate`
 
 ---
 
-## Task 2: nwidart/laravel-modules 集成
+## Task 2: plugin.json 规范与示例
 
-- [ ] 安装依赖：
-
-```bash
-composer require nwidart/laravel-modules:^11.0
-```
-
-- [ ] 发布配置：
-
-```bash
-php artisan vendor:publish --provider="Nwidart\Modules\LaravelModulesServiceProvider"
-```
-
-- [ ] 在 `composer.json` 中添加模块自动加载（`psr-4` 部分）：
+- [ ] 在 `docs/plugins/plugin-json-spec.md` 中明确 `plugin.json` 字段规范：
 
 ```json
 {
-    "autoload": {
-        "psr-4": {
-            "App\\": "app/",
-            "Modules\\": "Modules/"
-        }
-    }
+    "name": "博客插件",
+    "slug": "blog",
+    "vendor": "acme",
+    "version": "1.0.0",
+    "description": "提供文章发布与分类管理",
+    "namespace": "Plugins\\Acme\\Blog\\",
+    "plugin_class": "Plugins\\Acme\\Blog\\BlogPlugin",
+    "service_provider": "Plugins\\Acme\\Blog\\BlogServiceProvider",
+    "requires": [],
+    "min_admin_version": "1.0.0"
 }
 ```
 
-- [ ] 运行 `composer dump-autoload`
+- [ ] 目录结构约定：
 
-- [ ] 创建示例模块（用于验证）：
-
-```bash
-php artisan module:make Example
+```
+plugins/
+  acme/
+    blog/
+      plugin.json
+      src/
+        BlogPlugin.php
+        BlogServiceProvider.php
+        Filament/
+          Resources/...
+      database/
+        migrations/...
+      routes/
+        web.php
 ```
 
-- [ ] `modules_statuses.json` 说明：
-  - 该文件位于项目根目录，由 nwidart/laravel-modules 自动维护
-  - 格式：`{"Example": true}` 表示 Example 模块已启用
-  - **不要手动编辑**，统一通过 ScanPlugins 命令和 PluginResource 管理
+- [ ] **声明明确**：
+  - `plugin.json` = 作者声明（不可变）
+  - 数据库 `plugins` 表 = 运行时状态（is_enabled / config_overrides / installed_at 可变）
+  - `plugin:scan` 命令是唯一的"声明 → 状态"同步入口
 
-- [ ] 创建 ModuleFilamentPlugin 基类 `app/Base/ModuleFilamentPlugin.php`：
+---
+
+## Task 3: PluginManager 服务
+
+- [ ] 创建 `app/Services/PluginManager.php`：
 
 ```php
 <?php
 
-namespace App\Base;
+namespace App\Services;
 
-use Filament\Contracts\Plugin;
-use Filament\Panel;
-use Nwidart\Modules\Module;
+use App\Models\Plugin;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\File;
+use RuntimeException;
 
 /**
- * 模块型 Filament 插件基类
- *
- * 封装了 discoverResources/discoverPages/discoverWidgets 的自动注册逻辑，
- * 业务模块只需继承此类并实现 getModuleName() 即可。
+ * 插件生命周期管理服务
  */
-abstract class ModuleFilamentPlugin implements Plugin
+class PluginManager
 {
     /**
-     * 返回模块名称（对应 Modules/ 下的目录名）
+     * 启用插件（按完整生命周期顺序执行）
+     *
+     * 顺序：
+     *   a) 运行插件 migrations
+     *   b) 注册插件 service provider（写入 bootstrap/plugin-providers.php）
+     *   c) 注册插件路由（service provider 中 require routes/*.php）
+     *   d) 注册插件 Filament 资源（由插件自身的 FilamentPlugin 实现完成）
+     *   e) 同步插件权限（admin guard 下 firstOrCreate，必要时调用 Shield generate）
+     *   f) 注册插件菜单（写入 menus 表，由各插件自行触发或在 enable 钩子里完成）
      */
-    abstract public function getModuleName(): string;
-
-    public function getId(): string
+    public function enable(Plugin $plugin): void
     {
-        return str($this->getModuleName())->snake()->value();
+        $this->assertDependenciesEnabled($plugin);
+
+        // a) migrations
+        $migrationsPath = $plugin->getPath() . '/database/migrations';
+        if (File::isDirectory($migrationsPath)) {
+            Artisan::call('migrate', [
+                '--path'  => str_replace(base_path() . '/', '', $migrationsPath),
+                '--force' => true,
+            ]);
+        }
+
+        // b) provider 注册
+        if ($providerClass = $this->resolveProviderClass($plugin)) {
+            $this->addProviderToBootstrap($providerClass);
+        }
+
+        // c) 路由：在 provider 的 boot() 里 require routes/web.php
+
+        // d) Filament 资源：由 AdminPanelProvider 启动时根据 plugin_class 注册
+
+        // e) 权限
+        $this->syncPermissions($plugin);
+
+        // f) 菜单：交给插件自身在 enable hook 中注册
+
+        $plugin->update([
+            'is_enabled' => true,
+            'enabled_at' => now(),
+        ]);
     }
 
-    public function register(Panel $panel): void
+    /**
+     * 禁用插件（不回滚 migration，避免数据丢失）
+     *
+     * - 标记 is_enabled = false
+     * - 从 bootstrap/plugin-providers.php 移除 provider
+     * - 权限和菜单仅标记禁用，**不删除**
+     * - 如需彻底移除请调用 uninstall()
+     */
+    public function disable(Plugin $plugin): void
     {
-        $module = app('modules')->find($this->getModuleName());
-        if (! $module instanceof Module) {
+        $this->assertNoEnabledDependents($plugin);
+
+        if ($providerClass = $this->resolveProviderClass($plugin)) {
+            $this->removeProviderFromBootstrap($providerClass);
+        }
+
+        $plugin->update([
+            'is_enabled' => false,
+            'enabled_at' => null,
+        ]);
+    }
+
+    /**
+     * 卸载插件（区别于 disable）
+     *
+     * - 必须先 disable
+     * - 回滚 migration
+     * - 删除 plugins/{vendor}/{slug} 目录
+     * - 删除 DB 行
+     */
+    public function uninstall(Plugin $plugin): void
+    {
+        if ($plugin->is_enabled) {
+            throw new RuntimeException('卸载前请先禁用该插件。');
+        }
+
+        $migrationsPath = $plugin->getPath() . '/database/migrations';
+        if (File::isDirectory($migrationsPath)) {
+            Artisan::call('migrate:rollback', [
+                '--path'  => str_replace(base_path() . '/', '', $migrationsPath),
+                '--force' => true,
+            ]);
+        }
+
+        File::deleteDirectory($plugin->getPath());
+        $plugin->delete();
+    }
+
+    /**
+     * 检查所有依赖均已启用
+     */
+    protected function assertDependenciesEnabled(Plugin $plugin): void
+    {
+        foreach ($plugin->requires ?? [] as $depSlug) {
+            $dep = Plugin::where('slug', $depSlug)->first();
+            if (! $dep || ! $dep->is_enabled) {
+                throw new RuntimeException("依赖插件 {$depSlug} 未安装或未启用。");
+            }
+        }
+    }
+
+    /**
+     * 检查没有已启用插件依赖于此插件
+     */
+    protected function assertNoEnabledDependents(Plugin $plugin): void
+    {
+        $dependents = Plugin::enabled()
+            ->whereNotNull('requires')
+            ->get()
+            ->filter(fn (Plugin $p) => in_array($plugin->slug, $p->requires ?? [], true));
+
+        if ($dependents->isNotEmpty()) {
+            $names = $dependents->pluck('name')->join('、');
+            throw new RuntimeException("以下已启用插件依赖此插件：{$names}");
+        }
+    }
+
+    /**
+     * 解析插件 ServiceProvider 类名（从 plugin.json）
+     */
+    protected function resolveProviderClass(Plugin $plugin): ?string
+    {
+        $manifest = $this->readManifest($plugin);
+
+        return $manifest['service_provider'] ?? null;
+    }
+
+    /**
+     * 读取 plugin.json
+     *
+     * @return array<string, mixed>
+     */
+    public function readManifest(Plugin $plugin): array
+    {
+        $manifestPath = $plugin->getPath() . '/plugin.json';
+
+        if (! File::exists($manifestPath)) {
+            throw new RuntimeException("plugin.json 不存在：{$manifestPath}");
+        }
+
+        return json_decode(File::get($manifestPath), true) ?? [];
+    }
+
+    /**
+     * 将 provider 写入 bootstrap/plugin-providers.php
+     */
+    protected function addProviderToBootstrap(string $providerClass): void
+    {
+        $file = base_path('bootstrap/plugin-providers.php');
+        $providers = File::exists($file) ? (require $file) : [];
+
+        if (! in_array($providerClass, $providers, true)) {
+            $providers[] = $providerClass;
+            $this->writeBootstrapFile($file, $providers);
+        }
+    }
+
+    /**
+     * 从 bootstrap/plugin-providers.php 移除 provider
+     */
+    protected function removeProviderFromBootstrap(string $providerClass): void
+    {
+        $file = base_path('bootstrap/plugin-providers.php');
+        if (! File::exists($file)) {
             return;
         }
 
-        $basePath = $module->getPath();
-        $baseNamespace = "Modules\\{$this->getModuleName()}";
+        $providers = array_values(array_filter(
+            require $file,
+            fn ($p) => $p !== $providerClass
+        ));
 
-        $panel
-            ->discoverResources(
-                in: "{$basePath}/app/Filament/Resources",
-                for: "{$baseNamespace}\\Filament\\Resources"
-            )
-            ->discoverPages(
-                in: "{$basePath}/app/Filament/Pages",
-                for: "{$baseNamespace}\\Filament\\Pages"
-            )
-            ->discoverWidgets(
-                in: "{$basePath}/app/Filament/Widgets",
-                for: "{$baseNamespace}\\Filament\\Widgets"
-            );
+        $this->writeBootstrapFile($file, $providers);
     }
 
-    public function boot(Panel $panel): void {}
+    /**
+     * 写 bootstrap providers 文件
+     *
+     * @param  array<int, string>  $providers
+     */
+    protected function writeBootstrapFile(string $file, array $providers): void
+    {
+        $lines = array_map(fn ($p) => "    \\{$p}::class,", $providers);
+        $body  = implode("\n", $lines);
+        $php   = "<?php\n\n// 由 PluginManager 自动生成，请勿手动编辑\nreturn [\n{$body}\n];\n";
+
+        File::put($file, $php);
+    }
+
+    /**
+     * 同步插件权限到 admin guard
+     */
+    protected function syncPermissions(Plugin $plugin): void
+    {
+        $manifest = $this->readManifest($plugin);
+        $permissions = $manifest['permissions'] ?? [];
+
+        foreach ($permissions as $permission) {
+            \Spatie\Permission\Models\Permission::firstOrCreate([
+                'name'       => $permission,
+                'guard_name' => 'admin',
+            ]);
+        }
+
+        app(\Spatie\Permission\PermissionRegistrar::class)->forgetCachedPermissions();
+    }
 }
 ```
 
 ---
 
-## Task 3: scan-plugins 命令
+## Task 4: plugin:scan 命令
 
-- [ ] 创建命令 `app/Console/Commands/ScanPlugins.php`：
+- [ ] 创建 `app/Console/Commands/ScanPlugins.php`：
 
 ```php
 <?php
@@ -240,145 +514,76 @@ use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
 /**
- * 扫描并同步插件信息到数据库
+ * 扫描 plugins/ 目录，将 plugin.json 同步进 plugins 表
+ *
+ * 同步规则：
+ *  - plugin.json 是 source-of-truth（声明字段：name/version/namespace/plugin_class/requires/description）
+ *  - plugins 表保留运行时字段：is_enabled / config_overrides / enabled_at
+ *  - 仅刷新声明字段，**不**改动运行时字段
  */
 class ScanPlugins extends Command
 {
-    protected $signature = 'plugins:scan {--force : 强制更新所有插件信息}';
+    protected $signature = 'plugin:scan';
 
-    protected $description = '扫描 Composer 包和 Modules/ 目录，将插件信息写入 plugins 表';
+    protected $description = '扫描 plugins/ 目录并同步 plugins 表';
 
     public function handle(): int
     {
-        $this->info('开始扫描插件...');
+        $root = config('filament-admin.plugins.path');
 
-        $scanned = 0;
+        if (! File::isDirectory($root)) {
+            $this->warn("插件目录不存在：{$root}");
 
-        $scanned += $this->scanComposerPackages();
-        $scanned += $this->scanModules();
+            return self::SUCCESS;
+        }
 
-        $this->info("扫描完成，共发现 {$scanned} 个插件。");
+        $count = 0;
+
+        foreach (File::directories($root) as $vendorDir) {
+            foreach (File::directories($vendorDir) as $pluginDir) {
+                $manifestFile = $pluginDir . '/plugin.json';
+                if (! File::exists($manifestFile)) {
+                    continue;
+                }
+
+                $manifest = json_decode(File::get($manifestFile), true);
+                if (! $manifest || empty($manifest['slug'])) {
+                    $this->warn("跳过非法 plugin.json：{$manifestFile}");
+
+                    continue;
+                }
+
+                Plugin::updateOrCreate(
+                    ['slug' => $manifest['slug']],
+                    [
+                        'name'              => $manifest['name'] ?? $manifest['slug'],
+                        'vendor'            => $manifest['vendor'] ?? basename($vendorDir),
+                        'namespace'         => rtrim($manifest['namespace'] ?? '', '\\') . '\\',
+                        'plugin_class'      => $manifest['plugin_class'] ?? null,
+                        'installed_version' => $manifest['version'] ?? null,
+                        'description'       => $manifest['description'] ?? null,
+                        'requires'          => $manifest['requires'] ?? [],
+                        'installed_at'      => fn ($p) => $p?->installed_at ?? now(),
+                    ]
+                );
+
+                $count++;
+                $this->line("  [scan] {$manifest['slug']} ({$manifest['version']})");
+            }
+        }
+
+        $this->info("扫描完成，共 {$count} 个插件。");
 
         return self::SUCCESS;
-    }
-
-    /**
-     * 扫描 composer.lock 中含 extra.filament-admin 字段的包
-     */
-    private function scanComposerPackages(): int
-    {
-        $lockFile = base_path('composer.lock');
-
-        if (! File::exists($lockFile)) {
-            $this->warn('未找到 composer.lock，跳过 Composer 包扫描。');
-            return 0;
-        }
-
-        $lock = json_decode(File::get($lockFile), true);
-        $packages = array_merge(
-            $lock['packages'] ?? [],
-            $lock['packages-dev'] ?? []
-        );
-
-        $count = 0;
-
-        foreach ($packages as $package) {
-            $extra = $package['extra']['filament-admin'] ?? null;
-            if ($extra === null) {
-                continue;
-            }
-
-            $slug = str($package['name'])->slug()->value();
-
-            Plugin::updateOrCreate(
-                ['slug' => $slug],
-                [
-                    'name'         => $extra['name'] ?? $package['name'],
-                    'type'         => 'package',
-                    'version'      => $package['version'] ?? null,
-                    'description'  => $package['description'] ?? $extra['description'] ?? null,
-                    'plugin_class' => $extra['plugin_class'] ?? null,
-                    'settings_class' => $extra['settings_class'] ?? null,
-                    'requires'     => $extra['requires'] ?? null,
-                ]
-            );
-
-            $this->line("  [package] {$package['name']} ({$package['version']})");
-            $count++;
-        }
-
-        return $count;
-    }
-
-    /**
-     * 扫描 Modules/ 目录下的模块
-     */
-    private function scanModules(): int
-    {
-        $modulesPath = base_path('Modules');
-
-        if (! File::isDirectory($modulesPath)) {
-            $this->warn('未找到 Modules/ 目录，跳过模块扫描。');
-            return 0;
-        }
-
-        $moduleStatuses = $this->getModuleStatuses();
-        $count = 0;
-
-        foreach (File::directories($modulesPath) as $moduleDir) {
-            $moduleName = basename($moduleDir);
-            $composerJson = $moduleDir . '/composer.json';
-
-            $meta = File::exists($composerJson)
-                ? json_decode(File::get($composerJson), true)
-                : [];
-
-            $slug = str($moduleName)->snake()->replace('_', '-')->value();
-
-            Plugin::updateOrCreate(
-                ['slug' => $slug],
-                [
-                    'name'         => $meta['extra']['filament-admin']['name'] ?? $moduleName,
-                    'type'         => 'module',
-                    'version'      => $meta['version'] ?? null,
-                    'description'  => $meta['description'] ?? null,
-                    'plugin_class' => $meta['extra']['filament-admin']['plugin_class'] ?? null,
-                    'settings_class' => $meta['extra']['filament-admin']['settings_class'] ?? null,
-                    'requires'     => $meta['extra']['filament-admin']['requires'] ?? null,
-                    'is_enabled'   => $moduleStatuses[$moduleName] ?? false,
-                ]
-            );
-
-            $this->line("  [module] {$moduleName}");
-            $count++;
-        }
-
-        return $count;
-    }
-
-    /**
-     * 读取 modules_statuses.json
-     */
-    private function getModuleStatuses(): array
-    {
-        $statusFile = base_path('modules_statuses.json');
-
-        if (! File::exists($statusFile)) {
-            return [];
-        }
-
-        return json_decode(File::get($statusFile), true) ?? [];
     }
 }
 ```
 
-- [ ] 注册命令（Laravel 11+ 自动发现，无需手动注册，确认 `app/Console/Commands/` 在自动扫描路径中）
-
-- [ ] 测试命令：`php artisan plugins:scan`
+- [ ] 测试：`php artisan plugin:scan`
 
 ---
 
-## Task 4: PluginResource
+## Task 5: PluginResource（Filament 5 形式）
 
 - [ ] 创建 `app/Filament/Resources/PluginResource.php`：
 
@@ -389,13 +594,15 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\PluginResource\Pages;
 use App\Models\Plugin;
-use Filament\Forms;
-use Filament\Forms\Form;
+use App\Services\PluginManager;
+use Filament\Forms\Components\Textarea;
+use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
 use Filament\Tables;
 use Filament\Tables\Table;
-use Illuminate\Support\Facades\File;
 
 /**
  * 插件管理 Resource
@@ -412,33 +619,17 @@ class PluginResource extends Resource
 
     protected static ?string $navigationGroup = '系统管理';
 
-    public static function form(Form $form): Form
+    public static function form(Schema $schema): Schema
     {
-        return $form
-            ->schema([
-                Forms\Components\TextInput::make('name')
-                    ->label('插件名称')
-                    ->required(),
-                Forms\Components\TextInput::make('slug')
-                    ->label('标识符')
-                    ->required(),
-                Forms\Components\Select::make('type')
-                    ->label('类型')
-                    ->options([
-                        'package' => 'Composer 包',
-                        'module'  => '业务模块',
-                    ])
-                    ->required(),
-                Forms\Components\TextInput::make('version')
-                    ->label('版本'),
-                Forms\Components\Textarea::make('description')
-                    ->label('描述'),
-                Forms\Components\TextInput::make('plugin_class')
-                    ->label('Plugin 类'),
-                Forms\Components\TextInput::make('settings_class')
-                    ->label('Settings 类'),
-                Forms\Components\Toggle::make('is_enabled')
-                    ->label('已启用'),
+        return $schema
+            ->components([
+                TextInput::make('name')->label('插件名称')->disabled(),
+                TextInput::make('slug')->label('标识符')->disabled(),
+                TextInput::make('vendor')->label('作者')->disabled(),
+                TextInput::make('installed_version')->label('版本')->disabled(),
+                Textarea::make('description')->label('描述')->disabled(),
+                TextInput::make('plugin_class')->label('Plugin 类')->disabled(),
+                Toggle::make('is_enabled')->label('已启用')->disabled(),
             ]);
     }
 
@@ -446,178 +637,85 @@ class PluginResource extends Resource
     {
         return $table
             ->columns([
-                Tables\Columns\TextColumn::make('name')
-                    ->label('插件名称')
-                    ->searchable()
-                    ->sortable(),
-                Tables\Columns\BadgeColumn::make('type')
-                    ->label('类型')
-                    ->colors([
-                        'primary' => 'package',
-                        'success' => 'module',
-                    ])
-                    ->formatStateUsing(fn (string $state): string => match ($state) {
-                        'package' => 'Composer 包',
-                        'module'  => '业务模块',
-                        default   => $state,
-                    }),
-                Tables\Columns\TextColumn::make('version')
-                    ->label('版本')
-                    ->placeholder('未知'),
-                Tables\Columns\ToggleColumn::make('is_enabled')
-                    ->label('已启用')
-                    ->beforeStateUpdated(function (Plugin $record, bool $state): void {
-                        // 禁用时检查依赖
-                        if ($state === false) {
-                            static::checkDependencies($record);
-                        }
-                    })
-                    ->afterStateUpdated(function (Plugin $record, bool $state): void {
-                        if ($record->type === 'module') {
-                            static::syncModuleStatus($record->name ?? $record->slug, $state);
-                        }
-                    }),
-                Tables\Columns\TextColumn::make('settings_class')
-                    ->label('Settings 类')
-                    ->placeholder('无')
-                    ->toggleable(isToggledHiddenByDefault: true),
-                Tables\Columns\TextColumn::make('updated_at')
-                    ->label('更新时间')
-                    ->dateTime()
-                    ->sortable()
-                    ->toggleable(isToggledHiddenByDefault: true),
+                Tables\Columns\TextColumn::make('name')->label('插件名称')->searchable()->sortable(),
+                Tables\Columns\TextColumn::make('vendor')->label('作者'),
+                Tables\Columns\TextColumn::make('installed_version')->label('版本')->placeholder('未知'),
+                Tables\Columns\IconColumn::make('is_enabled')->label('已启用')->boolean(),
+                Tables\Columns\TextColumn::make('source')->label('来源')->badge(),
+                Tables\Columns\TextColumn::make('enabled_at')->label('启用时间')->dateTime()->toggleable(),
             ])
             ->filters([
-                Tables\Filters\SelectFilter::make('type')
-                    ->label('类型')
-                    ->options([
-                        'package' => 'Composer 包',
-                        'module'  => '业务模块',
-                    ]),
-                Tables\Filters\TernaryFilter::make('is_enabled')
-                    ->label('状态'),
+                Tables\Filters\TernaryFilter::make('is_enabled')->label('状态'),
+                Tables\Filters\SelectFilter::make('source')
+                    ->label('来源')
+                    ->options(['local' => '本地', 'marketplace' => '市场']),
             ])
             ->actions([
                 Tables\Actions\Action::make('enable')
                     ->label('启用')
                     ->icon('heroicon-o-check-circle')
                     ->color('success')
-                    ->visible(fn (Plugin $record): bool => ! $record->is_enabled)
-                    ->action(function (Plugin $record): void {
-                        $record->update(['is_enabled' => true]);
-
-                        if ($record->type === 'module') {
-                            static::syncModuleStatus($record->name ?? $record->slug, true);
+                    ->visible(fn (Plugin $record) => ! $record->is_enabled)
+                    ->action(function (Plugin $record) {
+                        try {
+                            app(PluginManager::class)->enable($record);
+                            Notification::make()->title("插件 {$record->name} 已启用")->success()->send();
+                        } catch (\Throwable $e) {
+                            Notification::make()->title('启用失败')->body($e->getMessage())->danger()->send();
                         }
-
-                        Notification::make()
-                            ->title("插件 {$record->name} 已启用")
-                            ->success()
-                            ->send();
                     }),
                 Tables\Actions\Action::make('disable')
                     ->label('禁用')
                     ->icon('heroicon-o-x-circle')
                     ->color('danger')
-                    ->visible(fn (Plugin $record): bool => $record->is_enabled)
+                    ->visible(fn (Plugin $record) => $record->is_enabled)
                     ->requiresConfirmation()
-                    ->action(function (Plugin $record): void {
+                    ->action(function (Plugin $record) {
                         try {
-                            static::checkDependencies($record);
-                        } catch (\RuntimeException $e) {
-                            Notification::make()
-                                ->title('无法禁用')
-                                ->body($e->getMessage())
-                                ->danger()
-                                ->send();
-                            return;
+                            app(PluginManager::class)->disable($record);
+                            Notification::make()->title("插件 {$record->name} 已禁用")->success()->send();
+                        } catch (\Throwable $e) {
+                            Notification::make()->title('禁用失败')->body($e->getMessage())->danger()->send();
                         }
-
-                        $record->update(['is_enabled' => false]);
-
-                        if ($record->type === 'module') {
-                            static::syncModuleStatus($record->name ?? $record->slug, false);
-                        }
-
-                        Notification::make()
-                            ->title("插件 {$record->name} 已禁用")
-                            ->success()
-                            ->send();
                     }),
-                Tables\Actions\EditAction::make(),
-            ])
-            ->bulkActions([
-                Tables\Actions\BulkActionGroup::make([
-                    Tables\Actions\DeleteBulkAction::make(),
-                ]),
+                Tables\Actions\Action::make('uninstall')
+                    ->label('卸载')
+                    ->icon('heroicon-o-trash')
+                    ->color('danger')
+                    ->visible(fn (Plugin $record) => ! $record->is_enabled)
+                    ->requiresConfirmation()
+                    ->modalDescription('卸载将回滚 migration 并删除插件文件，请谨慎操作。')
+                    ->action(function (Plugin $record) {
+                        try {
+                            app(PluginManager::class)->uninstall($record);
+                            Notification::make()->title('插件已卸载')->success()->send();
+                        } catch (\Throwable $e) {
+                            Notification::make()->title('卸载失败')->body($e->getMessage())->danger()->send();
+                        }
+                    }),
             ]);
-    }
-
-    /**
-     * 检查是否有其他已启用插件依赖此插件
-     *
-     * @throws \RuntimeException 若存在依赖则抛出异常
-     */
-    protected static function checkDependencies(Plugin $plugin): void
-    {
-        $dependents = Plugin::where('is_enabled', true)
-            ->whereNotNull('requires')
-            ->get()
-            ->filter(fn (Plugin $p): bool => in_array($plugin->slug, $p->requires ?? [], true));
-
-        if ($dependents->isNotEmpty()) {
-            $names = $dependents->pluck('name')->join('、');
-            throw new \RuntimeException(
-                "以下已启用插件依赖于此插件，请先禁用它们：{$names}"
-            );
-        }
-    }
-
-    /**
-     * 同步 modules_statuses.json 中模块的启用状态
-     */
-    protected static function syncModuleStatus(string $moduleName, bool $enabled): void
-    {
-        $statusFile = base_path('modules_statuses.json');
-
-        $statuses = File::exists($statusFile)
-            ? (json_decode(File::get($statusFile), true) ?? [])
-            : [];
-
-        $statuses[$moduleName] = $enabled;
-
-        File::put($statusFile, json_encode($statuses, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-    }
-
-    public static function getRelations(): array
-    {
-        return [];
     }
 
     public static function getPages(): array
     {
         return [
-            'index'  => Pages\ListPlugins::route('/'),
-            'create' => Pages\CreatePlugin::route('/create'),
-            'edit'   => Pages\EditPlugin::route('/{record}/edit'),
+            'index' => Pages\ListPlugins::route('/'),
         ];
     }
 }
 ```
 
-- [ ] 创建 Pages 目录和对应页面文件：
-  - `app/Filament/Resources/PluginResource/Pages/ListPlugins.php`
-  - `app/Filament/Resources/PluginResource/Pages/CreatePlugin.php`
-  - `app/Filament/Resources/PluginResource/Pages/EditPlugin.php`
+- [ ] `app/Filament/Resources/PluginResource/Pages/ListPlugins.php`：
 
 ```php
 <?php
-// ListPlugins.php
+
 namespace App\Filament\Resources\PluginResource\Pages;
 
 use App\Filament\Resources\PluginResource;
 use Filament\Actions;
 use Filament\Resources\Pages\ListRecords;
+use Illuminate\Support\Facades\Artisan;
 
 class ListPlugins extends ListRecords
 {
@@ -629,9 +727,10 @@ class ListPlugins extends ListRecords
             Actions\Action::make('scan')
                 ->label('扫描插件')
                 ->icon('heroicon-o-arrow-path')
-                ->action(fn () => \Artisan::call('plugins:scan'))
+                ->action(function () {
+                    Artisan::call('plugin:scan');
+                })
                 ->successNotificationTitle('插件扫描完成'),
-            Actions\CreateAction::make(),
         ];
     }
 }
@@ -639,80 +738,49 @@ class ListPlugins extends ListRecords
 
 ---
 
-## Task 5: Panel 层动态注册
+## Task 6: Panel 层动态注册
 
-- [ ] 修改 `app/Providers/Filament/AdminPanelProvider.php`，在 `panel()` 方法中添加动态插件注册：
+- [ ] 修改 `app/Providers/Filament/AdminPanelProvider.php`，在 `panel()` 末尾加入：
 
 ```php
-<?php
+$this->registerEnabledPlugins($panel);
 
-namespace App\Providers\Filament;
+return $panel;
+```
 
-use App\Models\Plugin;
-use Filament\Panel;
-use Filament\PanelProvider;
+并新增方法：
 
-class AdminPanelProvider extends PanelProvider
+```php
+/**
+ * 动态注册所有已启用插件的 FilamentPlugin
+ */
+protected function registerEnabledPlugins(\Filament\Panel $panel): void
 {
-    public function panel(Panel $panel): Panel
-    {
-        // ... 现有配置 ...
-
-        // 动态注册已启用的 package 类型插件
-        $this->registerEnabledPlugins($panel);
-
-        return $panel;
-    }
-
-    /**
-     * 查询并注册所有已启用的 package 类型插件
-     */
-    protected function registerEnabledPlugins(Panel $panel): void
-    {
-        try {
-            $plugins = Plugin::enabled()
-                ->packages()
-                ->whereNotNull('plugin_class')
-                ->get();
-
-            foreach ($plugins as $plugin) {
+    try {
+        \App\Models\Plugin::query()
+            ->where('is_enabled', true)
+            ->whereNotNull('plugin_class')
+            ->get()
+            ->each(function (\App\Models\Plugin $plugin) use ($panel) {
                 $class = $plugin->plugin_class;
-
                 if (! class_exists($class)) {
-                    continue;
+                    return;
                 }
-
-                /** @var \Filament\Contracts\Plugin $instance */
-                $instance = app($class);
-                $panel->plugin($instance);
-            }
-        } catch (\Throwable) {
-            // 数据库尚未初始化时静默跳过（如首次 migrate 前）
-        }
+                $panel->plugin(app($class));
+            });
+    } catch (\Throwable) {
+        // 首次 migrate 之前 plugins 表不存在，静默跳过
     }
 }
 ```
 
 ---
 
-## Task 6: 远程市场（MarketplaceResource）
+## Task 7: 远程市场（Filament Page）
 
-- [ ] 在 `config/filament-admin.php` 中添加市场配置：
+> Filament 5 不允许 Resource 没有 model，因此市场用 **`Filament\Pages\Page`** 实现，路由 `/admin/marketplace`。
 
-```php
-return [
-    // ...
-    'marketplace' => [
-        'index_url' => env(
-            'FILAMENT_MARKETPLACE_URL',
-            'https://raw.githubusercontent.com/your-org/filament-marketplace/main/plugins.json'
-        ),
-        'timeout' => 5,
-    ],
-];
-```
-
-- [ ] 创建 Marketplace 数据传输对象 `app/Data/MarketplacePlugin.php`：
+- [ ] 创建 DTO `app/Data/MarketplacePlugin.php`：
 
 ```php
 <?php
@@ -727,24 +795,17 @@ readonly class MarketplacePlugin
     public function __construct(
         public string $name,
         public string $slug,
-        public string $description,
+        public string $vendor,
         public string $version,
-        public string $source,       // official | recommended | community
-        public string $packageName,  // Composer 包名
-        public string $repositoryUrl,
+        public string $description,
+        public string $downloadUrl,
+        public string $sha256,
+        public string $source = 'community',
     ) {}
-
-    /**
-     * 生成安装命令
-     */
-    public function installCommand(): string
-    {
-        return "composer require {$this->packageName}";
-    }
 }
 ```
 
-- [ ] 创建市场服务 `app/Services/MarketplaceService.php`：
+- [ ] 创建服务 `app/Services/MarketplaceService.php`：
 
 ```php
 <?php
@@ -753,66 +814,147 @@ namespace App\Services;
 
 use App\Data\MarketplacePlugin;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Http;
+use RuntimeException;
+use ZipArchive;
 
 /**
  * 远程插件市场服务
+ *
+ * - 列表：HTTP 调用带 timeout(10) + retry(2, 100)，失败降级返回空集合
+ * - 列表结果按页缓存 300 秒
+ * - 下载：校验 sha256 hash（v1 仅 hash，签名机制 v2 引入）
  */
 class MarketplaceService
 {
     /**
-     * 获取远程插件列表，网络失败时返回空集合
+     * 拉取市场插件列表（分页）
      *
      * @return Collection<int, MarketplacePlugin>
      */
-    public function fetchPlugins(): Collection
+    public function list(int $page = 1, ?string $keyword = null): Collection
     {
-        $url = config('filament-admin.marketplace.index_url');
-        $timeout = config('filament-admin.marketplace.timeout', 5);
+        $cacheKey = 'marketplace.list.' . $page . '.' . md5((string) $keyword);
+        $ttl      = (int) config('filament-admin.marketplace.cache_ttl', 300);
 
-        try {
-            $response = Http::timeout($timeout)->get($url);
+        return Cache::remember($cacheKey, $ttl, function () use ($page, $keyword) {
+            try {
+                $response = Http::baseUrl(config('filament-admin.marketplace.url'))
+                    ->timeout((int) config('filament-admin.marketplace.timeout', 10))
+                    ->retry(2, 100)
+                    ->get('/plugins', array_filter([
+                        'page' => $page,
+                        'q'    => $keyword,
+                    ]));
 
-            if (! $response->successful()) {
+                if (! $response->successful()) {
+                    return collect();
+                }
+
+                return collect($response->json('data', []))->map(fn (array $item) => new MarketplacePlugin(
+                    name:        $item['name'],
+                    slug:        $item['slug'],
+                    vendor:      $item['vendor'],
+                    version:     $item['version'],
+                    description: $item['description'] ?? '',
+                    downloadUrl: $item['download_url'],
+                    sha256:      $item['sha256'],
+                    source:      $item['source'] ?? 'community',
+                ));
+            } catch (\Throwable) {
                 return collect();
             }
+        });
+    }
 
-            return collect($response->json('plugins', []))
-                ->map(fn (array $item) => new MarketplacePlugin(
-                    name: $item['name'],
-                    slug: $item['slug'],
-                    description: $item['description'] ?? '',
-                    version: $item['version'] ?? 'latest',
-                    source: $item['source'] ?? 'community',
-                    packageName: $item['package_name'],
-                    repositoryUrl: $item['repository_url'] ?? '',
-                ));
-        } catch (\Throwable) {
-            return collect();
+    /**
+     * 下载并安装远程插件
+     *
+     * 流程：
+     *  1) 下载到 storage/app/plugins/downloads/{slug}-{version}.zip
+     *  2) 校验 sha256
+     *  3) 校验 zip 结构必须包含 plugin.json 且 slug 一致
+     *  4) 解压到 plugins/{vendor}/{slug}
+     *  5) 调用 plugin:scan 写入 DB
+     */
+    public function downloadAndInstall(MarketplacePlugin $plugin): void
+    {
+        $downloadDir = storage_path('app/plugins/downloads');
+        File::ensureDirectoryExists($downloadDir);
+
+        $zipPath = "{$downloadDir}/{$plugin->slug}-{$plugin->version}.zip";
+
+        $response = Http::timeout((int) config('filament-admin.marketplace.timeout', 10))
+            ->retry(2, 100)
+            ->sink($zipPath)
+            ->get($plugin->downloadUrl);
+
+        if (! $response->successful()) {
+            throw new RuntimeException('插件下载失败。');
         }
+
+        // 校验 hash
+        $actualHash = hash_file('sha256', $zipPath);
+        if (! hash_equals($plugin->sha256, $actualHash)) {
+            File::delete($zipPath);
+            throw new RuntimeException('插件包 sha256 校验失败，已拒绝安装。');
+        }
+
+        // 校验 zip 结构
+        $zip = new ZipArchive();
+        if ($zip->open($zipPath) !== true) {
+            throw new RuntimeException('插件包无法打开。');
+        }
+
+        $manifestRaw = $zip->getFromName('plugin.json');
+        if ($manifestRaw === false) {
+            $zip->close();
+            throw new RuntimeException('插件包缺少 plugin.json。');
+        }
+
+        $manifest = json_decode($manifestRaw, true) ?? [];
+        if (($manifest['slug'] ?? null) !== $plugin->slug) {
+            $zip->close();
+            throw new RuntimeException('plugin.json 中的 slug 与请求不一致。');
+        }
+
+        // 解压
+        $target = config('filament-admin.plugins.path') . "/{$plugin->vendor}/{$plugin->slug}";
+        File::ensureDirectoryExists($target);
+        $zip->extractTo($target);
+        $zip->close();
+
+        // 同步进 DB
+        \Illuminate\Support\Facades\Artisan::call('plugin:scan');
+
+        \App\Models\Plugin::where('slug', $plugin->slug)->update([
+            'source'      => 'marketplace',
+            'source_hash' => $plugin->sha256,
+        ]);
     }
 }
 ```
 
-- [ ] 创建 MarketplaceResource（只读，Livewire 组件形式）`app/Filament/Resources/MarketplaceResource.php`：
+- [ ] 创建 `app/Filament/Pages/Marketplace.php`：
 
 ```php
 <?php
 
-namespace App\Filament\Resources;
+namespace App\Filament\Pages;
 
-use App\Filament\Resources\MarketplaceResource\Pages;
+use App\Data\MarketplacePlugin;
 use App\Services\MarketplaceService;
-use Filament\Resources\Resource;
+use Filament\Notifications\Notification;
+use Filament\Pages\Page;
+use Illuminate\Support\Collection;
 
 /**
- * 远程插件市场 Resource（只读，无数据库）
+ * 插件市场页面（不绑定模型）
  */
-class MarketplaceResource extends Resource
+class Marketplace extends Page
 {
-    // 不绑定 Eloquent 模型
-    protected static ?string $model = null;
-
     protected static ?string $navigationIcon = 'heroicon-o-shopping-bag';
 
     protected static ?string $navigationLabel = '插件市场';
@@ -821,218 +963,238 @@ class MarketplaceResource extends Resource
 
     protected static ?string $slug = 'marketplace';
 
-    public static function getPages(): array
-    {
-        return [
-            'index' => Pages\ListMarketplacePlugins::route('/'),
-        ];
-    }
-}
-```
+    protected static string $view = 'filament.pages.marketplace';
 
-- [ ] 创建市场列表页 `app/Filament/Resources/MarketplaceResource/Pages/ListMarketplacePlugins.php`：
+    public string $keyword = '';
 
-```php
-<?php
+    public int $page = 1;
 
-namespace App\Filament\Resources\MarketplaceResource\Pages;
-
-use App\Filament\Resources\MarketplaceResource;
-use App\Services\MarketplaceService;
-use Filament\Forms\Components\TextInput;
-use Filament\Forms\Concerns\InteractsWithForms;
-use Filament\Forms\Contracts\HasForms;
-use Filament\Notifications\Notification;
-use Filament\Pages\Concerns\InteractsWithFormActions;
-use Filament\Resources\Pages\Page;
-use Illuminate\Support\Collection;
-
-class ListMarketplacePlugins extends Page implements HasForms
-{
-    use InteractsWithForms;
-
-    protected static string $resource = MarketplaceResource::class;
-
-    protected static string $view = 'filament.resources.marketplace.list';
-
-    public string $search = '';
-    public string $source = '';
     public ?string $errorMessage = null;
 
-    /** @var Collection */
-    public $plugins;
+    /** @var Collection<int, MarketplacePlugin> */
+    public Collection $plugins;
 
     public function mount(): void
     {
-        $this->loadPlugins();
+        $this->plugins = collect();
+        $this->load();
     }
 
-    public function loadPlugins(): void
+    public function load(): void
     {
-        $result = app(MarketplaceService::class)->fetchPlugins();
+        $this->plugins = app(MarketplaceService::class)->list($this->page, $this->keyword ?: null);
 
-        if ($result->isEmpty() && ! $this->search) {
-            $this->errorMessage = '无法获取插件市场数据，请检查网络连接。';
-        } else {
-            $this->errorMessage = null;
+        $this->errorMessage = $this->plugins->isEmpty() && ! $this->keyword
+            ? '市场暂不可用，请稍后重试。'
+            : null;
+    }
+
+    public function install(string $slug): void
+    {
+        $plugin = $this->plugins->firstWhere('slug', $slug);
+        if (! $plugin) {
+            Notification::make()->title('插件未找到')->danger()->send();
+
+            return;
         }
 
-        $this->plugins = $result
-            ->when($this->search, fn ($c) => $c->filter(
-                fn ($p) => str_contains(strtolower($p->name), strtolower($this->search))
-                    || str_contains(strtolower($p->description), strtolower($this->search))
-            ))
-            ->when($this->source, fn ($c) => $c->where('source', $this->source));
-    }
-
-    public function updatedSearch(): void
-    {
-        $this->loadPlugins();
-    }
-
-    public function updatedSource(): void
-    {
-        $this->loadPlugins();
-    }
-
-    public function copyInstallCommand(string $command): void
-    {
-        $this->js("navigator.clipboard.writeText('{$command}')");
-
-        Notification::make()
-            ->title('安装命令已复制')
-            ->success()
-            ->send();
+        try {
+            app(MarketplaceService::class)->downloadAndInstall($plugin);
+            Notification::make()->title("插件 {$plugin->name} 已下载安装，请前往插件管理启用。")->success()->send();
+        } catch (\Throwable $e) {
+            Notification::make()->title('安装失败')->body($e->getMessage())->danger()->send();
+        }
     }
 }
 ```
 
-- [ ] 创建视图 `resources/views/filament/resources/marketplace/list.blade.php`（展示搜索框、来源筛选、插件卡片列表和安装命令复制按钮）
+- [ ] 创建视图 `resources/views/filament/pages/marketplace.blade.php`：展示搜索框、卡片列表、安装按钮，并在 `$errorMessage` 非空时显示提示但不让页面崩溃。
 
 ---
 
-## Task 7: 测试
+## Task 8: Policy 与权限
 
-- [ ] 创建测试文件 `tests/Feature/PluginSystemTest.php`：
+- [ ] 创建 `app/Policies/PluginPolicy.php`，继承 `App\Policies\BasePolicy`（已有约定）：
 
 ```php
 <?php
 
+namespace App\Policies;
+
+use App\Models\AdminUser;
 use App\Models\Plugin;
-use Illuminate\Support\Facades\Artisan;
-use Illuminate\Support\Facades\File;
 
 /**
- * 插件系统核心路径测试
+ * 插件策略
  */
-beforeEach(function () {
-    // 清空 plugins 表
-    Plugin::truncate();
-});
+class PluginPolicy extends BasePolicy
+{
+    public function viewAny(AdminUser $user): bool
+    {
+        return $user->can('plugin.view');
+    }
 
-it('scan-plugins 命令能扫描 Modules/ 目录并写入 plugins 表', function () {
-    // 创建临时模块目录
-    $modulePath = base_path('Modules/TestModule');
-    File::makeDirectory($modulePath, 0755, true, true);
-    File::put("{$modulePath}/composer.json", json_encode([
-        'name'        => 'test/module',
-        'description' => '测试模块',
-        'extra'       => [
-            'filament-admin' => [
-                'name' => 'Test Module',
-            ],
-        ],
-    ]));
+    public function enable(AdminUser $user, Plugin $plugin): bool
+    {
+        return $user->can('plugin.manage');
+    }
 
-    Artisan::call('plugins:scan');
+    public function disable(AdminUser $user, Plugin $plugin): bool
+    {
+        return $user->can('plugin.manage');
+    }
 
-    expect(Plugin::where('slug', 'test-module')->exists())->toBeTrue();
-    expect(Plugin::where('slug', 'test-module')->value('type'))->toBe('module');
-
-    // 清理
-    File::deleteDirectory($modulePath);
-});
-
-it('禁用插件后 is_enabled 变为 false', function () {
-    $plugin = Plugin::create([
-        'name'       => '测试插件',
-        'slug'       => 'test-plugin',
-        'type'       => 'package',
-        'is_enabled' => true,
-    ]);
-
-    $plugin->update(['is_enabled' => false]);
-
-    expect($plugin->fresh()->is_enabled)->toBeFalse();
-});
-
-it('依赖检查阻止禁用被其他启用插件依赖的插件', function () {
-    $pluginA = Plugin::create([
-        'name'       => '插件A',
-        'slug'       => 'plugin-a',
-        'type'       => 'package',
-        'is_enabled' => true,
-    ]);
-
-    Plugin::create([
-        'name'       => '插件B',
-        'slug'       => 'plugin-b',
-        'type'       => 'package',
-        'is_enabled' => true,
-        'requires'   => ['plugin-a'],
-    ]);
-
-    // 检查依赖（模拟 PluginResource 中的逻辑）
-    $dependents = Plugin::where('is_enabled', true)
-        ->whereNotNull('requires')
-        ->get()
-        ->filter(fn (Plugin $p) => in_array($pluginA->slug, $p->requires ?? [], true));
-
-    expect($dependents)->toHaveCount(1);
-    expect($dependents->first()->slug)->toBe('plugin-b');
-});
-
-it('module 类型插件启用后 modules_statuses.json 同步更新', function () {
-    $statusFile = base_path('modules_statuses.json');
-
-    // 确保测试前状态文件不存在或为空
-    File::put($statusFile, json_encode([]));
-
-    $plugin = Plugin::create([
-        'name'       => '示例模块',
-        'slug'       => 'example',
-        'type'       => 'module',
-        'is_enabled' => false,
-    ]);
-
-    // 模拟 syncModuleStatus
-    $statuses = json_decode(File::get($statusFile), true) ?? [];
-    $statuses['Example'] = true;
-    File::put($statusFile, json_encode($statuses));
-
-    $statuses = json_decode(File::get($statusFile), true);
-    expect($statuses['Example'])->toBeTrue();
-
-    // 清理
-    File::delete($statusFile);
-});
+    public function uninstall(AdminUser $user, Plugin $plugin): bool
+    {
+        return $user->can('plugin.manage');
+    }
+}
 ```
 
-- [ ] 运行测试：`php artisan test tests/Feature/PluginSystemTest.php`
+- [ ] 创建 `app/Policies/MarketplacePolicy.php`（继承 `BasePolicy`，方法 `view`、`install` 均要求 `marketplace.manage` 权限）。
+
+- [ ] 在 `app/Providers/AuthServiceProvider.php`（**注意：Laravel 11+ 已移除框架自带基类，必须 `extends Illuminate\Support\ServiceProvider`**，在 `boot()` 中调用 `Gate::policy()`）注册：
+
+```php
+public function boot(): void
+{
+    Gate::policy(\App\Models\Plugin::class, \App\Policies\PluginPolicy::class);
+    // MarketplacePolicy 不绑定模型，使用 Gate::define 或在 Page 内手工 authorize
+}
+```
+
+- [ ] 创建权限：
+  - `plugin.view` / `plugin.manage` / `marketplace.view` / `marketplace.manage`（admin guard）
 
 ---
 
-## Task 8: 文档
+## Task 9: 测试
 
-- [ ] 创建 `docs/plugins/overview.md`：插件系统架构概述，双轨制说明
-- [ ] 创建 `docs/plugins/using-plugins.md`：如何在后台管理插件（扫描、启用、禁用）
-- [ ] 创建 `docs/plugins/develop-package.md`：开发 Composer 包型插件指南（extra.filament-admin 字段规范）
-- [ ] 创建 `docs/plugins/develop-module.md`：开发业务模块型插件指南（继承 ModuleFilamentPlugin）
+> 本项目 `tests/Pest.php` 已对 Feature & Unit 自动 apply `RefreshDatabase`；admin 操作必须 `actingAs($user, 'admin')`；用 `AdminUser::factory()`，**不要**用 `User::factory()`；`beforeEach` 调用 `forgetCachedPermissions()` 防止 Spatie Permission 缓存污染。
+
+- [ ] 创建 `tests/Feature/PluginSystemTest.php`：
+
+```php
+<?php
+
+use App\Models\AdminUser;
+use App\Models\Plugin;
+use App\Services\PluginManager;
+use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\File;
+use Spatie\Permission\PermissionRegistrar;
+
+beforeEach(function () {
+    app(PermissionRegistrar::class)->forgetCachedPermissions();
+});
+
+it('plugin:scan 命令能扫描 plugins/ 目录并同步 plugins 表', function () {
+    $pluginDir = base_path('plugins/acme/demo');
+    File::ensureDirectoryExists($pluginDir);
+    File::put($pluginDir . '/plugin.json', json_encode([
+        'name'         => 'Demo 插件',
+        'slug'         => 'demo',
+        'vendor'       => 'acme',
+        'version'      => '1.0.0',
+        'namespace'    => 'Plugins\\Acme\\Demo\\',
+        'plugin_class' => 'Plugins\\Acme\\Demo\\DemoPlugin',
+        'description'  => '测试',
+        'requires'     => [],
+    ]));
+
+    Artisan::call('plugin:scan');
+
+    expect(Plugin::where('slug', 'demo')->exists())->toBeTrue();
+    expect(Plugin::where('slug', 'demo')->value('vendor'))->toBe('acme');
+
+    File::deleteDirectory(base_path('plugins/acme'));
+});
+
+it('scan 不会覆盖已存在记录的 is_enabled 状态', function () {
+    Plugin::create([
+        'name'              => 'Demo',
+        'slug'              => 'demo',
+        'vendor'            => 'acme',
+        'namespace'         => 'Plugins\\Acme\\Demo\\',
+        'installed_version' => '1.0.0',
+        'is_enabled'        => true,
+        'installed_at'      => now(),
+    ]);
+
+    $pluginDir = base_path('plugins/acme/demo');
+    File::ensureDirectoryExists($pluginDir);
+    File::put($pluginDir . '/plugin.json', json_encode([
+        'name'      => 'Demo',
+        'slug'      => 'demo',
+        'vendor'    => 'acme',
+        'version'   => '1.1.0',
+        'namespace' => 'Plugins\\Acme\\Demo\\',
+    ]));
+
+    Artisan::call('plugin:scan');
+
+    $p = Plugin::where('slug', 'demo')->first();
+    expect($p->is_enabled)->toBeTrue();
+    expect($p->installed_version)->toBe('1.1.0');
+
+    File::deleteDirectory(base_path('plugins/acme'));
+});
+
+it('依赖检查阻止禁用被依赖的插件', function () {
+    $a = Plugin::create([
+        'name' => 'A', 'slug' => 'a', 'vendor' => 'acme',
+        'namespace' => 'Plugins\\Acme\\A\\', 'is_enabled' => true,
+    ]);
+    Plugin::create([
+        'name' => 'B', 'slug' => 'b', 'vendor' => 'acme',
+        'namespace' => 'Plugins\\Acme\\B\\', 'is_enabled' => true,
+        'requires' => ['a'],
+    ]);
+
+    expect(fn () => app(PluginManager::class)->disable($a))
+        ->toThrow(RuntimeException::class);
+});
+
+it('admin 用户在 admin guard 下能访问插件管理列表', function () {
+    $user = AdminUser::factory()->create();
+    $user->assignRole(\Spatie\Permission\Models\Role::firstOrCreate([
+        'name' => 'super-admin',
+        'guard_name' => 'admin',
+    ]));
+
+    actingAs($user, 'admin')
+        ->get('/admin/plugins')
+        ->assertSuccessful();
+});
+
+it('市场服务在网络失败时返回空集合且不抛异常', function () {
+    \Illuminate\Support\Facades\Http::fake([
+        '*' => \Illuminate\Support\Facades\Http::response(null, 500),
+    ]);
+
+    $result = app(\App\Services\MarketplaceService::class)->list(1);
+
+    expect($result)->toBeInstanceOf(\Illuminate\Support\Collection::class);
+    expect($result)->toBeEmpty();
+});
+```
+
+- [ ] 运行：`php artisan test tests/Feature/PluginSystemTest.php`
+- [ ] 代码风格：`composer pint`
+
+---
+
+## Task 10: 文档与发布
+
+- [ ] `docs/plugins/overview.md`：插件系统架构、双轨 source-of-truth、生命周期
+- [ ] `docs/plugins/plugin-json-spec.md`：plugin.json 完整字段规范
+- [ ] `docs/plugins/develop-plugin.md`：插件开发指南（namespace 约定、ServiceProvider、FilamentPlugin、权限注册）
+- [ ] `docs/plugins/marketplace.md`：市场使用与下载安装流程，sha256 校验说明（签名 v2 引入）
 - [ ] 打标签并推送：
 
 ```bash
 git add .
-git commit -m "feat: 实现双轨制插件系统"
+git commit -m "feat: 实现插件系统（本地 plugins/ + 远程市场）"
 git tag v0.8.0-插件系统
-git push origin main --tags
+git push origin feature/phase-1-authentication --tags
 ```

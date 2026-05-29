@@ -1,3 +1,22 @@
+> ## 历史说明
+>
+> 本计划已于 **2026-05-28** 执行完毕，对应标签 `v1.0.0-phase1`，49 个测试全通过。
+>
+> 实际实现与本计划存在以下历史偏差，**以 `AGENTS.md` 与代码为准，本文件保留作为历史规划记录，不再更新**：
+>
+> 1. 后台 guard 名实际为 `admin`（计划文档曾出现 `admin_user` / `web` 等混用）
+> 2. AdminUser 模型实际位置 `app/Models/AdminUser.php`，已含 `SoftDeletes` + `TwoFactorAuthenticatable` + `FilamentUser`
+> 3. 登录页实际位于 `app/Filament/Pages/Auth/Login.php`，支持 username 或 email 双登录
+> 4. 2FA 包采用 `stephenjude/filament-two-factor-authentication`（已在 AdminPanelProvider 注册）
+> 5. Provider 注册在 `bootstrap/providers.php`（非 `config/app.php`）
+> 6. 异常处理在 `bootstrap/app.php` 的 `->withExceptions()` 块（非 `app/Exceptions/Handler.php`）
+> 7. 控制台调度写在 `routes/console.php`（非 `app/Console/Kernel.php`）
+> 8. `LogAdminLogin` 监听器通过 Laravel 自动发现注册，不在 AppServiceProvider 手动 `Event::listen`
+>
+> 后续开发请参考 `AGENTS.md` 与已实现的代码作为事实来源。
+
+---
+
 # Phase 1: 认证与基础设施 - 实施计划
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
