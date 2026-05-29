@@ -3,6 +3,7 @@
 namespace App\Providers\Filament;
 
 use App\Filament\Pages\Auth\Login;
+use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -41,6 +42,11 @@ class AdminPanelProvider extends PanelProvider
                 TwoFactorAuthenticationPlugin::make()
                     ->enableTwoFactorAuthentication() // 启用 TOTP 双因素认证（用户可选启用）
                     ->addTwoFactorMenuItem()          // 在用户菜单中添加 2FA 管理入口
+            )
+            ->plugin(
+                FilamentShieldPlugin::make()
+                    ->navigationGroup('系统管理')
+                    ->navigationLabel('角色管理')
             )
             ->colors([
                 'primary' => Color::Amber,

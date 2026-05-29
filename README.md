@@ -31,6 +31,11 @@
 | 邮箱 | admin@admin.com |
 | 密码 | *(安装时设置)* |
 
+后台地址	http://filamentadmin.local/admin/login
+用户名	admin
+邮箱	admin@example.com
+密码	password
+
 ## 环境配置
 
 ```env

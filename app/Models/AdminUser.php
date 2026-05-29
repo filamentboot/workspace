@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Carbon;
+use Spatie\Permission\Traits\HasRoles;
 use Stephenjude\FilamentTwoFactorAuthentication\TwoFactorAuthenticatable;
 
 /**
@@ -36,6 +37,7 @@ class AdminUser extends Authenticatable implements FilamentUser
     /** @use HasFactory<AdminUserFactory> */
     use HasFactory;
 
+    use HasRoles; // 提供角色与权限管理方法
     use SoftDeletes;
     use TwoFactorAuthenticatable; // 提供 TOTP 双因素认证方法
 
