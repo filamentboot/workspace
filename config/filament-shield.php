@@ -27,7 +27,7 @@ return [
             'pages'              => true,
             'widgets'            => true,
             'resources'          => true,
-            'custom_permissions' => false,
+            'custom_permissions' => true,
         ],
     ],
 
@@ -232,7 +232,10 @@ return [
     |
     */
 
-    'custom_permissions' => [],
+    'custom_permissions' => [
+        'reset_password_admin_user' => '重置管理员密码',
+        'assign_role_admin_user'    => '分配管理员角色',
+    ],
 
     /*
     |--------------------------------------------------------------------------

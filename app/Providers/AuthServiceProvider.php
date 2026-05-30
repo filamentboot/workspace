@@ -3,12 +3,20 @@
 namespace App\Providers;
 
 use App\Models\AdminUser;
+use App\Models\Department;
 use App\Models\LoginLog;
+use App\Models\Menu;
+use App\Models\RoleDataScope;
+use App\Policies\ActivityLogPolicy;
 use App\Policies\AdminUserPolicy;
+use App\Policies\DepartmentPolicy;
 use App\Policies\LoginLogPolicy;
+use App\Policies\MenuPolicy;
+use App\Policies\RoleDataScopePolicy;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
+use Spatie\Activitylog\Models\Activity;
 
 /**
  * 授权服务提供者
@@ -27,8 +35,12 @@ class AuthServiceProvider extends ServiceProvider
      * @var array<class-string, class-string>
      */
     protected array $policies = [
-        AdminUser::class => AdminUserPolicy::class,
-        LoginLog::class  => LoginLogPolicy::class,
+        AdminUser::class     => AdminUserPolicy::class,
+        LoginLog::class      => LoginLogPolicy::class,
+        Menu::class          => MenuPolicy::class,
+        Department::class    => DepartmentPolicy::class,
+        RoleDataScope::class => RoleDataScopePolicy::class,
+        Activity::class      => ActivityLogPolicy::class,
     ];
 
     public function boot(): void

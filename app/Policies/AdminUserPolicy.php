@@ -2,6 +2,9 @@
 
 namespace App\Policies;
 
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Model;
+
 /**
  * 管理员用户 Policy
  *
@@ -10,5 +13,19 @@ namespace App\Policies;
  */
 class AdminUserPolicy extends BasePolicy
 {
-    // 全部继承自 BasePolicy，无需重写
+    /**
+     * 重置密码权限
+     */
+    public function resetPassword(Authenticatable $user, Model $model): bool
+    {
+        return $user->can('reset_password_admin_user');
+    }
+
+    /**
+     * 分配角色权限
+     */
+    public function assignRole(Authenticatable $user, Model $model): bool
+    {
+        return $user->can('assign_role_admin_user');
+    }
 }

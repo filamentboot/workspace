@@ -2,12 +2,17 @@
 
 namespace App\Providers\Filament;
 
+use AlizHarb\ActivityLog\ActivityLogPlugin;
 use App\Filament\Pages\Auth\Login;
+use App\Models\AdminUser;
+use App\Services\AdminNavigationBuilder;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
+use Filament\Facades\Filament;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
 use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Navigation\NavigationBuilder;
 use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
@@ -48,11 +53,27 @@ class AdminPanelProvider extends PanelProvider
                     ->navigationGroup('系统管理')
                     ->navigationLabel('角色管理')
             )
+            ->plugin(
+                ActivityLogPlugin::make()
+                    ->label('操作日志')
+                    ->pluralLabel('操作日志')
+                    ->navigationGroup('系统管理')
+                    ->navigationIcon('heroicon-o-clock')
+                    ->navigationSort(40)
+                    ->dashboard(false)
+                    ->autoContextTracking()
+            )
             ->colors([
                 'primary' => Color::Amber,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
+            ->navigation(function (AdminNavigationBuilder $builder): NavigationBuilder {
+                $user = Filament::auth()->user();
+
+                return (new NavigationBuilder)
+                    ->groups($builder->build($user instanceof AdminUser ? $user : null));
+            })
             ->pages([
                 Dashboard::class,
             ])

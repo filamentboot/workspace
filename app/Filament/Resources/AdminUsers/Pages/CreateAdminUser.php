@@ -1,0 +1,40 @@
+<?php
+
+namespace App\Filament\Resources\AdminUsers\Pages;
+
+use App\Filament\Resources\AdminUsers\AdminUserResource;
+use App\Models\AdminUser;
+use App\Services\ActivityLogger;
+use Filament\Resources\Pages\CreateRecord;
+
+/**
+ * 创建管理员页
+ */
+class CreateAdminUser extends CreateRecord
+{
+    protected static string $resource = AdminUserResource::class;
+
+    protected function afterCreate(): void
+    {
+        $causer = app(ActivityLogger::class)->currentCauser();
+        $record = $this->getRecord()->fresh('roles');
+
+        if (! $causer instanceof AdminUser || ! $record instanceof AdminUser) {
+            return;
+        }
+
+        $roles = $record->roles->pluck('name')->sort()->values()->all();
+
+        if ($roles === []) {
+            return;
+        }
+
+        app(ActivityLogger::class)->log(
+            causer: $causer,
+            subject: $record,
+            action: 'roles_updated',
+            before: [],
+            after: ['roles' => $roles],
+        );
+    }
+}

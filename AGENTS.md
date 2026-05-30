@@ -1,6 +1,15 @@
 # AGENTS.md — FilamentAdmin
 
-Laravel 13 + Filament 5 后台基础平台。第一版开发中，分 8 个功能域顺序推进，详见 `docs/superpowers/specs/2026-05-28-filament-admin-v1-development-plan.md`。
+Laravel 13 + Filament 5 后台基础平台。当前按功能块分期交付，做成一块、发布一块；主路线详见 `doc/项目开发规划.md`，历史详细计划见 `docs/superpowers/specs/2026-05-28-filament-admin-v1-development-plan.md`。
+
+## 公开说明与真实状态
+
+- 面向发布上线的项目说明文档是 `docs/guide/overview.md`。它传达的核心原则是：**目标、规划、已完成状态必须分开写**，不要把后续阶段能力提前描述成已落地。
+- 当前开发后梳理和差距分析文档是 `doc/一期开发后的梳理.md`，用于记录当前代码状态、竞品差距、插件规划和后续阶段分析。
+- 后续开发执行规划文档是 `doc/项目开发规划.md`，用于约束功能块分期顺序、子功能范围和完成标准；以后按“做一个功能块，就把该功能块完整收口并阶段发布”的方式推进。
+- 截至 2026-05-29，当前已落地能力集中在：后台登录（username/email）、2FA 基础接入、登录日志、管理员模型层、Spatie Permission + Shield 权限基础、`AdminUser` 软删除。
+- 当前仍未落地：管理员 Resource UI、登录日志 Resource UI、菜单管理、系统配置、操作日志、媒体库、Sanctum/API、插件中心、基础导出、个人资料页、仪表盘统计卡片、多语言预留实现。
+- 写文档或改 README 时，必须先核对代码和测试，再标注 `已完成` / `已铺垫` / `待开发`。宁可保守，也不要虚标完成度。
 
 ## 环境关键差异（容易踩坑）
 
@@ -12,10 +21,12 @@ Laravel 13 + Filament 5 后台基础平台。第一版开发中，分 8 个功�
 ## 认证体系（与 Laravel 默认不同）
 
 - 后台用 `admin` guard + `admin_users` 表，**不是** 默认的 `web`/`users`
-- `AdminUser` 模型在 `app/Models/AdminUser.php`，已含 `SoftDeletes` + `TwoFactorAuthenticatable` + `FilamentUser`
+- `AdminUser` 模型在 `app/Models/AdminUser.php`，已含 `SoftDeletes` + `TwoFactorAuthenticatable` + `HasRoles` + `FilamentUser`
 - 自定义登录页 `app/Filament/Pages/Auth/Login.php` 支持 username **或** email 登录
 - 2FA 用 `stephenjude/filament-two-factor-authentication`（已在 AdminPanelProvider 注册）
 - 创建/操作管理员相关代码时，guard 必须显式传 `'admin'`（如 `actingAs($user, 'admin')`、`Role::create(['guard_name' => 'admin'])`）
+- 权限基础已接入 `spatie/laravel-permission` + `bezhansalleh/filament-shield`；超级管理员通过 `Gate::before()` 绕过权限检查，角色/权限必须使用 `admin` guard。
+- 操作日志当前技术路线固定为 `spatie/laravel-activitylog` 4.x + `alizharb/filament-activity-log` 1.3；当前 PHP 8.3 环境**不要**切到 Activitylog 5.x 方案。
 
 ## Filament 5 / Laravel 13 API 陷阱
 
@@ -59,19 +70,22 @@ php artisan test --filter='测试名称'      # Pest 测试名是中文，filter
 - 当前分支 `feature/phase-1-authentication`（功能分支模式）
 - TDD：写失败测试 → 实现 → 测试通过 → commit。参考 `docs/superpowers/plans/` 已有计划文件结构
 - 规格/计划/设计文档全部进 `docs/superpowers/specs/` 和 `docs/superpowers/plans/`，命名 `YYYY-MM-DD-<topic>.md`
-- 阶段完成打 Tag：`v0.X.0-<功能名>`（中文），第一版终点 `v1.0.0`
+- 每个功能块完成后可打阶段 Tag：`v0.X.0-<功能名>`（中文）；是否定义稳定大版本号后续再定。
+- 涉及对外项目说明、项目范围和代码基座价值主张时，优先对齐 `docs/guide/overview.md`；涉及当前代码状态和竞品差距时，对齐 `doc/一期开发后的梳理.md`；涉及实施顺序、功能块边界和验收标准时，优先对齐 `doc/项目开发规划.md`；涉及更细任务拆解时，再参考 `docs/superpowers/specs/2026-05-28-filament-admin-v1-development-plan.md`。
 
 ## 目录指引
 
-- `app/Filament/` 已存在，目前只有 `Pages/Auth/Login.php`，Resources 目录待建
+- `app/Filament/` 已存在，目前只有 `Pages/Auth/Login.php`，项目自有 Resources 目录待建；Shield 自带 RoleResource 由包提供，不在本项目手写
 - `app/Listeners/LogAdminLogin.php` 通过 Laravel 自动发现注册，**不要**在 AppServiceProvider 再手动 `Event::listen`
 - `docs/superpowers/` 是 superpowers skill 的产出目录（specs + plans + 后续 reviews）
-- `doc/`（单数）是早期需求文档（`需求.md`/`需求2.md`），与 `docs/`（复数）不同，**不要混用**
+- `docs/guide/overview.md` 是面向公开发布的项目概览；`doc/`（单数）保留开发后梳理、项目开发规划、调研和业务设想；`docs/`（复数）承载公开文档、实施规格、计划、功能文档和开发文档，**不要混用产出位置**
 - `database/migrations/0001_01_01_*_create_users_table.php` 是 Laravel 默认 users 表，**保留但不使用**（项目用 admin_users）
 
 ## 不要做
 
 - 不要把 PHPStan level 写进命令行（`phpstan.neon` 已配 level 6，重复指定会冲突）
 - 不要在生产 PHP 文件里加 emoji（CLAUDE.md/AGENTS.md 全局约定）
-- 不要在没读 `docs/superpowers/specs/2026-05-28-filament-admin-v1-development-plan.md` 前修改架构相关代码——它定义了 8 个功能域的边界
-- 不要为每个 Resource 自写 RoleResource——后续要集成的 `bezhansalleh/filament-shield` 4.x 自带 RoleResource
+- 不要在没读 `docs/guide/overview.md`、`doc/一期开发后的梳理.md`、`doc/项目开发规划.md` 和 `docs/superpowers/specs/2026-05-28-filament-admin-v1-development-plan.md` 前修改架构相关代码——它们分别定义公开说明、当前状态、开发路线和历史阶段边界
+- 不要把菜单、系统配置、操作日志、媒体库、API、插件中心等规划能力写成已完成，除非对应代码、迁移、测试和文档都已落地
+- 不要再把一个功能块拆成长期半成品；如果某次只完成底层铺垫，必须在文档里标注为 `已铺垫`，不能标注为 `已完成`
+- 不要为每个 Resource 自写 RoleResource——使用 `bezhansalleh/filament-shield` 4.x 自带 RoleResource

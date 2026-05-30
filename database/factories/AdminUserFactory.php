@@ -2,6 +2,7 @@
 
 namespace Database\Factories;
 
+use App\Enums\AdminUserStatus;
 use App\Models\AdminUser;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
@@ -27,6 +28,7 @@ class AdminUserFactory extends Factory
             'username'          => fake()->unique()->userName(),
             'email'             => fake()->unique()->safeEmail(),
             'name'              => fake()->name(),
+            'status'            => AdminUserStatus::Active,
             'password'          => 'password', // 会被 hashed cast 自动哈希
             'email_verified_at' => now(),
             'remember_token'    => Str::random(10),
@@ -52,6 +54,16 @@ class AdminUserFactory extends Factory
             'two_factor_secret'         => encrypt('test-secret'),
             'two_factor_recovery_codes' => encrypt(json_encode(['code1', 'code2'])),
             'two_factor_confirmed_at'   => now(),
+        ]);
+    }
+
+    /**
+     * 禁用管理员状态
+     */
+    public function disabled(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => AdminUserStatus::Disabled,
         ]);
     }
 }

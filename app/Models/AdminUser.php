@@ -2,10 +2,12 @@
 
 namespace App\Models;
 
+use App\Enums\AdminUserStatus;
 use Database\Factories\AdminUserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -23,6 +25,8 @@ use Stephenjude\FilamentTwoFactorAuthentication\TwoFactorAuthenticatable;
  * @property string $email
  * @property string $password
  * @property string $name
+ * @property AdminUserStatus|null $status
+ * @property int|null $department_id
  * @property string|null $two_factor_secret
  * @property string|null $two_factor_recovery_codes
  * @property Carbon|null $two_factor_confirmed_at
@@ -70,6 +74,7 @@ class AdminUser extends Authenticatable implements FilamentUser
             'email_verified_at'       => 'datetime',
             'two_factor_confirmed_at' => 'datetime',
             'password'                => 'hashed',
+            'status'                  => AdminUserStatus::class,
         ];
     }
 
@@ -78,7 +83,18 @@ class AdminUser extends Authenticatable implements FilamentUser
      */
     public function canAccessPanel(Panel $panel): bool
     {
-        return true; // Phase 1: 所有 admin_users 均可访问
+        return ($this->status ?? AdminUserStatus::Active) === AdminUserStatus::Active
+            && ! $this->trashed();
+    }
+
+    /**
+     * 所属主部门
+     *
+     * @return BelongsTo<Department, $this>
+     */
+    public function department(): BelongsTo
+    {
+        return $this->belongsTo(Department::class);
     }
 
     /**
