@@ -33,7 +33,7 @@ php artisan route:cache
 php artisan view:cache
 
 echo "[deploy] 重启 Queue Worker"
-supervisorctl restart filament-admin-worker
+supervisorctl restart filament-admin-worker:*
 
 echo "[deploy] 关闭维护模式"
 php artisan up
