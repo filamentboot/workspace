@@ -6,7 +6,10 @@ use App\Models\AdminUser;
 use App\Models\Menu;
 use Filament\Navigation\NavigationGroup;
 use Filament\Navigation\NavigationItem;
+use FilamentAdmin\PluginPlatform\Filament\Resources\Extensions\ExtensionResource;
+use FilamentAdmin\PluginPlatform\Filament\Resources\MarketEntries\MarketEntryResource;
 use Illuminate\Support\Facades\Route;
+use Throwable;
 
 /**
  * 后台动态导航构建器
@@ -24,7 +27,9 @@ class AdminNavigationBuilder
             return [];
         }
 
-        $items = Menu::query()
+        $groups = [];
+
+        $systemItems = Menu::query()
             ->active()
             ->whereNull('parent_id')
             ->orderBy('sort')
@@ -34,13 +39,17 @@ class AdminNavigationBuilder
             ->values()
             ->all();
 
-        if ($items === []) {
-            return [];
+        if ($systemItems !== []) {
+            $groups[] = NavigationGroup::make('系统管理')->items($systemItems);
         }
 
-        return [
-            NavigationGroup::make('系统管理')->items($items),
-        ];
+        $pluginMarketItems = $this->buildPluginMarketItems();
+
+        if ($pluginMarketItems !== []) {
+            $groups[] = NavigationGroup::make('插件市场')->items($pluginMarketItems);
+        }
+
+        return $groups;
     }
 
     /**
@@ -102,5 +111,44 @@ class AdminNavigationBuilder
         }
 
         return filled($menu->url) ? $menu->url : null;
+    }
+
+    /**
+     * @return list<NavigationItem>
+     */
+    protected function buildPluginMarketItems(): array
+    {
+        return array_values(array_filter([
+            $this->makePluginMarketItem(
+                label: '官方市场',
+                icon: 'heroicon-o-shopping-bag',
+                resourceClass: MarketEntryResource::class,
+                sort: 5,
+            ),
+            $this->makePluginMarketItem(
+                label: '扩展清单',
+                icon: 'heroicon-o-puzzle-piece',
+                resourceClass: ExtensionResource::class,
+                sort: 10,
+            ),
+        ]));
+    }
+
+    protected function makePluginMarketItem(
+        string $label,
+        string $icon,
+        string $resourceClass,
+        int $sort,
+    ): ?NavigationItem {
+        try {
+            $url = $resourceClass::getUrl('index');
+        } catch (Throwable) {
+            return null;
+        }
+
+        return NavigationItem::make($label)
+            ->icon($icon)
+            ->sort($sort)
+            ->url($url);
     }
 }

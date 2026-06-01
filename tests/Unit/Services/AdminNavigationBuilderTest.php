@@ -63,3 +63,25 @@ it('无效路由且没有备用地址的菜单不会出现在导航中', functio
 
     expect($labels)->not->toContain('失效菜单');
 });
+
+it('会合并插件市场内置导航入口', function () {
+    $user = AdminUser::factory()->create();
+
+    $groups = app(AdminNavigationBuilder::class)->build($user);
+
+    $groupLabels = collect($groups)
+        ->map(fn ($group) => $group->getLabel())
+        ->all();
+
+    $pluginMarketItems = collect($groups)
+        ->first(fn ($group) => $group->getLabel() === '插件市场')
+        ?->getItems() ?? [];
+
+    $pluginMarketLabels = collect($pluginMarketItems)
+        ->map(fn ($item) => $item->getLabel())
+        ->all();
+
+    expect($groupLabels)->toContain('插件市场')
+        ->and($pluginMarketLabels)->toContain('官方市场')
+        ->and($pluginMarketLabels)->toContain('扩展清单');
+});

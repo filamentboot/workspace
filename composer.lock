@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "232c4928386ee7eafb4fd6dd642f2e1e",
+    "content-hash": "c85c7009fa414808ff32b2ecf4758793",
     "packages": [
         {
             "name": "alizharb/filament-activity-log",
@@ -1337,6 +1337,43 @@
                 }
             ],
             "time": "2025-03-06T22:45:56+00:00"
+        },
+        {
+            "name": "filament-admin/plugin-platform",
+            "version": "dev-feature/phase-1-authentication",
+            "dist": {
+                "type": "path",
+                "url": "packages/plugin-platform",
+                "reference": "dfeb0fd0be95f54c0bf7d0f34feeffa443515fff"
+            },
+            "require": {
+                "filament/filament": "^5.0",
+                "illuminate/console": "^13.0",
+                "illuminate/database": "^13.0",
+                "illuminate/support": "^13.0",
+                "php": "^8.3"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "FilamentAdmin\\PluginPlatform\\PluginPlatformServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "FilamentAdmin\\PluginPlatform\\": "src/"
+                }
+            },
+            "license": [
+                "MIT"
+            ],
+            "description": "Plugin market package for FilamentAdmin.",
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
         },
         {
             "name": "filament/actions",
@@ -13383,7 +13420,9 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {},
+    "stability-flags": {
+        "filament-admin/plugin-platform": 20
+    },
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {

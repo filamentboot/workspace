@@ -65,11 +65,11 @@ protected array $policies = [
 
 ---
 
-## 插件如何注册自己的 Resource 权限
+## 插件市场纳管插件如何注册自己的 Resource 权限
 
-（与功能域 7 插件系统对接）
+（与插件市场基础包对接）
 
-插件向系统注册新的 Filament Resource 时，需要同时为该 Resource 生成权限点。推荐在插件的 ServiceProvider `boot()` 方法中执行：
+当普通插件或方案型插件向系统注册新的 Filament Resource 时，需要同时为该 Resource 生成权限点。推荐在插件的 ServiceProvider `boot()` 方法中执行：
 
 ```php
 public function boot(): void
@@ -89,7 +89,7 @@ public function boot(): void
 php artisan shield:generate --resource=PluginFooResource --panel=admin
 ```
 
-> **注意：** 插件生成的权限点命名规则与项目保持一致（snake_case + `_` 分隔），由 `config/filament-shield.php` 统一控制。
+> **注意：** 插件生成的权限点命名规则与项目保持一致（snake_case + `_` 分隔），由 `config/filament-shield.php` 统一控制。系统基础依赖不是市场商品，一般不走这条权限生成流程；只有真正向后台暴露 Resource 的市场插件才需要注册权限点。
 
 ---
 

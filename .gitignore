@@ -26,3 +26,17 @@ Homestead.json
 Homestead.yaml
 Thumbs.db
 /.worktrees
+
+# 内部文档（不对外发布）
+/doc/
+/AGENTS.md
+
+# 内部开发规划（AI 辅助开发产出，含部署细节）
+/docs/superpowers/
+
+# 插件市场开发包（独立仓库维护）
+/packages/
+
+# 插件市场集成测试（依赖未发布包，暂不公开）
+/tests/Feature/PluginPlatform/
+/tests/Unit/PluginPlatform/

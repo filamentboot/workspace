@@ -67,6 +67,7 @@ class AdminPanelProvider extends PanelProvider
                 'primary' => Color::Amber,
             ])
             ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
+            ->discoverResources(in: base_path('packages/plugin-platform/src/Filament/Resources'), for: 'FilamentAdmin\PluginPlatform\Filament\Resources')
             ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->navigation(function (AdminNavigationBuilder $builder): NavigationBuilder {
                 $user = Filament::auth()->user();
