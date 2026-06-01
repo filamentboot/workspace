@@ -20,6 +20,3 @@ triggers:
     branches:
       include:
         - main
-    tags:
-      include:
-        - v*

@@ -47,5 +47,6 @@ triggers:
     branches:
       exclude:
         - master
+        - main
       include:
         - .*
