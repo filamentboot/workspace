@@ -24,7 +24,7 @@ git fetch --tags
 git checkout "$TARGET"
 
 echo "[rollback] 安装对应版本依赖"
-composer install --no-dev --optimize-autoloader --no-interaction
+COMPOSER_ALLOW_SUPERUSER=1 composer2 install --no-dev --optimize-autoloader --no-interaction --ignore-platform-req=ext-intl
 
 echo "[rollback] 刷新缓存"
 php artisan config:cache

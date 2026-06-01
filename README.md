@@ -1,159 +1,110 @@
 # FilamentAdmin
 
-基于 Laravel 13 + Filament 5 的后台管理系统。
+[![Latest Version](https://img.shields.io/badge/version-dev-blue.svg)](https://packagist.org/packages/filament-admin/filament-admin)
+[![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](https://github.com/filament-admin/filament-admin/actions)
+[![License](https://img.shields.io/badge/license-MIT-green.svg)](LICENSE)
+[![PHP](https://img.shields.io/badge/PHP-8.3-blue.svg)](https://php.net)
+[![Laravel](https://img.shields.io/badge/Laravel-13-red.svg)](https://laravel.com)
+[![Filament](https://img.shields.io/badge/Filament-5-purple.svg)](https://filamentphp.com)
+
+基于 Laravel 13 + Filament 5 构建的开箱即用后台管理平台，提供完整的认证体系、权限管理和插件扩展能力。
+
+## 特色
+
+- **开箱即用**：克隆即可运行，内置登录、权限、日志等核心后台能力
+- **组合最优**：精选社区成熟包（Spatie Permission、Filament Shield 等），避免重复造轮子
+- **插件生态**：规划中的代码市场（store.xitongapp.com）将提供可组合的功能插件
+- **诚实可信**：文档严格区分已完成、已铺垫和规划中，不虚标进度
 
 ## 技术栈
 
 | 组件 | 版本 |
 |------|------|
-| PHP | 8.3.31 (php8.3-fpm) |
-| Laravel | 13.12.0 |
+| PHP | 8.3 |
+| Laravel | 13 |
 | Filament | 5.x |
-| MySQL | 8.0.46 (Docker, 端口 3380) |
-| Redis | 7.0.15 (本地, 端口 6379) |
-| Node.js | 20.20.2 (nvm) |
-| Nginx | 1.24.0 |
+| MySQL | 8.0 |
+| Redis | 7.x |
+| spatie/laravel-permission | 6.x |
+| bezhansalleh/filament-shield | 4.x |
+| stephenjude/filament-two-factor-authentication | latest |
+| spatie/laravel-activitylog | 4.x |
 
-## 本地访问
+## 快速开始
 
-- **管理面板：** http://filamentadmin.local/admin
-- **登录页：** http://filamentadmin.local/admin/login
+> **即将支持**：`composer create-project filament-admin/filament-admin my-admin`（Packagist 注册后可用）
 
-> Windows 浏览器访问需在 `C:\Windows\System32\drivers\etc\hosts` 添加：
-> ```
-> 127.0.0.1 filamentadmin.local
-> ```
-
-## 管理员账号
-
-| 字段 | 值 |
-|------|----|
-| 邮箱 | admin@admin.com |
-| 密码 | *(安装时设置)* |
-
-后台地址	http://filamentadmin.local/admin/login
-用户名	admin
-邮箱	admin@example.com
-密码	password
-
-## 环境配置
-
-```env
-APP_NAME=FilamentAdmin
-APP_URL=http://filamentadmin.local
-
-DB_CONNECTION=mysql
-DB_HOST=127.0.0.1
-DB_PORT=3380
-DB_DATABASE=filamentadmin
-DB_USERNAME=root
-DB_PASSWORD=123456
-
-CACHE_STORE=redis
-SESSION_DRIVER=redis
-QUEUE_CONNECTION=redis
-
-REDIS_HOST=127.0.0.1
-REDIS_PORT=6379
-REDIS_PASSWORD=123456
-REDIS_DB=15
-```
-
-## 本地安装步骤
+**当前手动安装步骤：**
 
 ```bash
-# 1. 安装依赖（取消系统代理，避免超时）
-unset HTTP_PROXY HTTPS_PROXY http_proxy https_proxy
-composer install --no-interaction --prefer-dist
+# 1. 克隆项目
+git clone https://github.com/filament-admin/filament-admin.git
+cd filament-admin
 
-# 2. 复制环境配置
+# 2. 安装 PHP 依赖
+composer install
+
+# 3. 配置环境
 cp .env.example .env
 php artisan key:generate
 
-# 3. 运行数据库迁移
+# 4. 配置数据库（编辑 .env 中的 DB_* 配置）
 php artisan migrate
 
-# 4. 创建管理员用户
+# 5. 初始化数据
+php artisan db:seed
+
+# 6. 创建超级管理员
 php artisan make:filament-user
 
-# 5. 构建前端资源
+# 7. 安装前端依赖并构建
 npm install && npm run build
 ```
 
-## Nginx 配置
+配置 Web 服务器（Nginx/Apache）将根目录指向 `public/` 目录，访问 `/admin` 即可进入后台。
 
-配置文件路径：`/etc/nginx/conf.d/filamentadmin.conf`
+## 已完成能力
 
-```nginx
-server {
-    listen 80;
-    server_name filamentadmin.local;
-    root /home/john/projects/personal/filament-admin/public;
-    index index.php index.html;
+### 已完成
 
-    access_log /var/log/nginx/filamentadmin-access.log;
-    error_log  /var/log/nginx/filamentadmin-error.log;
+| 功能 | 说明 |
+|------|------|
+| 后台登录 | 支持 username 或 email 双模式登录 |
+| 管理员模型 | `AdminUser`，独立 `admin` guard + `admin_users` 表，含软删除 |
+| 角色与权限 | Spatie Permission + Filament Shield，`admin` guard 隔离 |
+| 双因素认证基础 | stephenjude/filament-two-factor-authentication 接入 |
+| 登录日志 | 记录每次后台登录事件 |
+| 软删除与回收站 | 管理员支持软删除 |
 
-    location / {
-        try_files $uri $uri/ /index.php?$query_string;
-    }
+### 已铺垫（底层就绪，UI 待建）
 
-    location ~ /\.(env|git) {
-        deny all;
-    }
+| 功能 | 说明 |
+|------|------|
+| 操作日志 | spatie/laravel-activitylog 4.x 已集成，Resource UI 待建 |
+| 登录日志 Resource | 数据已记录，后台列表页面待建 |
+| 管理员 Resource | 模型和权限层就绪，CRUD 界面待建 |
 
-    include /etc/nginx/snippets/php83.conf;
-}
-```
+### 规划中
 
----
+- 菜单管理、部门管理、数据权限
+- 系统配置
+- 媒体库
+- Sanctum / API 层
+- 插件市场（独立 Composer 基础包，store.xitongapp.com）
+- 演示站（demo.xitongapp.com）
+- Packagist 发布
 
-## About Laravel
+## 文档
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- [项目概览](docs/guide/overview.md)
+- [贡献指南](CONTRIBUTING.md)
+- [安全政策](SECURITY.md)
+- [行为准则](CODE_OF_CONDUCT.md)
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## 贡献
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+欢迎提交 Issue 和 Pull Request！请先阅读 [贡献指南](CONTRIBUTING.md)。
 
-## Learning Laravel
+## 许可证
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
-
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
-
-```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
-```
-
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
-
-## Contributing
-
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
-
-## Code of Conduct
-
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
-
-## Security Vulnerabilities
-
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
-
-## License
-
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+本项目基于 [MIT 许可证](LICENSE) 开源。

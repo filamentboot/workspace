@@ -1,32 +1,22 @@
 version: '1.0'
 name: master-pipeline
 displayName: MasterPipeline
+stages:
+  - stage:
+    name: compile
+    displayName: 部署到生产服务器
+    steps:
+      - step: build@general
+        name: ssh_deploy
+        displayName: SSH 部署
+        commands:
+          - mkdir -p ~/.ssh
+          - printf '%s' "${DEPLOY_KEY}" > ~/.ssh/deploy_key
+          - chmod 600 ~/.ssh/deploy_key
+          - ssh-keyscan -H ${DEPLOY_HOST} >> ~/.ssh/known_hosts
+          - ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${DEPLOY_USER}@${DEPLOY_HOST} "bash /data/filament-admin/deploy.sh"
 triggers:
-  trigger: auto
   push:
     branches:
       include:
         - main
-stages:
-  - name: deploy
-    displayName: 部署到生产服务器
-    strategy: naturally
-    trigger: auto
-    steps:
-      - step: build@php
-        name: build_php
-        displayName: PHP 构建
-        phpVersion: '8.4'
-        commands:
-          - mkdir -p ~/.ssh && chmod 700 ~/.ssh
-          - printf '%s' "${DEPLOY_KEY}" > ~/.ssh/deploy_key
-          - chmod 600 ~/.ssh/deploy_key
-          - ssh -i ~/.ssh/deploy_key -o StrictHostKeyChecking=no ${DEPLOY_USER}@${DEPLOY_HOST} 'bash /data/filament-admin/deploy.sh'
-        artifacts:
-          - name: BUILD_ARTIFACT
-            path:
-              - ./
-        caches: []
-        notify: []
-        strategy:
-          retry: '0'
