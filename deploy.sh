@@ -18,10 +18,14 @@ echo "[deploy] 拉取最新代码"
 git pull origin main
 
 echo "[deploy] 安装生产依赖"
-composer install --no-dev --optimize-autoloader --no-interaction
+COMPOSER_ALLOW_SUPERUSER=1 composer2 install --no-dev --optimize-autoloader --no-interaction --ignore-platform-req=ext-intl
 
 echo "[deploy] 执行数据库迁移"
 php artisan migrate --force
+
+echo "[deploy] 修复目录权限"
+chown -R www-data:www-data storage bootstrap/cache
+chmod -R 775 storage bootstrap/cache
 
 echo "[deploy] 刷新缓存"
 php artisan config:cache
