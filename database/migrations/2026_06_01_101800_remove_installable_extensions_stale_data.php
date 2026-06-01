@@ -16,6 +16,8 @@ return new class extends Migration
      */
     public function up(): void
     {
+        // 故意使用字符串字面量而非 ExtensionStatus::Installable 枚举，
+        // 避免枚举重构后导致历史迁移行为改变。
         DB::table('plugin_platform_extensions')
             ->where('status', 'installable')
             ->delete();
