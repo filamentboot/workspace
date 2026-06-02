@@ -12,7 +12,7 @@ test('login page is accessible', function () {
 
 test('allows login with username', function () {
     $user = AdminUser::factory()->create([
-        'username' => 'admin',
+        'account'  => 'admin',
         'email'    => 'admin@example.com',
         'password' => 'password',
     ]);
@@ -30,7 +30,7 @@ test('allows login with username', function () {
 
 test('allows login with email', function () {
     $user = AdminUser::factory()->create([
-        'username' => 'admin',
+        'account'  => 'admin',
         'email'    => 'admin@example.com',
         'password' => 'password',
     ]);
@@ -48,7 +48,7 @@ test('allows login with email', function () {
 
 test('fails login with invalid password', function () {
     AdminUser::factory()->create([
-        'username' => 'admin',
+        'account'  => 'admin',
         'password' => 'password',
     ]);
 
@@ -65,7 +65,7 @@ test('fails login with invalid password', function () {
 
 test('prevents username enumeration attack', function () {
     AdminUser::factory()->create([
-        'username' => 'existing',
+        'account'  => 'existing',
         'password' => 'password',
     ]);
 
@@ -84,7 +84,7 @@ test('prevents username enumeration attack', function () {
 
 test('logs successful login to database', function () {
     $user = AdminUser::factory()->create([
-        'username' => 'admin',
+        'account'  => 'admin',
         'password' => 'password',
     ]);
 

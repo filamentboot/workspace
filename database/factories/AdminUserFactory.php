@@ -25,9 +25,9 @@ class AdminUserFactory extends Factory
     public function definition(): array
     {
         return [
-            'username'          => fake()->unique()->userName(),
+            'account'           => fake()->unique()->userName(),
             'email'             => fake()->unique()->safeEmail(),
-            'name'              => fake()->name(),
+            'nickname'          => fake()->name(),
             'status'            => AdminUserStatus::Active,
             'password'          => 'password', // 会被 hashed cast 自动哈希
             'email_verified_at' => now(),

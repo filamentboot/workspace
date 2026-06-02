@@ -8,7 +8,7 @@ use Stephenjude\FilamentTwoFactorAuthentication\Actions\DisableTwoFactorAuthenti
 test('complete authentication flow without 2FA', function () {
     // 1. 创建未启用 2FA 的用户
     $user = AdminUser::factory()->create([
-        'username' => 'testuser',
+        'account'  => 'testuser',
         'email'    => 'test@example.com',
         'password' => 'password123',
     ]);
@@ -39,7 +39,7 @@ test('complete authentication flow without 2FA', function () {
 
 test('complete authentication flow with email login', function () {
     $user = AdminUser::factory()->create([
-        'username' => 'testuser',
+        'account'  => 'testuser',
         'email'    => 'test@example.com',
         'password' => 'password123',
     ]);
@@ -52,7 +52,7 @@ test('complete authentication flow with email login', function () {
 
     $this->assertAuthenticatedAs($user, 'admin');
 
-    // 登录日志应优先记录 username（成功登录后可从 $event->user 获取）
+    // 登录日志应优先记录 account（成功登录后可从 $event->user 获取）
     $log = LoginLog::where('status', 'success')->latest()->first();
     expect($log->username)->toBe('testuser');
 });
@@ -76,7 +76,7 @@ test('failed login attempts are logged correctly', function () {
 
 test('complete authentication flow with 2FA enabled', function () {
     $user = AdminUser::factory()->withTwoFactor()->create([
-        'username' => 'admin2fa',
+        'account'  => 'admin2fa',
         'password' => 'password',
     ]);
 

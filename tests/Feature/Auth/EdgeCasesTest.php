@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Auth;
 
 test('soft deleted user cannot login', function () {
     $user = AdminUser::factory()->create([
-        'username' => 'deleted',
+        'account'  => 'deleted',
         'password' => 'password',
     ]);
 
@@ -23,7 +23,7 @@ test('soft deleted user cannot login', function () {
 
 test('logs IPv6 addresses correctly', function () {
     $user = AdminUser::factory()->create([
-        'username' => 'admin',
+        'account'  => 'admin',
         'password' => 'password',
     ]);
 
@@ -32,7 +32,7 @@ test('logs IPv6 addresses correctly', function () {
 
     // 通过 guard 直接认证，触发 Login 事件 → LogAdminLogin
     Auth::guard('admin')->attempt([
-        'username' => 'admin',
+        'account'  => 'admin',
         'password' => 'password',
     ]);
 
@@ -42,7 +42,7 @@ test('logs IPv6 addresses correctly', function () {
 
 test('handles empty user agent', function () {
     $user = AdminUser::factory()->create([
-        'username' => 'admin',
+        'account'  => 'admin',
         'password' => 'password',
     ]);
 
@@ -50,7 +50,7 @@ test('handles empty user agent', function () {
     $this->app['request']->headers->remove('User-Agent');
 
     Auth::guard('admin')->attempt([
-        'username' => 'admin',
+        'account'  => 'admin',
         'password' => 'password',
     ]);
 
@@ -60,7 +60,7 @@ test('handles empty user agent', function () {
 
 test('username is case insensitive on MySQL utf8mb4_unicode_ci', function () {
     AdminUser::factory()->create([
-        'username' => 'Admin',
+        'account'  => 'Admin',
         'password' => 'password',
     ]);
 

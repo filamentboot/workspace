@@ -7,7 +7,7 @@ use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
 
 test('logs successful login event', function () {
-    $user = AdminUser::factory()->create(['username' => 'admin']);
+    $user = AdminUser::factory()->create(['account' => 'admin']);
 
     $event = new Login('admin', $user, false);
 
@@ -23,7 +23,7 @@ test('logs successful login event', function () {
 });
 
 test('logs failed login event with username', function () {
-    $event = new Failed('admin', null, ['username' => 'nonexistent', 'password' => 'wrong']);
+    $event = new Failed('admin', null, ['account' => 'nonexistent', 'password' => 'wrong']);
 
     $listener = new LogAdminLogin;
     $listener->handle($event);

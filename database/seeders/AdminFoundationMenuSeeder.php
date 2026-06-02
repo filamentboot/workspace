@@ -134,14 +134,6 @@ class AdminFoundationMenuSeeder extends Seeder
                 'target'          => 'self',
             ],
             [
-                'title'           => '数据权限',
-                'icon'            => 'heroicon-o-adjustments-horizontal',
-                'route_name'      => 'filament.admin.resources.role-data-scopes.index',
-                'url'             => null,
-                'permission_name' => 'view_any_role_data_scope',
-                'target'          => 'self',
-            ],
-            [
                 'title'           => '操作日志',
                 'icon'            => 'heroicon-o-clock',
                 'route_name'      => null,
@@ -192,10 +184,6 @@ class AdminFoundationMenuSeeder extends Seeder
             ['_parent_title' => '部门管理', 'title' => '删除', 'permission_name' => 'delete_department', 'sort' => 50],
             ['_parent_title' => '部门管理', 'title' => '恢复', 'permission_name' => 'restore_department', 'sort' => 60],
             ['_parent_title' => '部门管理', 'title' => '排序', 'permission_name' => 'reorder_department', 'sort' => 70],
-            // 数据权限
-            ['_parent_title' => '数据权限', 'title' => '列表', 'permission_name' => 'view_any_role_data_scope', 'sort' => 10],
-            ['_parent_title' => '数据权限', 'title' => '查看', 'permission_name' => 'view_role_data_scope', 'sort' => 20],
-            ['_parent_title' => '数据权限', 'title' => '编辑', 'permission_name' => 'update_role_data_scope', 'sort' => 30],
             // 操作日志
             ['_parent_title' => '操作日志', 'title' => '列表', 'permission_name' => 'view_any_activity_log', 'sort' => 10],
             ['_parent_title' => '操作日志', 'title' => '查看', 'permission_name' => 'view_activity_log', 'sort' => 20],

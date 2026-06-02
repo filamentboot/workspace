@@ -43,26 +43,26 @@ it('登录日志支持按管理员结果IP和时间范围筛选', function () {
     $viewer = AdminUser::factory()->create();
     $viewer->assignRole($role);
 
-    $alpha = AdminUser::factory()->create(['username' => 'alpha']);
-    $beta  = AdminUser::factory()->create(['username' => 'beta']);
+    $alpha = AdminUser::factory()->create(['account' => 'alpha']);
+    $beta  = AdminUser::factory()->create(['account' => 'beta']);
 
     $alphaLog = LoginLog::factory()->create([
         'admin_user_id' => $alpha->id,
-        'username'      => $alpha->username,
+        'username'      => $alpha->account,
         'status'        => 'success',
         'ip_address'    => '10.0.0.1',
         'created_at'    => now()->subDays(2),
     ]);
     $betaLog = LoginLog::factory()->create([
         'admin_user_id' => $beta->id,
-        'username'      => $beta->username,
+        'username'      => $beta->account,
         'status'        => 'failed',
         'ip_address'    => '10.0.0.2',
         'created_at'    => now()->subDay(),
     ]);
     $latestAlphaLog = LoginLog::factory()->create([
         'admin_user_id' => $alpha->id,
-        'username'      => $alpha->username,
+        'username'      => $alpha->account,
         'status'        => 'success',
         'ip_address'    => '192.168.1.3',
         'created_at'    => now(),

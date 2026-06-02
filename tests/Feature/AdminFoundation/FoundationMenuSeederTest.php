@@ -11,6 +11,6 @@ it('基础管理菜单种子创建核心菜单', function () {
         ->and(Menu::query()->where('title', '角色管理')->exists())->toBeTrue()
         ->and(Menu::query()->where('title', '菜单规则')->exists())->toBeTrue()
         ->and(Menu::query()->where('title', '部门管理')->exists())->toBeTrue()
-        ->and(Menu::query()->where('title', '数据权限')->exists())->toBeTrue()
-        ->and(Menu::query()->where('title', '操作日志')->exists())->toBeTrue();
+        ->and(Menu::query()->where('title', '操作日志')->exists())->toBeTrue()
+        ->and(Menu::query()->where('title', '数据权限')->exists())->toBeFalse();
 });

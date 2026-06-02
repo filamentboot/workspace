@@ -36,7 +36,7 @@ class AdminUserResource extends Resource
 
     protected static ?int $navigationSort = 10;
 
-    protected static ?string $recordTitleAttribute = 'username';
+    protected static ?string $recordTitleAttribute = 'account';
 
     protected static ?string $modelLabel = '管理员';
 
@@ -46,8 +46,8 @@ class AdminUserResource extends Resource
     {
         return $schema
             ->components([
-                TextInput::make('username')
-                    ->label('用户名')
+                TextInput::make('account')
+                    ->label('账号')
                     ->required()
                     ->unique(ignoreRecord: true)
                     ->maxLength(255),
@@ -57,10 +57,14 @@ class AdminUserResource extends Resource
                     ->required()
                     ->unique(ignoreRecord: true)
                     ->maxLength(255),
-                TextInput::make('name')
-                    ->label('姓名')
+                TextInput::make('nickname')
+                    ->label('昵称')
                     ->required()
                     ->maxLength(255),
+                TextInput::make('mobile')
+                    ->label('手机号')
+                    ->tel()
+                    ->maxLength(20),
                 TextInput::make('password')
                     ->label('密码')
                     ->password()
@@ -95,14 +99,14 @@ class AdminUserResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('username')
-                    ->label('用户名')
+                TextColumn::make('account')
+                    ->label('账号')
                     ->searchable(),
                 TextColumn::make('email')
                     ->label('邮箱')
                     ->searchable(),
-                TextColumn::make('name')
-                    ->label('姓名')
+                TextColumn::make('nickname')
+                    ->label('昵称')
                     ->searchable(),
                 TextColumn::make('status')
                     ->label('状态')
@@ -115,6 +119,14 @@ class AdminUserResource extends Resource
                 TextColumn::make('roles.name')
                     ->label('角色')
                     ->badge(),
+                TextColumn::make('last_login_at')
+                    ->label('最后登录')
+                    ->dateTime('Y-m-d H:i')
+                    ->sortable()
+                    ->placeholder('-'),
+                TextColumn::make('login_failures')
+                    ->label('失败次数')
+                    ->placeholder(0),
                 TextColumn::make('created_at')
                     ->label('创建时间')
                     ->dateTime('Y-m-d H:i:s')

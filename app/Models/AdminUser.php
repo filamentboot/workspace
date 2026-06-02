@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Enums\AdminUserStatus;
 use Database\Factories\AdminUserFactory;
 use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasName;
 use Filament\Panel;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -18,15 +19,21 @@ use Stephenjude\FilamentTwoFactorAuthentication\TwoFactorAuthenticatable;
 /**
  * 管理员用户模型
  *
- * 支持 username 或 email 登录，集成 Filament 面板认证。
+ * 支持 account 或 email 登录，集成 Filament 面板认证。
  *
  * @property int $id
- * @property string $username
+ * @property string $account
  * @property string $email
  * @property string $password
- * @property string $name
+ * @property string $nickname
  * @property AdminUserStatus|null $status
  * @property int|null $department_id
+ * @property string|null $avatar
+ * @property string|null $mobile
+ * @property Carbon|null $last_login_at
+ * @property string|null $last_login_ip
+ * @property int $login_failures
+ * @property bool $onboarding_completed
  * @property string|null $two_factor_secret
  * @property string|null $two_factor_recovery_codes
  * @property Carbon|null $two_factor_confirmed_at
@@ -36,7 +43,7 @@ use Stephenjude\FilamentTwoFactorAuthentication\TwoFactorAuthenticatable;
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
  */
-class AdminUser extends Authenticatable implements FilamentUser
+class AdminUser extends Authenticatable implements FilamentUser, HasName
 {
     /** @use HasFactory<AdminUserFactory> */
     use HasFactory;
@@ -73,9 +80,21 @@ class AdminUser extends Authenticatable implements FilamentUser
         return [
             'email_verified_at'       => 'datetime',
             'two_factor_confirmed_at' => 'datetime',
+            'last_login_at'           => 'datetime',
             'password'                => 'hashed',
             'status'                  => AdminUserStatus::class,
+            'onboarding_completed'    => 'boolean',
         ];
+    }
+
+    /**
+     * 返回 Filament 界面显示的用户名称
+     *
+     * 优先使用昵称，回退到账号。
+     */
+    public function getFilamentName(): string
+    {
+        return $this->nickname ?? $this->account ?? '';
     }
 
     /**

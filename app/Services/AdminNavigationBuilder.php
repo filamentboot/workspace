@@ -37,6 +37,16 @@ class AdminNavigationBuilder
             ->get();
 
         foreach ($topMenus as $topMenu) {
+            // 识别"插件市场"占位菜单：无 url/route_name 且无子菜单
+            // 用硬编码的插件市场导航条目替代，保留其在 sort 排序中的位置
+            if ($this->isPluginMarketPlaceholder($topMenu)) {
+                $pluginMarketItems = $this->buildPluginMarketItems();
+                if ($pluginMarketItems !== []) {
+                    $groups[] = NavigationGroup::make($topMenu->title)->items($pluginMarketItems);
+                }
+                continue;
+            }
+
             $items = Menu::query()
                 ->active()
                 ->where('type', 'menu')
@@ -55,13 +65,30 @@ class AdminNavigationBuilder
             $groups[] = NavigationGroup::make($topMenu->title)->items($items);
         }
 
-        $pluginMarketItems = $this->buildPluginMarketItems();
+        // 如果 DB 中没有"插件市场"占位菜单，则回退到追加末尾
+        $hasPluginMarketInMenu = $topMenus->contains(fn (Menu $m) => $this->isPluginMarketPlaceholder($m));
 
-        if ($pluginMarketItems !== []) {
-            $groups[] = NavigationGroup::make('插件市场')->items($pluginMarketItems);
+        if (! $hasPluginMarketInMenu) {
+            $pluginMarketItems = $this->buildPluginMarketItems();
+            if ($pluginMarketItems !== []) {
+                $groups[] = NavigationGroup::make('插件市场')->items($pluginMarketItems);
+            }
         }
 
         return $groups;
+    }
+
+    /**
+     * 判断一级菜单是否是插件市场占位节点
+     *
+     * 插件市场的实际导航条目由 buildPluginMarketItems() 硬编码提供，
+     * DB 中只存放一个无 url/route_name 的空容器节点，用于控制排序位置。
+     */
+    protected function isPluginMarketPlaceholder(Menu $menu): bool
+    {
+        return blank($menu->url)
+            && blank($menu->route_name)
+            && ! Menu::query()->where('parent_id', $menu->id)->exists();
     }
 
     /**

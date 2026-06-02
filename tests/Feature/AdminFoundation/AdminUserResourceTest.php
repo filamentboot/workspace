@@ -54,9 +54,9 @@ it('管理员表单可以分配角色', function () {
             'record' => $admin->getRouteKey(),
         ])
         ->fillForm([
-            'username' => $admin->username,
+            'account'  => $admin->account,
             'email'    => $admin->email,
-            'name'     => $admin->name,
+            'nickname' => $admin->nickname,
             'status'   => AdminUserStatus::Active->value,
             'roles'    => [$targetRole->id],
         ])
@@ -92,9 +92,9 @@ it('没有重置密码权限的管理员不能修改目标管理员密码', func
     $method->setAccessible(true);
 
     $mutatedData = $method->invoke($component->instance(), [
-        'username' => $actor->username,
+        'account'  => $actor->account,
         'email'    => $actor->email,
-        'name'     => $actor->name,
+        'nickname' => $actor->nickname,
         'status'   => $actor->status?->value ?? AdminUserStatus::Active->value,
         'password' => 'new-secret',
     ]);
@@ -124,9 +124,9 @@ it('拥有重置密码权限的管理员可以修改目标管理员密码', func
             'record' => $actor->getRouteKey(),
         ])
         ->fillForm([
-            'username' => $actor->username,
+            'account'  => $actor->account,
             'email'    => $actor->email,
-            'name'     => $actor->name,
+            'nickname' => $actor->nickname,
             'status'   => AdminUserStatus::Active->value,
             'password' => 'new-secret',
         ])

@@ -2,6 +2,8 @@
 
 namespace App\Filament\Resources\Menus\Pages;
 
+use App\Models\Menu;
+use App\Services\ActivityLogger;
 use App\Filament\Resources\Menus\MenuResource;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -36,5 +38,70 @@ class MenuTree extends TreePage
         $this->records = null;
 
         return parent::getRecords();
+    }
+
+    /**
+     * 覆盖树排序，排序完成后写入操作日志
+     *
+     * @param  array<int, mixed>|null  $list
+     * @return array<string, mixed>
+     */
+    public function updateTree(?array $list = null): array
+    {
+        $before = $this->buildReorderSnapshot();
+
+        $result = parent::updateTree($list);
+
+        if ($result['reload'] ?? false) {
+            $after = $this->buildReorderSnapshot();
+            $this->logReorderActivity($before, $after);
+        }
+
+        return $result;
+    }
+
+    /**
+     * 构建当前菜单排序快照（按 sort 升序）
+     *
+     * @return array<int, array<string, mixed>>
+     */
+    protected function buildReorderSnapshot(): array
+    {
+        return Menu::query()
+            ->orderBy('sort')
+            ->get(['id', 'parent_id', 'title', 'sort'])
+            ->map(fn (Menu $menu): array => [
+                'id'        => $menu->id,
+                'parent_id' => $menu->parent_id,
+                'title'     => $menu->title,
+                'sort'      => $menu->sort,
+            ])
+            ->values()
+            ->all();
+    }
+
+    /**
+     * 记录菜单拖拽排序操作日志
+     *
+     * @param  array<int, array<string, mixed>>  $before
+     * @param  array<int, array<string, mixed>>  $after
+     */
+    protected function logReorderActivity(array $before, array $after): void
+    {
+        $logger  = app(ActivityLogger::class);
+        $causer  = $logger->currentCauser();
+        $subject = Menu::query()->orderBy('sort')->first();
+
+        if (! $causer || ! $subject) {
+            return;
+        }
+
+        $logger->logChanges(
+            causer:  $causer,
+            subject: $subject,
+            action:  'reordered',
+            before:  ['order' => $before],
+            after:   ['order' => $after],
+        );
     }
 }

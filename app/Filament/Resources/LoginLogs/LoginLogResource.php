@@ -44,7 +44,7 @@ class LoginLogResource extends Resource
     {
         return $schema
             ->components([
-                TextInput::make('adminUser.username')
+                TextInput::make('adminUser.account')
                     ->label('管理员'),
                 TextInput::make('username')
                     ->label('登录账号'),
@@ -67,7 +67,7 @@ class LoginLogResource extends Resource
     {
         return $table
             ->columns([
-                TextColumn::make('adminUser.username')
+                TextColumn::make('adminUser.account')
                     ->label('管理员')
                     ->searchable(),
                 TextColumn::make('username')
@@ -92,7 +92,7 @@ class LoginLogResource extends Resource
             ->filters([
                 SelectFilter::make('admin_user_id')
                     ->label('管理员')
-                    ->relationship(name: 'adminUser', titleAttribute: 'username')
+                    ->relationship(name: 'adminUser', titleAttribute: 'account')
                     ->searchable()
                     ->preload(),
                 SelectFilter::make('status')

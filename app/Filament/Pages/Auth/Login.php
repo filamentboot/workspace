@@ -10,7 +10,7 @@ use Illuminate\Validation\ValidationException;
 /**
  * 自定义登录页
  *
- * 支持 username 或 email 登录，
+ * 支持 account 或 email 登录，
  * 使用统一错误消息防止用户枚举攻击。
  */
 class Login extends BaseLogin
@@ -23,7 +23,7 @@ class Login extends BaseLogin
         return $schema
             ->components([
                 TextInput::make('login')
-                    ->label('用户名或邮箱')
+                    ->label('账号或邮箱')
                     ->required()
                     ->autofocus()
                     ->autocomplete('username'),
@@ -35,7 +35,7 @@ class Login extends BaseLogin
     /**
      * 获取认证凭据
      *
-     * 根据输入自动判断是 email 还是 username。
+     * 根据输入自动判断是 email 还是 account。
      *
      * @param  array<string, mixed>  $data
      * @return array<string, mixed>
@@ -43,7 +43,7 @@ class Login extends BaseLogin
     protected function getCredentialsFromFormData(array $data): array
     {
         $login     = $data['login'];
-        $loginType = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'username';
+        $loginType = filter_var($login, FILTER_VALIDATE_EMAIL) ? 'email' : 'account';
 
         return [
             $loginType => $login,

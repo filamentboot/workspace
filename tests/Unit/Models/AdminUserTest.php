@@ -9,11 +9,11 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 test('admin user can be created', function () {
     $user = AdminUser::factory()->create([
-        'username' => 'testadmin',
-        'email'    => 'admin@example.com',
+        'account' => 'testadmin',
+        'email'   => 'admin@example.com',
     ]);
 
-    expect($user->username)->toBe('testadmin')
+    expect($user->account)->toBe('testadmin')
         ->and($user->email)->toBe('admin@example.com')
         ->and($user->exists)->toBeTrue();
 });

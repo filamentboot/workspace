@@ -21,12 +21,12 @@ test('admin users provider uses AdminUser model', function () {
 
 test('admin guard can authenticate admin user', function () {
     $user = AdminUser::factory()->create([
-        'username' => 'testadmin',
+        'account'  => 'testadmin',
         'password' => 'password',
     ]);
 
     $authenticated = Auth::guard('admin')->attempt([
-        'username' => 'testadmin',
+        'account'  => 'testadmin',
         'password' => 'password',
     ]);
 

@@ -2,7 +2,7 @@
 
 use App\Enums\AdminUserStatus;
 use App\Filament\Resources\AdminUsers\Pages\EditAdminUser;
-use App\Filament\Resources\Menus\Pages\ListMenus;
+use App\Filament\Resources\Menus\Pages\MenuTree;
 use App\Models\AdminUser;
 use App\Models\Department;
 use App\Models\Menu;
@@ -19,22 +19,22 @@ beforeEach(function () {
 
 it('操作日志服务记录操作人和变更内容', function () {
     $admin  = AdminUser::factory()->create();
-    $target = AdminUser::factory()->create(['name' => '旧名称']);
+    $target = AdminUser::factory()->create(['nickname' => '旧名称']);
 
     app(ActivityLogger::class)->log(
         causer: $admin,
         subject: $target,
         action: 'updated',
-        before: ['name' => '旧名称'],
-        after: ['name' => '新名称'],
+        before: ['nickname' => '旧名称'],
+        after: ['nickname' => '新名称'],
     );
 
     $activity = Activity::query()->first();
 
     expect($activity)->not->toBeNull()
         ->and($activity->causer->is($admin))->toBeTrue()
-        ->and($activity->properties['before']['name'])->toBe('旧名称')
-        ->and($activity->properties['after']['name'])->toBe('新名称');
+        ->and($activity->properties['before']['nickname'])->toBe('旧名称')
+        ->and($activity->properties['after']['nickname'])->toBe('新名称');
 });
 
 it('操作日志清理命令删除过期记录', function () {
@@ -92,9 +92,9 @@ it('编辑管理员角色和密码会写入操作日志', function () {
             'record' => $target->getRouteKey(),
         ])
         ->fillForm([
-            'username' => $target->username,
+            'account'  => $target->account,
             'email'    => $target->email,
-            'name'     => $target->name,
+            'nickname' => $target->nickname,
             'status'   => AdminUserStatus::Active->value,
             'roles'    => [$targetRole->id],
             'password' => 'new-secret',
@@ -171,8 +171,8 @@ it('菜单拖拽排序会写入操作日志', function () {
     ]);
 
     Livewire::actingAs($actor, 'admin')
-        ->test(ListMenus::class)
-        ->call('reorderTable', [$second->id, $first->id]);
+        ->test(MenuTree::class)
+        ->call('updateTree', [['id' => $second->id], ['id' => $first->id]]);
 
     $activity = Activity::query()->where('event', 'reordered')->first();
 
