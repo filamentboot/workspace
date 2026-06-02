@@ -4,24 +4,31 @@ namespace App\Filament\Resources\Menus;
 
 use App\Filament\Resources\Menus\Pages\CreateMenu;
 use App\Filament\Resources\Menus\Pages\EditMenu;
-use App\Filament\Resources\Menus\Pages\ListMenus;
+use App\Filament\Resources\Menus\Pages\MenuTree;
 use App\Models\Menu;
-use App\Services\ActivityLogger;
 use BackedEnum;
+use Filament\Actions\BulkAction;
+use Filament\Actions\BulkActionGroup;
 use Filament\Actions\DeleteAction;
+use Filament\Actions\DeleteBulkAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\RestoreAction;
 use Filament\Forms\Components\Hidden;
+use Filament\Forms\Components\Radio;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Columns\ToggleColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Spatie\Permission\Models\Permission;
 use UnitEnum;
@@ -54,21 +61,47 @@ class MenuResource extends Resource
                     ->relationship(name: 'parent', titleAttribute: 'title')
                     ->searchable()
                     ->preload(),
+                Select::make('type')
+                    ->label('节点类型')
+                    ->options([
+                        'menu'   => '导航菜单',
+                        'action' => '操作节点',
+                    ])
+                    ->default('menu')
+                    ->required()
+                    ->live(),
                 TextInput::make('title')
                     ->label('菜单名称')
                     ->required()
                     ->maxLength(255),
                 TextInput::make('icon')
                     ->label('图标')
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->prefixIcon(fn (?string $state): string => filled($state) ? $state : 'heroicon-o-photo')
+                    ->hint('填写 Heroicon 名称，如 heroicon-o-home')
+                    ->visible(fn (Get $get): bool => $get('type') !== 'action'),
+                Radio::make('link_type')
+                    ->label('导航类型')
+                    ->options([
+                        'route' => '路由名称',
+                        'url'   => '自定义 URL',
+                    ])
+                    ->default(fn ($record): string => filled($record?->url) ? 'url' : 'route')
+                    ->inline()
+                    ->live()
+                    ->dehydrated(false)
+                    ->visible(fn (Get $get): bool => $get('type') !== 'action'),
                 TextInput::make('route_name')
                     ->label('路由名称')
-                    ->requiredWithout('url')
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->visible(fn (Get $get): bool => $get('type') !== 'action' && $get('link_type') !== 'url')
+                    ->requiredIf('link_type', 'route'),
                 TextInput::make('url')
                     ->label('URL')
-                    ->requiredWithout('route_name')
-                    ->maxLength(255),
+                    ->maxLength(255)
+                    ->url()
+                    ->visible(fn (Get $get): bool => $get('type') !== 'action' && $get('link_type') === 'url')
+                    ->requiredIf('link_type', 'url'),
                 Select::make('permission_name')
                     ->label('绑定权限')
                     ->options(fn (): array => Permission::query()
@@ -92,7 +125,8 @@ class MenuResource extends Resource
                         'blank' => '新窗口',
                     ])
                     ->default('self')
-                    ->required(),
+                    ->required()
+                    ->visible(fn (Get $get): bool => $get('type') !== 'action'),
                 Hidden::make('source')
                     ->default('core'),
             ]);
@@ -102,52 +136,80 @@ class MenuResource extends Resource
     {
         return $table
             ->columns([
+                IconColumn::make('icon')
+                    ->label('图标')
+                    ->icon(fn (?string $state): string => filled($state) ? $state : 'heroicon-o-minus')
+                    ->default('heroicon-o-minus')
+                    ->color('gray'),
                 TextColumn::make('title')
                     ->label('菜单名称')
                     ->searchable(),
-                TextColumn::make('parent.title')
-                    ->label('上级菜单')
-                    ->default('-'),
-                TextColumn::make('route_name')
-                    ->label('路由名称')
-                    ->default('-'),
-                TextColumn::make('url')
-                    ->label('URL')
-                    ->default('-'),
+                TextColumn::make('type')
+                    ->label('类型')
+                    ->formatStateUsing(fn (string $state): string => $state === 'action' ? '操作' : '菜单')
+                    ->badge()
+                    ->color(fn (string $state): string => $state === 'action' ? 'gray' : 'primary'),
+                TextColumn::make('navigation_target')
+                    ->label('导航目标')
+                    ->getStateUsing(fn (Menu $record): string => $record->route_name ?: ($record->url ?: '-'))
+                    ->url(fn (Menu $record): ?string => $record->url ?: null)
+                    ->openUrlInNewTab(fn (Menu $record): bool => $record->url && $record->target === 'blank')
+                    ->color(fn (Menu $record): ?string => $record->url ? 'primary' : null)
+                    ->copyable(fn (Menu $record): bool => filled($record->route_name))
+                    ->copyMessage('路由名已复制'),
                 TextColumn::make('permission_name')
                     ->label('绑定权限')
-                    ->default('-'),
+                    ->default('-')
+                    ->badge()
+                    ->color('warning'),
                 TextColumn::make('sort')
                     ->label('排序')
                     ->sortable(),
-                IconColumn::make('is_active')
+                ToggleColumn::make('is_active')
                     ->label('启用')
-                    ->boolean(),
+                    ->disabled(fn (): bool => ! (auth('admin')->user()?->can('update_menu') ?? false)),
                 TextColumn::make('source')
                     ->label('来源')
                     ->badge(),
             ])
             ->filters([
+                SelectFilter::make('type')
+                    ->label('类型')
+                    ->options([
+                        'menu'   => '导航菜单',
+                        'action' => '操作节点',
+                    ]),
+                SelectFilter::make('is_active')
+                    ->label('状态')
+                    ->options([
+                        '1' => '已启用',
+                        '0' => '已禁用',
+                    ]),
                 TrashedFilter::make(),
             ])
+            ->bulkActions([
+                BulkActionGroup::make([
+                    BulkAction::make('enable')
+                        ->label('批量启用')
+                        ->icon('heroicon-o-check-circle')
+                        ->color('success')
+                        ->requiresConfirmation()
+                        ->action(fn (Collection $records) => $records->each->update(['is_active' => true])),
+                    BulkAction::make('disable')
+                        ->label('批量禁用')
+                        ->icon('heroicon-o-x-circle')
+                        ->color('warning')
+                        ->requiresConfirmation()
+                        ->action(fn (Collection $records) => $records->each->update(['is_active' => false])),
+                    DeleteBulkAction::make(),
+                ]),
+            ])
             ->defaultSort('sort')
-            ->reorderable('sort')
-            ->beforeReordering(function (array $order): void {
-                static::rememberReorderSnapshot($order);
-            })
-            ->afterReordering(function (array $order): void {
-                static::logReorderActivity($order);
-            })
             ->recordActions([
                 EditAction::make(),
                 DeleteAction::make(),
                 RestoreAction::make(),
             ]);
-    }
-
-    public static function canReorder(): bool
-    {
-        return auth('admin')->user()?->can('reorder_menu') ?? false;
     }
 
     public static function getEloquentQuery(): Builder
@@ -162,69 +224,9 @@ class MenuResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListMenus::route('/'),
+            'index'  => MenuTree::route('/'),
             'create' => CreateMenu::route('/create'),
             'edit'   => EditMenu::route('/{record}/edit'),
         ];
-    }
-
-    /**
-     * 缓存排序前快照
-     *
-     * @param  array<int, string|int>  $order
-     */
-    protected static function rememberReorderSnapshot(array $order): void
-    {
-        request()->attributes->set('menu_reorder_before', static::buildReorderSnapshot($order));
-    }
-
-    /**
-     * 记录菜单排序日志
-     *
-     * @param  array<int, string|int>  $order
-     */
-    protected static function logReorderActivity(array $order): void
-    {
-        $logger = app(ActivityLogger::class);
-        $causer = $logger->currentCauser();
-        $record = Menu::query()->find($order[0] ?? null);
-
-        if (! $causer || ! $record) {
-            return;
-        }
-
-        $before = request()->attributes->get('menu_reorder_before', []);
-        $after  = static::buildReorderSnapshot($order);
-
-        $logger->logChanges(
-            causer: $causer,
-            subject: $record,
-            action: 'reordered',
-            before: ['order' => $before],
-            after: ['order' => $after],
-        );
-    }
-
-    /**
-     * 构建排序快照
-     *
-     * @param  array<int, string|int>  $order
-     * @return array<int, array<string, mixed>>
-     */
-    protected static function buildReorderSnapshot(array $order): array
-    {
-        return Menu::query()
-            ->whereKey($order)
-            ->orderBy('sort')
-            ->get(['id', 'parent_id', 'title', 'sort', 'is_active'])
-            ->map(fn (Menu $menu): array => [
-                'id'        => $menu->id,
-                'parent_id' => $menu->parent_id,
-                'title'     => $menu->title,
-                'sort'      => $menu->sort,
-                'is_active' => $menu->is_active,
-            ])
-            ->values()
-            ->all();
     }
 }

@@ -29,18 +29,30 @@ class AdminNavigationBuilder
 
         $groups = [];
 
-        $systemItems = Menu::query()
+        $topMenus = Menu::query()
             ->active()
-            ->whereNull('parent_id')
+            ->where('type', 'menu')
+            ->where('parent_id', 0)
             ->orderBy('sort')
-            ->get()
-            ->map(fn (Menu $menu): ?NavigationItem => $this->toNavigationItem($menu, $user))
-            ->filter()
-            ->values()
-            ->all();
+            ->get();
 
-        if ($systemItems !== []) {
-            $groups[] = NavigationGroup::make('系统管理')->items($systemItems);
+        foreach ($topMenus as $topMenu) {
+            $items = Menu::query()
+                ->active()
+                ->where('type', 'menu')
+                ->where('parent_id', $topMenu->id)
+                ->orderBy('sort')
+                ->get()
+                ->map(fn (Menu $child): ?NavigationItem => $this->toNavigationItem($child, $user))
+                ->filter()
+                ->values()
+                ->all();
+
+            if ($items === []) {
+                continue;
+            }
+
+            $groups[] = NavigationGroup::make($topMenu->title)->items($items);
         }
 
         $pluginMarketItems = $this->buildPluginMarketItems();
@@ -61,36 +73,37 @@ class AdminNavigationBuilder
             return null;
         }
 
-        $children = Menu::query()
-            ->active()
-            ->where('parent_id', $menu->id)
-            ->orderBy('sort')
-            ->get()
-            ->map(fn (Menu $child): ?NavigationItem => $this->toNavigationItem($child, $user))
-            ->filter()
-            ->values()
-            ->all();
-
         $url = $this->resolveUrl($menu);
 
-        if ($children === [] && blank($url)) {
+        if (blank($url)) {
             return null;
         }
 
-        $item = NavigationItem::make($menu->title)
-            ->icon(filled($menu->icon) ? $menu->icon : ($children !== [] ? 'heroicon-o-bars-3' : null))
+        return NavigationItem::make($menu->title)
+            ->icon(filled($menu->icon) ? $menu->icon : null)
             ->sort($menu->sort)
+            ->url($url, $menu->target === 'blank')
+            ->isActiveWhen(fn (): bool => $this->isItemActive($menu, $url))
             ->visible(true);
+    }
 
-        if ($children !== []) {
-            $item->childItems($children);
+    /**
+     * 判断菜单项是否处于激活状态
+     */
+    protected function isItemActive(Menu $menu, string $url): bool
+    {
+        if (filled($menu->route_name) && Route::has($menu->route_name)) {
+            $parts  = explode('.', $menu->route_name);
+            array_pop($parts);
+            $prefix = implode('.', $parts);
+
+            return request()->routeIs($prefix.'.*')
+                || request()->routeIs($menu->route_name);
         }
 
-        if (filled($url)) {
-            $item->url($url, $menu->target === 'blank');
-        }
+        $path = trim(parse_url($url, PHP_URL_PATH) ?? '', '/');
 
-        return $item;
+        return request()->is($path) || request()->is($path.'/*');
     }
 
     /**
@@ -146,9 +159,12 @@ class AdminNavigationBuilder
             return null;
         }
 
+        $path = trim(parse_url($url, PHP_URL_PATH) ?? '', '/');
+
         return NavigationItem::make($label)
             ->icon($icon)
             ->sort($sort)
-            ->url($url);
+            ->url($url)
+            ->isActiveWhen(fn (): bool => request()->is($path) || request()->is($path.'/*'));
     }
 }

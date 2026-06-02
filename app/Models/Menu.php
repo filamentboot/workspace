@@ -4,17 +4,18 @@ namespace App\Models;
 
 use Database\Factories\MenuFactory;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use SolutionForest\FilamentTree\Concern\ModelTree;
 
 /**
  * 后台菜单规则模型
  *
  * @property int $id
- * @property int|null $parent_id
+ * @property int $parent_id
  * @property string $title
  * @property string|null $icon
  * @property string|null $route_name
@@ -24,12 +25,16 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property bool $is_active
  * @property string $target
  * @property string $source
+ * @property string $type
+ * @property Menu|null $parent
+ * @property Collection<int, Menu> $children
  */
 class Menu extends Model
 {
     /** @use HasFactory<MenuFactory> */
     use HasFactory;
 
+    use ModelTree;
     use SoftDeletes;
 
     protected $guarded = [];
@@ -57,13 +62,19 @@ class Menu extends Model
     }
 
     /**
-     * 下级菜单
-     *
-     * @return HasMany<Menu, $this>
+     * 排序字段名（覆盖包默认的 order）
      */
-    public function children(): HasMany
+    public function determineOrderColumnName(): string
     {
-        return $this->hasMany(self::class, 'parent_id')->orderBy('sort');
+        return 'sort';
+    }
+
+    /**
+     * 根节点的 parent_id 标识值（UNSIGNED BIGINT 不能存 -1，用 0 代替）
+     */
+    public static function defaultParentKey(): int
+    {
+        return 0;
     }
 
     /**
