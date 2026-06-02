@@ -30,8 +30,8 @@ class SuperAdminSeeder extends Seeder
         $admin = AdminUser::firstOrCreate(
             ['email' => 'admin@example.com'],
             [
-                'username'          => 'admin',
-                'name'              => '超级管理员',
+                'account'           => 'admin',
+                'nickname'          => '超级管理员',
                 'password'          => 'password', // AdminUser 的 hashed cast 会自动 hash
                 'email_verified_at' => now(),
             ]

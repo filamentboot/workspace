@@ -22,8 +22,8 @@ class AdminUserSeeder extends Seeder
             AdminUser::firstOrCreate(
                 ['email' => 'admin@example.com'],
                 [
-                    'username'          => 'admin',
-                    'name'              => '系统管理员',
+                    'account'           => 'admin',
+                    'nickname'          => '系统管理员',
                     'password'          => 'password',
                     'email_verified_at' => now(),
                 ]
