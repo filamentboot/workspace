@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use AlizHarb\ActivityLog\ActivityLogPlugin;
 use App\Filament\Pages\Auth\Login;
+use App\Filament\Pages\Profile;
 use App\Models\AdminUser;
 use App\Services\AdminNavigationBuilder;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
@@ -41,6 +42,7 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login(Login::class)           // 使用自定义登录页（支持 username/email）
+            ->profile(Profile::class)       // 使用自定义个人资料页
             ->authGuard('admin')            // 使用 admin guard
             ->authPasswordBroker('admin_users')
             ->plugin(
