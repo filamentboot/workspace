@@ -1,13 +1,11 @@
 <?php
 
 use App\Enums\AdminUserStatus;
-use App\Enums\DataScope;
 use App\Filament\Resources\AdminUsers\Pages\EditAdminUser;
 use App\Filament\Resources\Menus\Pages\ListMenus;
 use App\Models\AdminUser;
 use App\Models\Department;
 use App\Models\Menu;
-use App\Models\RoleDataScope;
 use App\Services\ActivityLogger;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
@@ -153,44 +151,6 @@ it('部门创建编辑删除恢复会写入操作日志', function () {
         'deleted',
         'restored',
     ]);
-});
-
-it('数据权限创建和更新会写入操作日志', function () {
-    $superRole = Role::create([
-        'name'       => config('filament-admin.super_admin_role'),
-        'guard_name' => 'admin',
-    ]);
-    $role = Role::create([
-        'name'       => '区域经理',
-        'guard_name' => 'admin',
-    ]);
-    $department = Department::factory()->create();
-    $actor      = AdminUser::factory()->create();
-    $actor->assignRole($superRole);
-
-    $this->actingAs($actor, 'admin');
-
-    $scope = RoleDataScope::query()->create([
-        'role_id'        => $role->id,
-        'scope'          => DataScope::Self,
-        'department_ids' => null,
-    ]);
-
-    $scope->update([
-        'scope'          => DataScope::CustomDepartments,
-        'department_ids' => [$department->id],
-    ]);
-
-    $updatedActivity = Activity::query()->where('event', 'updated')->latest('id')->first();
-
-    expect(Activity::query()->orderBy('id')->pluck('event')->all())->toBe([
-        'created',
-        'updated',
-    ])
-        ->and($updatedActivity)->not->toBeNull()
-        ->and($updatedActivity->properties['before']['scope'])->toBe(DataScope::Self->value)
-        ->and($updatedActivity->properties['after']['scope'])->toBe(DataScope::CustomDepartments->value)
-        ->and($updatedActivity->properties['after']['department_ids'])->toBe([$department->id]);
 });
 
 it('菜单拖拽排序会写入操作日志', function () {

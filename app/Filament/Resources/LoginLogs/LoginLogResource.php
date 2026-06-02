@@ -6,7 +6,6 @@ use App\Filament\Resources\LoginLogs\Pages\ListLoginLogs;
 use App\Filament\Resources\LoginLogs\Pages\ViewLoginLog;
 use App\Models\AdminUser;
 use App\Models\LoginLog;
-use App\Services\DataScopeResolver;
 use BackedEnum;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DateTimePicker;
@@ -153,33 +152,13 @@ class LoginLogResource extends Resource
             return $query->whereRaw('1 = 0');
         }
 
-        $scope = app(DataScopeResolver::class)->resolve($user);
-
-        if ($scope['is_all']) {
+        // 超级管理员看全部
+        if ($user->hasRole(config('filament-admin.super_admin_role'))) {
             return $query;
         }
 
-        return $query->where(function (Builder $scopedQuery) use ($scope): void {
-            $hasCondition = false;
-
-            if ($scope['department_ids'] !== []) {
-                $scopedQuery->whereHas('adminUser', function (Builder $adminQuery) use ($scope): void {
-                    $adminQuery->whereIn('department_id', $scope['department_ids']);
-                });
-                $hasCondition = true;
-            }
-
-            if ($scope['admin_user_ids'] !== []) {
-                $method = $hasCondition ? 'orWhereIn' : 'whereIn';
-
-                $scopedQuery->{$method}('admin_user_id', $scope['admin_user_ids']);
-                $hasCondition = true;
-            }
-
-            if (! $hasCondition) {
-                $scopedQuery->whereRaw('1 = 0');
-            }
-        });
+        // 普通管理员只看自己的登录日志
+        return $query->where('admin_user_id', $user->id);
     }
 
     public static function getPages(): array

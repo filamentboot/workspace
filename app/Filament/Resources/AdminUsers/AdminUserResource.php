@@ -6,14 +6,11 @@ use App\Enums\AdminUserStatus;
 use App\Filament\Resources\AdminUsers\Pages\CreateAdminUser;
 use App\Filament\Resources\AdminUsers\Pages\EditAdminUser;
 use App\Filament\Resources\AdminUsers\Pages\ListAdminUsers;
-use App\Filament\Resources\AdminUsers\Pages\ViewAdminUser;
 use App\Models\AdminUser;
-use App\Services\DataScopeResolver;
 use BackedEnum;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\RestoreAction;
-use Filament\Actions\ViewAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
@@ -130,7 +127,6 @@ class AdminUserResource extends Resource
                 TrashedFilter::make(),
             ])
             ->recordActions([
-                ViewAction::make(),
                 EditAction::make(),
                 DeleteAction::make(),
                 RestoreAction::make(),
@@ -151,31 +147,13 @@ class AdminUserResource extends Resource
             return $query->whereRaw('1 = 0');
         }
 
-        $scope = app(DataScopeResolver::class)->resolve($user);
-
-        if ($scope['is_all']) {
+        // 超级管理员看全部
+        if ($user->hasRole(config('filament-admin.super_admin_role'))) {
             return $query;
         }
 
-        return $query->where(function (Builder $scopedQuery) use ($scope): void {
-            $hasCondition = false;
-
-            if ($scope['department_ids'] !== []) {
-                $scopedQuery->whereIn('department_id', $scope['department_ids']);
-                $hasCondition = true;
-            }
-
-            if ($scope['admin_user_ids'] !== []) {
-                $method = $hasCondition ? 'orWhereIn' : 'whereIn';
-
-                $scopedQuery->{$method}('id', $scope['admin_user_ids']);
-                $hasCondition = true;
-            }
-
-            if (! $hasCondition) {
-                $scopedQuery->whereRaw('1 = 0');
-            }
-        });
+        // 普通管理员只看自己
+        return $query->where('id', $user->id);
     }
 
     public static function getPages(): array
@@ -183,7 +161,6 @@ class AdminUserResource extends Resource
         return [
             'index'  => ListAdminUsers::route('/'),
             'create' => CreateAdminUser::route('/create'),
-            'view'   => ViewAdminUser::route('/{record}'),
             'edit'   => EditAdminUser::route('/{record}/edit'),
         ];
     }
