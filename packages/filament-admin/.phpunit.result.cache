@@ -1,1 +1,0 @@
-{"version":2,"defects":[],"times":{"FilamentAdmin\\Tests\\Unit\\PackageBoundaryTest::test_composer_json_uses_publishable_package_metadata":0.001,"FilamentAdmin\\Tests\\Unit\\PackageBoundaryTest::test_runtime_files_do_not_reference_plugin_platform_namespace":0,"FilamentAdmin\\Tests\\Unit\\PackageMetadataTest::test_package_composer_json_has_publishable_metadata":0}}
