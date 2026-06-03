@@ -1,19 +1,22 @@
 # FilamentAdmin 项目概览
 
-> 本文是面向公开发布的项目说明文档，用于 README、安装文档和对外介绍引用。当前文档以主包 `filament-admin/filament-admin` 为准，不把演示站仓库或插件市场独立包混入当前发布对象。
+> 当前仓库根目录是演示项目，真正的对外 Composer 包位于 `packages/filament-admin`。本文同时说明二者边界。
 
 ## 项目定位
 
-FilamentAdmin 是一个基于 Laravel 13 + Filament 5 的后台基础包，聚焦管理员认证、角色权限、菜单、日志和后台导航等通用能力。
+FilamentAdmin 是一个基于 Laravel 13 + Filament 5 的后台基础能力方案，当前分成两层：
+
+- **演示项目**：当前仓库根目录，用于运行、联调和验收
+- **主包**：`packages/filament-admin`，用于对外发布和 Packagist 安装
 
 它的目标是让新项目不再重复搭建后台基础设施。当前第一版聚焦“可安装、可登录、可扩展、可开发业务模块”的后台 MVP；插件市场、在线升级和商业化能力属于后续独立版本。
 
 ### 当前发布边界
 
-- 当前公开发布对象是 `filament-admin/filament-admin`
+- 当前公开发布对象是 `packages/filament-admin`
 - 当前推荐安装方式是 `composer require filament-admin/filament-admin`
-- 当前发布对象不包含演示站仓库
-- 当前发布对象不包含 `PluginPlatform`
+- 当前仓库根目录不直接作为包仓库发布
+- 当前主包不包含 `PluginPlatform`
 - 插件市场能力保留为后续独立包方向，不作为本次主包内置能力
 
 ### 组合最优的代码基座
