@@ -47,9 +47,6 @@ class AdminPanelProvider extends PanelProvider
             ->authGuard('admin')            // 使用 admin guard
             ->authPasswordBroker('admin_users')
             ->plugin(FilamentAdminPlugin::make())
-            // 插件市场资源（plugin-platform 包）
-            ->discoverResources(in: base_path('packages/plugin-platform/src/Filament/Resources'), for: 'FilamentAdmin\\PluginPlatform\\Filament\\Resources')
-            ->discoverPages(in: base_path('packages/plugin-platform/src/Filament/Pages'), for: 'FilamentAdmin\\PluginPlatform\\Filament\\Pages')
             ->plugin(
                 TwoFactorAuthenticationPlugin::make()
                     ->enableTwoFactorAuthentication() // 启用 TOTP 双因素认证（用户可选启用）

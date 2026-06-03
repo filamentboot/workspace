@@ -1,6 +1,10 @@
 # 安装指南
 
-> **注意**：当前为 Skeleton 开发阶段，安装方式为 Clone 仓库。Library 包发布后将支持 `composer require`。
+FilamentAdmin 当前以 **Composer Library 包** 形态发布，目标安装方式如下：
+
+```bash
+composer require filament-admin/filament-admin
+```
 
 ## 环境要求
 
@@ -9,84 +13,76 @@
 | PHP | ^8.3 |
 | Laravel | ^13.0 |
 | MySQL | ^8.0 |
-| Node.js | ^20.0（构建前端资源）|
+| Redis | ^7.0 |
 | Composer | ^2.0 |
 
 ## 安装步骤
 
-### 1. Clone 项目
+### 1. 安装包
 
 ```bash
-git clone https://github.com/your-org/filament-admin.git
-cd filament-admin
+composer require filament-admin/filament-admin
 ```
 
-### 2. 安装依赖
+### 2. 注册主包
 
-```bash
-# 先取消代理（避免 Composer 超时）
-unset HTTP_PROXY HTTPS_PROXY http_proxy https_proxy
+若宿主项目未启用自动发现，请确认已注册：
 
-composer install
-npm install
+```php
+FilamentAdmin\FilamentAdminServiceProvider::class
 ```
 
-### 3. 配置环境
+并在你的 `AdminPanelProvider` 中注册：
 
-```bash
-cp .env.example .env
-php artisan key:generate
+```php
+use FilamentAdmin\FilamentAdminPlugin;
+
+->plugin(FilamentAdminPlugin::make())
 ```
 
-修改 `.env` 数据库配置：
+### 3. 配置管理员认证
 
-```env
-DB_HOST=127.0.0.1
-DB_PORT=3380
-DB_DATABASE=filamentadmin
-DB_USERNAME=root
-DB_PASSWORD=123456
-```
+宿主项目需要提供 `admin` guard、对应的 `admin_users` 表以及 Filament Admin Panel 注册入口。
 
-### 4. 创建数据库
+当前主包依赖以下基本约定：
 
-```bash
-mysql -uroot -p123456 -h127.0.0.1 -P3380 -e "CREATE DATABASE filamentadmin"
-# 测试库（运行测试需要）
-mysql -uroot -p123456 -h127.0.0.1 -P3380 -e "CREATE DATABASE filamentadmin_test"
-```
+- guard 名称：`admin`
+- 后台入口：`/admin`
+- 管理员模型：`AdminUser`
 
-### 5. 执行数据库迁移与初始化
+### 4. 执行迁移与初始化
 
 ```bash
 php artisan migrate
 php artisan db:seed
 ```
 
-### 6. 创建初始超级管理员
+若项目提供了默认超级管理员初始化命令或 Seeder，请按项目实际文档执行。
 
-```bash
-php artisan make:admin-user
-# 按提示输入账号、邮箱、密码
+### 5. 访问后台
+
+完成初始化后，访问你的后台地址：
+
+```text
+/admin
 ```
 
-### 7. 构建前端资源
+## 当前限制
 
-```bash
-npm run build
-```
-
-### 8. 配置 Nginx 虚拟主机
-
-将 `filamentadmin.local` 指向项目 `public/` 目录。访问 `http://filamentadmin.local/admin` 即可进入后台。
+- 当前主包发布对象不包含 `PluginPlatform`
+- 当前主包不包含演示站仓库内容
+- 若需要插件市场能力，应等待独立包形态的后续发布
 
 ## 常见问题
 
-**Q: Composer install 超时**
-A: 执行 `unset HTTP_PROXY HTTPS_PROXY http_proxy https_proxy` 后重试。
+**Q: `composer require` 失败**
 
-**Q: 测试失败，报数据库连接错误**
-A: 确认 `filamentadmin_test` 数据库已创建，MySQL 端口为 3380。
+A: 先确认 Packagist 条目、PHP 版本、Laravel 版本和 Composer 网络环境是否满足要求。
 
-**Q: 2FA 二维码无法显示**
-A: 确认 Redis 已启动（`127.0.0.1:6379`，密码 `123456`）。
+**Q: 安装后没有后台入口**
+
+A: 确认宿主项目已正确注册 `FilamentAdminPlugin::make()`。
+
+**Q: 安装后仍引用旧的本地插件市场代码**
+
+A: 清理旧的 path repository、本地联调依赖和历史 `vendor/` 后重新安装。

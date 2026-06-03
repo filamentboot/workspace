@@ -6,10 +6,7 @@ use Filament\Navigation\NavigationGroup;
 use Filament\Navigation\NavigationItem;
 use FilamentAdmin\Models\AdminUser;
 use FilamentAdmin\Models\Menu;
-use FilamentAdmin\PluginPlatform\Filament\Resources\Extensions\ExtensionResource;
-use FilamentAdmin\PluginPlatform\Filament\Resources\MarketEntries\MarketEntryResource;
 use Illuminate\Support\Facades\Route;
-use Throwable;
 
 /**
  * 后台动态导航构建器
@@ -37,16 +34,6 @@ class AdminNavigationBuilder
             ->get();
 
         foreach ($topMenus as $topMenu) {
-            // 识别"插件市场"占位菜单：无 url/route_name 且无子菜单
-            // 用硬编码的插件市场导航条目替代，保留其在 sort 排序中的位置
-            if ($this->isPluginMarketPlaceholder($topMenu)) {
-                $pluginMarketItems = $this->buildPluginMarketItems();
-                if ($pluginMarketItems !== []) {
-                    $groups[] = NavigationGroup::make($topMenu->title)->items($pluginMarketItems);
-                }
-                continue;
-            }
-
             $items = Menu::query()
                 ->active()
                 ->where('type', 'menu')
@@ -65,30 +52,7 @@ class AdminNavigationBuilder
             $groups[] = NavigationGroup::make($topMenu->title)->items($items);
         }
 
-        // 如果 DB 中没有"插件市场"占位菜单，则回退到追加末尾
-        $hasPluginMarketInMenu = $topMenus->contains(fn (Menu $m) => $this->isPluginMarketPlaceholder($m));
-
-        if (! $hasPluginMarketInMenu) {
-            $pluginMarketItems = $this->buildPluginMarketItems();
-            if ($pluginMarketItems !== []) {
-                $groups[] = NavigationGroup::make('插件市场')->items($pluginMarketItems);
-            }
-        }
-
         return $groups;
-    }
-
-    /**
-     * 判断一级菜单是否是插件市场占位节点
-     *
-     * 插件市场的实际导航条目由 buildPluginMarketItems() 硬编码提供，
-     * DB 中只存放一个无 url/route_name 的空容器节点，用于控制排序位置。
-     */
-    protected function isPluginMarketPlaceholder(Menu $menu): bool
-    {
-        return blank($menu->url)
-            && blank($menu->route_name)
-            && ! Menu::query()->where('parent_id', $menu->id)->exists();
     }
 
     /**
@@ -153,45 +117,4 @@ class AdminNavigationBuilder
         return filled($menu->url) ? $menu->url : null;
     }
 
-    /**
-     * @return list<NavigationItem>
-     */
-    protected function buildPluginMarketItems(): array
-    {
-        return array_values(array_filter([
-            $this->makePluginMarketItem(
-                label: '官方市场',
-                icon: 'heroicon-o-shopping-bag',
-                resourceClass: MarketEntryResource::class,
-                sort: 5,
-            ),
-            $this->makePluginMarketItem(
-                label: '扩展清单',
-                icon: 'heroicon-o-puzzle-piece',
-                resourceClass: ExtensionResource::class,
-                sort: 10,
-            ),
-        ]));
-    }
-
-    protected function makePluginMarketItem(
-        string $label,
-        string $icon,
-        string $resourceClass,
-        int $sort,
-    ): ?NavigationItem {
-        try {
-            $url = $resourceClass::getUrl('index');
-        } catch (Throwable) {
-            return null;
-        }
-
-        $path = trim(parse_url($url, PHP_URL_PATH) ?? '', '/');
-
-        return NavigationItem::make($label)
-            ->icon($icon)
-            ->sort($sort)
-            ->url($url)
-            ->isActiveWhen(fn (): bool => request()->is($path) || request()->is($path.'/*'));
-    }
 }
