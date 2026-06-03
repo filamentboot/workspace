@@ -26,7 +26,7 @@ packages/filament-admin
 对外安装命令：
 
 ```bash
-composer require filament-admin/filament-admin
+composer require laravelstack/filament-admin
 ```
 
 ### 注册主包

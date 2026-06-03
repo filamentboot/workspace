@@ -27,7 +27,7 @@
 推荐安装方式：
 
 ```bash
-composer require filament-admin/filament-admin
+composer require laravelstack/filament-admin
 ```
 
 如果本地仍保留旧的联调依赖，升级前建议执行：

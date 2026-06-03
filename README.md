@@ -12,7 +12,7 @@
 ## 根仓库职责
 
 - 启动 Laravel 演示环境
-- 作为宿主项目联调 `filament-admin/filament-admin`
+- 作为宿主项目联调 `laravelstack/filament-admin`
 - 承担人工验收和发布演练
 
 ## 主包职责
@@ -40,7 +40,7 @@ http://filamentadmin.local
 ## 对外安装主包
 
 ```bash
-composer require filament-admin/filament-admin
+composer require laravelstack/filament-admin
 ```
 
 更多说明：

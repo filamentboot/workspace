@@ -10,7 +10,7 @@ class PackageBoundaryTest extends TestCase
     {
         $composer = json_decode((string) file_get_contents(__DIR__.'/../../composer.json'), true, 512, JSON_THROW_ON_ERROR);
 
-        self::assertSame('filament-admin/filament-admin', $composer['name']);
+        self::assertSame('laravelstack/filament-admin', $composer['name']);
         self::assertSame('library', $composer['type']);
         self::assertArrayNotHasKey('repositories', $composer);
         self::assertArrayNotHasKey('filament-admin/plugin-platform', $composer['require']);

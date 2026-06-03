@@ -1,6 +1,6 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "filament-admin/filament-admin",
+    "name": "laravelstack/filament-admin",
     "description": "Admin foundation package for Laravel 13 and Filament 5.",
     "type": "library",
     "license": "MIT",

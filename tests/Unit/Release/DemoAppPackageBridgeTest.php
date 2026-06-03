@@ -14,7 +14,7 @@ class DemoAppPackageBridgeTest extends TestCase
         self::assertArrayHasKey('repositories', $composer);
         self::assertSame('path', $composer['repositories'][0]['type']);
         self::assertSame('packages/filament-admin', $composer['repositories'][0]['url']);
-        self::assertArrayHasKey('filament-admin/filament-admin', $composer['require']);
+        self::assertArrayHasKey('laravelstack/filament-admin', $composer['require']);
         self::assertArrayNotHasKey('FilamentAdmin\\', $composer['autoload']['psr-4'] ?? []);
     }
 
@@ -24,7 +24,7 @@ class DemoAppPackageBridgeTest extends TestCase
 
         $composer = json_decode((string) file_get_contents(__DIR__.'/../../../packages/filament-admin/composer.json'), true, 512, JSON_THROW_ON_ERROR);
 
-        self::assertSame('filament-admin/filament-admin', $composer['name']);
+        self::assertSame('laravelstack/filament-admin', $composer['name']);
         self::assertSame('library', $composer['type']);
     }
 }

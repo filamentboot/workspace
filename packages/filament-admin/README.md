@@ -5,7 +5,7 @@ FilamentAdmin 是一个面向 Laravel 13 与 Filament 5 的后台基础包。
 ## 安装
 
 ```bash
-composer require filament-admin/filament-admin
+composer require laravelstack/filament-admin
 ```
 
 ## 当前状态
