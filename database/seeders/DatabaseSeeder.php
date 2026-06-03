@@ -2,6 +2,10 @@
 
 namespace Database\Seeders;
 
+use FilamentAdmin\Database\Seeders\AdminFoundationMenuSeeder;
+use FilamentAdmin\Database\Seeders\AdminFoundationPermissionSeeder;
+use FilamentAdmin\Database\Seeders\AdminUserSeeder;
+use FilamentAdmin\Database\Seeders\SuperAdminSeeder;
 use Illuminate\Database\Seeder;
 
 /**

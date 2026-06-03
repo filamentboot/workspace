@@ -1,8 +1,8 @@
 <?php
 
-use Database\Seeders\AdminFoundationMenuSeeder;
-use Database\Seeders\AdminFoundationPermissionSeeder;
-use Database\Seeders\SuperAdminSeeder;
+use FilamentAdmin\Database\Seeders\AdminFoundationMenuSeeder;
+use FilamentAdmin\Database\Seeders\AdminFoundationPermissionSeeder;
+use FilamentAdmin\Database\Seeders\SuperAdminSeeder;
 use FilamentAdmin\Models\AdminUser;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;

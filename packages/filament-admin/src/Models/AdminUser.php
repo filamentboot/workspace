@@ -2,7 +2,7 @@
 
 namespace FilamentAdmin\Models;
 
-use Database\Factories\AdminUserFactory;
+use FilamentAdmin\Database\Factories\AdminUserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasName;
 use Filament\Panel;

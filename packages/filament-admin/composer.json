@@ -40,8 +40,8 @@
     "autoload": {
         "psr-4": {
             "FilamentAdmin\\": "src/",
-            "Database\\Factories\\": "database/factories/",
-            "Database\\Seeders\\": "database/seeders/"
+            "FilamentAdmin\\Database\\Factories\\": "database/factories/",
+            "FilamentAdmin\\Database\\Seeders\\": "database/seeders/"
         }
     },
     "autoload-dev": {

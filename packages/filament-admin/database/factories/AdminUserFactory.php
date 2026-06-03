@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Factories;
+namespace FilamentAdmin\Database\Factories;
 
 use FilamentAdmin\Enums\AdminUserStatus;
 use FilamentAdmin\Models\AdminUser;

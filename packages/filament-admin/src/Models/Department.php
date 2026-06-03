@@ -2,7 +2,7 @@
 
 namespace FilamentAdmin\Models;
 
-use Database\Factories\DepartmentFactory;
+use FilamentAdmin\Database\Factories\DepartmentFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;

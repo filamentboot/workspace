@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Factories;
+namespace FilamentAdmin\Database\Factories;
 
 use FilamentAdmin\Models\AdminUser;
 use FilamentAdmin\Models\LoginLog;

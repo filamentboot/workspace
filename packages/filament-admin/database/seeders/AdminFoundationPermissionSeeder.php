@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Seeders;
+namespace FilamentAdmin\Database\Seeders;
 
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Permission;

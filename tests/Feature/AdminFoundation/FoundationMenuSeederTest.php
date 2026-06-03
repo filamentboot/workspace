@@ -1,6 +1,6 @@
 <?php
 
-use Database\Seeders\AdminFoundationMenuSeeder;
+use FilamentAdmin\Database\Seeders\AdminFoundationMenuSeeder;
 use FilamentAdmin\Models\Menu;
 
 it('基础管理菜单种子创建核心菜单', function () {

@@ -1,6 +1,6 @@
 <?php
 
-use Database\Seeders\AdminFoundationPermissionSeeder;
+use FilamentAdmin\Database\Seeders\AdminFoundationPermissionSeeder;
 use FilamentAdmin\Enums\AdminUserStatus;
 use FilamentAdmin\Filament\Resources\AdminUsers\AdminUserResource;
 use FilamentAdmin\Filament\Resources\AdminUsers\Pages\EditAdminUser;

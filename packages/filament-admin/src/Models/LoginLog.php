@@ -2,7 +2,7 @@
 
 namespace FilamentAdmin\Models;
 
-use Database\Factories\LoginLogFactory;
+use FilamentAdmin\Database\Factories\LoginLogFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

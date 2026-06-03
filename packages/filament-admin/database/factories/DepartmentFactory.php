@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Factories;
+namespace FilamentAdmin\Database\Factories;
 
 use FilamentAdmin\Models\Department;
 use Illuminate\Database\Eloquent\Factories\Factory;

@@ -1,6 +1,6 @@
 <?php
 
-use Database\Seeders\AdminFoundationPermissionSeeder;
+use FilamentAdmin\Database\Seeders\AdminFoundationPermissionSeeder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\PermissionRegistrar;
 

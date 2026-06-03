@@ -1,6 +1,6 @@
 <?php
 
-namespace Database\Seeders;
+namespace FilamentAdmin\Database\Seeders;
 
 use FilamentAdmin\Models\Menu;
 use Illuminate\Database\Seeder;
