@@ -1,7 +1,7 @@
 <?php
 
-use App\Filament\Pages\Auth\Login;
-use App\Models\LoginLog;
+use FilamentAdmin\Filament\Pages\Auth\Login;
+use FilamentAdmin\Models\LoginLog;
 use Illuminate\Support\Facades\RateLimiter;
 
 /**

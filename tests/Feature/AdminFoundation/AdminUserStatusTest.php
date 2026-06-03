@@ -1,7 +1,7 @@
 <?php
 
-use App\Enums\AdminUserStatus;
-use App\Models\AdminUser;
+use FilamentAdmin\Enums\AdminUserStatus;
+use FilamentAdmin\Models\AdminUser;
 
 it('禁用管理员不能访问后台面板', function () {
     $user = AdminUser::factory()->create([

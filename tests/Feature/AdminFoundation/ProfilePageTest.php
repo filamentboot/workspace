@@ -1,7 +1,7 @@
 <?php
 
-use App\Filament\Pages\Profile;
-use App\Models\AdminUser;
+use FilamentAdmin\Filament\Pages\Profile;
+use FilamentAdmin\Models\AdminUser;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
 
@@ -56,12 +56,12 @@ it('管理员可以通过个人资料页修改密码', function () {
     Livewire::actingAs($admin, 'admin')
         ->test(Profile::class)
         ->fillForm([
-            'account'             => $admin->account,
-            'nickname'            => $admin->nickname,
-            'email'               => $admin->email,
-            'password'            => 'New_password_123',
+            'account'              => $admin->account,
+            'nickname'             => $admin->nickname,
+            'email'                => $admin->email,
+            'password'             => 'New_password_123',
             'passwordConfirmation' => 'New_password_123',
-            'currentPassword'     => 'old_password',
+            'currentPassword'      => 'old_password',
         ])
         ->call('save')
         ->assertHasNoFormErrors();
@@ -71,7 +71,7 @@ it('管理员可以通过个人资料页修改密码', function () {
 });
 
 it('account 字段唯一性验证：不能使用其他管理员的账号', function () {
-    $other = AdminUser::factory()->create(['account' => 'taken_account']);
+    $other  = AdminUser::factory()->create(['account' => 'taken_account']);
     $admin  = AdminUser::factory()->create(['account' => 'my_account']);
 
     Livewire::actingAs($admin, 'admin')

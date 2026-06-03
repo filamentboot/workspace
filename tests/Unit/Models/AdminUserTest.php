@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\AdminUser;
 use Filament\Panel;
+use FilamentAdmin\Models\AdminUser;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**

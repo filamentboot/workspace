@@ -55,7 +55,7 @@ return [
     |
     */
 
-    'auth_provider_model' => 'App\\Models\\AdminUser',
+    'auth_provider_model' => 'FilamentAdmin\\Models\\AdminUser',
 
     /*
     |--------------------------------------------------------------------------

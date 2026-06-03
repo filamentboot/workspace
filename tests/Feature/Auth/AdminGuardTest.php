@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\AdminUser;
+use FilamentAdmin\Models\AdminUser;
 
 /**
  * Admin Guard 配置测试

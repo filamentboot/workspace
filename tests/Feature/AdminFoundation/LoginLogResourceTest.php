@@ -1,9 +1,9 @@
 <?php
 
-use App\Filament\Resources\LoginLogs\LoginLogResource;
-use App\Filament\Resources\LoginLogs\Pages\ListLoginLogs;
-use App\Models\AdminUser;
-use App\Models\LoginLog;
+use FilamentAdmin\Filament\Resources\LoginLogs\LoginLogResource;
+use FilamentAdmin\Filament\Resources\LoginLogs\Pages\ListLoginLogs;
+use FilamentAdmin\Models\AdminUser;
+use FilamentAdmin\Models\LoginLog;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
 

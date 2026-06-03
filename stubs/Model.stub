@@ -1,0 +1,74 @@
+<?php
+
+namespace {{ namespace }};
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\Activitylog\LogOptions;
+use Spatie\Activitylog\Traits\LogsActivity;
+
+/**
+ * {{ class }} 模型
+ *
+ * @property int         $id
+ * @property string      $name
+ * @property \Carbon\Carbon|null $created_at
+ * @property \Carbon\Carbon|null $updated_at
+ * @property \Carbon\Carbon|null $deleted_at
+ */
+class {{ class }} extends Model
+{
+    use HasFactory;
+
+    // 需要软删除时启用：
+    // use SoftDeletes;
+
+    // 需要操作日志时启用：
+    // use LogsActivity;
+
+    /** @var string 数据库表名 */
+    protected $table = '{{ table }}';
+
+    /**
+     * 可批量赋值的字段
+     *
+     * @var list<string>
+     */
+    protected $fillable = [
+        // 'name',
+        // 'description',
+        // 'status',
+    ];
+
+    /**
+     * 字段类型转换
+     *
+     * @var array<string, string>
+     */
+    protected $casts = [
+        // 'status' => \App\Enums\SomeEnum::class,
+        // 'options' => 'array',
+    ];
+
+    // ── 操作日志配置（启用 LogsActivity 后配置）───────────────────────
+    // public function getActivitylogOptions(): LogOptions
+    // {
+    //     return LogOptions::defaults()
+    //         ->logFillable()
+    //         ->logOnlyDirty()
+    //         ->dontSubmitEmptyLogs();
+    // }
+
+    // ── 关联关系 ──────────────────────────────────────────────────────
+    // public function parent(): BelongsTo
+    // {
+    //     return $this->belongsTo(static::class, 'parent_id');
+    // }
+
+    // ── 查询 Scope ────────────────────────────────────────────────────
+    // public function scopeActive(Builder $query): Builder
+    // {
+    //     return $query->where('status', 1);
+    // }
+}

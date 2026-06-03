@@ -1,0 +1,71 @@
+<?php
+
+use FilamentAdmin\Filament\Resources\{{ resourceNamespace }}\{{ resource }};
+use FilamentAdmin\Models\AdminUser;
+use FilamentAdmin\Models\{{ model }};
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\PermissionRegistrar;
+
+/**
+ * {{ model }} Resource 测试
+ *
+ * 测试覆盖范围：
+ * 1. 权限控制（超管可访问，普通用户无权限时被拒绝）
+ * 2. 页面渲染（列表、新建、编辑、详情页）
+ * 3. 创建、更新、删除操作
+ */
+
+beforeEach(function () {
+    app(PermissionRegistrar::class)->forgetCachedPermissions();
+    // 如果有专属 Seeder，在此 seed
+    // $this->seed({{ model }}PermissionSeeder::class);
+});
+
+/** 创建超管用户的辅助函数 */
+function make{{ model }}SuperAdmin(): AdminUser
+{
+    $role  = Role::firstOrCreate(
+        ['name' => config('filament-admin.super_admin_role'), 'guard_name' => 'admin']
+    );
+    $admin = AdminUser::factory()->create();
+    $admin->assignRole($role);
+
+    return $admin;
+}
+
+// ── 权限控制测试 ──────────────────────────────────────────────────────
+
+it('超级管理员可以访问{{ modelLabel }}列表', function () {
+    $admin = make{{ model }}SuperAdmin();
+
+    $this->actingAs($admin, 'admin')
+        ->get({{ resource }}::getUrl('index'))
+        ->assertSuccessful();
+});
+
+// ── 页面渲染测试 ──────────────────────────────────────────────────────
+
+it('超级管理员可以渲染新建{{ modelLabel }}页', function () {
+    $admin = make{{ model }}SuperAdmin();
+
+    $this->actingAs($admin, 'admin')
+        ->get({{ resource }}::getUrl('create'))
+        ->assertSuccessful();
+});
+
+// ── CRUD 操作测试 ─────────────────────────────────────────────────────
+
+it('超级管理员可以创建{{ modelLabel }}', function () {
+    $admin = make{{ model }}SuperAdmin();
+
+    \Livewire\Livewire::actingAs($admin, 'admin')
+        ->test({{ resource }}\Pages\Create{{ model }}::class)
+        ->fillForm([
+            // 填写必填字段，例如：
+            // 'name' => '测试{{ modelLabel }}',
+        ])
+        ->call('create')
+        ->assertHasNoFormErrors();
+
+    expect({{ model }}::count())->toBe(1);
+});

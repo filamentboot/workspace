@@ -2,7 +2,7 @@
 
 namespace Database\Seeders;
 
-use App\Models\Menu;
+use FilamentAdmin\Models\Menu;
 use Illuminate\Database\Seeder;
 
 /**
@@ -83,6 +83,46 @@ class AdminFoundationMenuSeeder extends Seeder
                 ],
             );
         }
+
+        // 第四步：确保顶层分组"系统配置"存在
+        $configGroup = Menu::query()->updateOrCreate(
+            ['title' => '系统配置', 'source' => 'core', 'type' => 'menu', 'parent_id' => 0],
+            [
+                'icon'            => 'heroicon-o-adjustments-horizontal',
+                'route_name'      => null,
+                'url'             => null,
+                'permission_name' => null,
+                'sort'            => 20,
+                'is_active'       => true,
+                'target'          => 'self',
+                'source'          => 'core',
+                'type'            => 'menu',
+                'parent_id'       => 0,
+            ],
+        );
+
+        // 第五步：在"系统配置"下插入四个配置子菜单
+        foreach ($this->configMenus() as $index => $menu) {
+            Menu::query()->updateOrCreate(
+                [
+                    'title'     => $menu['title'],
+                    'source'    => 'core',
+                    'type'      => 'menu',
+                    'parent_id' => $configGroup->id,
+                ],
+                [
+                    ...$menu,
+                    'parent_id' => $configGroup->id,
+                    'sort'      => ($index + 1) * 10,
+                    'is_active' => true,
+                    'source'    => 'core',
+                    'type'      => 'menu',
+                ],
+            );
+        }
+
+        // 第六步：在"系统管理"组下添加媒体库菜单
+        $this->seedMediaMenu($systemGroup->id);
     }
 
     /**
@@ -188,5 +228,75 @@ class AdminFoundationMenuSeeder extends Seeder
             ['_parent_title' => '操作日志', 'title' => '列表', 'permission_name' => 'view_any_activity_log', 'sort' => 10],
             ['_parent_title' => '操作日志', 'title' => '查看', 'permission_name' => 'view_activity_log', 'sort' => 20],
         ];
+    }
+
+    /**
+     * 获取系统配置菜单定义
+     *
+     * @return list<array<string, mixed>>
+     */
+    private function configMenus(): array
+    {
+        return [
+            [
+                'title'           => '基础配置',
+                'icon'            => 'heroicon-o-cog-6-tooth',
+                'route_name'      => 'filament.admin.pages.settings.general',
+                'url'             => null,
+                'permission_name' => 'view_general_settings',
+                'target'          => 'self',
+            ],
+            [
+                'title'           => '上传配置',
+                'icon'            => 'heroicon-o-arrow-up-tray',
+                'route_name'      => 'filament.admin.pages.settings.upload',
+                'url'             => null,
+                'permission_name' => 'view_upload_settings',
+                'target'          => 'self',
+            ],
+            [
+                'title'           => '安全配置',
+                'icon'            => 'heroicon-o-shield-check',
+                'route_name'      => 'filament.admin.pages.settings.security',
+                'url'             => null,
+                'permission_name' => 'view_security_settings',
+                'target'          => 'self',
+            ],
+            [
+                'title'           => '日志配置',
+                'icon'            => 'heroicon-o-document-text',
+                'route_name'      => 'filament.admin.pages.settings.log',
+                'url'             => null,
+                'permission_name' => 'view_log_settings',
+                'target'          => 'self',
+            ],
+        ];
+    }
+
+    /**
+     * 在"系统管理"组下添加媒体库菜单条目
+     */
+    private function seedMediaMenu(int $systemGroupId): void
+    {
+        Menu::query()->updateOrCreate(
+            [
+                'title'     => '媒体库',
+                'source'    => 'core',
+                'type'      => 'menu',
+                'parent_id' => $systemGroupId,
+            ],
+            [
+                'icon'            => 'heroicon-o-photo',
+                'route_name'      => 'filament.admin.resources.media.index',
+                'url'             => null,
+                'sort'            => 70,
+                'permission_name' => 'view_any_media',
+                'is_active'       => true,
+                'target'          => 'self',
+                'source'          => 'core',
+                'type'            => 'menu',
+                'parent_id'       => $systemGroupId,
+            ],
+        );
     }
 }

@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Menu;
+use FilamentAdmin\Models\Menu;
 
 it('菜单支持父子级和启用作用域', function () {
     $parent = Menu::factory()->create(['is_active' => true]);

@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Enums\AdminUserStatus;
-use App\Models\AdminUser;
+use FilamentAdmin\Enums\AdminUserStatus;
+use FilamentAdmin\Models\AdminUser;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 

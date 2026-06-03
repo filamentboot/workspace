@@ -2,8 +2,8 @@
 
 namespace Database\Factories;
 
-use App\Models\AdminUser;
-use App\Models\LoginLog;
+use FilamentAdmin\Models\AdminUser;
+use FilamentAdmin\Models\LoginLog;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

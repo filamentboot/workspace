@@ -1,7 +1,7 @@
 <?php
 
-use App\Models\Department;
-use App\Services\DepartmentTree;
+use FilamentAdmin\Models\Department;
+use FilamentAdmin\Services\DepartmentTree;
 
 it('可以获取部门及下级部门 ID', function () {
     $root      = Department::factory()->create();

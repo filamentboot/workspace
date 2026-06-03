@@ -1,8 +1,8 @@
 <?php
 
-use App\Filament\Pages\Auth\Login;
-use App\Models\AdminUser;
-use App\Models\LoginLog;
+use FilamentAdmin\Filament\Pages\Auth\Login;
+use FilamentAdmin\Models\AdminUser;
+use FilamentAdmin\Models\LoginLog;
 use Stephenjude\FilamentTwoFactorAuthentication\Actions\DisableTwoFactorAuthentication;
 
 test('complete authentication flow without 2FA', function () {

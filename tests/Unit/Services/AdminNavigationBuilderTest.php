@@ -1,8 +1,8 @@
 <?php
 
-use App\Models\AdminUser;
-use App\Models\Menu;
-use App\Services\AdminNavigationBuilder;
+use FilamentAdmin\Models\AdminUser;
+use FilamentAdmin\Models\Menu;
+use FilamentAdmin\Services\AdminNavigationBuilder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -23,14 +23,25 @@ it('无权限菜单不会出现在导航中', function () {
     $user = AdminUser::factory()->create();
     $user->assignRole($role);
 
+    // 先建顶层菜单组（parent_id=0），再把子菜单挂在该组下
+    $group = Menu::factory()->create([
+        'title'      => '功能菜单',
+        'parent_id'  => 0,
+        'url'        => null,
+        'route_name' => null,
+        'sort'       => 0,
+    ]);
+
     Menu::factory()->create([
         'title'           => '公开菜单',
+        'parent_id'       => $group->id,
         'permission_name' => null,
         'url'             => '/admin/public',
         'sort'            => 1,
     ]);
     Menu::factory()->create([
         'title'           => '秘密菜单',
+        'parent_id'       => $group->id,
         'permission_name' => 'view_secret_menu',
         'url'             => '/admin/secret',
         'sort'            => 2,

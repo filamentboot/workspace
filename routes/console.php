@@ -1,7 +1,7 @@
 <?php
 
-use App\Console\Commands\CleanActivityLogs;
-use App\Console\Commands\CleanLoginLogs;
+use FilamentAdmin\Commands\CleanActivityLogs;
+use FilamentAdmin\Commands\CleanLoginLogs;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;

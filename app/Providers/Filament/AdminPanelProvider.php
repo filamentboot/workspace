@@ -3,10 +3,6 @@
 namespace App\Providers\Filament;
 
 use AlizHarb\ActivityLog\ActivityLogPlugin;
-use App\Filament\Pages\Auth\Login;
-use App\Filament\Pages\Profile;
-use App\Models\AdminUser;
-use App\Services\AdminNavigationBuilder;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Facades\Filament;
 use Filament\Http\Middleware\Authenticate;
@@ -20,6 +16,11 @@ use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
+use FilamentAdmin\Filament\Pages\Auth\Login;
+use FilamentAdmin\Filament\Pages\Profile;
+use FilamentAdmin\FilamentAdminPlugin;
+use FilamentAdmin\Models\AdminUser;
+use FilamentAdmin\Services\AdminNavigationBuilder;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -31,7 +32,7 @@ use Stephenjude\FilamentTwoFactorAuthentication\TwoFactorAuthenticationPlugin;
 /**
  * 管理员面板服务提供者
  *
- * 配置 Filament 管理员面板，使用自定义登录页和 admin guard。
+ * 配置 Filament 管理员面板，使用 FilamentAdminPlugin 注册所有 Resources、Pages、Widgets。
  */
 class AdminPanelProvider extends PanelProvider
 {
@@ -41,10 +42,14 @@ class AdminPanelProvider extends PanelProvider
             ->default()
             ->id('admin')
             ->path('admin')
-            ->login(Login::class)           // 使用自定义登录页（支持 username/email）
+            ->login(Login::class)           // 使用自定义登录页（支持 account/email）
             ->profile(Profile::class)       // 使用自定义个人资料页
             ->authGuard('admin')            // 使用 admin guard
             ->authPasswordBroker('admin_users')
+            ->plugin(FilamentAdminPlugin::make())
+            // 插件市场资源（plugin-platform 包）
+            ->discoverResources(in: base_path('packages/plugin-platform/src/Filament/Resources'), for: 'FilamentAdmin\\PluginPlatform\\Filament\\Resources')
+            ->discoverPages(in: base_path('packages/plugin-platform/src/Filament/Pages'), for: 'FilamentAdmin\\PluginPlatform\\Filament\\Pages')
             ->plugin(
                 TwoFactorAuthenticationPlugin::make()
                     ->enableTwoFactorAuthentication() // 启用 TOTP 双因素认证（用户可选启用）
@@ -68,9 +73,6 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
-            ->discoverResources(in: app_path('Filament/Resources'), for: 'App\Filament\Resources')
-            ->discoverResources(in: base_path('packages/plugin-platform/src/Filament/Resources'), for: 'FilamentAdmin\PluginPlatform\Filament\Resources')
-            ->discoverPages(in: app_path('Filament/Pages'), for: 'App\Filament\Pages')
             ->navigation(function (AdminNavigationBuilder $builder): NavigationBuilder {
                 $user = Filament::auth()->user();
 
@@ -80,7 +82,6 @@ class AdminPanelProvider extends PanelProvider
             ->pages([
                 Dashboard::class,
             ])
-            ->discoverWidgets(in: app_path('Filament/Widgets'), for: 'App\Filament\Widgets')
             ->widgets([
                 AccountWidget::class,
                 FilamentInfoWidget::class,

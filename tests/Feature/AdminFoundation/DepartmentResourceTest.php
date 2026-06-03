@@ -1,9 +1,9 @@
 <?php
 
-use App\Filament\Resources\Departments\DepartmentResource;
-use App\Models\AdminUser;
-use App\Models\Department;
-use App\Services\DepartmentTree;
+use FilamentAdmin\Filament\Resources\Departments\DepartmentResource;
+use FilamentAdmin\Models\AdminUser;
+use FilamentAdmin\Models\Department;
+use FilamentAdmin\Services\DepartmentTree;
 use Spatie\Permission\Models\Role;
 
 it('超级管理员可以访问部门管理列表', function () {

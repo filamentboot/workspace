@@ -1,12 +1,12 @@
 <?php
 
-use App\Enums\AdminUserStatus;
-use App\Filament\Resources\AdminUsers\Pages\EditAdminUser;
-use App\Filament\Resources\Menus\Pages\MenuTree;
-use App\Models\AdminUser;
-use App\Models\Department;
-use App\Models\Menu;
-use App\Services\ActivityLogger;
+use FilamentAdmin\Enums\AdminUserStatus;
+use FilamentAdmin\Filament\Resources\AdminUsers\Pages\EditAdminUser;
+use FilamentAdmin\Filament\Resources\Menus\Pages\MenuTree;
+use FilamentAdmin\Models\AdminUser;
+use FilamentAdmin\Models\Department;
+use FilamentAdmin\Models\Menu;
+use FilamentAdmin\Services\ActivityLogger;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
 use Spatie\Activitylog\Models\Activity;

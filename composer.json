@@ -11,15 +11,21 @@
         "bezhansalleh/filament-shield": "^4.0",
         "filament-admin/plugin-platform": "@dev",
         "filament/filament": "^5.0",
+        "filament/spatie-laravel-media-library-plugin": "^5.6",
+        "filament/spatie-laravel-settings-plugin": "^5.6",
         "laravel/framework": "^13.8",
+        "laravel/sanctum": "^4.0",
         "laravel/tinker": "^3.0",
         "solution-forest/filament-tree": "^4.0",
         "spatie/laravel-activitylog": "^4.12",
+        "spatie/laravel-medialibrary": "^11.23",
         "spatie/laravel-permission": "^6.0",
+        "spatie/laravel-settings": "^3.9",
         "stephenjude/filament-two-factor-authentication": "^4.1"
     },
     "require-dev": {
         "fakerphp/faker": "^1.23",
+        "knuckleswtf/scribe": "^5.10",
         "larastan/larastan": "^3.0",
         "laravel/pail": "^1.2.5",
         "laravel/pao": "^1.0.6",
@@ -33,6 +39,7 @@
     "autoload": {
         "psr-4": {
             "App\\": "app/",
+            "FilamentAdmin\\": "src/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/"
         }

@@ -1,10 +1,10 @@
 <?php
 
-use App\Enums\AdminUserStatus;
-use App\Filament\Resources\AdminUsers\AdminUserResource;
-use App\Filament\Resources\AdminUsers\Pages\EditAdminUser;
-use App\Models\AdminUser;
 use Database\Seeders\AdminFoundationPermissionSeeder;
+use FilamentAdmin\Enums\AdminUserStatus;
+use FilamentAdmin\Filament\Resources\AdminUsers\AdminUserResource;
+use FilamentAdmin\Filament\Resources\AdminUsers\Pages\EditAdminUser;
+use FilamentAdmin\Models\AdminUser;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;

@@ -1,7 +1,7 @@
 <?php
 
-use App\Filament\Pages\Auth\Login;
-use App\Models\AdminUser;
+use FilamentAdmin\Filament\Pages\Auth\Login;
+use FilamentAdmin\Models\AdminUser;
 
 /**
  * 管理员登录功能测试（使用 Livewire 测试方式）

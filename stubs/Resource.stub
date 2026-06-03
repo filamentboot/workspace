@@ -1,0 +1,119 @@
+<?php
+
+namespace {{ namespace }};
+
+use {{ modelNamespace }}\{{ model }};
+use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteBulkAction;
+use Filament\Resources\Resource;
+use Filament\Schemas\Schema;
+use Filament\Tables;
+use Filament\Tables\Table;
+
+/**
+ * {{ model }} 资源管理
+ *
+ * 提供 {{ model }} 的列表、新建、编辑、详情页面。
+ */
+class {{ class }} extends Resource
+{
+    /** @var class-string<{{ model }}> */
+    protected static ?string $model = {{ model }}::class;
+
+    /** @var string|null 导航图标（参考 https://heroicons.com/） */
+    protected static ?string $navigationIcon = 'heroicon-o-rectangle-stack';
+
+    /** @var string|null 导航分组名称 */
+    protected static ?string $navigationGroup = null;
+
+    /** @var int|null 导航排序权重（数字越小越靠前） */
+    protected static ?int $navigationSort = null;
+
+    /** @var string|null 模型标签（单数，用于页面标题） */
+    protected static ?string $modelLabel = '{{ modelLabel }}';
+
+    /** @var string|null 模型标签（复数，用于列表页标题） */
+    protected static ?string $pluralModelLabel = '{{ modelLabel }}列表';
+
+    /**
+     * 表单定义
+     */
+    public static function form(Schema $schema): Schema
+    {
+        return $schema
+            ->components([
+                // 在此定义表单字段
+                // 示例：
+                // \Filament\Forms\Components\TextInput::make('name')
+                //     ->label('名称')
+                //     ->required()
+                //     ->maxLength(255),
+            ]);
+    }
+
+    /**
+     * 列表表格定义
+     */
+    public static function table(Table $table): Table
+    {
+        return $table
+            ->columns([
+                // 在此定义表格列
+                // 示例：
+                // Tables\Columns\TextColumn::make('name')
+                //     ->label('名称')
+                //     ->searchable()
+                //     ->sortable(),
+                Tables\Columns\TextColumn::make('created_at')
+                    ->label('创建时间')
+                    ->dateTime('Y-m-d H:i')
+                    ->sortable()
+                    ->toggleable(isToggledHiddenByDefault: true),
+            ])
+            ->filters([
+                // 在此定义过滤器
+            ])
+            ->actions([
+                Tables\Actions\ViewAction::make(),
+                Tables\Actions\EditAction::make(),
+                Tables\Actions\DeleteAction::make(),
+            ])
+            ->bulkActions([
+                BulkActionGroup::make([
+                    DeleteBulkAction::make(),
+                ]),
+            ]);
+    }
+
+    /**
+     * 获取子页面定义
+     *
+     * @return array<string, class-string>
+     */
+    public static function getPages(): array
+    {
+        return [
+            'index'  => Pages\List{{ pluralClass }}::route('/'),
+            'create' => Pages\Create{{ class }}::route('/create'),
+            'view'   => Pages\View{{ class }}::route('/{record}'),
+            'edit'   => Pages\Edit{{ class }}::route('/{record}/edit'),
+        ];
+    }
+
+    /**
+     * 获取权限前缀（Shield 会根据此生成权限点）
+     *
+     * @return list<string>
+     */
+    public static function getPermissionPrefixes(): array
+    {
+        return [
+            'view',
+            'view_any',
+            'create',
+            'update',
+            'delete',
+            'delete_any',
+        ];
+    }
+}

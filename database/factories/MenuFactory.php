@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\Menu;
+use FilamentAdmin\Models\Menu;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

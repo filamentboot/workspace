@@ -1,7 +1,7 @@
 <?php
 
-use App\Filament\Resources\Menus\MenuResource;
-use App\Models\AdminUser;
+use FilamentAdmin\Filament\Resources\Menus\MenuResource;
+use FilamentAdmin\Models\AdminUser;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;

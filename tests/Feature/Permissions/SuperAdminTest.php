@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\AdminUser;
+use FilamentAdmin\Models\AdminUser;
 use Illuminate\Support\Facades\Gate;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
