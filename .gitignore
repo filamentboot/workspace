@@ -10,6 +10,7 @@
 /.idea
 /.nova
 /.phpunit.cache
+/.phpunit.result.cache
 /.vscode
 /.zed
 /.opencode
@@ -35,8 +36,10 @@ Thumbs.db
 # 内部开发规划（AI 辅助开发产出，含部署细节）
 /docs/superpowers/
 
-# 插件市场开发包（独立仓库维护）
-/packages/
+# 子目录包发布
+/packages/*
+!/packages/filament-admin/
+!/packages/filament-admin/**
 
 # 插件市场集成测试（依赖未发布包，暂不公开）
 /tests/Feature/PluginPlatform/

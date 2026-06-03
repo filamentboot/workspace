@@ -1,6 +1,6 @@
 <?php
 
-namespace Tests\Unit\Release;
+namespace FilamentAdmin\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 
@@ -8,7 +8,7 @@ class PackageBoundaryTest extends TestCase
 {
     public function test_composer_json_uses_publishable_package_metadata(): void
     {
-        $composer = json_decode((string) file_get_contents(__DIR__.'/../../../composer.json'), true, 512, JSON_THROW_ON_ERROR);
+        $composer = json_decode((string) file_get_contents(__DIR__.'/../../composer.json'), true, 512, JSON_THROW_ON_ERROR);
 
         self::assertSame('filament-admin/filament-admin', $composer['name']);
         self::assertSame('library', $composer['type']);
@@ -23,8 +23,8 @@ class PackageBoundaryTest extends TestCase
     public function test_runtime_files_do_not_reference_plugin_platform_namespace(): void
     {
         $files = [
-            __DIR__.'/../../../app/Providers/Filament/AdminPanelProvider.php',
-            __DIR__.'/../../../src/Services/AdminNavigationBuilder.php',
+            __DIR__.'/../../src/FilamentAdminServiceProvider.php',
+            __DIR__.'/../../src/Services/AdminNavigationBuilder.php',
         ];
 
         foreach ($files as $file) {
