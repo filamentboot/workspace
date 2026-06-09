@@ -23,6 +23,8 @@
 /storage/*.key
 /storage/pail
 /vendor
+# 根目录不再有 src/，所有包代码在 packages/filament-admin/src/
+/src/
 _ide_helper.php
 Homestead.json
 Homestead.yaml
@@ -44,3 +46,5 @@ Thumbs.db
 # 插件市场集成测试（依赖未发布包，暂不公开）
 /tests/Feature/PluginPlatform/
 /tests/Unit/PluginPlatform/
+
+/.planning

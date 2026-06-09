@@ -35,4 +35,13 @@ class PackageBoundaryTest extends TestCase
             self::assertStringNotContainsString('packages/plugin-platform', $source, $file);
         }
     }
+
+    /**
+     * COMPLY-06: 确认根目录 /src/ 孤儿已删除，包代码统一在 packages/filament-admin/src/
+     */
+    public function test_root_src_orphan_directory_does_not_exist(): void
+    {
+        $rootSrc = dirname(__DIR__, 4) . '/src';
+        self::assertFalse(is_dir($rootSrc), '根目录 /src/ 仍然存在，应删除（COMPLY-06）');
+    }
 }
