@@ -2,7 +2,6 @@
 
 namespace FilamentAdmin\Commands;
 
-use FilamentAdmin\FilamentAdminPlugin;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 
