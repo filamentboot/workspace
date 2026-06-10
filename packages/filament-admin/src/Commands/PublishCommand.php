@@ -82,8 +82,9 @@ class PublishCommand extends Command
         // D-03 双重语义：--all 配合 --model 或 --resource 时，为指定 name 补齐四件套（语义 B）
         if ($all && ($modelName !== '' || $resourceName !== '')) {
             $name = $modelName !== '' ? $modelName : $resourceName;
+            $this->publishSet($name);
 
-            return $this->publishSet($name) ? self::SUCCESS : self::FAILURE;
+            return self::SUCCESS;
         }
 
         // D-03 语义 A：单独使用 --all，发布全套内置资源
@@ -91,21 +92,23 @@ class PublishCommand extends Command
             return $this->publishAllBuiltin();
         }
 
-        // 单件发布模式
+        // 单件发布模式（跳过已存在文件不算失败，仍返回 SUCCESS；D-02）
         if ($modelName !== '') {
-            return $this->publishModel($modelName) ? self::SUCCESS : self::FAILURE;
+            $this->publishModel($modelName);
+
+            return self::SUCCESS;
         }
 
         if ($resourceName !== '') {
-            $success = $this->publishResource($resourceName);
+            $published = $this->publishResource($resourceName);
 
-            if ($success) {
+            if ($published) {
                 $modelClass    = $this->deriveModelNamespace().'\\'.$resourceName;
                 $resourceClass = $this->deriveResourceNamespace($resourceName).'\\'.$resourceName.'Resource';
                 $this->printBindingExample($modelClass, $resourceClass);
             }
 
-            return $success ? self::SUCCESS : self::FAILURE;
+            return self::SUCCESS;
         }
 
         $this->error('请指定 --model / --resource / --all 至少一个；--help 查看用法。');
@@ -115,19 +118,18 @@ class PublishCommand extends Command
 
     /**
      * 发布所有内置资源的四件套（D-03 语义 A，受 --only/--except 筛选）
+     *
+     * 跳过已存在的文件不算失败，始终返回 SUCCESS（D-02）。
      */
     protected function publishAllBuiltin(): int
     {
-        $names   = $this->resolveBuiltinNames();
-        $success = true;
+        $names = $this->resolveBuiltinNames();
 
         foreach ($names as $name) {
-            if (! $this->publishSet($name)) {
-                $success = false;
-            }
+            $this->publishSet($name);
         }
 
-        return $success ? self::SUCCESS : self::FAILURE;
+        return self::SUCCESS;
     }
 
     /**
