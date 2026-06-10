@@ -57,6 +57,7 @@ class FilamentAdminServiceProvider extends ServiceProvider
         $this->registerObservers();
         $this->registerPolicies();
         $this->registerListeners();
+        $this->registerPublishes();
     }
 
     /**
@@ -145,5 +146,48 @@ class FilamentAdminServiceProvider extends ServiceProvider
     {
         Event::listen(Login::class, Listeners\LogAdminLogin::class);
         Event::listen(Failed::class, Listeners\LogAdminLogin::class);
+    }
+
+    /**
+     * 注册可发布资源出口（vendor:publish 5 个 tag）
+     *
+     * 支持 filament-admin-config / filament-admin-migrations /
+     * filament-admin-views / filament-admin-lang / filament-admin-stubs
+     * 五个标签，让用户通过 `php artisan vendor:publish --tag=filament-admin-*` 将资源复制到项目。
+     */
+    protected function registerPublishes(): void
+    {
+        if (! $this->app->runningInConsole()) {
+            return;
+        }
+
+        // D-07: config tag — 将包内配置文件发布到用户项目 config/ 目录
+        $this->publishes([
+            __DIR__.'/../config/filament-admin.php' => config_path('filament-admin.php'),
+        ], 'filament-admin-config');
+
+        // D-08: migrations tag — 使用 publishesMigrations 自动追加时间戳前缀（Laravel 13 原生 API）
+        $this->publishesMigrations([
+            __DIR__.'/../database/migrations/' => database_path('migrations'),
+        ], 'filament-admin-migrations');
+
+        // D-09: views tag — 将包内视图目录发布到用户项目 resources/views/vendor/filament-admin
+        $this->publishes([
+            __DIR__.'/../resources/views' => resource_path('views/vendor/filament-admin'),
+        ], 'filament-admin-views');
+
+        // D-10: lang tag — 分别发布 en 和 zh_CN 骨架目录；精确指向子目录避免将 2FA 翻译误发布（Pitfall 4）
+        $this->publishes([
+            __DIR__.'/../resources/lang/en' => $this->app->langPath('vendor/filament-admin/en'),
+        ], 'filament-admin-lang');
+
+        $this->publishes([
+            __DIR__.'/../resources/lang/zh_CN' => $this->app->langPath('vendor/filament-admin/zh_CN'),
+        ], 'filament-admin-lang');
+
+        // D-11: stubs tag — 将包内 stubs 目录发布到用户项目 stubs/vendor/filament-admin
+        $this->publishes([
+            __DIR__.'/../stubs' => base_path('stubs/vendor/filament-admin'),
+        ], 'filament-admin-stubs');
     }
 }
