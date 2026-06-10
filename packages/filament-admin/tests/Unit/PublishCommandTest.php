@@ -310,4 +310,56 @@ class PublishCommandTest extends TestCase
             ->expectsOutputToContain('--path 不允许包含 .. 路径上溯')
             ->assertExitCode(Command::FAILURE);
     }
+
+    /**
+     * Test 9（gap-closure 01-07）：验证发布出的 Resource 文件 getPages() 引用正确的 Page 类名
+     *
+     * 回归保护 VERIFICATION.md Gap 1：Resource.stub 占位符错误曾导致
+     * getPages() 引用 Pages\CreateProductResource（不存在的类）。
+     */
+    public function test_published_resource_get_pages_references_correct_page_classes(): void
+    {
+        $this->artisan('filament-admin:publish', ['--resource' => 'Product'])
+            ->assertExitCode(0);
+
+        $path = base_path('app/Filament/Resources/Products/ProductResource.php');
+        self::assertTrue(File::exists($path), "Resource file not generated at {$path}");
+
+        $content = File::get($path);
+
+        self::assertStringContainsString("Pages\\CreateProduct::route('/create')", $content);
+        self::assertStringContainsString("Pages\\EditProduct::route('/{record}/edit')", $content);
+        self::assertStringContainsString("Pages\\ListProducts::route('/')", $content);
+
+        self::assertStringNotContainsString('Pages\\CreateProductResource', $content);
+        self::assertStringNotContainsString("'view' => Pages\\ViewProduct::route", $content);
+    }
+
+    /**
+     * Test 10（gap-closure 01-07）：验证发布出的 FeatureTest 文件使用用户项目命名空间
+     *
+     * 回归保护 VERIFICATION.md Gap 2：FeatureTest.stub 曾硬编码包内
+     * 命名空间 FilamentAdmin\Filament\Resources，导致测试文件无法运行。
+     * 使用 --resource=Product --all 触发完整四件套（含 FeatureTest 生成）。
+     */
+    public function test_published_feature_test_uses_app_namespace(): void
+    {
+        $this->artisan('filament-admin:publish', ['--resource' => 'Product', '--all' => true])
+            ->assertExitCode(0);
+
+        $path = base_path('tests/Feature/ProductResourceTest.php');
+        self::assertTrue(File::exists($path), "FeatureTest file not generated at {$path}");
+
+        $content = File::get($path);
+
+        self::assertStringContainsString(
+            'use App\\Filament\\Resources\\Products\\ProductResource;',
+            $content
+        );
+        self::assertStringContainsString('use App\\Models\\Product;', $content);
+        self::assertStringContainsString('use FilamentAdmin\\Models\\AdminUser;', $content);
+
+        self::assertStringNotContainsString('FilamentAdmin\\Filament\\Resources', $content);
+        self::assertStringNotContainsString('FilamentAdmin\\Models\\Product', $content);
+    }
 }
