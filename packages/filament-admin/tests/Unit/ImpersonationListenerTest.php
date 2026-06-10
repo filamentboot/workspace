@@ -2,13 +2,15 @@
 
 namespace FilamentAdmin\Tests\Unit;
 
-use FilamentAdmin\FilamentAdminServiceProvider;
 use FilamentAdmin\Listeners\ImpersonationListener;
 use FilamentAdmin\Models\AdminUser;
 use FilamentAdmin\Services\ActivityLogger;
-use Illuminate\Foundation\Application;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Mockery;
-use Orchestra\Testbench\TestCase;
+use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;
+use Mockery\Expectation;
+use Mockery\MockInterface;
+use PHPUnit\Framework\TestCase;
 use STS\FilamentImpersonate\Events\EnterImpersonation;
 use STS\FilamentImpersonate\Events\LeaveImpersonation;
 
@@ -20,18 +22,21 @@ use STS\FilamentImpersonate\Events\LeaveImpersonation;
  * - handleLeave：LeaveImpersonation 事件触发时调用 ActivityLogger::log(causer, subject, 'impersonate.leave')
  * - handleLeave：impersonated 为 null 时不调用 log 且不抛异常（防御 ?Authenticatable 可空）
  * - handleEnter：impersonator 非 AdminUser 时不调用 log（guard 过滤）
+ *
+ * 本测试为纯单元测试（PHPUnit TestCase），不依赖 Orchestra Testbench，
+ * 避免 ServiceProvider bootstrap 副作用影响其他测试类（Mockery 全局状态隔离）。
  */
 class ImpersonationListenerTest extends TestCase
 {
+    use MockeryPHPUnitIntegration;
+
     /**
-     * 返回需要注册的包服务提供者
-     *
-     * @param  Application  $app
-     * @return list<class-string>
+     * 每个测试后清理 Mockery，防止 mock 污染全局静态状态
      */
-    protected function getPackageProviders($app): array
+    protected function tearDown(): void
     {
-        return [FilamentAdminServiceProvider::class];
+        parent::tearDown();
+        Mockery::close();
     }
 
     /**
@@ -39,18 +44,20 @@ class ImpersonationListenerTest extends TestCase
      */
     public function test_handle_enter_calls_activity_logger_with_enter_action(): void
     {
-        /** @var AdminUser&\Mockery\MockInterface $impersonator */
-        $impersonator = Mockery::mock(AdminUser::class)->makePartial();
+        /** @var AdminUser&MockInterface $impersonator */
+        $impersonator     = Mockery::mock(AdminUser::class)->makePartial();
         $impersonator->id = 1;
 
-        /** @var AdminUser&\Mockery\MockInterface $impersonated */
-        $impersonated = Mockery::mock(AdminUser::class)->makePartial();
+        /** @var AdminUser&MockInterface $impersonated */
+        $impersonated     = Mockery::mock(AdminUser::class)->makePartial();
         $impersonated->id = 2;
 
-        /** @var ActivityLogger&\Mockery\MockInterface $logger */
+        /** @var ActivityLogger&MockInterface $logger */
         $logger = Mockery::mock(ActivityLogger::class);
-        $logger->shouldReceive('log')
-            ->once()
+
+        /** @var Expectation $expectation */
+        $expectation = $logger->shouldReceive('log');
+        $expectation->once()
             ->with(
                 Mockery::type(AdminUser::class),
                 Mockery::type(AdminUser::class),
@@ -66,18 +73,20 @@ class ImpersonationListenerTest extends TestCase
      */
     public function test_handle_leave_calls_activity_logger_with_leave_action(): void
     {
-        /** @var AdminUser&\Mockery\MockInterface $impersonator */
-        $impersonator = Mockery::mock(AdminUser::class)->makePartial();
+        /** @var AdminUser&MockInterface $impersonator */
+        $impersonator     = Mockery::mock(AdminUser::class)->makePartial();
         $impersonator->id = 1;
 
-        /** @var AdminUser&\Mockery\MockInterface $impersonated */
-        $impersonated = Mockery::mock(AdminUser::class)->makePartial();
+        /** @var AdminUser&MockInterface $impersonated */
+        $impersonated     = Mockery::mock(AdminUser::class)->makePartial();
         $impersonated->id = 2;
 
-        /** @var ActivityLogger&\Mockery\MockInterface $logger */
+        /** @var ActivityLogger&MockInterface $logger */
         $logger = Mockery::mock(ActivityLogger::class);
-        $logger->shouldReceive('log')
-            ->once()
+
+        /** @var Expectation $expectation */
+        $expectation = $logger->shouldReceive('log');
+        $expectation->once()
             ->with(
                 Mockery::type(AdminUser::class),
                 Mockery::type(AdminUser::class),
@@ -93,19 +102,19 @@ class ImpersonationListenerTest extends TestCase
      */
     public function test_handle_leave_does_not_log_when_impersonated_is_null(): void
     {
-        /** @var AdminUser&\Mockery\MockInterface $impersonator */
-        $impersonator = Mockery::mock(AdminUser::class)->makePartial();
+        /** @var AdminUser&MockInterface $impersonator */
+        $impersonator     = Mockery::mock(AdminUser::class)->makePartial();
         $impersonator->id = 1;
 
-        /** @var ActivityLogger&\Mockery\MockInterface $logger */
+        /** @var ActivityLogger&MockInterface $logger */
         $logger = Mockery::mock(ActivityLogger::class);
         $logger->shouldNotReceive('log');
 
         $listener = new ImpersonationListener($logger);
         $listener->handleLeave(new LeaveImpersonation($impersonator, null));
 
-        // 无异常抛出，测试通过即为防御成功
-        $this->assertTrue(true);
+        // 无异常抛出，shouldNotReceive 断言确保 log 未被调用
+        $this->addToAssertionCount(1);
     }
 
     /**
@@ -113,20 +122,21 @@ class ImpersonationListenerTest extends TestCase
      */
     public function test_handle_enter_does_not_log_when_impersonator_is_not_admin_user(): void
     {
-        /** @var \Illuminate\Contracts\Auth\Authenticatable&\Mockery\MockInterface $impersonator */
-        $impersonator = Mockery::mock(\Illuminate\Contracts\Auth\Authenticatable::class);
+        /** @var Authenticatable&MockInterface $impersonator */
+        $impersonator = Mockery::mock(Authenticatable::class);
 
-        /** @var AdminUser&\Mockery\MockInterface $impersonated */
-        $impersonated = Mockery::mock(AdminUser::class)->makePartial();
+        /** @var AdminUser&MockInterface $impersonated */
+        $impersonated     = Mockery::mock(AdminUser::class)->makePartial();
         $impersonated->id = 2;
 
-        /** @var ActivityLogger&\Mockery\MockInterface $logger */
+        /** @var ActivityLogger&MockInterface $logger */
         $logger = Mockery::mock(ActivityLogger::class);
         $logger->shouldNotReceive('log');
 
         $listener = new ImpersonationListener($logger);
         $listener->handleEnter(new EnterImpersonation($impersonator, $impersonated));
 
-        $this->assertTrue(true);
+        // 无异常抛出，shouldNotReceive 断言确保 log 未被调用
+        $this->addToAssertionCount(1);
     }
 }
