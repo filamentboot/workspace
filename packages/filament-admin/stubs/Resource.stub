@@ -4,10 +4,12 @@ namespace {{ namespace }};
 
 use {{ modelNamespace }}\{{ model }};
 use Filament\Actions\BulkActionGroup;
+use Filament\Actions\DeleteAction;
 use Filament\Actions\DeleteBulkAction;
+use Filament\Actions\EditAction;
 use Filament\Resources\Resource;
 use Filament\Schemas\Schema;
-use Filament\Tables;
+use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
 
 /**
@@ -60,11 +62,11 @@ class {{ class }} extends Resource
             ->columns([
                 // 在此定义表格列
                 // 示例：
-                // Tables\Columns\TextColumn::make('name')
+                // TextColumn::make('name')
                 //     ->label('名称')
                 //     ->searchable()
                 //     ->sortable(),
-                Tables\Columns\TextColumn::make('created_at')
+                TextColumn::make('created_at')
                     ->label('创建时间')
                     ->dateTime('Y-m-d H:i')
                     ->sortable()
@@ -73,11 +75,11 @@ class {{ class }} extends Resource
             ->filters([
                 // 在此定义过滤器
             ])
-            ->actions([
-                Tables\Actions\EditAction::make(),
-                Tables\Actions\DeleteAction::make(),
+            ->recordActions([
+                EditAction::make(),
+                DeleteAction::make(),
             ])
-            ->bulkActions([
+            ->toolbarActions([
                 BulkActionGroup::make([
                     DeleteBulkAction::make(),
                 ]),
