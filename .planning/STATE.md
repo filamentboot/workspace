@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v0.5
 milestone_name: milestone
-status: Executing Phase 02
+status: Ready to execute
 last_updated: "2026-06-10T12:30:00.000Z"
 progress:
   total_phases: 5
-  completed_phases: 1
-  total_plans: 11
-  completed_plans: 9
-  percent: 22
+  completed_phases: 2
+  total_plans: 15
+  completed_plans: 14
+  percent: 43
 ---
 
 # Project State: FilamentAdmin v0.5
@@ -24,34 +24,34 @@ progress:
 
 **Core value:** 别人执行 `composer require laravelstack/filament-admin` 后能开箱运行、能扩展定制、能稳定升级，且包发布形态符合 Laravel 开源市场规范
 
-**Current focus:** Phase 02 — documentation-branding
+**Current focus:** Phase 03 — package-feature-enhancement
 
 ---
 
 ## Current Position
 
-Phase: 02 (documentation-branding) — EXECUTING
-Plan: 2 of 3（02-01 完成，02-02 完成，02-03 待执行）
+Phase: 03 (package-feature-enhancement) — EXECUTING
+Plan: 4 of 4
 
 ```
-current_phase:   2
-current_plan:    2
+current_phase:   3
+current_plan:    4
 current_status:  completed
 last_updated:    2026-06-10
-resume_file:     .planning/phases/02-documentation-branding/02-02-SUMMARY.md
-stopped_at:      Plan 02-02 完成：包 README 重写（194行）+ 包 CHANGELOG 全量回填（KaC 1.1.0）+ 包 UPGRADING.md 新建
+resume_file:     .planning/phases/03-package-feature-enhancement/03-04-SUMMARY.md
+stopped_at:      Plan 03-04 完成：dedoc/scramble 引入演示项目 + config/scramble.php api/v1 路由过滤 + RestrictedDocsAccess + /docs/api 人工验证通过（FEAT-02）
 ```
 
 **Progress bar:**
 
 ```
 Phase 1 [##########] 100%  包发布合规（完成）
-Phase 2 [######    ]  67%  文档与品宣（02-01/02-02 完成，2/3）
-Phase 3 [          ]   0%  包功能补强
+Phase 2 [##########] 100%  文档与品宣（全部完成，3/3）
+Phase 3 [######    ]  75%  包功能补强
 Phase 4 [          ]   0%  发布自动化
 Phase 5 [          ]   0%  演示站 (v0.5.1)
 
-Overall [##        ]  22%  (1/5 phases + 02-01)
+Overall [#####     ]  43%  (2/5 phases + 3/4 plans in Phase 3)
 ```
 
 ---
@@ -98,6 +98,10 @@ requirements_done:  0 / 30  (COMPLY-01~09 工程落地，测试/文档验收后�
 | Phase 01-package-release-compliance P01 | 5min | 2 tasks | 5 files |
 | Phase 01-package-release-compliance P05 | 15min | 3 tasks | 5 files |
 | Phase 01-package-release-compliance P06 | 5min | 2 tasks | 1 file |
+| Phase 02-documentation-branding P03 | 224 | 4 tasks | 5 files |
+| Phase 03-package-feature-enhancement P01 | 25min | 2 tasks | 2 files |
+| Phase 03-package-feature-enhancement P03 | 45min | 2 tasks | 8 files |
+| Phase 03-package-feature-enhancement P04 | 20min | 2 tasks | 3 files |
 
 ### Critical Facts
 
@@ -122,13 +126,13 @@ requirements_done:  0 / 30  (COMPLY-01~09 工程落地，测试/文档验收后�
 
 ## Session Continuity
 
-**上次工作:** 2026-06-10 — Plan 02-02 完成：包 README.md 完整重写（194行/DOC-01）、包 CHANGELOG.md 全量回填（KaC 1.1.0/DOC-04）、包 UPGRADING.md 新建（v0.4→v0.5 breaking changes/DOC-05）
+**上次工作:** 2026-06-10 — Plan 03-04 完成：dedoc/scramble 引入演示项目根 require-dev（D-33）、config/scramble.php api_path=api/v1 + RestrictedDocsAccess（D-35）、AppServiceProvider 路由过滤回调（Pitfall 4）、/docs/api 人工验证通过（FEAT-02）
 
-**下次启动时:** 执行 Phase 2 Plan 02-03（根仓库文档：wiki/installation.md + 根 README + 根 CHANGELOG + 根 UPGRADING + CONTRIBUTING CI 端口）
+**下次启动时:** 执行 Phase 3 Plan 03-02（CRUD 生成器四命令，Wave 2：make:filament-admin-{model,resource,migration,test}）
 
 **未解决问题:**
 
-- 无（Phase 2 前置基线已就绪，02-02 可直接启动）
+- 登录页截图（art/login.png）待用户后补，README 已留显式 TODO 占位
 
 ---
 
@@ -155,3 +159,13 @@ requirements_done:  0 / 30  (COMPLY-01~09 工程落地，测试/文档验收后�
 - [Phase 01-package-release-compliance P06]: COMPLY-05 措辞从"每条失败即 CI 失败"改为区分 phpstan/pint fail 与 audit warning
 - [Phase 02-documentation-branding P01]: sed 替换严格限定 5 文件白名单，docs/superpowers/ 保持历史原貌（T-02-02）
 - [Phase 02-documentation-branding P01]: art/dashboard.png 保持静态 PNG，随 subtree split 进包仓库（D-21 锁定方案）
+- [Phase 02-documentation-branding P03]: wiki/installation.md 为详细安装唯一权威源（D-24），包 README 链接指向此，不在包内复制
+- [Phase 02-documentation-branding P03]: 根 CHANGELOG 从 v0.4.0 起，不含 v1.0.0 条目（D-26 / Pitfall 3）
+- [Phase 02-documentation-branding P03]: DOC-06 登录页截图 TODO 占位留显式注释，避免 2 张截图要求被静默遗漏
+- [Phase ?]: D-28: StubGenerator 抽取为独立服务，参数化所有来自命令选项的值，IO 输出留在命令层
+- [Phase ?]: D-31 确认：stechstudio/filament-impersonate v5.5.0 兼容 Filament 5 + admin guard，横幅 zh_CN 覆盖为锁定文案
+- [Phase ?]: ImpersonationListener 测试使用纯 PHPUnit TestCase，避免 Orchestra Testbench + FilamentImpersonateServiceProvider 污染全局 Model::booted 状态
+- [Phase 03-package-feature-enhancement P04]: D-33：Scramble 仅装演示项目根 require-dev，不进主包，主包不强绑文档工具依赖
+- [Phase 03-package-feature-enhancement P04]: D-34：Scramble 与 knuckleswtf/scribe 共存，互不移除，实时 OpenAPI 与静态 HTML 文档互补
+- [Phase 03-package-feature-enhancement P04]: D-35：RestrictedDocsAccess 中间件默认启用，生产环境 /docs/api 不可访问
+- [Phase 03-package-feature-enhancement P04]: Pitfall 4 缓解：api_path=api/v1 + routes() 回调双保险，精确过滤文档化范围

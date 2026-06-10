@@ -179,4 +179,98 @@ class StubGenerator
 
         return ucfirst(end($segments));
     }
+
+    /**
+     * 构建 List{Plural} Page 类的文件内容（D-28 单一来源，迁自 PublishCommand）
+     *
+     * 由 PublishCommand::publishResource() 和 MakeFilamentAdminResourceCommand 共同调用，
+     * 不允许在命令层保留副本，统一通过此方法生成列表页文件内容。
+     *
+     * @param  string  $resourceNamespace  Resource 命名空间（含 Plural 子目录，如 App\Filament\Resources\Products）
+     * @param  string  $resourceClass  Resource 类名（如 ProductResource）
+     * @param  string  $modelClass  Model 类名（如 Product）
+     * @param  string  $pluralClass  Model 复数类名（如 Products）
+     * @return string 生成的 PHP 文件内容
+     */
+    public function buildListPageContent(string $resourceNamespace, string $resourceClass, string $modelClass, string $pluralClass): string
+    {
+        return <<<PHP
+<?php
+
+namespace {$resourceNamespace}\\Pages;
+
+use {$resourceNamespace}\\{$resourceClass};
+use Filament\Resources\Pages\ListRecords;
+
+/**
+ * {$modelClass} 列表页
+ */
+class List{$pluralClass} extends ListRecords
+{
+    protected static string \$resource = {$resourceClass}::class;
+}
+PHP;
+    }
+
+    /**
+     * 构建 Create{Name} Page 类的文件内容（D-28 单一来源，迁自 PublishCommand）
+     *
+     * 由 PublishCommand::publishResource() 和 MakeFilamentAdminResourceCommand 共同调用，
+     * 不允许在命令层保留副本，统一通过此方法生成新建页文件内容。
+     *
+     * @param  string  $resourceNamespace  Resource 命名空间（含 Plural 子目录）
+     * @param  string  $resourceClass  Resource 类名（如 ProductResource）
+     * @param  string  $modelClass  Model 类名（如 Product）
+     * @return string 生成的 PHP 文件内容
+     */
+    public function buildCreatePageContent(string $resourceNamespace, string $resourceClass, string $modelClass): string
+    {
+        return <<<PHP
+<?php
+
+namespace {$resourceNamespace}\\Pages;
+
+use {$resourceNamespace}\\{$resourceClass};
+use Filament\Resources\Pages\CreateRecord;
+
+/**
+ * {$modelClass} 新建页
+ */
+class Create{$modelClass} extends CreateRecord
+{
+    protected static string \$resource = {$resourceClass}::class;
+}
+PHP;
+    }
+
+    /**
+     * 构建 Edit{Name} Page 类的文件内容（D-28 单一来源，迁自 PublishCommand）
+     *
+     * 由 PublishCommand::publishResource() 和 MakeFilamentAdminResourceCommand 共同调用，
+     * 不允许在命令层保留副本，统一通过此方法生成编辑页文件内容。
+     *
+     * @param  string  $resourceNamespace  Resource 命名空间（含 Plural 子目录）
+     * @param  string  $resourceClass  Resource 类名（如 ProductResource）
+     * @param  string  $modelClass  Model 类名（如 Product）
+     * @return string 生成的 PHP 文件内容
+     */
+    public function buildEditPageContent(string $resourceNamespace, string $resourceClass, string $modelClass): string
+    {
+        return <<<PHP
+<?php
+
+namespace {$resourceNamespace}\\Pages;
+
+use {$resourceNamespace}\\{$resourceClass};
+use Filament\Resources\Pages\EditRecord;
+
+/**
+ * {$modelClass} 编辑页
+ */
+class Edit{$modelClass} extends EditRecord
+{
+    protected static string \$resource = {$resourceClass}::class;
+}
+PHP;
+    }
 }

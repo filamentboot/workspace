@@ -260,11 +260,12 @@ class PublishCommand extends Command
             $this->warn("Skipped: {$resourceFile} (use --force to overwrite)");
         }
 
-        // 生成 3 个 Page 文件（内嵌模板，不依赖外部 Page.stub）
-        $pagesDir = $resourceDir.'/Pages';
+        // 生成 3 个 Page 文件（委托 StubGenerator，D-28 单一来源）
+        $pagesDir      = $resourceDir.'/Pages';
+        $resourceClass = $name.'Resource';
 
         $listPath    = $pagesDir.'/List'.$pluralName.'.php';
-        $listWritten = $this->generator->writeFile($listPath, $this->buildListPageContent($resourceNamespace, $name, $pluralName), (bool) $this->option('force'));
+        $listWritten = $this->generator->writeFile($listPath, $this->generator->buildListPageContent($resourceNamespace, $resourceClass, $name, $pluralName), (bool) $this->option('force'));
 
         if ($listWritten) {
             $this->info("已生成: {$listPath}");
@@ -273,7 +274,7 @@ class PublishCommand extends Command
         }
 
         $createPath    = $pagesDir.'/Create'.$name.'.php';
-        $createWritten = $this->generator->writeFile($createPath, $this->buildCreatePageContent($resourceNamespace, $name), (bool) $this->option('force'));
+        $createWritten = $this->generator->writeFile($createPath, $this->generator->buildCreatePageContent($resourceNamespace, $resourceClass, $name), (bool) $this->option('force'));
 
         if ($createWritten) {
             $this->info("已生成: {$createPath}");
@@ -282,7 +283,7 @@ class PublishCommand extends Command
         }
 
         $editPath    = $pagesDir.'/Edit'.$name.'.php';
-        $editWritten = $this->generator->writeFile($editPath, $this->buildEditPageContent($resourceNamespace, $name), (bool) $this->option('force'));
+        $editWritten = $this->generator->writeFile($editPath, $this->generator->buildEditPageContent($resourceNamespace, $resourceClass, $name), (bool) $this->option('force'));
 
         if ($editWritten) {
             $this->info("已生成: {$editPath}");
@@ -358,85 +359,6 @@ class PublishCommand extends Command
         }
 
         return $written;
-    }
-
-    /**
-     * 构建 ListXxx Page 类的文件内容
-     *
-     * @param  string  $resourceNamespace  Resource 命名空间（含 Plural 子目录）
-     * @param  string  $name  PascalCase 类名
-     * @param  string  $pluralName  复数类名
-     */
-    protected function buildListPageContent(string $resourceNamespace, string $name, string $pluralName): string
-    {
-        return <<<PHP
-<?php
-
-namespace {$resourceNamespace}\\Pages;
-
-use {$resourceNamespace}\\{$name}Resource;
-use Filament\Resources\Pages\ListRecords;
-
-/**
- * {$name} 列表页
- */
-class List{$pluralName} extends ListRecords
-{
-    protected static string \$resource = {$name}Resource::class;
-}
-PHP;
-    }
-
-    /**
-     * 构建 CreateXxx Page 类的文件内容
-     *
-     * @param  string  $resourceNamespace  Resource 命名空间（含 Plural 子目录）
-     * @param  string  $name  PascalCase 类名
-     */
-    protected function buildCreatePageContent(string $resourceNamespace, string $name): string
-    {
-        return <<<PHP
-<?php
-
-namespace {$resourceNamespace}\\Pages;
-
-use {$resourceNamespace}\\{$name}Resource;
-use Filament\Resources\Pages\CreateRecord;
-
-/**
- * {$name} 新建页
- */
-class Create{$name} extends CreateRecord
-{
-    protected static string \$resource = {$name}Resource::class;
-}
-PHP;
-    }
-
-    /**
-     * 构建 EditXxx Page 类的文件内容
-     *
-     * @param  string  $resourceNamespace  Resource 命名空间（含 Plural 子目录）
-     * @param  string  $name  PascalCase 类名
-     */
-    protected function buildEditPageContent(string $resourceNamespace, string $name): string
-    {
-        return <<<PHP
-<?php
-
-namespace {$resourceNamespace}\\Pages;
-
-use {$resourceNamespace}\\{$name}Resource;
-use Filament\Resources\Pages\EditRecord;
-
-/**
- * {$name} 编辑页
- */
-class Edit{$name} extends EditRecord
-{
-    protected static string \$resource = {$name}Resource::class;
-}
-PHP;
     }
 
     /**

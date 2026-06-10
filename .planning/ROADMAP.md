@@ -99,9 +99,9 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 03-01-PLAN.md — 抽取 StubGenerator 共享服务 + 重构 PublishCommand 委托（FEAT-03 基石，保持 Phase 1 公开契约不变）
-- [ ] 03-03-PLAN.md — Impersonation：require stechstudio/filament-impersonate + AdminUserResource Action（仅超管）+ ImpersonationListener 接入 ActivityLogger（FEAT-01）
-- [ ] 03-04-PLAN.md — Scramble API 文档（演示项目根）：dedoc/scramble + config/scramble.php + 路由过滤，与 Scribe 共存（FEAT-02，含人工验证 checkpoint）
+- [x] 03-01-PLAN.md — 抽取 StubGenerator 共享服务 + 重构 PublishCommand 委托（FEAT-03 基石，保持 Phase 1 公开契约不变）
+- [x] 03-03-PLAN.md — Impersonation：require stechstudio/filament-impersonate + AdminUserResource Action（仅超管）+ ImpersonationListener 接入 ActivityLogger（FEAT-01）
+- [x] 03-04-PLAN.md — Scramble API 文档（演示项目根）：dedoc/scramble + config/scramble.php + 路由过滤，与 Scribe 共存（FEAT-02，含人工验证 checkpoint）
 
 **Wave 2** *(blocked on 03-01 completion)*
 
@@ -151,7 +151,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. 包发布合规 | 8/8 | Complete    | 2026-06-10 |
 | 2. 文档与品宣 | 3/3 | Complete    | 2026-06-10 |
-| 3. 包功能补强 | 0/4 | Not started | - |
+| 3. 包功能补强 | 3/4 | In Progress|  |
 | 4. 发布自动化 | 0/? | Not started | - |
 | 5. 演示站 (v0.5.1) | 0/? | Not started | - |
 
@@ -226,7 +226,7 @@ Phase 映射（由 ROADMAP.md 阶段细化，此处仅 milestone 视图）。
 | DOC-07 | Phase 2 | Complete |
 | DOC-08 | Phase 2 | Complete |
 | FEAT-01 | Phase 3 | Pending |
-| FEAT-02 | Phase 3 | Pending |
+| FEAT-02 | Phase 3 | Complete |
 | FEAT-03 | Phase 3 | Pending |
 | RELEASE-01 | Phase 4 | Pending |
 | RELEASE-02 | Phase 4 | Pending |
