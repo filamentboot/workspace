@@ -11,7 +11,7 @@
 ## Phases
 
 - [x] **Phase 1: 包发布合规** — 修复 ServiceProvider `publishes()` 缺失 + PublishCommand 真实实现 + Composer 规范字段 + CI 门槛，让主包真正符合 Laravel 开源包标准
-- [ ] **Phase 2: 文档与品宣** — README 重写 / wiki 完整化 / CHANGELOG 规范 / UPGRADING，让别人装下来看得懂、用得了、愿意 Star
+- [x] **Phase 2: 文档与品宣** — README 重写 / wiki 完整化 / CHANGELOG 规范 / UPGRADING，让别人装下来看得懂、用得了、愿意 Star (completed 2026-06-10)
 - [ ] **Phase 3: 包功能补强** — Impersonation + Scramble API 文档 + CRUD 生成器，补齐 kaido-kit 已有的核心差异化功能
 - [ ] **Phase 4: 发布自动化** — release.yml + 发版脚本三件套 + Codecov，让下次发版从 9 条手工命令变为打 tag 就完事
 - [ ] **Phase 5: 演示站 (v0.5.1)** — demo.xitongapp.com 部署 + 数据重置 cron + 高危操作屏蔽，不阻塞 v0.5 主线
@@ -78,7 +78,7 @@ Plans:
 **Wave 2** *(blocked on Wave 1 completion)*
 
 - [x] 02-02-PLAN.md — 包对外文档（DOC-01 包 README 重写 / DOC-04 包 CHANGELOG 全量回填 / DOC-05 包 UPGRADING，随 split 进 Packagist，相对路径自包含）
-- [ ] 02-03-PLAN.md — 根仓库文档（DOC-03 wiki/installation.md 完整化 / DOC-06 根 README 改写含登录页截图 TODO 占位 / DOC-04 根 CHANGELOG / DOC-05 根 UPGRADING / DOC-08 CONTRIBUTING CI 端口）
+- [x] 02-03-PLAN.md — 根仓库文档（DOC-03 wiki/installation.md 完整化 / DOC-06 根 README 改写含登录页截图 TODO 占位 / DOC-04 根 CHANGELOG / DOC-05 根 UPGRADING / DOC-08 CONTRIBUTING CI 端口）
 
 ---
 
@@ -95,7 +95,17 @@ Plans:
 2. 访问 `/docs/api` 返回 200，展示由 dedoc/scramble 自动生成的 OpenAPI 3.0 文档界面，其中包含已有的 Sanctum API 路由（admin/api/v1）
 3. 执行 `php artisan make:filament-admin-model Product` 生成 `app/Models/Product.php`（命名空间正确）；`make:filament-admin-resource ProductResource` 生成对应 Filament Resource 文件；`make:filament-admin-migration` 生成 migration stub；`make:filament-admin-test` 生成 Feature Test stub；四个命令各自有对应 PHPUnit 测试覆盖
 
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+**Wave 1**
+
+- [ ] 03-01-PLAN.md — 抽取 StubGenerator 共享服务 + 重构 PublishCommand 委托（FEAT-03 基石，保持 Phase 1 公开契约不变）
+- [ ] 03-03-PLAN.md — Impersonation：require stechstudio/filament-impersonate + AdminUserResource Action（仅超管）+ ImpersonationListener 接入 ActivityLogger（FEAT-01）
+- [ ] 03-04-PLAN.md — Scramble API 文档（演示项目根）：dedoc/scramble + config/scramble.php + 路由过滤，与 Scribe 共存（FEAT-02，含人工验证 checkpoint）
+
+**Wave 2** *(blocked on 03-01 completion)*
+
+- [ ] 03-02-PLAN.md — make:filament-admin-{model,resource,migration,test} 四命令薄包装 + 注册 + 四个 PHPUnit 测试（FEAT-03）
 
 ---
 
@@ -140,8 +150,8 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. 包发布合规 | 8/8 | Complete    | 2026-06-10 |
-| 2. 文档与品宣 | 1/3 | Executing   | - |
-| 3. 包功能补强 | 0/? | Not started | - |
+| 2. 文档与品宣 | 3/3 | Complete    | 2026-06-10 |
+| 3. 包功能补强 | 0/4 | Not started | - |
 | 4. 发布自动化 | 0/? | Not started | - |
 | 5. 演示站 (v0.5.1) | 0/? | Not started | - |
 
@@ -191,3 +201,61 @@ Plans:
 
 *Created: 2026-06-09 by gsd-roadmapper*
 *Last updated: 2026-06-10*
+
+## Traceability
+
+Phase 映射（由 ROADMAP.md 阶段细化，此处仅 milestone 视图）。
+
+| Requirement | Phase | Status |
+|---|---|---|
+| COMPLY-01 | Phase 1 | Complete |
+| COMPLY-02 | Phase 1 | Complete |
+| COMPLY-03 | Phase 1 | Complete |
+| COMPLY-04 | Phase 1 | Complete |
+| COMPLY-05 | Phase 1 | Complete |
+| COMPLY-06 | Phase 1 | Complete |
+| COMPLY-07 | Phase 1 | Complete |
+| COMPLY-08 | Phase 1 | Complete |
+| COMPLY-09 | Phase 1 | Complete |
+| DOC-01 | Phase 2 | Complete |
+| DOC-02 | Phase 2 | Complete |
+| DOC-03 | Phase 2 | Complete |
+| DOC-04 | Phase 2 | Complete |
+| DOC-05 | Phase 2 | Complete |
+| DOC-06 | Phase 2 | Complete |
+| DOC-07 | Phase 2 | Complete |
+| DOC-08 | Phase 2 | Complete |
+| FEAT-01 | Phase 3 | Pending |
+| FEAT-02 | Phase 3 | Pending |
+| FEAT-03 | Phase 3 | Pending |
+| RELEASE-01 | Phase 4 | Pending |
+| RELEASE-02 | Phase 4 | Pending |
+| RELEASE-03 | Phase 4 | Pending |
+| RELEASE-04 | Phase 4 | Pending |
+| RELEASE-05 | Phase 4 | Pending |
+| RELEASE-06 | Phase 4 | Pending |
+| DEMO-01 | Phase 5 (v0.5.1) | Pending |
+| DEMO-02 | Phase 5 (v0.5.1) | Pending |
+| DEMO-03 | Phase 5 (v0.5.1) | Pending |
+| DEMO-04 | Phase 5 (v0.5.1) | Pending |
+
+**Coverage:**
+
+- v1 requirements (v0.5): **26 total**（COMPLY 9 + DOC 8 + FEAT 3 + RELEASE 6）
+- v0.5.1 requirements (DEMO): **4 total**
+- Mapped to phases: **30 / 30** ✓
+- Unmapped: 0
+
+---
+
+## Status Values
+
+- **Pending**: Not started
+- **In Progress**: 所属 phase 处于 active 状态
+- **Complete**: 已 ship + 通过验证（Verifier agent + 用户手测）
+- **Blocked**: Waiting on external factor
+
+---
+
+*Requirements defined: 2026-06-09*
+*Last updated: 2026-06-09 after `/gsd-new-project` initialization*
