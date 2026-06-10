@@ -4,16 +4,20 @@
     "description": "Admin foundation package for Laravel 13 and Filament 5.",
     "type": "library",
     "license": "MIT",
-    "keywords": ["filament", "laravel", "admin", "rbac", "backend"],
+    "keywords": ["filament", "laravel", "admin", "rbac", "backend", "filament-plugin", "permission", "audit-log", "admin-panel"],
     "homepage": "https://github.com/john-captain/filament-admin",
     "authors": [
         {
-            "name": "johncaptain"
+            "name": "johncaptain",
+            "email": "JasonTodd0521@gmail.com",
+            "role": "developer"
         }
     ],
     "support": {
         "issues": "https://github.com/john-captain/filament-admin/issues",
-        "source": "https://github.com/john-captain/filament-admin"
+        "source": "https://github.com/john-captain/filament-admin",
+        "docs": "https://github.com/john-captain/filament-admin/blob/main/wiki/installation.md",
+        "wiki": "https://github.com/john-captain/filament-admin/tree/main/wiki"
     },
     "require": {
         "php": "^8.3",
@@ -32,10 +36,15 @@
         "stephenjude/filament-two-factor-authentication": "^4.1"
     },
     "require-dev": {
+        "larastan/larastan": "^3.0",
+        "laravel/pint": "^1.27",
         "mockery/mockery": "^1.6",
         "orchestra/testbench": "^10.0",
         "pestphp/pest": "^4.7",
         "phpunit/phpunit": "^12.5.12"
+    },
+    "suggest": {
+        "ext-redis": "Required when REDIS_CLIENT=phpredis (default in .env). 用于缓存 / 队列 / 会话驱动。"
     },
     "autoload": {
         "psr-4": {
@@ -54,7 +63,23 @@
             "providers": [
                 "FilamentAdmin\\FilamentAdminServiceProvider"
             ]
+        },
+        "branch-alias": {
+            "dev-main": "0.5.x-dev"
         }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit -c phpunit.xml.dist",
+        "test-coverage": "vendor/bin/phpunit -c phpunit.xml.dist --coverage-clover=coverage.xml",
+        "phpstan": "vendor/bin/phpstan analyse --memory-limit=2G",
+        "pint": "vendor/bin/pint",
+        "pint:test": "vendor/bin/pint --test"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        },
+        "sort-packages": true
     },
     "minimum-stability": "stable",
     "prefer-stable": true
