@@ -3,7 +3,9 @@
 namespace App\Providers;
 
 use App\Enums\ApiErrorCode;
+use Dedoc\Scramble\Scramble;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
+use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\ServiceProvider;
 
@@ -26,6 +28,19 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->registerApiResponseMacros();
+        $this->registerScrambleRouteFilter();
+    }
+
+    /**
+     * 注册 Scramble API 文档路由过滤回调（FEAT-02 / D-33 / Pitfall 4）
+     *
+     * 精确过滤：只文档化 api/v1/* 前缀路由，避免将 Filament 内部路由、
+     * Sanctum token 管理路由等非预期端点纳入 OpenAPI 文档。
+     * 与 config/scramble.php 中的 api_path => 'api/v1' 形成双重保险。
+     */
+    protected function registerScrambleRouteFilter(): void
+    {
+        Scramble::configure()->routes(fn (Route $route): bool => str_starts_with($route->uri(), 'api/v1/'));
     }
 
     /**

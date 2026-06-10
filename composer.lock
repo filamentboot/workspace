@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "c3e1230461d3e9ac95a4465bf9a78ab2",
+    "content-hash": "5189ee5e1f64defce71c4ff1682a2cd1",
     "packages": [
         {
             "name": "alizharb/filament-activity-log",
@@ -3077,7 +3077,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/filament-admin",
-                "reference": "b78029c5f3569ded142faaaa67c5f65707c6a8b3"
+                "reference": "21dbd4e7120f9f4e222984833fd0276b04d8c2b1"
             },
             "require": {
                 "alizharb/filament-activity-log": "^1.3",
@@ -3093,13 +3093,19 @@
                 "spatie/laravel-medialibrary": "^11.23",
                 "spatie/laravel-permission": "^6.0",
                 "spatie/laravel-settings": "^3.9",
+                "stechstudio/filament-impersonate": "^5.5",
                 "stephenjude/filament-two-factor-authentication": "^4.1"
             },
             "require-dev": {
+                "larastan/larastan": "^3.0",
+                "laravel/pint": "^1.27",
                 "mockery/mockery": "^1.6",
-                "orchestra/testbench": "^10.0",
+                "orchestra/testbench": "^11.0",
                 "pestphp/pest": "^4.7",
                 "phpunit/phpunit": "^12.5.12"
+            },
+            "suggest": {
+                "ext-redis": "Required when REDIS_CLIENT=phpredis (default in .env). 用于缓存 / 队列 / 会话驱动。"
             },
             "type": "library",
             "extra": {
@@ -3107,6 +3113,9 @@
                     "providers": [
                         "FilamentAdmin\\FilamentAdminServiceProvider"
                     ]
+                },
+                "branch-alias": {
+                    "dev-main": "0.5.x-dev"
                 }
             },
             "autoload": {
@@ -3121,26 +3130,51 @@
                     "FilamentAdmin\\Tests\\": "tests/"
                 }
             },
+            "scripts": {
+                "test": [
+                    "vendor/bin/phpunit -c phpunit.xml.dist"
+                ],
+                "test-coverage": [
+                    "vendor/bin/phpunit -c phpunit.xml.dist --coverage-clover=coverage.xml"
+                ],
+                "phpstan": [
+                    "vendor/bin/phpstan analyse --memory-limit=2G"
+                ],
+                "pint": [
+                    "vendor/bin/pint"
+                ],
+                "pint:test": [
+                    "vendor/bin/pint --test"
+                ]
+            },
             "license": [
                 "MIT"
             ],
             "authors": [
                 {
-                    "name": "johncaptain"
+                    "name": "johncaptain",
+                    "email": "JasonTodd0521@gmail.com",
+                    "role": "developer"
                 }
             ],
             "description": "Admin foundation package for Laravel 13 and Filament 5.",
             "homepage": "https://github.com/john-captain/filament-admin",
             "keywords": [
                 "admin",
+                "admin-panel",
+                "audit-log",
                 "backend",
                 "filament",
+                "filament-plugin",
                 "laravel",
+                "permission",
                 "rbac"
             ],
             "support": {
                 "issues": "https://github.com/john-captain/filament-admin/issues",
-                "source": "https://github.com/john-captain/filament-admin"
+                "source": "https://github.com/john-captain/filament-admin",
+                "docs": "https://github.com/john-captain/filament-admin/blob/main/wiki/installation.md",
+                "wiki": "https://github.com/john-captain/filament-admin/tree/main/wiki"
             },
             "transport-options": {
                 "symlink": true,
@@ -7261,6 +7295,52 @@
             "time": "2026-03-23T22:56:56+00:00"
         },
         {
+            "name": "stechstudio/filament-impersonate",
+            "version": "v5.5.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/stechstudio/filament-impersonate.git",
+                "reference": "2fc8509d9ced914dd996fc543759d1cd914bec4e"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/stechstudio/filament-impersonate/zipball/2fc8509d9ced914dd996fc543759d1cd914bec4e",
+                "reference": "2fc8509d9ced914dd996fc543759d1cd914bec4e",
+                "shasum": ""
+            },
+            "require": {
+                "filament/filament": "^4.0|^5.0"
+            },
+            "require-dev": {
+                "orchestra/testbench": "^10.0",
+                "pestphp/pest": "^3.0",
+                "pestphp/pest-plugin-laravel": "^3.0"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "STS\\FilamentImpersonate\\FilamentImpersonateServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "STS\\FilamentImpersonate\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "description": "A Filament package to impersonate your users.",
+            "support": {
+                "issues": "https://github.com/stechstudio/filament-impersonate/issues",
+                "source": "https://github.com/stechstudio/filament-impersonate/tree/v5.5.0"
+            },
+            "time": "2026-05-26T02:34:13+00:00"
+        },
+        {
             "name": "stephenjude/filament-two-factor-authentication",
             "version": "4.1.5",
             "source": {
@@ -11103,6 +11183,86 @@
                 }
             ],
             "time": "2024-05-06T16:37:16+00:00"
+        },
+        {
+            "name": "dedoc/scramble",
+            "version": "v0.13.26",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/dedoc/scramble.git",
+                "reference": "5ca42b5e23b9d5c120607138f790b51e22d8b4a1"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/dedoc/scramble/zipball/5ca42b5e23b9d5c120607138f790b51e22d8b4a1",
+                "reference": "5ca42b5e23b9d5c120607138f790b51e22d8b4a1",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/contracts": "^10.0|^11.0|^12.0|^13.0",
+                "myclabs/deep-copy": "^1.12",
+                "nikic/php-parser": "^5.0",
+                "php": "^8.1",
+                "phpstan/phpdoc-parser": "^1.0|^2.0",
+                "spatie/laravel-package-tools": "^1.9.2"
+            },
+            "require-dev": {
+                "larastan/larastan": "^3.3",
+                "laravel/pint": "^v1.1.0",
+                "nunomaduro/collision": "^7.0|^8.0",
+                "orchestra/testbench": "^8.0|^9.0|^10.0|^11.0",
+                "pestphp/pest": "^2.34|^3.7|^4.4",
+                "pestphp/pest-plugin-laravel": "^2.3|^3.1|^4.1",
+                "phpstan/extension-installer": "^1.4",
+                "phpstan/phpstan-deprecation-rules": "^2.0",
+                "phpstan/phpstan-phpunit": "^2.0",
+                "phpunit/phpunit": "^10.5|^11.5.3|^12.5.12",
+                "spatie/laravel-permission": "^6.10|^7.2",
+                "spatie/pest-plugin-snapshots": "^2.1"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Dedoc\\Scramble\\ScrambleServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Dedoc\\Scramble\\": "src",
+                    "Dedoc\\Scramble\\Database\\Factories\\": "database/factories"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Roman Lytvynenko",
+                    "email": "litvinenko95@gmail.com",
+                    "role": "Developer"
+                }
+            ],
+            "description": "Automatic generation of API documentation for Laravel applications.",
+            "homepage": "https://github.com/dedoc/scramble",
+            "keywords": [
+                "documentation",
+                "laravel",
+                "openapi"
+            ],
+            "support": {
+                "issues": "https://github.com/dedoc/scramble/issues",
+                "source": "https://github.com/dedoc/scramble/tree/v0.13.26"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/romalytvynenko",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-06-02T14:43:17+00:00"
         },
         {
             "name": "fakerphp/faker",
