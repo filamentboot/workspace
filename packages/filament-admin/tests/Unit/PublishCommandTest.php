@@ -357,7 +357,8 @@ class PublishCommandTest extends TestCase
             $content
         );
         self::assertStringContainsString('use App\\Models\\Product;', $content);
-        self::assertStringContainsString('use FilamentAdmin\\Models\\AdminUser;', $content);
+        // CR-01 修复后，包内 AdminUser 以别名导入，避免与发布的同名 Model 冲突
+        self::assertStringContainsString('use FilamentAdmin\\Models\\AdminUser as PackageAdminUser;', $content);
 
         self::assertStringNotContainsString('FilamentAdmin\\Filament\\Resources', $content);
         self::assertStringNotContainsString('FilamentAdmin\\Models\\Product', $content);
