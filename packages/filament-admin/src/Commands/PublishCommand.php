@@ -222,7 +222,6 @@ class PublishCommand extends Command
             'modelNamespace'    => $modelNamespace,
             'modelLabel'        => $name,
             'pluralClass'       => $pluralName,
-            'resourceNamespace' => $pluralName,
         ]);
 
         if ($content === '') {
