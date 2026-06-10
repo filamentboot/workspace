@@ -1,0 +1,190 @@
+<?php
+
+namespace FilamentAdmin\Tests\Unit;
+
+use FilamentAdmin\FilamentAdminServiceProvider;
+use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\File;
+use Orchestra\Testbench\TestCase;
+use Symfony\Component\Console\Command\Command;
+
+/**
+ * MakeFilamentAdminTestCommand 行为测试
+ *
+ * 验证 `make:filament-admin-test` 命令的各项行为（FEAT-03）：
+ * - 生成 ProductResourceTest.php 到 tests/Feature/ 目录
+ * - 目标文件已存在时跳过（无 --force），输出含 Skipped:
+ * - 带 --force 时覆盖已存在文件
+ * - 非 PascalCase name 参数返回 FAILURE
+ *
+ * 每个测试在独立的临时目录中运行，互不污染。
+ */
+class MakeTestCommandTest extends TestCase
+{
+    /**
+     * 临时测试根目录路径
+     */
+    protected string $tempBase = '';
+
+    /**
+     * 返回需要注册的包服务提供者
+     *
+     * @param  Application  $app
+     * @return list<class-string>
+     */
+    protected function getPackageProviders($app): array
+    {
+        return [FilamentAdminServiceProvider::class];
+    }
+
+    /**
+     * 返回临时测试目录作为应用根路径（隔离 base_path()）
+     */
+    protected function getApplicationBasePath(): string
+    {
+        return $this->tempBase;
+    }
+
+    /**
+     * 每个测试前创建独立的临时目录（含 Laravel skeleton 所需子目录）
+     */
+    protected function setUp(): void
+    {
+        $this->tempBase = sys_get_temp_dir().'/filament-admin-make-test-'.uniqid();
+
+        $dirs = [
+            'bootstrap/cache',
+            'storage/app/public',
+            'storage/framework/cache',
+            'storage/framework/sessions',
+            'storage/framework/testing',
+            'storage/framework/views',
+            'storage/logs',
+            'app',
+            'config',
+            'database',
+            'resources/views',
+            'tests/Feature',
+        ];
+
+        foreach ($dirs as $dir) {
+            mkdir($this->tempBase.'/'.$dir, 0755, true);
+        }
+
+        parent::setUp();
+    }
+
+    /**
+     * 每个测试后清理临时目录
+     */
+    protected function tearDown(): void
+    {
+        parent::tearDown();
+
+        if ($this->tempBase !== '' && is_dir($this->tempBase)) {
+            $this->deleteDirectoryNative($this->tempBase);
+        }
+    }
+
+    /**
+     * 原生 PHP 递归删除目录
+     *
+     * @param  string  $dir  要删除的目录路径
+     */
+    private function deleteDirectoryNative(string $dir): void
+    {
+        if (! is_dir($dir)) {
+            return;
+        }
+
+        $items = scandir($dir);
+
+        if ($items === false) {
+            return;
+        }
+
+        foreach ($items as $item) {
+            if ($item === '.' || $item === '..') {
+                continue;
+            }
+
+            $path = $dir.'/'.$item;
+
+            if (is_dir($path)) {
+                $this->deleteDirectoryNative($path);
+            } else {
+                unlink($path);
+            }
+        }
+
+        rmdir($dir);
+    }
+
+    /**
+     * 验证 make:filament-admin-test Product 生成 tests/Feature/ProductResourceTest.php
+     * 且内容包含 ProductResource 引用（FeatureTest.stub 为 Pest 格式，无 namespace 声明）
+     */
+    public function test_test_generates_file_with_correct_namespace(): void
+    {
+        $this->artisan('make:filament-admin-test', ['name' => 'Product'])
+            ->assertExitCode(Command::SUCCESS);
+
+        $expectedPath = $this->tempBase.'/tests/Feature/ProductResourceTest.php';
+        self::assertTrue(File::exists($expectedPath), '期望生成 tests/Feature/ProductResourceTest.php，但文件不存在');
+
+        $content = File::get($expectedPath);
+        // FeatureTest.stub 为 Pest 格式，断言 use 导入语句而非 namespace 声明
+        self::assertStringContainsString('use App\\Filament\\Resources\\Products\\ProductResource;', $content, '期望文件包含 ProductResource use 语句');
+        self::assertStringContainsString('use App\\Models\\Product;', $content, '期望文件包含 Product Model use 语句');
+    }
+
+    /**
+     * 验证目标文件已存在时（不带 --force）输出含 Skipped: 且文件内容未被修改
+     */
+    public function test_test_skips_existing_without_force(): void
+    {
+        // 预置占位文件
+        $testPath = $this->tempBase.'/tests/Feature/ProductResourceTest.php';
+        file_put_contents($testPath, '<?php // placeholder content');
+
+        // 命令应跳过并输出 Skipped: 提示
+        $this->artisan('make:filament-admin-test', ['name' => 'Product'])
+            ->expectsOutputToContain('Skipped:')
+            ->assertExitCode(Command::SUCCESS);
+
+        // 文件内容未被替换
+        $content = File::get($testPath);
+        self::assertStringContainsString('placeholder content', $content, '文件内容应保持为占位内容');
+        self::assertStringNotContainsString('use App\\Filament\\Resources\\Products\\ProductResource;', $content, '文件内容不应被覆盖');
+    }
+
+    /**
+     * 验证带 --force 标志时覆盖已存在的文件
+     */
+    public function test_test_overwrites_existing_with_force(): void
+    {
+        // 预置占位文件
+        $testPath = $this->tempBase.'/tests/Feature/ProductResourceTest.php';
+        file_put_contents($testPath, '<?php // placeholder content');
+
+        // 带 --force 强制覆盖
+        $this->artisan('make:filament-admin-test', [
+            'name'    => 'Product',
+            '--force' => true,
+        ])->assertExitCode(Command::SUCCESS);
+
+        // 文件内容已被替换为真实 stub 渲染结果
+        $content = File::get($testPath);
+        self::assertStringContainsString('use App\\Filament\\Resources\\Products\\ProductResource;', $content, '文件内容应已被覆盖');
+        self::assertStringNotContainsString('placeholder content', $content, '占位内容应被替换');
+    }
+
+    /**
+     * 验证非 PascalCase 的 name 参数（小写开头）返回 FAILURE
+     */
+    public function test_test_rejects_invalid_name(): void
+    {
+        $this->artisan('make:filament-admin-test', ['name' => 'product'])
+            ->assertExitCode(Command::FAILURE);
+    }
+}

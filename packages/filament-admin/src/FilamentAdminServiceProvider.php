@@ -80,6 +80,11 @@ class FilamentAdminServiceProvider extends ServiceProvider
                 Commands\PublishCommand::class,
                 Commands\CleanActivityLogs::class,
                 Commands\CleanLoginLogs::class,
+                // FEAT-03：四个 CRUD 代码生成命令
+                Commands\MakeFilamentAdminModelCommand::class,
+                Commands\MakeFilamentAdminResourceCommand::class,
+                Commands\MakeFilamentAdminMigrationCommand::class,
+                Commands\MakeFilamentAdminTestCommand::class,
             ]);
         }
     }
