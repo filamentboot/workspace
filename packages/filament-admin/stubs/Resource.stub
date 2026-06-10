@@ -88,7 +88,8 @@ class {{ class }} extends Resource
      * 获取子页面定义
      *
      * 默认生成 List/Create/Edit 三个 Page；如需启用查看页（ViewPage），
-     * 请自行添加 'view' => Pages\View{{ model }}::route('/{record}') 并创建对应 Pages/View{{ model }}.php。
+     * 请自行新增键 view 并指向 Pages\View{{ model }}::route('/{record}')，
+     * 同时创建对应 Pages/View{{ model }}.php。
      *
      * @return array<string, class-string>
      */
