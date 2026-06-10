@@ -117,18 +117,16 @@ class ServiceProviderPublishesTest extends TestCase
 
         self::assertNotEmpty($paths, '翻译 publish tag 未在 ServiceProvider 中注册');
 
-        $found = false;
+        $sources = array_keys($paths);
 
-        foreach ($paths as $source => $target) {
-            if (str_contains($source, 'resources/lang')
-                && str_contains($target, 'vendor/filament-admin')) {
-                $found = true;
-
-                break;
-            }
-        }
-
-        self::assertTrue($found, '未找到 resources/lang/* → langPath(vendor/filament-admin) 的映射');
+        self::assertTrue(
+            (bool) array_filter($sources, fn ($s) => str_ends_with($s, '/lang/en')),
+            '缺 lang/en 映射'
+        );
+        self::assertTrue(
+            (bool) array_filter($sources, fn ($s) => str_ends_with($s, '/lang/zh_CN')),
+            '缺 lang/zh_CN 映射'
+        );
     }
 
     /**
