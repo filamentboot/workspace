@@ -1,7 +1,7 @@
 <?php
 
 use {{ appResourceNamespace }}\{{ resourceNamespace }}\{{ resource }};
-use FilamentAdmin\Models\AdminUser;
+use FilamentAdmin\Models\AdminUser as PackageAdminUser;
 use App\Models\{{ model }};
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -22,12 +22,12 @@ beforeEach(function () {
 });
 
 /** 创建超管用户的辅助函数 */
-function make{{ model }}SuperAdmin(): AdminUser
+function make{{ model }}SuperAdmin(): PackageAdminUser
 {
     $role  = Role::firstOrCreate(
         ['name' => config('filament-admin.super_admin_role'), 'guard_name' => 'admin']
     );
-    $admin = AdminUser::factory()->create();
+    $admin = PackageAdminUser::factory()->create();
     $admin->assignRole($role);
 
     return $admin;
