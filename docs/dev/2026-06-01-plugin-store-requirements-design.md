@@ -13,7 +13,7 @@
 |--------|------|------|------|------|------|
 | `www.xitongapp.com` | **All-in-One 主站**：官网营销页 + 文档站 + 插件商店（浏览/购买/API） + 付费插件分发（Satis 兼容私有 Composer 仓库） | 规划中 | - | - | - |
 | `demo.xitongapp.com` | 演示站（基于主仓库部署，每日自动重置） | 规划中 | `https://gitee.com/johncaptain/filament-admin` | filament-admin | - |
-| 无 | `filament-admin/filament-admin`（主后台基础包，独立 Composer 包） | 规划中 | 镜像 | filament-admin/filament-admin | packagist |
+| 无 | `laravelstack/filament-admin`（主后台基础包，独立 Composer 包） | 规划中 | 镜像 | laravelstack/filament-admin | packagist |
 | 无 | `filament-admin/plugin-platform`（插件市场客户端包，独立 Composer 包，需依赖主包） | 规划中 | 镜像 | filament-admin/plugin-platform | packagist |
 
 ---
@@ -22,13 +22,13 @@
 >
 > 过去开发过程中多次将这两个包混淆，此处强制说明，后续所有代码、文档、讨论必须严格区分。
 >
-> | | `filament-admin/filament-admin` | `filament-admin/plugin-platform` |
+> | | `laravelstack/filament-admin` | `filament-admin/plugin-platform` |
 > |---|---|---|
 > | **定位** | 主后台基础框架，核心宿主 | 插件市场客户端，是一个**可选插件** |
 > | **职责** | 提供后台登录、权限、管理员管理、日志等基础能力 | 提供插件浏览、安装、License 校验等市场 UI 能力 |
-> | **依赖关系** | 不依赖 plugin-platform | **必须依赖** filament-admin/filament-admin 才能运行 |
+> | **依赖关系** | 不依赖 plugin-platform | **必须依赖** laravelstack/filament-admin 才能运行 |
 > | **可否单独使用** | **可以**，不装 plugin-platform 也是完整的后台 | **不可以**，没有主包则无法运行 |
-> | **安装** | `composer require filament-admin/filament-admin` | `composer require filament-admin/plugin-platform` |
+> | **安装** | `composer require laravelstack/filament-admin` | `composer require filament-admin/plugin-platform` |
 > | **开源协议** | MIT | MIT |
 >
 > **一句话总结：`filament-admin` 是地基，`plugin-platform` 是盖在地基上的一栋楼。没有地基楼无法存在，但地基不需要楼也能使用。**
@@ -799,7 +799,7 @@ Schedule：每天凌晨 3:00 自动执行。
 ### 13.1 注册步骤
 
 1. 在 [packagist.org](https://packagist.org) 注册账号（建议使用 GitHub OAuth）
-2. 确认 `composer.json` 的 `name` 字段为 `filament-admin/filament-admin`
+2. 确认 `composer.json` 的 `name` 字段为 `laravelstack/filament-admin`
 3. 在 Packagist 提交包，填写 GitHub/Gitee 仓库 URL
 4. 在 GitHub 仓库 Settings → Webhooks 添加 Packagist Webhook（或通过 GitHub Integration 自动配置）
 5. 验证包在 Packagist 页面正常展示
@@ -808,7 +808,7 @@ Schedule：每天凌晨 3:00 自动执行。
 
 ### 13.2 composer.json 发布前复核清单
 
-- [ ] `name`：`filament-admin/filament-admin`
+- [ ] `name`：`laravelstack/filament-admin`
 - [ ] `description`：英文简介（Packagist 展示用）
 - [ ] `keywords`：`["laravel", "filament", "admin", "backend"]`
 - [ ] `homepage`：`https://xitongapp.com`
