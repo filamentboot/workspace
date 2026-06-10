@@ -365,6 +365,13 @@ class PublishCommand extends Command
             return false;
         }
 
+        // 限制 --path 必须位于 app/ 之内，避免写出到 storage/routes/config 等非 PSR-4 目录
+        if ($path !== 'app' && ! str_starts_with($path, 'app/')) {
+            $this->error('--path 必须位于 app/ 目录之内（如 app/Filament/Resources）');
+
+            return false;
+        }
+
         return true;
     }
 
