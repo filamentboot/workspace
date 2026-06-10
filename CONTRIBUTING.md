@@ -90,3 +90,20 @@ composer phpstan
 - 如有 UI 变更，请附上截图
 
 感谢你的贡献！
+
+## SemVer 版本规范
+
+自 v0.5.0 起，本项目严格遵循 [SemVer 2.0.0](https://semver.org/lang/zh-CN/)，所有正式发版 tag 必须为 `vX.Y.Z` 字面格式（如 `v0.5.0`、`v0.5.1`、`v1.0.0`），**不**附加中文/英文后缀。
+
+- 历史中文后缀 tag（如 `v0.2.0-权限体系`、`v0.5.0-API规范`、`v1.0.0-phase1` 等共 9 个）保留为历史记录，**但不再用于新发版**，避免破坏既有外链。
+- 预发版形式：`vX.Y.Z-rc.N`（如 `v0.5.0-rc.1`）或 `vX.Y.Z-alpha.N`，由 Phase 4 发版脚本 `scripts/release-package.sh` 接受为有效参数。
+- 主版本号（X）变更代表 breaking change；次版本号（Y）代表向后兼容新功能；修订号（Z）代表向后兼容 bug 修复。
+- 包仓库 `laravelstack/filament-admin` 与主仓库 tag 同步推送，由 Phase 4 `.github/workflows/release.yml` 自动完成。
+
+## 工作目录约定
+
+- 所有包代码必须写在 `packages/filament-admin/src/`（PSR-4 命名空间 `FilamentAdmin\\`）。
+- 根目录 `/src/` 已在 v0.5 Phase 1 删除，并由 `.gitignore` 拦截避免再生（COMPLY-06）。
+- 演示项目代码（PSR-4 `App\\`）写在 `app/`；与主包代码物理隔离。
+- 工厂与种子：主包用 `FilamentAdmin\\Database\\Factories\\` / `Seeders\\`（在 `packages/filament-admin/database/`）；演示项目用 `Database\\Factories\\` / `Seeders\\`（在 `database/`）。
+- 测试：主包测试在 `packages/filament-admin/tests/Unit/`（PSR-4 `FilamentAdmin\\Tests\\`）；演示项目测试在 `tests/`（PSR-4 `Tests\\`）。
