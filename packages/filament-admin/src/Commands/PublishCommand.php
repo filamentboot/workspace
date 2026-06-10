@@ -280,15 +280,15 @@ class PublishCommand extends Command
      */
     protected function publishFeatureTest(string $name): bool
     {
-        $pluralName           = $this->pluralize($name);
-        $appResourceNamespace = $this->deriveAppResourceNamespace();
-        $content              = $this->renderStub('FeatureTest', [
-            'namespace'            => 'Tests\\Feature',
-            'resourceNamespace'    => $pluralName,
-            'resource'             => $name.'Resource',
-            'model'                => $name,
-            'modelLabel'           => $name,
-            'appResourceNamespace' => $appResourceNamespace,
+        $resourceNamespace = $this->deriveResourceNamespace($name);
+        $appModelNamespace = $this->deriveModelNamespace();
+        $content           = $this->renderStub('FeatureTest', [
+            'namespace'         => 'Tests\\Feature',
+            'resourceNamespace' => $resourceNamespace,
+            'resource'          => $name.'Resource',
+            'model'             => $name,
+            'modelLabel'        => $name,
+            'appModelNamespace' => $appModelNamespace,
         ]);
 
         if ($content === '') {
@@ -425,34 +425,6 @@ class PublishCommand extends Command
         $segments = explode('/', rtrim($path, '/'));
 
         return ucfirst(end($segments));
-    }
-
-    /**
-     * 推导用户项目的 App\Filament\Resources 命名空间（D-04 适配 FeatureTest stub）
-     *
-     * 用法：在 publishFeatureTest 中注入到 stub 的 use 语句，使得发布出的测试
-     * 文件 use {{ appResourceNamespace }}\{{ resourceNamespace }}\{{ resource }}
-     * 渲染后形如 use App\Filament\Resources\Products\ProductResource;。
-     *
-     * 推导规则：
-     *   默认 app/Filament/Resources         → App\Filament\Resources
-     *   --path=app/Filament/Reseller         → App\Filament\Reseller\Resources
-     *   --path=app/Filament/Reseller/Resources → App\Filament\Reseller\Resources
-     */
-    protected function deriveAppResourceNamespace(): string
-    {
-        $path = $this->option('path') ?: 'app/Filament/Resources';
-
-        $segments = array_map(
-            fn ($seg) => ucfirst($seg),
-            explode('/', rtrim($path, '/'))
-        );
-
-        if (end($segments) !== 'Resources') {
-            $segments[] = 'Resources';
-        }
-
-        return implode('\\', $segments);
     }
 
     /**

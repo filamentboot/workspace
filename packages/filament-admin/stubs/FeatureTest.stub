@@ -1,8 +1,8 @@
 <?php
 
-use {{ appResourceNamespace }}\{{ resourceNamespace }}\{{ resource }};
+use {{ resourceNamespace }}\{{ resource }};
+use {{ appModelNamespace }}\{{ model }};
 use FilamentAdmin\Models\AdminUser as PackageAdminUser;
-use App\Models\{{ model }};
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
