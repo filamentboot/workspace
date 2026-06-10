@@ -69,7 +69,16 @@ Plans:
 4. `UPGRADING.md` 存在于根目录，列出 v0.4 → v0.5 的 breaking changes（包含 vendor:publish 新增 5 tag、PublishCommand 新参数、配置文件变化）
 5. `docs/` 和 `wiki/` 中不再出现旧坐标 `filament-admin/filament-admin`（全部替换为 `laravelstack/filament-admin`）；`CONTRIBUTING.md` 含"本地 3380 / CI 3306"端口差异说明
 
-**Plans**: TBD
+**Plans**: 3 plans
+Plans:
+**Wave 1**
+
+- [ ] 02-01-PLAN.md — 资产与配置基线（DOC-02 .env.example 修正 / DOC-07 旧坐标替换 / art/dashboard.png 截图复制，README 截图引用前置）
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 02-02-PLAN.md — 包对外文档（DOC-01 包 README 重写 / DOC-04 包 CHANGELOG 全量回填 / DOC-05 包 UPGRADING，随 split 进 Packagist，相对路径自包含）
+- [ ] 02-03-PLAN.md — 根仓库文档（DOC-03 wiki/installation.md 完整化 / DOC-06 根 README 改写含登录页截图 TODO 占位 / DOC-04 根 CHANGELOG / DOC-05 根 UPGRADING / DOC-08 CONTRIBUTING CI 端口）
 
 ---
 
@@ -124,8 +133,6 @@ Plans:
 3. 每天凌晨 4 点 cron 执行 `php artisan demo:reset` 后，后台数据恢复到初始演示状态（仅保留 demo 账号 + 角色权限 + 菜单，业务数据清空重置）
 4. `README.md`、`packages/filament-admin/README.md`、`wiki/index.md` 顶部显眼位置均包含 demo 链接和 `demo@example.com / demo123` 演示账号说明
 
-**Plans**: TBD
-
 ---
 
 ## Progress
@@ -133,7 +140,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. 包发布合规 | 8/8 | Complete    | 2026-06-10 |
-| 2. 文档与品宣 | 0/? | Not started | - |
+| 2. 文档与品宣 | 0/3 | Planned     | - |
 | 3. 包功能补强 | 0/? | Not started | - |
 | 4. 发布自动化 | 0/? | Not started | - |
 | 5. 演示站 (v0.5.1) | 0/? | Not started | - |
@@ -183,4 +190,4 @@ Plans:
 ---
 
 *Created: 2026-06-09 by gsd-roadmapper*
-*Last updated: 2026-06-09*
+*Last updated: 2026-06-10*
