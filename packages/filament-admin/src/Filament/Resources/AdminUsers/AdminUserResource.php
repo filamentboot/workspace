@@ -22,6 +22,7 @@ use FilamentAdmin\Filament\Resources\AdminUsers\Pages\ListAdminUsers;
 use FilamentAdmin\Models\AdminUser;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
+use STS\FilamentImpersonate\Actions\Impersonate;
 use UnitEnum;
 
 /**
@@ -134,7 +135,7 @@ class AdminUserResource extends Resource
                     ->placeholder('-'),
                 TextColumn::make('login_failures')
                     ->label('失败次数')
-                    ->placeholder(0),
+                    ->placeholder('0'),
                 TextColumn::make('created_at')
                     ->label('创建时间')
                     ->dateTime('Y-m-d H:i:s')
@@ -147,6 +148,19 @@ class AdminUserResource extends Resource
                 TrashedFilter::make(),
             ])
             ->recordActions([
+                Impersonate::make()
+                    ->guard('admin')
+                    ->visible(fn ($record): bool => (function () use ($record): bool {
+                        $currentUser    = auth('admin')->user();
+                        $superAdminRole = config('filament-admin.super_admin_role', 'super_admin');
+
+                        if (! $currentUser instanceof AdminUser) {
+                            return false;
+                        }
+
+                        return $currentUser->hasRole($superAdminRole)
+                            && ! $record->hasRole($superAdminRole);
+                    })()),
                 EditAction::make(),
                 DeleteAction::make(),
                 RestoreAction::make(),

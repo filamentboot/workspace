@@ -33,6 +33,7 @@
         "spatie/laravel-medialibrary": "^11.23",
         "spatie/laravel-permission": "^6.0",
         "spatie/laravel-settings": "^3.9",
+        "stechstudio/filament-impersonate": "^5.5",
         "stephenjude/filament-two-factor-authentication": "^4.1"
     },
     "require-dev": {

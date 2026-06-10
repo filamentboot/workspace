@@ -92,6 +92,11 @@ class FilamentAdminServiceProvider extends ServiceProvider
 
     /**
      * 注册语言包
+     *
+     * 通过 loadTranslationsFrom 注册翻译命名空间覆盖：
+     * - filament-two-factor-authentication：内置中文翻译，零配置中文 UI
+     * - filament-impersonate（zh_CN）：将横幅文案覆盖为锁定中文字面（D-19）
+     *   "正在模拟 {username}（结束模拟）"
      */
     protected function registerTranslations(): void
     {
@@ -99,6 +104,14 @@ class FilamentAdminServiceProvider extends ServiceProvider
         $this->loadTranslationsFrom(
             __DIR__.'/../resources/lang/vendor/filament-two-factor-authentication',
             'filament-two-factor-authentication',
+        );
+
+        // 覆盖 filament-impersonate 插件的 zh_CN 翻译：
+        // 将横幅文案对齐锁定字面 "正在模拟 {username}（结束模拟）"（D-19）。
+        // FileLoader::addNamespace 后注册覆盖先注册，确保主包翻译优先于插件翻译。
+        $this->loadTranslationsFrom(
+            __DIR__.'/../resources/lang/zh_CN',
+            'filament-impersonate',
         );
     }
 
