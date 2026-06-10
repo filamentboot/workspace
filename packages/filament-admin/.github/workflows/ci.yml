@@ -40,6 +40,7 @@ jobs:
 
       - name: Pint 代码风格检查
         run: composer pint:test
+        continue-on-error: ${{ matrix.php == '8.4' }}
 
       - name: 安全审计（仅警告，不阻塞 CI）
         run: composer audit --abandoned=report --no-interaction
