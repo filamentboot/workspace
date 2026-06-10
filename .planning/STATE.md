@@ -31,22 +31,22 @@ progress:
 ## Current Position
 
 Phase: 02 (documentation-branding) — EXECUTING
-Plan: 1 of 3（02-01 完成，02-02 待执行）
+Plan: 2 of 3（02-01 完成，02-02 完成，02-03 待执行）
 
 ```
 current_phase:   2
-current_plan:    1
+current_plan:    2
 current_status:  completed
 last_updated:    2026-06-10
-resume_file:     .planning/phases/02-documentation-branding/02-01-SUMMARY.md
-stopped_at:      Plan 02-01 完成：.env.example 修正 + docs/ 旧坐标替换（15处）+ art/dashboard.png
+resume_file:     .planning/phases/02-documentation-branding/02-02-SUMMARY.md
+stopped_at:      Plan 02-02 完成：包 README 重写（194行）+ 包 CHANGELOG 全量回填（KaC 1.1.0）+ 包 UPGRADING.md 新建
 ```
 
 **Progress bar:**
 
 ```
 Phase 1 [##########] 100%  包发布合规（完成）
-Phase 2 [###       ]  33%  文档与品宣（02-01 完成，1/3）
+Phase 2 [######    ]  67%  文档与品宣（02-01/02-02 完成，2/3）
 Phase 3 [          ]   0%  包功能补强
 Phase 4 [          ]   0%  发布自动化
 Phase 5 [          ]   0%  演示站 (v0.5.1)
@@ -122,9 +122,9 @@ requirements_done:  0 / 30  (COMPLY-01~09 工程落地，测试/文档验收后�
 
 ## Session Continuity
 
-**上次工作:** 2026-06-10 — Plan 02-01 完成：.env.example 安全默认值修正（DOC-02）、docs/ 旧坐标 15 处全量替换为 laravelstack/filament-admin（DOC-07）、art/dashboard.png 截图资产新建（D-21/D-22）
+**上次工作:** 2026-06-10 — Plan 02-02 完成：包 README.md 完整重写（194行/DOC-01）、包 CHANGELOG.md 全量回填（KaC 1.1.0/DOC-04）、包 UPGRADING.md 新建（v0.4→v0.5 breaking changes/DOC-05）
 
-**下次启动时:** 执行 Phase 2 Plan 02-02（包 README 编写）
+**下次启动时:** 执行 Phase 2 Plan 02-03（根仓库文档：wiki/installation.md + 根 README + 根 CHANGELOG + 根 UPGRADING + CONTRIBUTING CI 端口）
 
 **未解决问题:**
 

@@ -77,7 +77,7 @@ Plans:
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
-- [ ] 02-02-PLAN.md — 包对外文档（DOC-01 包 README 重写 / DOC-04 包 CHANGELOG 全量回填 / DOC-05 包 UPGRADING，随 split 进 Packagist，相对路径自包含）
+- [x] 02-02-PLAN.md — 包对外文档（DOC-01 包 README 重写 / DOC-04 包 CHANGELOG 全量回填 / DOC-05 包 UPGRADING，随 split 进 Packagist，相对路径自包含）
 - [ ] 02-03-PLAN.md — 根仓库文档（DOC-03 wiki/installation.md 完整化 / DOC-06 根 README 改写含登录页截图 TODO 占位 / DOC-04 根 CHANGELOG / DOC-05 根 UPGRADING / DOC-08 CONTRIBUTING CI 端口）
 
 ---
