@@ -21,6 +21,8 @@ use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Permission\Models\Role;
+use STS\FilamentImpersonate\Events\EnterImpersonation;
+use STS\FilamentImpersonate\Events\LeaveImpersonation;
 
 /**
  * FilamentAdmin 包服务提供者
@@ -154,11 +156,15 @@ class FilamentAdminServiceProvider extends ServiceProvider
      *
      * 注意：LogAdminLogin 通过 Laravel 自动发现机制注册，
      * 但为了确保在包内正确注册，这里显式注册。
+     * Impersonation 事件（FEAT-01 / D-32）通过 ImpersonationListener 接入 ActivityLogger。
      */
     protected function registerListeners(): void
     {
         Event::listen(Login::class, Listeners\LogAdminLogin::class);
         Event::listen(Failed::class, Listeners\LogAdminLogin::class);
+        // 新增：模拟登录事件（FEAT-01），写入统一审计日志
+        Event::listen(EnterImpersonation::class, [Listeners\ImpersonationListener::class, 'handleEnter']);
+        Event::listen(LeaveImpersonation::class, [Listeners\ImpersonationListener::class, 'handleLeave']);
     }
 
     /**
