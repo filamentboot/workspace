@@ -11,8 +11,8 @@
 <!-- 后台首页 Dashboard -->
 ![FilamentAdmin 后台首页](packages/filament-admin/art/dashboard.png)
 
-<!-- TODO(登录页截图): 待用户后补 art/login.png，DOC-06 要求登录页+首页共 2 张截图 -->
-![登录页截图（待补充）](packages/filament-admin/art/login.png)
+<!-- 第二张截图：暂用后台界面填充，待替换为真正的登录页截图 art/login.png -->
+![FilamentAdmin 后台界面](packages/filament-admin/art/login.png)
 
 ---
 
