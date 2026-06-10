@@ -73,7 +73,7 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 02-01-PLAN.md — 资产与配置基线（DOC-02 .env.example 修正 / DOC-07 旧坐标替换 / art/dashboard.png 截图复制，README 截图引用前置）
+- [x] 02-01-PLAN.md — 资产与配置基线（DOC-02 .env.example 修正 / DOC-07 旧坐标替换 / art/dashboard.png 截图复制，README 截图引用前置）
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -140,7 +140,7 @@ Plans:
 | Phase | Plans Complete | Status | Completed |
 |-------|----------------|--------|-----------|
 | 1. 包发布合规 | 8/8 | Complete    | 2026-06-10 |
-| 2. 文档与品宣 | 0/3 | Planned     | - |
+| 2. 文档与品宣 | 1/3 | Executing   | - |
 | 3. 包功能补强 | 0/? | Not started | - |
 | 4. 发布自动化 | 0/? | Not started | - |
 | 5. 演示站 (v0.5.1) | 0/? | Not started | - |

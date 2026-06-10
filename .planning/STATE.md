@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v0.5
 milestone_name: milestone
-status: Ready to plan
-last_updated: "2026-06-10T03:41:00.230Z"
+status: Executing Phase 02
+last_updated: "2026-06-10T12:30:00.000Z"
 progress:
   total_phases: 5
   completed_phases: 1
-  total_plans: 8
-  completed_plans: 8
-  percent: 20
+  total_plans: 11
+  completed_plans: 9
+  percent: 22
 ---
 
 # Project State: FilamentAdmin v0.5
@@ -24,34 +24,34 @@ progress:
 
 **Core value:** 别人执行 `composer require laravelstack/filament-admin` 后能开箱运行、能扩展定制、能稳定升级，且包发布形态符合 Laravel 开源市场规范
 
-**Current focus:** Phase 01 — package-release-compliance
+**Current focus:** Phase 02 — documentation-branding
 
 ---
 
 ## Current Position
 
-Phase: 2
-Plan: Not started
+Phase: 02 (documentation-branding) — EXECUTING
+Plan: 1 of 3（02-01 完成，02-02 待执行）
 
 ```
-current_phase:   1
-current_plan:    6
+current_phase:   2
+current_plan:    1
 current_status:  completed
 last_updated:    2026-06-10
-resume_file:     .planning/phases/01-package-release-compliance/01-06-SUMMARY.md
-stopped_at:      Plan 01-06 完成：包 CI 升级（phpstan/pint/audit + PHP matrix），COMPLY-05 措辞调整
+resume_file:     .planning/phases/02-documentation-branding/02-01-SUMMARY.md
+stopped_at:      Plan 02-01 完成：.env.example 修正 + docs/ 旧坐标替换（15处）+ art/dashboard.png
 ```
 
 **Progress bar:**
 
 ```
 Phase 1 [##########] 100%  包发布合规（完成）
-Phase 2 [          ]   0%  文档与品宣
+Phase 2 [###       ]  33%  文档与品宣（02-01 完成，1/3）
 Phase 3 [          ]   0%  包功能补强
 Phase 4 [          ]   0%  发布自动化
 Phase 5 [          ]   0%  演示站 (v0.5.1)
 
-Overall [##        ]  20%  (1/5 phases)
+Overall [##        ]  22%  (1/5 phases + 02-01)
 ```
 
 ---
@@ -122,14 +122,13 @@ requirements_done:  0 / 30  (COMPLY-01~09 工程落地，测试/文档验收后�
 
 ## Session Continuity
 
-**上次工作:** 2026-06-10 — Plan 01-06 完成：包 CI 升级（phpstan/pint/audit + PHP matrix，D-16/D-17/D-18 落地），REQUIREMENTS.md COMPLY-05 措辞调整为 audit warning-only
+**上次工作:** 2026-06-10 — Plan 02-01 完成：.env.example 安全默认值修正（DOC-02）、docs/ 旧坐标 15 处全量替换为 laravelstack/filament-admin（DOC-07）、art/dashboard.png 截图资产新建（D-21/D-22）
 
-**下次启动时:** 开始 Phase 2（文档与品宣）
+**下次启动时:** 执行 Phase 2 Plan 02-02（包 README 编写）
 
 **未解决问题:**
 
-- COMPLY-09 需在 plan 阶段实测 `security@xitongapp.com` / `conduct@xitongapp.com` 可达性；不通时 fallback `JasonTodd0521@gmail.com`（已在 Plan 01-05 验证可达，可关闭）
-- Phase 1 全部 6 个 Plan 已完成，Phase 2 待启动
+- 无（Phase 2 前置基线已就绪，02-02 可直接启动）
 
 ---
 
@@ -154,3 +153,5 @@ requirements_done:  0 / 30  (COMPLY-01~09 工程落地，测试/文档验收后�
 - [Phase 01-package-release-compliance P06]: CI 矩阵 fail-fast: false 确保一个 PHP 版本失败不取消另一版本
 - [Phase 01-package-release-compliance P06]: pint:test 不设 continue-on-error（格式与 PHP 版本无关，8.3/8.4 均强制通过）
 - [Phase 01-package-release-compliance P06]: COMPLY-05 措辞从"每条失败即 CI 失败"改为区分 phpstan/pint fail 与 audit warning
+- [Phase 02-documentation-branding P01]: sed 替换严格限定 5 文件白名单，docs/superpowers/ 保持历史原貌（T-02-02）
+- [Phase 02-documentation-branding P01]: art/dashboard.png 保持静态 PNG，随 subtree split 进包仓库（D-21 锁定方案）
