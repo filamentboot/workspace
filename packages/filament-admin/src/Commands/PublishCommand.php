@@ -192,6 +192,10 @@ class PublishCommand extends Command
             'table'     => $table,
         ]);
 
+        if ($content === '') {
+            return false;
+        }
+
         $panelPrefix = $this->derivePanelPrefix();
         $subDir      = ($this->option('with-models') && $panelPrefix !== '') ? $panelPrefix.'/' : '';
         $targetPath  = base_path('app/Models/'.$subDir.$name.'.php');
@@ -220,6 +224,10 @@ class PublishCommand extends Command
             'pluralClass'       => $pluralName,
             'resourceNamespace' => $pluralName,
         ]);
+
+        if ($content === '') {
+            return false;
+        }
 
         $resourceDir  = base_path($path.'/'.$pluralName);
         $resourceFile = $resourceDir.'/'.$name.'Resource.php';
@@ -255,6 +263,10 @@ class PublishCommand extends Command
             'table' => $table,
         ]);
 
+        if ($content === '') {
+            return false;
+        }
+
         $targetPath = base_path(
             'database/migrations/'.date('Y_m_d_His').'_create_'.$table.'_table.php'
         );
@@ -280,6 +292,10 @@ class PublishCommand extends Command
             'appResourceNamespace' => $appResourceNamespace,
         ]);
 
+        if ($content === '') {
+            return false;
+        }
+
         $targetPath = base_path('tests/Feature/'.$name.'ResourceTest.php');
 
         return $this->writeFile($targetPath, $content);
@@ -300,6 +316,12 @@ class PublishCommand extends Command
         $userStub    = base_path('stubs/vendor/filament-admin/'.$stubName.'.stub');
         $packageStub = __DIR__.'/../../stubs/'.$stubName.'.stub';
         $stubPath    = file_exists($userStub) ? $userStub : $packageStub;
+
+        if (! file_exists($stubPath)) {
+            $this->error("Stub 文件不存在，无法渲染：{$stubPath}");
+
+            return '';
+        }
 
         $content = (string) file_get_contents($stubPath);
 
