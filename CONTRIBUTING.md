@@ -42,6 +42,12 @@ composer test
 mysql -uroot -p -h127.0.0.1 -P3380 -e "CREATE DATABASE filamentadmin_test"
 ```
 
+### CI 环境端口差异
+
+> **CI 环境端口差异：** GitHub Actions services 中的 MySQL 使用默认端口 **3306**（非 3380）。
+> `phpunit.xml.dist` / `phpunit.xml` 中已通过环境变量 `DB_PORT=3306` 覆盖。
+> 本地开发无需修改，保持 `.env` 中 `DB_PORT=3380` 即可。
+
 ## 代码风格
 
 项目使用 Laravel Pint 进行代码格式化，提交前请运行：
