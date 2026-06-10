@@ -8,18 +8,39 @@ on:
     branches: [main]
 
 jobs:
-  quality:
+  test:
     runs-on: ubuntu-latest
 
-    steps:
-      - uses: actions/checkout@v4
+    strategy:
+      fail-fast: false
+      matrix:
+        php: ['8.3', '8.4']
 
-      - uses: shivammathur/setup-php@v2
+    steps:
+      - name: Checkout 代码
+        uses: actions/checkout@v4
+
+      - name: 配置 PHP 环境
+        uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
-          extensions: pdo_mysql, mbstring, bcmath
+          php-version: ${{ matrix.php }}
+          extensions: pdo_sqlite, mbstring, bcmath
           coverage: none
 
-      - run: composer install --no-interaction --prefer-dist
+      - name: 安装依赖
+        run: composer install --no-interaction --prefer-dist
 
-      - run: vendor/bin/phpunit -c phpunit.xml.dist
+      - name: 运行测试
+        run: composer test
+        continue-on-error: ${{ matrix.php == '8.4' }}
+
+      - name: PHPStan 静态分析
+        run: composer phpstan
+        continue-on-error: ${{ matrix.php == '8.4' }}
+
+      - name: Pint 代码风格检查
+        run: composer pint:test
+
+      - name: 安全审计（仅警告，不阻塞 CI）
+        run: composer audit --abandoned=report --no-interaction
+        continue-on-error: true
