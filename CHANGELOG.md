@@ -10,14 +10,6 @@
 
 ### Added
 
-### Changed
-
-### Fixed
-
-## [0.5.0] - 待发布
-
-### Added
-
 - `wiki/installation.md` 完整化：Prerequisites 表、Quick Start 5 步、默认账号小节、AdminPanelProvider 完整示例
 - 根 `README.md` 改写为对外友好格式：后台首页截图、Star CTA、核心能力清单、未来路线图
 - 根 `UPGRADING.md` 新建：v0.4 → v0.5 升级路径与 breaking changes 列表
@@ -26,6 +18,8 @@
 ### Changed
 
 - 根 `CHANGELOG.md` 格式修正为 Keep a Changelog 1.1.0 标准，移除非标分组（Notes 段并入 Changed）
+
+### Fixed
 
 ## [0.4.1] - 2026-06-03
 
