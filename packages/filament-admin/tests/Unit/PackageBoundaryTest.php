@@ -41,7 +41,7 @@ class PackageBoundaryTest extends TestCase
      */
     public function test_root_src_orphan_directory_does_not_exist(): void
     {
-        $rootSrc = dirname(__DIR__, 4) . '/src';
+        $rootSrc = dirname(__DIR__, 4).'/src';
         self::assertFalse(is_dir($rootSrc), '根目录 /src/ 仍然存在，应删除（COMPLY-06）');
     }
 }

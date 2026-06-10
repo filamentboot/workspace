@@ -121,6 +121,8 @@ class PackageMetadataTest extends TestCase
 
     /**
      * 加载包的 composer.json 并解析为数组。
+     *
+     * @return array<string, mixed>
      */
     private function loadComposerJson(): array
     {
