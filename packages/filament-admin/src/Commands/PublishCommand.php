@@ -2,8 +2,8 @@
 
 namespace FilamentAdmin\Commands;
 
+use FilamentAdmin\Services\StubGenerator;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\File;
 
 /**
  * 发布 FilamentAdmin 扩展 stub 命令（COMPLY-02）
@@ -11,6 +11,7 @@ use Illuminate\Support\Facades\File;
  * 用户通过此命令将包内置的 Model/Resource/Migration/FeatureTest
  * stub 渲染后写入用户项目，支持自定义路径、强制覆盖、批量发布等操作。
  * 支持 D-01~D-06 + D-11 全部决策契约。
+ * 重构后委托 StubGenerator 处理渲染/校验/写文件，IO 输出仍保留在命令层（D-28）。
  *
  * 使用示例：
  *   php artisan filament-admin:publish --model=Product
@@ -51,6 +52,14 @@ class PublishCommand extends Command
     protected const BUILTIN_NAMES = ['AdminUser', 'Department', 'Menu', 'LoginLog'];
 
     /**
+     * 构造函数，注入 StubGenerator 服务（D-28）
+     */
+    public function __construct(protected StubGenerator $generator)
+    {
+        parent::__construct();
+    }
+
+    /**
      * 命令主入口（D-03 双重语义分发）
      */
     public function handle(): int
@@ -61,7 +70,9 @@ class PublishCommand extends Command
         $path         = (string) ($this->option('path') ?? '');
 
         // 校验 --path 不含路径上溯（T-01-11 安全防护）
-        if ($path !== '' && ! $this->validatePath($path)) {
+        if ($path !== '' && ! $this->generator->validatePath($path)) {
+            $this->error('--path 不允许包含 .. 路径上溯');
+
             return self::FAILURE;
         }
 
@@ -102,8 +113,8 @@ class PublishCommand extends Command
             $published = $this->publishResource($resourceName);
 
             if ($published) {
-                $modelClass    = $this->deriveModelNamespace().'\\'.$resourceName;
-                $resourceClass = $this->deriveResourceNamespace($resourceName).'\\'.$resourceName.'Resource';
+                $modelClass    = $this->generator->deriveModelNamespace().'\\'.$resourceName;
+                $resourceClass = $this->generator->deriveResourceNamespace($resourceName, (string) ($this->option('path') ?: 'app/Filament/Resources')).'\\'.$resourceName.'Resource';
                 $this->printBindingExample($modelClass, $resourceClass);
             }
 
@@ -169,8 +180,8 @@ class PublishCommand extends Command
         $testOk      = $this->publishFeatureTest($name);
 
         if ($resourceOk) {
-            $modelClass    = $this->deriveModelNamespace().'\\'.$name;
-            $resourceClass = $this->deriveResourceNamespace($name).'\\'.$name.'Resource';
+            $modelClass    = $this->generator->deriveModelNamespace().'\\'.$name;
+            $resourceClass = $this->generator->deriveResourceNamespace($name, (string) ($this->option('path') ?: 'app/Filament/Resources')).'\\'.$name.'Resource';
             $this->printBindingExample($modelClass, $resourceClass);
         }
 
@@ -184,9 +195,11 @@ class PublishCommand extends Command
      */
     protected function publishModel(string $name): bool
     {
-        $namespace  = $this->deriveModelNamespace();
-        $table      = $this->toSnakeCase($this->pluralize($name));
-        $content    = $this->renderStub('Model', [
+        $namespace = $this->generator->deriveModelNamespace(
+            $this->option('with-models') ? $this->generator->derivePanelPrefix((string) ($this->option('path') ?? '')) : null
+        );
+        $table   = $this->generator->toSnakeCase($this->generator->pluralize($name));
+        $content = $this->generator->renderStub('Model', [
             'namespace' => $namespace,
             'class'     => $name,
             'table'     => $table,
@@ -196,11 +209,19 @@ class PublishCommand extends Command
             return false;
         }
 
-        $panelPrefix = $this->derivePanelPrefix();
+        $panelPrefix = $this->generator->derivePanelPrefix((string) ($this->option('path') ?? ''));
         $subDir      = ($this->option('with-models') && $panelPrefix !== '') ? $panelPrefix.'/' : '';
         $targetPath  = base_path('app/Models/'.$subDir.$name.'.php');
 
-        return $this->writeFile($targetPath, $content);
+        $written = $this->generator->writeFile($targetPath, $content, (bool) $this->option('force'));
+
+        if ($written) {
+            $this->info("已生成: {$targetPath}");
+        } else {
+            $this->warn("Skipped: {$targetPath} (use --force to overwrite)");
+        }
+
+        return $written;
     }
 
     /**
@@ -210,18 +231,18 @@ class PublishCommand extends Command
      */
     protected function publishResource(string $name): bool
     {
-        $resourceNamespace = $this->deriveResourceNamespace($name);
-        $modelNamespace    = $this->deriveModelNamespace();
-        $pluralName        = $this->pluralize($name);
         $path              = $this->option('path') ?: 'app/Filament/Resources';
+        $resourceNamespace = $this->generator->deriveResourceNamespace($name, (string) $path);
+        $modelNamespace    = $this->generator->deriveModelNamespace();
+        $pluralName        = $this->generator->pluralize($name);
 
-        $content    = $this->renderStub('Resource', [
-            'namespace'         => $resourceNamespace,
-            'class'             => $name.'Resource',
-            'model'             => $name,
-            'modelNamespace'    => $modelNamespace,
-            'modelLabel'        => $name,
-            'pluralClass'       => $pluralName,
+        $content = $this->generator->renderStub('Resource', [
+            'namespace'      => $resourceNamespace,
+            'class'          => $name.'Resource',
+            'model'          => $name,
+            'modelNamespace' => $modelNamespace,
+            'modelLabel'     => $name,
+            'pluralClass'    => $pluralName,
         ]);
 
         if ($content === '') {
@@ -230,24 +251,46 @@ class PublishCommand extends Command
 
         $resourceDir  = base_path($path.'/'.$pluralName);
         $resourceFile = $resourceDir.'/'.$name.'Resource.php';
-        $resourceOk   = $this->writeFile($resourceFile, $content);
+
+        $resourceWritten = $this->generator->writeFile($resourceFile, $content, (bool) $this->option('force'));
+
+        if ($resourceWritten) {
+            $this->info("已生成: {$resourceFile}");
+        } else {
+            $this->warn("Skipped: {$resourceFile} (use --force to overwrite)");
+        }
 
         // 生成 3 个 Page 文件（内嵌模板，不依赖外部 Page.stub）
         $pagesDir = $resourceDir.'/Pages';
-        $listOk   = $this->writeFile(
-            $pagesDir.'/List'.$pluralName.'.php',
-            $this->buildListPageContent($resourceNamespace, $name, $pluralName)
-        );
-        $createOk = $this->writeFile(
-            $pagesDir.'/Create'.$name.'.php',
-            $this->buildCreatePageContent($resourceNamespace, $name)
-        );
-        $editOk = $this->writeFile(
-            $pagesDir.'/Edit'.$name.'.php',
-            $this->buildEditPageContent($resourceNamespace, $name)
-        );
 
-        return $resourceOk || $listOk || $createOk || $editOk;
+        $listPath    = $pagesDir.'/List'.$pluralName.'.php';
+        $listWritten = $this->generator->writeFile($listPath, $this->buildListPageContent($resourceNamespace, $name, $pluralName), (bool) $this->option('force'));
+
+        if ($listWritten) {
+            $this->info("已生成: {$listPath}");
+        } else {
+            $this->warn("Skipped: {$listPath} (use --force to overwrite)");
+        }
+
+        $createPath    = $pagesDir.'/Create'.$name.'.php';
+        $createWritten = $this->generator->writeFile($createPath, $this->buildCreatePageContent($resourceNamespace, $name), (bool) $this->option('force'));
+
+        if ($createWritten) {
+            $this->info("已生成: {$createPath}");
+        } else {
+            $this->warn("Skipped: {$createPath} (use --force to overwrite)");
+        }
+
+        $editPath    = $pagesDir.'/Edit'.$name.'.php';
+        $editWritten = $this->generator->writeFile($editPath, $this->buildEditPageContent($resourceNamespace, $name), (bool) $this->option('force'));
+
+        if ($editWritten) {
+            $this->info("已生成: {$editPath}");
+        } else {
+            $this->warn("Skipped: {$editPath} (use --force to overwrite)");
+        }
+
+        return $resourceWritten || $listWritten || $createWritten || $editWritten;
     }
 
     /**
@@ -257,8 +300,8 @@ class PublishCommand extends Command
      */
     protected function publishMigration(string $name): bool
     {
-        $table   = $this->toSnakeCase($this->pluralize($name));
-        $content = $this->renderStub('Migration', [
+        $table   = $this->generator->toSnakeCase($this->generator->pluralize($name));
+        $content = $this->generator->renderStub('Migration', [
             'table' => $table,
         ]);
 
@@ -270,7 +313,15 @@ class PublishCommand extends Command
             'database/migrations/'.date('Y_m_d_His').'_create_'.$table.'_table.php'
         );
 
-        return $this->writeFile($targetPath, $content);
+        $written = $this->generator->writeFile($targetPath, $content, (bool) $this->option('force'));
+
+        if ($written) {
+            $this->info("已生成: {$targetPath}");
+        } else {
+            $this->warn("Skipped: {$targetPath} (use --force to overwrite)");
+        }
+
+        return $written;
     }
 
     /**
@@ -280,9 +331,10 @@ class PublishCommand extends Command
      */
     protected function publishFeatureTest(string $name): bool
     {
-        $resourceNamespace = $this->deriveResourceNamespace($name);
-        $appModelNamespace = $this->deriveModelNamespace();
-        $content           = $this->renderStub('FeatureTest', [
+        $path              = $this->option('path') ?: 'app/Filament/Resources';
+        $resourceNamespace = $this->generator->deriveResourceNamespace($name, (string) $path);
+        $appModelNamespace = $this->generator->deriveModelNamespace();
+        $content           = $this->generator->renderStub('FeatureTest', [
             'namespace'         => 'Tests\\Feature',
             'resourceNamespace' => $resourceNamespace,
             'resource'          => $name.'Resource',
@@ -297,164 +349,15 @@ class PublishCommand extends Command
 
         $targetPath = base_path('tests/Feature/'.$name.'ResourceTest.php');
 
-        return $this->writeFile($targetPath, $content);
-    }
+        $written = $this->generator->writeFile($targetPath, $content, (bool) $this->option('force'));
 
-    /**
-     * 渲染 stub 文件，替换所有占位符（D-11 fallback 逻辑）
-     *
-     * 优先读取用户发布的自定义 stub（base_path('stubs/vendor/filament-admin/')），
-     * 找不到时 fallback 到包内默认 stubs/ 目录。
-     *
-     * @param  string  $stubName  stub 文件名（不含 .stub 后缀）
-     * @param  array<string,string>  $vars  占位符键值对
-     */
-    protected function renderStub(string $stubName, array $vars): string
-    {
-        // D-11: 优先读取用户发布的自定义 stub
-        $userStub    = base_path('stubs/vendor/filament-admin/'.$stubName.'.stub');
-        $packageStub = __DIR__.'/../../stubs/'.$stubName.'.stub';
-        $stubPath    = file_exists($userStub) ? $userStub : $packageStub;
-
-        if (! file_exists($stubPath)) {
-            $this->error("Stub 文件不存在，无法渲染：{$stubPath}");
-
-            return '';
-        }
-
-        $content = (string) file_get_contents($stubPath);
-
-        foreach ($vars as $key => $value) {
-            $content = str_replace('{{ '.$key.' }}', $value, $content);
-        }
-
-        return $content;
-    }
-
-    /**
-     * 写入文件，处理文件冲突（D-02 skip if exists）
-     *
-     * @param  string  $targetPath  目标文件绝对路径
-     * @param  string  $content  文件内容
-     */
-    protected function writeFile(string $targetPath, string $content): bool
-    {
-        if (File::exists($targetPath) && ! $this->option('force')) {
+        if ($written) {
+            $this->info("已生成: {$targetPath}");
+        } else {
             $this->warn("Skipped: {$targetPath} (use --force to overwrite)");
-
-            return false;
         }
 
-        File::makeDirectory(dirname($targetPath), 0755, true, true);
-        File::put($targetPath, $content);
-        $this->info("已生成: {$targetPath}");
-
-        return true;
-    }
-
-    /**
-     * 校验 --path 参数安全性，拒绝路径遍历（T-01-11 安全防护）
-     *
-     * @param  string  $path  用户传入的路径字符串
-     */
-    protected function validatePath(string $path): bool
-    {
-        if (str_contains($path, '..') || str_starts_with($path, '/') || preg_match('#^[A-Za-z]:\\\\#', $path)) {
-            $this->error('--path 不允许包含 .. 路径上溯');
-
-            return false;
-        }
-
-        // 限制 --path 必须位于 app/ 之内，避免写出到 storage/routes/config 等非 PSR-4 目录
-        if ($path !== 'app' && ! str_starts_with($path, 'app/')) {
-            $this->error('--path 必须位于 app/ 目录之内（如 app/Filament/Resources）');
-
-            return false;
-        }
-
-        return true;
-    }
-
-    /**
-     * 推导 Model 所在命名空间（D-05）
-     *
-     * 默认为 App\Models；若传入 --with-models 且 --path 非默认路径，
-     * 则在 App\Models\{PanelPrefix} 下生成独立 Model 副本。
-     */
-    protected function deriveModelNamespace(): string
-    {
-        if (! $this->option('with-models')) {
-            return 'App\\Models';
-        }
-
-        $panelPrefix = $this->derivePanelPrefix();
-
-        return $panelPrefix !== '' ? 'App\\Models\\'.$panelPrefix : 'App\\Models';
-    }
-
-    /**
-     * 推导 Resource 所在命名空间（D-04）
-     *
-     * 根据 --path 推导命名空间，如：
-     * - 默认（app/Filament/Resources） → App\Filament\Resources\{Plural}
-     * - --path=app/Filament/Reseller → App\Filament\Reseller\Resources\{Plural}
-     *
-     * @param  string  $name  PascalCase 类名
-     */
-    protected function deriveResourceNamespace(string $name): string
-    {
-        $path        = $this->option('path') ?: 'app/Filament/Resources';
-        $pluralName  = $this->pluralize($name);
-
-        // 将路径转换为命名空间：app/Filament/Reseller → App\Filament\Reseller
-        $nsBase = implode('\\', array_map(
-            fn ($seg) => ucfirst($seg),
-            explode('/', $path)
-        ));
-
-        return $nsBase.'\\'.$pluralName;
-    }
-
-    /**
-     * 从 --path 末段推导 PanelPrefix（用于 --with-models 时的 Model 子目录）
-     *
-     * 如 --path=app/Filament/Reseller → PanelPrefix = Reseller
-     * 如 --path=app/Filament/Resources（默认）→ PanelPrefix = ''
-     */
-    protected function derivePanelPrefix(): string
-    {
-        $path = $this->option('path') ?: '';
-
-        if ($path === '' || $path === 'app/Filament/Resources') {
-            return '';
-        }
-
-        $segments = explode('/', rtrim($path, '/'));
-
-        return ucfirst(end($segments));
-    }
-
-    /**
-     * 简单复数化（追加 s，如 Product → Products）
-     *
-     * 注意：复数特例（y→ies、category→categories 等）延迟到 Phase 3 FEAT-03
-     * 通过 doctrine/inflector 处理，当前仅做最简实现以避免引入新依赖。
-     *
-     * @param  string  $name  单数 PascalCase 名称
-     */
-    protected function pluralize(string $name): string
-    {
-        return $name.'s';
-    }
-
-    /**
-     * 将 PascalCase 转为 snake_case（如 AdminUser → admin_user）
-     *
-     * @param  string  $name  PascalCase 名称
-     */
-    protected function toSnakeCase(string $name): string
-    {
-        return strtolower((string) preg_replace('/([a-z0-9])([A-Z])/', '$1_$2', $name));
+        return $written;
     }
 
     /**
