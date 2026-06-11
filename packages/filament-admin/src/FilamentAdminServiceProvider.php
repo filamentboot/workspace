@@ -136,7 +136,15 @@ class FilamentAdminServiceProvider extends ServiceProvider
     }
 
     /**
-     * 注册 Policy 映射与超级管理员 Gate::before
+     * 注册 Policy 映射与合并 Gate::before 回调
+     *
+     * 合并回调顺序（两个判定必须按此顺序，不可颠倒）：
+     * ① 演示拒绝：演示账号的写类 ability 直接返回 false（短路拒绝）
+     * ② 超管放行：super_admin 角色返回 true，其余返回 null
+     *
+     * 顺序说明：若将超管放行置于演示拒绝之前，挂 super_admin 的演示账号
+     * 会被超管放行短路（返回 true），导致演示写操作屏蔽完全失效。
+     * 合并为单一回调可消除多 Gate::before 注册顺序不确定性。
      */
     protected function registerPolicies(): void
     {
@@ -145,7 +153,7 @@ class FilamentAdminServiceProvider extends ServiceProvider
             Gate::policy($model, $policy);
         }
 
-        // 超级管理员绕过所有权限检查
+        // 超级管理员绕过所有权限检查（含演示拒绝前置分支）
         $superAdminRole = config('filament-admin.super_admin_role', 'super_admin');
 
         Gate::before(function (Authenticatable $user, string $ability) use ($superAdminRole) {
@@ -154,8 +162,55 @@ class FilamentAdminServiceProvider extends ServiceProvider
                 return null;
             }
 
+            // ① 演示拒绝分支（必须早于超管放行执行）
+            // 演示账号的写类 ability 返回 false（直接拒绝，Gate 链路短路），
+            // 读类 ability 返回 null（放行后续判定，超管放行将允许 viewAny 等读操作）。
+            if (self::isDemoUser($user) && self::isWriteAbility($ability)) {
+                return false;
+            }
+
+            // ② 超管放行分支
             return $user->hasRole($superAdminRole) ? true : null;
         });
+    }
+
+    /**
+     * 判断是否为演示账号
+     *
+     * 演示账号以 email 字段 demo@example.com 为唯一标识。
+     * 使用 isset 防御 email 属性不存在的情况。
+     *
+     * @param  Authenticatable  $user  当前认证用户
+     */
+    private static function isDemoUser(Authenticatable $user): bool
+    {
+        return isset($user->email) && $user->email === 'demo@example.com';
+    }
+
+    /**
+     * 判断是否为写类 ability（演示环境需屏蔽的操作）
+     *
+     * 使用前缀匹配覆盖 Filament 所有写类 ability，包括：
+     * create / update / delete / deleteAny / forceDelete / forceDeleteAny /
+     * restore / restoreAny / replicate / reorder
+     *
+     * @param  string  $ability  Gate ability 名称
+     */
+    private static function isWriteAbility(string $ability): bool
+    {
+        $blocked = [
+            'create', 'update', 'delete', 'deleteAny',
+            'forceDelete', 'forceDeleteAny',
+            'restore', 'restoreAny', 'replicate', 'reorder',
+        ];
+
+        foreach ($blocked as $prefix) {
+            if (str_starts_with($ability, $prefix)) {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /**
