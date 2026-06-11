@@ -63,6 +63,15 @@ class AdminFoundationPermissionSeeder extends Seeder
             'update_role_data_scope',
             'view_any_activity_log',
             'view_activity_log',
+            // 插件管理权限点（PLUGIN-01/02/03）
+            'view_any_plugin',
+            'view_plugin',
+            'update_plugin',
+            'initialize_plugin',
+            // 导出权限点（FINAL-04）
+            'export_admin_user',
+            'export_department',
+            'export_login_log',
         ];
     }
 }
