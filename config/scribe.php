@@ -9,6 +9,13 @@ use function Knuckles\Scribe\Config\removeStrategies;
 
 // Only the most common configs are shown. See the https://scribe.knuckles.wtf/laravel/reference/config for all.
 
+// knuckleswtf/scribe 为 dev 依赖；生产环境 --no-dev 部署时其类/函数不存在。
+// 该配置仅服务于开发期 API 文档生成，生产无需加载——返回空配置以避免下方引用
+// Scribe 类（AuthIn / Defaults / Strategies / configureStrategy 等）导致应用启动失败。
+if (! class_exists(AuthIn::class)) {
+    return [];
+}
+
 return [
     // The HTML <title> for the generated documentation.
     'title' => 'FilamentAdmin API 文档',

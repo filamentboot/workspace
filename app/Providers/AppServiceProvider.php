@@ -40,6 +40,12 @@ class AppServiceProvider extends ServiceProvider
      */
     protected function registerScrambleRouteFilter(): void
     {
+        // Scramble（dedoc/scramble）为 dev 依赖；生产环境 --no-dev 部署时类不存在，
+        // 跳过注册以避免应用启动失败（演示站 / 生产部署护栏）。
+        if (! class_exists(Scramble::class)) {
+            return;
+        }
+
         Scramble::configure()->routes(fn (Route $route): bool => str_starts_with($route->uri(), 'api/v1/'));
     }
 
