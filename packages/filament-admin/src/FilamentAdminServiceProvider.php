@@ -113,13 +113,13 @@ class FilamentAdminServiceProvider extends ServiceProvider
             'filament-two-factor-authentication',
         );
 
-        // 覆盖 filament-impersonate 插件的 zh_CN 翻译：
-        // 将横幅文案对齐锁定字面 "正在模拟 {username}（结束模拟）"（D-19）。
-        // FileLoader::addNamespace 后注册覆盖先注册，确保主包翻译优先于插件翻译。
-        $this->loadTranslationsFrom(
-            __DIR__.'/../resources/lang/zh_CN',
-            'filament-impersonate',
-        );
+        // 覆盖 filament-impersonate 横幅翻译，对齐锁定字面（D-19）。
+        // loadTranslationsFrom 用 callAfterResolving，若插件 SP 后启动会被覆盖。
+        // 用 app->booted() 确保在所有 SP 启动后最后注册，保证优先级。
+        $langPath = __DIR__.'/../resources/lang';
+        $this->app->booted(function () use ($langPath): void {
+            app('translator')->getLoader()->addNamespace('filament-impersonate', $langPath);
+        });
     }
 
     /**
