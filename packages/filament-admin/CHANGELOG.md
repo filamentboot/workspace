@@ -5,21 +5,30 @@
 
 ## [Unreleased]
 
+---
+
+## [0.5.0] - 2026-06-11
+
 ### Added
 
-- `filament-admin:publish` 命令真实实现（8 个选项：`--model`/`--resource`/`--all`/`--path`/`--with-models`/`--force`/`--only`/`--except`）
-- vendor:publish 5 个 tag 完整注册：`filament-admin-config`/`migrations`/`views`/`lang`/`stubs`
-- 包 CI（GitHub Actions）覆盖 PHP 8.3 / 8.4，含 PHPUnit、PHPStan、Pint 三个作业
-- 包元数据合规（`laravelstack/filament-admin` 坐标、MIT License、badges）
+- **Impersonation（用户模拟登录）**：集成 `stechstudio/filament-impersonate`，管理员列表一键切换身份，顶栏显示"结束模拟"横幅（中文覆盖），由 `ImpersonationListener` 自动写入操作日志
+- **Scramble API 文档**：集成 `dedoc/scramble`，`/docs/api` 自动生成 OpenAPI 3.0 文档界面（Stoplight Elements），生产环境通过 `RestrictedDocsAccess` 中间件禁止访问
+- **make:filament-admin-resource**：`php artisan make:filament-admin-resource {name}` 在用户项目生成 Resource + 三个 Pages（List/Create/Edit），委托 `StubGenerator` 服务统一渲染
+- **filament-admin:publish --model / --resource / --all**：真实实现，生成 Model + Resource + Migration + FeatureTest 四件套，支持 `--force` 覆盖、`--only` / `--except` 过滤、`--path` 自定义输出路径
+- **vendor:publish 5 个 tag 完整注册**：`filament-admin-config` / `filament-admin-migrations` / `filament-admin-views` / `filament-admin-lang` / `filament-admin-stubs`
+- **包 CI（GitHub Actions）**：PHP 8.3 / 8.4 矩阵，含 PHPUnit、PHPStan、Pint 三个作业，`composer audit` 安全扫描（警告模式）
+- **包元数据合规**：`laravelstack/filament-admin` Packagist 坐标、MIT License、CONTRIBUTING / SECURITY / CODE_OF_CONDUCT 文档
 
 ### Changed
 
+- `StubGenerator` 抽取为独立服务（D-28），`PublishCommand` 与 `make:filament-admin-*` 命令统一委托调用，消除重复渲染逻辑
 - `filament-admin:publish --path` 限制输出路径必须位于 `app/` 之内（安全修复 WR-08）
 
 ### Fixed
 
 - PublishCommand `FeatureTest` 命名空间来源统一修复（WR-06/WR-07）
 - `publishResource` 传递给 `renderStub` 的无效键删除（WR-04）
+- `filament-impersonate` 翻译路径修复，注册时序调整确保 zh_CN 语言包正确加载（CR-02）
 
 ---
 
@@ -98,7 +107,8 @@
 
 ---
 
-[Unreleased]: https://github.com/john-captain/filament-admin/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/john-captain/filament-admin/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/john-captain/filament-admin/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/john-captain/filament-admin/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/john-captain/filament-admin/releases/tag/v0.4.0
 [0.3.0]: https://github.com/john-captain/filament-admin/releases/tag/v0.3.0

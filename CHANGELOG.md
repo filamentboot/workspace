@@ -8,16 +8,22 @@
 
 ## [Unreleased]
 
+---
+
+## [0.5.0] - 2026-06-11
+
 ### Added
 
+- **发布自动化**：`.github/workflows/release.yml` — push tag 触发 git subtree split 推包仓库 + GitHub Release 自动创建（awk 版本号过滤 CHANGELOG，非位置驱动）
+- **发版脚本三件套**：`scripts/release-package.sh`（本地发版 + Gitee 双推）、`scripts/verify-package-install.sh`（干净 Laravel 安装验证）、`scripts/release-rollback.sh`（幂等回滚）
+- `AGENTS.md` 发版流程文档：Gitee 同步步骤、三脚本用途、所需 GitHub Secrets 说明
 - `wiki/installation.md` 完整化：Prerequisites 表、Quick Start 5 步、默认账号小节、AdminPanelProvider 完整示例
-- 根 `README.md` 改写为对外友好格式：后台首页截图、Star CTA、核心能力清单、未来路线图
-- 根 `UPGRADING.md` 新建：v0.4 → v0.5 升级路径与 breaking changes 列表
-- `CONTRIBUTING.md` 补充 CI 环境端口差异说明（本地 3380 / CI 3306）
+- 根 `README.md` 改写为对外友好格式：核心能力清单、未来路线图
 
 ### Changed
 
-- 根 `CHANGELOG.md` 格式修正为 Keep a Changelog 1.1.0 标准，移除非标分组（Notes 段并入 Changed）
+- 根 CI（`.github/workflows/ci.yml`）：`APP_KEY` 改为 `${{ secrets.CI_APP_KEY }}` 引用，移除硬编码密钥（RELEASE-04）；补充 `composer audit` 安全扫描步骤（RELEASE-03，警告模式）
+- 根 `CHANGELOG.md` 格式修正为 Keep a Changelog 1.1.0 标准，移除非标分组
 
 ### Fixed
 
@@ -42,7 +48,7 @@
 - 删除仓库内 `packages/plugin-platform/`
 - 删除主包测试集中与 `PluginPlatform` 绑定的测试套件
 
-[Unreleased]: https://github.com/john-captain/filament-admin/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/john-captain/filament-admin/compare/v0.5.0...HEAD
 [0.5.0]: https://github.com/john-captain/filament-admin/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/john-captain/filament-admin/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/john-captain/filament-admin/releases/tag/v0.4.0
