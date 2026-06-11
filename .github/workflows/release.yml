@@ -1,0 +1,115 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    outputs:
+      TAG: ${{ steps.tag.outputs.TAG }}
+
+    steps:
+      - name: 检出完整历史
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 配置 Git 身份
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: 获取 Tag 名称
+        id: tag
+        run: echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: subtree split（抽取包目录）
+        run: |
+          TAG=${{ steps.tag.outputs.TAG }}
+          git branch -D "tmp/split-$TAG" 2>/dev/null || true
+          git subtree split --prefix=packages/filament-admin -b "tmp/split-$TAG"
+
+      - name: 配置包仓库认证（HTTPS，D-39）
+        run: |
+          git remote add package-github \
+            https://x-access-token:${{ secrets.PACKAGE_GITHUB_TOKEN }}@github.com/john-captain/filament-admin.git
+
+      - name: 推送 main（force push，D-37）
+        run: |
+          TAG=${{ steps.tag.outputs.TAG }}
+          git push package-github "tmp/split-$TAG":main --force
+
+      - name: 推送 tag 到包仓库
+        run: |
+          TAG=${{ steps.tag.outputs.TAG }}
+          SPLIT_SHA=$(git rev-parse "tmp/split-$TAG")
+          git tag -a "$TAG" "$SPLIT_SHA" -m "$TAG 发布"
+          git push package-github "$TAG"
+
+      - name: 提取 CHANGELOG 版本说明（D-38，版本号过滤版）
+        run: |
+          TAG=${{ steps.tag.outputs.TAG }}
+          VER="${TAG#v}"
+          awk -v ver="$VER" '
+            /^## \[/{
+              if(found) exit
+              if(index($0, "[" ver "]")) found=1
+              next
+            }
+            found{print}
+          ' packages/filament-admin/CHANGELOG.md > /tmp/release-notes.md
+          echo "=== Release Notes 预览 ==="
+          cat /tmp/release-notes.md
+
+      - name: 创建 GitHub Release
+        env:
+          GH_TOKEN: ${{ secrets.PACKAGE_GITHUB_TOKEN }}
+        run: |
+          TAG=${{ steps.tag.outputs.TAG }}
+          gh release create "$TAG" \
+            --repo john-captain/filament-admin \
+            --title "$TAG" \
+            --notes-file /tmp/release-notes.md
+
+  verify:
+    runs-on: ubuntu-latest
+    needs: release
+
+    steps:
+      - name: 验证包仓库 tag 存在（D-40 主验证）
+        env:
+          GH_TOKEN: ${{ secrets.PACKAGE_GITHUB_TOKEN }}
+        run: |
+          TAG=${{ needs.release.outputs.TAG }}
+          gh api "repos/john-captain/filament-admin/git/refs/tags/$TAG"
+          echo "包仓库 tag $TAG 已确认存在"
+
+      - name: 等待 Packagist 同步并验证（warning-only，D-40 补充验证）
+        run: |
+          TAG=${{ needs.release.outputs.TAG }}
+          VER="${TAG#v}"
+          echo "等待 Packagist 同步（初始等待 60s）..."
+          sleep 60
+          for i in 1 2 3 4 5; do
+            if curl -sf "https://packagist.org/p2/laravelstack/filament-admin.json" | \
+               python3 -c "
+          import sys, json
+          d = json.load(sys.stdin)
+          vs = [p['version'] for p in d['packages']['laravelstack/filament-admin']]
+          exit(0 if 'v$VER' in vs else 1)
+          " 2>/dev/null; then
+              echo "Packagist 已收录 v$VER"
+              exit 0
+            fi
+            echo "尝试 $i/5，等待 30s..."
+            sleep 30
+          done
+          echo "::warning::Packagist 在 4 分钟内未收录 $TAG，请手动检查 https://packagist.org/packages/laravelstack/filament-admin"
+          exit 0
