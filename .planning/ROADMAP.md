@@ -164,14 +164,13 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 05-01-PLAN.md — DemoSeeder + demo:reset 命令（含生产护栏）+ cron 04:00（DEMO-02 / DEMO-03 演示账号）
+- [x] 05-01-PLAN.md — DemoSeeder + demo:reset 命令（含生产护栏）+ cron 04:00（DEMO-02 / DEMO-03 演示账号）
 - [ ] 05-03-PLAN.md — deploy.sh 补前端构建 + 清理冲突文件 + Gitee/环境人工前置（DEMO-01，autonomous: false）
-- [ ] 05-04-PLAN.md — 三处 README/wiki 顶部加 demo 链接与演示账号（DEMO-04）
+- [x] 05-04-PLAN.md — 三处 README/wiki 顶部加 demo 链接与演示账号（DEMO-04）✓
 
 **Wave 2** *(blocked on 05-01 completion)*
 
 - [ ] 05-02-PLAN.md — Gate::before 演示拒绝分支（演示判定先于超管放行，[BLOCKING]）+ isDemoUser/isWriteAbility（DEMO-03 高危屏蔽）
-
 
 ---
 
@@ -205,7 +204,20 @@ Plans:
 11. `GeneralSettings` 新增 `logo_url` 和 `contact_email` 字段（FINAL-03；当前仅有 `site_name`、`admin_title`、`icp_number`、`copyright`）
 12. 三个现有 Exporter（AdminUser/Department/LoginLog）补充独立权限点授权（`->authorize()`）和导出操作写入 ActivityLogger；Menu/Media Resource 暂不添加导出（FINAL-04）
 
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+**Wave 1**
+
+- [ ] 06-01-PLAN.md — 数据契约与测试地基：plugins 表迁移（演示项目）+ Plugin 模型/Factory + 6 权限点 Seeder 扩充 + 8 个 Wave 0 测试桩（PLUGIN-01/02/03/05/06/07）
+
+**Wave 2** *(blocked on 06-01；02 与 03 文件无重叠可并行)*
+
+- [ ] 06-02-PLAN.md — 服务层：MarketplaceService（HTTP 缓存浏览不写库）+ PluginManager（启停/同步初始化/包名校验/依赖检查）+ plugin:scan 命令（PLUGIN-02/03/05/06/07）
+- [ ] 06-03-PLAN.md — 对外展示 FINAL：GeneralSettings 加 logo_url/contact_email + 三 Exporter 授权+审计 + RELEASE_NOTES.md + 官网 landing 占位页（FINAL-02/03/04/05）
+
+**Wave 3** *(blocked on 06-01 + 06-02)*
+
+- [ ] 06-04-PLAN.md — UI 与生效层：PluginPolicy + PluginResource（启停/扫描）+ ViewPlugin（初始化+wire:poll进度+重试）+ MarketplacePage（浏览不写库+composer 复制命令）+ AdminPanelProvider 动态注册接入（PLUGIN-01/02/03/04/08）
 
 ---
 
@@ -340,7 +352,7 @@ Plans:
 | 2. 文档与品宣 | 3/3 | Complete    | 2026-06-10 |
 | 3. 包功能补强 | 4/4 | Complete    | 2026-06-11 |
 | 4. 发布自动化 | 3/4 | In Progress|  |
-| 5. 演示站 | 0/? | Not started | - |
+| 5. 演示站 | 2/4 | In Progress|  |
 | 6. 插件市场 + 对外展示 | 0/? | Not started | - |
 | 7. 质量基座 | 0/? | Not started | - |
 | 8. 云存储插件 | 0/? | Not started | - |
