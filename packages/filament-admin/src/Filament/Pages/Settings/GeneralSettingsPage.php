@@ -49,6 +49,14 @@ class GeneralSettingsPage extends SettingsPage
                 TextInput::make('copyright')
                     ->label('版权信息')
                     ->maxLength(200),
+                TextInput::make('logo_url')
+                    ->label('Logo URL')
+                    ->url()
+                    ->maxLength(500),
+                TextInput::make('contact_email')
+                    ->label('联系邮箱')
+                    ->email()
+                    ->maxLength(100),
             ]);
     }
 }

@@ -23,6 +23,12 @@ class GeneralSettings extends Settings
     /** 底部版权信息 */
     public string $copyright = '';
 
+    /** Logo 图片 URL */
+    public string $logo_url = '';
+
+    /** 联系邮箱 */
+    public string $contact_email = '';
+
     /**
      * Settings 分组名
      */
