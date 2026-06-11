@@ -20,6 +20,10 @@ git pull origin main
 echo "[deploy] 安装生产依赖"
 COMPOSER_ALLOW_SUPERUSER=1 composer2 install --no-dev --optimize-autoloader --no-interaction --ignore-platform-req=ext-intl
 
+echo "[deploy] 构建前端资产"
+npm ci --omit=dev
+npm run build
+
 echo "[deploy] 执行数据库迁移"
 php artisan migrate --force
 
