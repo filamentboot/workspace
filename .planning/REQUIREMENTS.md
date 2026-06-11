@@ -99,10 +99,10 @@
 
 ### 演示站（Phase 5 = v0.5.1）
 
-- [ ] **DEMO-01**: demo.xitongapp.com 部署当前代码到 118.25.27.49 服务器；Gitee CI tag 触发 → SSH 拉新代码 → `composer install --no-dev` → `npm ci && npm run build` → `php artisan migrate --force` → reload PHP-FPM
-- [ ] **DEMO-02**: `php artisan demo:reset` 命令 — 清空业务数据表（保留 admin_users 仅 demo 账号 + 角色权限 + 菜单）+ 重新跑 demo seeder；cron `0 4 * * *`（每天凌晨 4 点）调用
-- [ ] **DEMO-03**: 演示账号 (`demo@example.com / demo123`) + 高危操作屏蔽中间件 — 拦截 `Admin::create/destroy`、`Role::create/destroy`、`Permission::create`、`Department::destroy`、`Setting::update` 等敏感操作，返回友好提示"演示环境屏蔽此操作"
-- [ ] **DEMO-04**: `README.md`、`packages/filament-admin/README.md`、`wiki/index.md` 加 demo 链接 + 默认演示账号说明（顶部显眼位置）
+- [x] **DEMO-01**: demo.xitongapp.com 部署当前代码到 118.25.27.49 服务器；Gitee CI tag 触发 → SSH 拉新代码 → `composer install --no-dev` → `npm ci && npm run build` → `php artisan migrate --force` → reload PHP-FPM
+- [x] **DEMO-02**: `php artisan demo:reset` 命令 — 清空业务数据表（保留 admin_users 仅 demo 账号 + 角色权限 + 菜单）+ 重新跑 demo seeder；cron `0 4 * * *`（每天凌晨 4 点）调用
+- [x] **DEMO-03**: 演示账号 (`demo@example.com / demo123`) + 高危操作屏蔽中间件 — 拦截 `Admin::create/destroy`、`Role::create/destroy`、`Permission::create`、`Department::destroy`、`Setting::update` 等敏感操作，返回友好提示"演示环境屏蔽此操作"
+- [x] **DEMO-04**: `README.md`、`packages/filament-admin/README.md`、`wiki/index.md` 加 demo 链接 + 默认演示账号说明（顶部显眼位置）
 
 ---
 
@@ -183,10 +183,10 @@ Phase 映射（由 ROADMAP.md 阶段细化，此处仅 milestone 视图）。
 | RELEASE-04 | Phase 4 | Pending |
 | RELEASE-05 | Phase 4 | Pending |
 | RELEASE-06 | Phase 4 | Pending |
-| DEMO-01 | Phase 5 (v0.5.1) | Pending |
-| DEMO-02 | Phase 5 (v0.5.1) | Pending |
-| DEMO-03 | Phase 5 (v0.5.1) | Pending |
-| DEMO-04 | Phase 5 (v0.5.1) | Pending |
+| DEMO-01 | Phase 5 (v0.5.1) | Complete |
+| DEMO-02 | Phase 5 (v0.5.1) | Complete |
+| DEMO-03 | Phase 5 (v0.5.1) | Complete |
+| DEMO-04 | Phase 5 (v0.5.1) | Complete |
 
 **Coverage:**
 

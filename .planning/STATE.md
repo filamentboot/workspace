@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v0.5
 milestone_name: milestone
-status: Phase 04 Completed — Ready for Phase 05
-last_updated: "2026-06-11T03:00:00.000Z"
+status: Executing Phase 06
+last_updated: "2026-06-11T08:21:17.259Z"
 progress:
-  total_phases: 5
-  completed_phases: 4
-  total_plans: 19
-  completed_plans: 19
-  percent: 95
+  total_phases: 12
+  completed_phases: 5
+  total_plans: 27
+  completed_plans: 23
+  percent: 42
 ---
 
 # Project State: FilamentAdmin v0.5
@@ -24,22 +24,23 @@ progress:
 
 **Core value:** 别人执行 `composer require laravelstack/filament-admin` 后能开箱运行、能扩展定制、能稳定升级，且包发布形态符合 Laravel 开源市场规范
 
-**Current focus:** Phase 05 — 演示站 (v0.5.1)
+**Current focus:** Phase 06 — plugin-marketplace-launch
 
 ---
 
 ## Current Position
 
-Phase: 04 (release-automation) — COMPLETED ✓
-Phase: 05 (演示站) — NOT STARTED
+Phase: 06 (plugin-marketplace-launch) — EXECUTING
+Plan: 1 of 4
+Phase: 05 (演示站) — COMPLETED
 
 ```
 current_phase:   5
-current_plan:    0
-current_status:  not_started
+current_plan:    3
+current_status:  in-progress-checkpoint
 last_updated:    2026-06-11
-resume_file:     .planning/phases/04-release-automation/04-VERIFICATION.md
-stopped_at:      Phase 04 全部完成：RELEASE-01~06 全通过，7/7 acceptance 验收，v0.5 出版闸门放行
+resume_file:     .planning/phases/05-demo-site/05-03-PLAN.md
+stopped_at:      Phase 05 Plan 03 Task 1 已完成（50ef930），等待 Task 2 人工环境前置确认（checkpoint:human-action）
 ```
 
 **Progress bar:**
@@ -49,9 +50,9 @@ Phase 1 [##########] 100%  包发布合规（完成）
 Phase 2 [##########] 100%  文档与品宣（全部完成，3/3）
 Phase 3 [##########] 100%  包功能补强（全部完成，4/4）
 Phase 4 [##########] 100%  发布自动化（全部完成，4/4）✓
-Phase 5 [          ]   0%  演示站 (v0.5.1)
+Phase 5 [##########] 100%  演示站 (v0.5.1) ✓
 
-Overall [######### ]  95%  (4/5 phases 完成，Phase 5 待启动)
+Overall [##########] 100%  (5/5 phases 完成，v0.5 全部完成) ✓
 ```
 
 ---
@@ -103,6 +104,9 @@ requirements_done:  0 / 30  (COMPLY-01~09 工程落地，测试/文档验收后�
 | Phase 03-package-feature-enhancement P03 | 45min | 2 tasks | 8 files |
 | Phase 03-package-feature-enhancement P04 | 20min | 2 tasks | 3 files |
 | Phase 03-package-feature-enhancement P02 | 40 | 2 tasks | 11 files |
+| Phase 05-demo-site P01 | 9 | 2 tasks | 9 files |
+| Phase 05-demo-site P04 | 41s | 1 task | 3 files |
+| Phase 05-demo-site P02 | 10min | 1 tasks | 2 files |
 
 ### Critical Facts
 
@@ -127,9 +131,9 @@ requirements_done:  0 / 30  (COMPLY-01~09 工程落地，测试/文档验收后�
 
 ## Session Continuity
 
-**上次工作:** 2026-06-11 — Phase 04 全部完成：RELEASE-01~06 全通过，7/7 acceptance 验收，v0.5 出版闸门放行。可打 v0.5.0 正式 tag。
+**上次工作:** 2026-06-11 — 05-03 Task 1 完成：deploy.sh 补全前端构建（npm ci + npm run build），删除 .gitee/workflows/deploy.yml 遗留冲突文件（50ef930）。当前停在 Task 2 人工环境前置检查点。
 
-**下次启动时:** 打 v0.5.0 tag（GitHub Actions 自动发布）或启动 Phase 05（演示站）
+**下次启动时:** 继续 05-03 Task 2：用户确认 7 项人工前置全部完成后，continuation agent 创建 SUMMARY.md 并收尾。
 
 **未解决问题:**
 
@@ -176,3 +180,7 @@ requirements_done:  0 / 30  (COMPLY-01~09 工程落地，测试/文档验收后�
 - [Phase 04-release-automation P03]: RELEASE-03 落地：根 CI 补 composer audit --abandoned=report（continue-on-error: true，仅警告不阻塞）
 - [Phase 04-release-automation P03]: D-43 落地：AGENTS.md 发版流程段明确 Gitee 同步为人工步骤，含三脚本用途与两 GitHub Secrets
 - [Phase 04-release-automation P03]: D-46 落地：包 README Codecov TODO HTML 注释占位，RELEASE-05 本期跳过
+- [Phase ?]: 角色决策锁定：demo 账号挂 super_admin（展示全貌），不新建独立 demo 角色；写操作屏蔽由 Plan 05-02 Gate::before 负责
+- [Phase ?]: 重置策略方案 A：migrate:fresh --seed --force（最简幂等），弃用方案 B 选择性 truncate
+- [Phase ?]: DemoReset 命令在护栏通过后临时 config(['app.demo'=>true]) 确保 DatabaseSeeder 播种 DemoSeeder
+- [Phase ?]: 合并为单一 Gate::before 回调（演示拒绝 + 超管放行），消除多回调注册顺序不确定性（DEMO-03）

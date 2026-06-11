@@ -14,7 +14,7 @@
 - [x] **Phase 2: 文档与品宣** — README 重写 / wiki 完整化 / CHANGELOG 规范 / UPGRADING，让别人装下来看得懂、用得了、愿意 Star (completed 2026-06-10)
 - [x] **Phase 3: 包功能补强** — Impersonation + Scramble API 文档 + CRUD 生成器，补齐 kaido-kit 已有的核心差异化功能 (completed 2026-06-10)
 - [ ] **Phase 4: 发布自动化** — release.yml + 发版脚本三件套 + Codecov，让下次发版从 9 条手工命令变为打 tag 就完事
-- [ ] **Phase 5: 演示站** — demo.xitongapp.com 部署 + 数据重置 cron + 高危操作屏蔽，先拿出看得见的成果
+- [x] **Phase 5: 演示站** — demo.xitongapp.com 部署 + 数据重置 cron + 高危操作屏蔽，先拿出看得见的成果 (completed 2026-06-11)
 - [ ] **Phase 6: 插件市场 + 对外展示** — 启停控制、安装链路、安全校验、市场数据边界 + 官网、Release Notes、CI audit
 - [ ] **Phase 7: 质量基座** — 7个Bug修复 + 4项一期补缺（密码重置/2FA强制/数据权限/日志策略）
 - [ ] **Phase 8: 云存储插件** — 阿里云 OSS + 腾讯云 COS Filament 插件
@@ -165,12 +165,12 @@ Plans:
 **Wave 1**
 
 - [x] 05-01-PLAN.md — DemoSeeder + demo:reset 命令（含生产护栏）+ cron 04:00（DEMO-02 / DEMO-03 演示账号）
-- [ ] 05-03-PLAN.md — deploy.sh 补前端构建 + 清理冲突文件 + Gitee/环境人工前置（DEMO-01，autonomous: false）
+- [x] 05-03-PLAN.md — deploy.sh 补前端构建 + 清理冲突文件 + Gitee/环境人工前置（DEMO-01，autonomous: false）
 - [x] 05-04-PLAN.md — 三处 README/wiki 顶部加 demo 链接与演示账号（DEMO-04）✓
 
 **Wave 2** *(blocked on 05-01 completion)*
 
-- [ ] 05-02-PLAN.md — Gate::before 演示拒绝分支（演示判定先于超管放行，[BLOCKING]）+ isDemoUser/isWriteAbility（DEMO-03 高危屏蔽）
+- [x] 05-02-PLAN.md — Gate::before 演示拒绝分支（演示判定先于超管放行，[BLOCKING]）+ isDemoUser/isWriteAbility（DEMO-03 高危屏蔽）
 
 ---
 
@@ -340,6 +340,10 @@ Plans:
 2. 代码重复消除（Trait 抽取、Service 合并、冗余类删除），PHPStan Level 6 零错误，Pint 零警告
 3. 测试覆盖率 ≥ 80%，关键路径（登录/权限/CRUD/插件启停）100% 覆盖；废弃代码和未使用依赖清理
 
+**已登记待修（来自其它阶段评审）**:
+
+- **CR-01（来自 Phase 05 代码评审，见 `.planning/phases/05-demo-site/05-REVIEW.md`）**：DEMO-03 演示写拦截可被 Filament 设置页（`SettingsPage::canEdit()` 硬编码 true）与 Profile 页（`EditProfile::save()` 直接 update，不走 Gate）绕过；且 `isDemoUser()` 仅凭可变的 email 判定，演示用户改邮箱即可整体失配。加固方向：用稳定标识（专门的 `demo` 角色或 DB 标志）识别演示用户 + 在 Profile/各 SettingsPage 的 `save()` 加演示守卫 + 补 Filament Page 绕过的回归测试。当前公网 demo 仅靠每日 04:00 重置兜底。
+
 **Plans**: TBD
 
 ---
@@ -352,7 +356,7 @@ Plans:
 | 2. 文档与品宣 | 3/3 | Complete    | 2026-06-10 |
 | 3. 包功能补强 | 4/4 | Complete    | 2026-06-11 |
 | 4. 发布自动化 | 3/4 | In Progress|  |
-| 5. 演示站 | 2/4 | In Progress|  |
+| 5. 演示站 | 4/4 | Complete    | 2026-06-11 |
 | 6. 插件市场 + 对外展示 | 0/? | Not started | - |
 | 7. 质量基座 | 0/? | Not started | - |
 | 8. 云存储插件 | 0/? | Not started | - |
