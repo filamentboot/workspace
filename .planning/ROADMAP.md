@@ -12,7 +12,7 @@
 
 - [x] **Phase 1: 包发布合规** — 修复 ServiceProvider `publishes()` 缺失 + PublishCommand 真实实现 + Composer 规范字段 + CI 门槛，让主包真正符合 Laravel 开源包标准
 - [x] **Phase 2: 文档与品宣** — README 重写 / wiki 完整化 / CHANGELOG 规范 / UPGRADING，让别人装下来看得懂、用得了、愿意 Star (completed 2026-06-10)
-- [ ] **Phase 3: 包功能补强** — Impersonation + Scramble API 文档 + CRUD 生成器，补齐 kaido-kit 已有的核心差异化功能
+- [x] **Phase 3: 包功能补强** — Impersonation + Scramble API 文档 + CRUD 生成器，补齐 kaido-kit 已有的核心差异化功能 (completed 2026-06-10)
 - [ ] **Phase 4: 发布自动化** — release.yml + 发版脚本三件套 + Codecov，让下次发版从 9 条手工命令变为打 tag 就完事
 - [ ] **Phase 5: 演示站 (v0.5.1)** — demo.xitongapp.com 部署 + 数据重置 cron + 高危操作屏蔽，不阻塞 v0.5 主线
 
@@ -105,7 +105,7 @@ Plans:
 
 **Wave 2** *(blocked on 03-01 completion)*
 
-- [ ] 03-02-PLAN.md — make:filament-admin-{model,resource,migration,test} 四命令薄包装 + 注册 + 四个 PHPUnit 测试（FEAT-03）
+- [x] 03-02-PLAN.md — make:filament-admin-{model,resource,migration,test} 四命令薄包装 + 注册 + 四个 PHPUnit 测试（FEAT-03）
 
 ---
 
@@ -151,7 +151,7 @@ Plans:
 |-------|----------------|--------|-----------|
 | 1. 包发布合规 | 8/8 | Complete    | 2026-06-10 |
 | 2. 文档与品宣 | 3/3 | Complete    | 2026-06-10 |
-| 3. 包功能补强 | 3/4 | In Progress|  |
+| 3. 包功能补强 | 4/4 | Complete    | 2026-06-11 |
 | 4. 发布自动化 | 0/? | Not started | - |
 | 5. 演示站 (v0.5.1) | 0/? | Not started | - |
 

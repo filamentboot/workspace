@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v0.5
 milestone_name: milestone
-status: Ready to execute
-last_updated: "2026-06-10T12:30:00.000Z"
+status: Ready to plan
+last_updated: "2026-06-11T01:09:44.775Z"
 progress:
   total_phases: 5
-  completed_phases: 2
+  completed_phases: 3
   total_plans: 15
-  completed_plans: 14
-  percent: 43
+  completed_plans: 15
+  percent: 60
 ---
 
 # Project State: FilamentAdmin v0.5
@@ -30,8 +30,8 @@ progress:
 
 ## Current Position
 
-Phase: 03 (package-feature-enhancement) — EXECUTING
-Plan: 4 of 4
+Phase: 4
+Plan: Not started
 
 ```
 current_phase:   3
@@ -102,6 +102,7 @@ requirements_done:  0 / 30  (COMPLY-01~09 工程落地，测试/文档验收后�
 | Phase 03-package-feature-enhancement P01 | 25min | 2 tasks | 2 files |
 | Phase 03-package-feature-enhancement P03 | 45min | 2 tasks | 8 files |
 | Phase 03-package-feature-enhancement P04 | 20min | 2 tasks | 3 files |
+| Phase 03-package-feature-enhancement P02 | 40 | 2 tasks | 11 files |
 
 ### Critical Facts
 
@@ -169,3 +170,4 @@ requirements_done:  0 / 30  (COMPLY-01~09 工程落地，测试/文档验收后�
 - [Phase 03-package-feature-enhancement P04]: D-34：Scramble 与 knuckleswtf/scribe 共存，互不移除，实时 OpenAPI 与静态 HTML 文档互补
 - [Phase 03-package-feature-enhancement P04]: D-35：RestrictedDocsAccess 中间件默认启用，生产环境 /docs/api 不可访问
 - [Phase 03-package-feature-enhancement P04]: Pitfall 4 缓解：api_path=api/v1 + routes() 回调双保险，精确过滤文档化范围
+- [Phase ?]: D-28 单一来源：buildListPageContent/buildCreatePageContent/buildEditPageContent 迁入 StubGenerator，PublishCommand 和 MakeFilamentAdminResourceCommand 均委托调用

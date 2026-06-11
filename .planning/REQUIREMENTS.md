@@ -38,22 +38,22 @@
 
 > 装下来能跑、跑得通文档、装完之后愿意 Star。
 
-- [ ] **DOC-01**: `packages/filament-admin/README.md` 完整重写（当前 16 行占位符 → ~120 行）：第一屏 Hero（项目定位 + 1 张登录页/首页截图 GIF）、5 个 Badges（Packagist version / downloads / PHP / License / Tests CI）、5 行 Quick Start（含 vendor:publish + migrate + seed + AdminPanelProvider 引导 + 默认账号）、实现能力清单（抄全量功能清单一期已完成项）、与 FastAdmin/kaido-kit 差异化定位段
-- [ ] **DOC-02**: `.env.example` 默认值修正 — `APP_LOCALE=zh_CN`（当前 en）、`REDIS_PASSWORD=` 留空（当前占位符 `your-redis-password`）、`DB_PORT=3380` 后面加注释 `# Docker 默认 3380，标准 MySQL 改 3306`、`REDIS_DB=15` 加注释、文件末尾追加 FilamentAdmin 包级配置占位（`SUPER_ADMIN_ROLE=super_admin` / `LOG_RETENTION_DAYS=90`）
-- [ ] **DOC-03**: `wiki/installation.md` 完整化 — 顶部 Prerequisites 表（PHP 8.3+ / MySQL 8.0 / Redis 7.x / Node 20+ / Composer 2.x + 必需扩展 pdo_mysql/mbstring/bcmath/gd/redis/fileinfo/openssl）、中部 Quick Start 5 行可复制代码块、"默认账号"独立小节（`admin@example.com / password` + 首次改密提示）、完整 `AdminPanelProvider` 示例代码（用户 `composer require` 后必读）
-- [ ] **DOC-04**: `CHANGELOG.md`（根 + `packages/filament-admin/`）重写为 Keep-a-Changelog 1.1.0 格式 — 标准分组 Added / Changed / Deprecated / Removed / Fixed / Security；包含 `[Unreleased]` 段；历史 v0.4.0 / v0.4.1 内容补齐
-- [ ] **DOC-05**: 新增 `UPGRADING.md`（根目录） — v0.4 → v0.5 升级路径，列 breaking changes（vendor:publish 新增 5 tag 用户需重新 publish）、新增 PublishCommand 用法、配置文件变化、composer 约束建议
-- [ ] **DOC-06**: 根 `README.md` 改写 — 加 1 张登录页截图 + 1 张后台首页截图、Star CTA 一句、替换"插件市场能力不属于当前主包发布对象"等内部话术为对外友好的"未来路线图"段
-- [ ] **DOC-07**: `docs/` 与 `wiki/` 残留旧坐标 `filament-admin/filament-admin` 批量替换为 `laravelstack/filament-admin`（涉及 `docs/prd/01-项目规范与目录结构.md`、`docs/prd/全量功能清单与实现状态.md`、wiki 多处）
-- [ ] **DOC-08**: `CONTRIBUTING.md` 加端口说明 — 明确"本地 3380（Docker 端口映射）/ CI 3306（GitHub Actions services 默认 MySQL 端口）"差异，避免新人按文档配本地后困惑 CI 配置不同
+- [x] **DOC-01**: `packages/filament-admin/README.md` 完整重写（当前 16 行占位符 → ~120 行）：第一屏 Hero（项目定位 + 1 张登录页/首页截图 GIF）、5 个 Badges（Packagist version / downloads / PHP / License / Tests CI）、5 行 Quick Start（含 vendor:publish + migrate + seed + AdminPanelProvider 引导 + 默认账号）、实现能力清单（抄全量功能清单一期已完成项）、与 FastAdmin/kaido-kit 差异化定位段
+- [x] **DOC-02**: `.env.example` 默认值修正 — `APP_LOCALE=zh_CN`（当前 en）、`REDIS_PASSWORD=` 留空（当前占位符 `your-redis-password`）、`DB_PORT=3380` 后面加注释 `# Docker 默认 3380，标准 MySQL 改 3306`、`REDIS_DB=15` 加注释、文件末尾追加 FilamentAdmin 包级配置占位（`SUPER_ADMIN_ROLE=super_admin` / `LOG_RETENTION_DAYS=90`）
+- [x] **DOC-03**: `wiki/installation.md` 完整化 — 顶部 Prerequisites 表（PHP 8.3+ / MySQL 8.0 / Redis 7.x / Node 20+ / Composer 2.x + 必需扩展 pdo_mysql/mbstring/bcmath/gd/redis/fileinfo/openssl）、中部 Quick Start 5 行可复制代码块、"默认账号"独立小节（`admin@example.com / password` + 首次改密提示）、完整 `AdminPanelProvider` 示例代码（用户 `composer require` 后必读）
+- [x] **DOC-04**: `CHANGELOG.md`（根 + `packages/filament-admin/`）重写为 Keep-a-Changelog 1.1.0 格式 — 标准分组 Added / Changed / Deprecated / Removed / Fixed / Security；包含 `[Unreleased]` 段；历史 v0.4.0 / v0.4.1 内容补齐
+- [x] **DOC-05**: 新增 `UPGRADING.md`（根目录） — v0.4 → v0.5 升级路径，列 breaking changes（vendor:publish 新增 5 tag 用户需重新 publish）、新增 PublishCommand 用法、配置文件变化、composer 约束建议
+- [x] **DOC-06**: 根 `README.md` 改写 — 加 1 张登录页截图 + 1 张后台首页截图、Star CTA 一句、替换"插件市场能力不属于当前主包发布对象"等内部话术为对外友好的"未来路线图"段
+- [x] **DOC-07**: `docs/` 与 `wiki/` 残留旧坐标 `filament-admin/filament-admin` 批量替换为 `laravelstack/filament-admin`（涉及 `docs/prd/01-项目规范与目录结构.md`、`docs/prd/全量功能清单与实现状态.md`、wiki 多处）
+- [x] **DOC-08**: `CONTRIBUTING.md` 加端口说明 — 明确"本地 3380（Docker 端口映射）/ CI 3306（GitHub Actions services 默认 MySQL 端口）"差异，避免新人按文档配本地后困惑 CI 配置不同
 
 ### 包功能补强（Phase 3）
 
 > kaido-kit 已有、低成本高曝光 + PRD 已规划但未做。
 
-- [ ] **FEAT-01**: User Impersonation 集成 — 引入 Spatie laravel-impersonate 或 stechstudio/filament-impersonate；超管在 AdminUserResource 列表页有"模拟登录"按钮，点击后切换会话身份，顶栏显示"正在模拟 username（结束模拟）"，结束后回到超管会话；操作写入 activity log
-- [ ] **FEAT-02**: Scramble API 自动文档 — 接入 dedoc/scramble；零配置 + 已有 Sanctum API 路由（admin/api/v1）自动生成 OpenAPI 3.0 文档；访问 `/docs/api` 可看；`composer.json` 加依赖 + `scribe.php` 或 `scramble.php` 配置
-- [ ] **FEAT-03**: CRUD 生成器 — `php artisan make:filament-admin-model X` / `make:filament-admin-resource X` / `make:filament-admin-migration X` / `make:filament-admin-test X` 四个 artisan 命令；从 `packages/filament-admin/stubs/{Model,Resource,Migration,FeatureTest}.stub` 渲染（含命名空间替换、字段占位）；输出 4 个文件到用户项目对应位置；每个命令有 PHPUnit 覆盖
+- [x] **FEAT-01**: User Impersonation 集成 — 引入 Spatie laravel-impersonate 或 stechstudio/filament-impersonate；超管在 AdminUserResource 列表页有"模拟登录"按钮，点击后切换会话身份，顶栏显示"正在模拟 username（结束模拟）"，结束后回到超管会话；操作写入 activity log
+- [x] **FEAT-02**: Scramble API 自动文档 — 接入 dedoc/scramble；零配置 + 已有 Sanctum API 路由（admin/api/v1）自动生成 OpenAPI 3.0 文档；访问 `/docs/api` 可看；`composer.json` 加依赖 + `scribe.php` 或 `scramble.php` 配置
+- [x] **FEAT-03**: CRUD 生成器 — `php artisan make:filament-admin-model X` / `make:filament-admin-resource X` / `make:filament-admin-migration X` / `make:filament-admin-test X` 四个 artisan 命令；从 `packages/filament-admin/stubs/{Model,Resource,Migration,FeatureTest}.stub` 渲染（含命名空间替换、字段占位）；输出 4 个文件到用户项目对应位置；每个命令有 PHPUnit 覆盖
 
 ### 发布自动化（Phase 4）
 
@@ -166,17 +166,17 @@ Phase 映射（由 ROADMAP.md 阶段细化，此处仅 milestone 视图）。
 | COMPLY-07 | Phase 1 | Complete |
 | COMPLY-08 | Phase 1 | Complete |
 | COMPLY-09 | Phase 1 | Complete |
-| DOC-01 | Phase 2 | Pending |
-| DOC-02 | Phase 2 | Pending |
-| DOC-03 | Phase 2 | Pending |
-| DOC-04 | Phase 2 | Pending |
-| DOC-05 | Phase 2 | Pending |
-| DOC-06 | Phase 2 | Pending |
-| DOC-07 | Phase 2 | Pending |
-| DOC-08 | Phase 2 | Pending |
-| FEAT-01 | Phase 3 | Pending |
-| FEAT-02 | Phase 3 | Pending |
-| FEAT-03 | Phase 3 | Pending |
+| DOC-01 | Phase 2 | Complete |
+| DOC-02 | Phase 2 | Complete |
+| DOC-03 | Phase 2 | Complete |
+| DOC-04 | Phase 2 | Complete |
+| DOC-05 | Phase 2 | Complete |
+| DOC-06 | Phase 2 | Complete |
+| DOC-07 | Phase 2 | Complete |
+| DOC-08 | Phase 2 | Complete |
+| FEAT-01 | Phase 3 | Complete |
+| FEAT-02 | Phase 3 | Complete |
+| FEAT-03 | Phase 3 | Complete |
 | RELEASE-01 | Phase 4 | Pending |
 | RELEASE-02 | Phase 4 | Pending |
 | RELEASE-03 | Phase 4 | Pending |
