@@ -3,6 +3,8 @@
 namespace App\Providers\Filament;
 
 use AlizHarb\ActivityLog\ActivityLogPlugin;
+use App\Filament\Pages\Marketplace\MarketplacePage;
+use App\Models\Plugin;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Facades\Filament;
 use Filament\Http\Middleware\Authenticate;
@@ -26,6 +28,7 @@ use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
 use Illuminate\Routing\Middleware\SubstituteBindings;
 use Illuminate\Session\Middleware\StartSession;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\View\Middleware\ShareErrorsFromSession;
 use Stephenjude\FilamentTwoFactorAuthentication\TwoFactorAuthenticationPlugin;
 
@@ -78,7 +81,9 @@ class AdminPanelProvider extends PanelProvider
             })
             ->pages([
                 Dashboard::class,
+                MarketplacePage::class,
             ])
+            ->tap(fn (Panel $panel) => $this->registerEnabledPlugins($panel))
             ->widgets([
                 AccountWidget::class,
                 FilamentInfoWidget::class,
@@ -97,5 +102,35 @@ class AdminPanelProvider extends PanelProvider
             ->authMiddleware([
                 Authenticate::class,
             ]);
+    }
+
+    /**
+     * 按 DB plugins.is_enabled 状态动态注册第三方插件
+     *
+     * 必须加 Cache::remember（TTL=30s）防每请求查库（RESEARCH Pitfall 1）。
+     * 必须加 try/catch 防 plugins 表首次 migrate 前不存在（RESEARCH Pitfall 1）。
+     */
+    private function registerEnabledPlugins(Panel $panel): void
+    {
+        try {
+            /** @var array<int, string> $classes */
+            $classes = Cache::remember(
+                'plugins.enabled_list',
+                30,
+                fn () => Plugin::query()
+                    ->where('is_enabled', true)
+                    ->whereNotNull('plugin_class')
+                    ->pluck('plugin_class')
+                    ->all()
+            );
+
+            foreach ($classes as $class) {
+                if (class_exists($class)) {
+                    $panel->plugin(app($class));
+                }
+            }
+        } catch (\Throwable) {
+            // plugins 表首次 migrate 前不存在，静默跳过
+        }
     }
 }
