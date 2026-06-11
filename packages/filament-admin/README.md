@@ -4,6 +4,9 @@
 
 ![FilamentAdmin 后台首页](art/dashboard.png)
 
+> 🌐 **在线体验**：https://demo.xitongapp.com  ·  演示账号 `demo@example.com` / `demo123`
+> （演示环境每日凌晨 4:00 重置；高危操作已屏蔽）
+
 <!-- 若 Packagist 未发布显示 404，Packagist 发布在 Phase 4 RELEASE-01 完成 -->
 [![最新版本](https://img.shields.io/packagist/v/laravelstack/filament-admin)](https://packagist.org/packages/laravelstack/filament-admin)
 [![总下载量](https://img.shields.io/packagist/dt/laravelstack/filament-admin)](https://packagist.org/packages/laravelstack/filament-admin)

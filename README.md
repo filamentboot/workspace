@@ -1,5 +1,8 @@
 # FilamentAdmin
 
+> 🌐 **在线体验**：https://demo.xitongapp.com  ·  演示账号 `demo@example.com` / `demo123`
+> （演示环境每日凌晨 4:00 重置；高危操作已屏蔽）
+
 基于 **Laravel 13 + Filament 5** 的 Composer 后台基础包，以 `composer require laravelstack/filament-admin` 即得一套含认证、RBAC 权限、菜单导航、操作日志、部门数据权限的企业级后台底座。
 
 > 如果你觉得本项目对你有帮助，欢迎点 ⭐ Star 支持一下！
