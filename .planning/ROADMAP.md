@@ -1,6 +1,6 @@
 # Roadmap: FilamentAdmin v0.5
 
-**Milestone:** v0.5 — 让主包"全部完成"形态
+**Milestone:** v0.5 — 让主包"全部完成"形态 ➔ v0.6+ — 补缺闭环 + 插件市场 + 成品收尾
 **Core Value:** 别人执行 `composer require laravelstack/filament-admin` 后能开箱运行、能扩展定制、能稳定升级，且包发布形态符合 Laravel 开源市场规范
 **Created:** 2026-06-09
 **Granularity:** Fine
@@ -14,7 +14,13 @@
 - [x] **Phase 2: 文档与品宣** — README 重写 / wiki 完整化 / CHANGELOG 规范 / UPGRADING，让别人装下来看得懂、用得了、愿意 Star (completed 2026-06-10)
 - [x] **Phase 3: 包功能补强** — Impersonation + Scramble API 文档 + CRUD 生成器，补齐 kaido-kit 已有的核心差异化功能 (completed 2026-06-10)
 - [ ] **Phase 4: 发布自动化** — release.yml + 发版脚本三件套 + Codecov，让下次发版从 9 条手工命令变为打 tag 就完事
-- [ ] **Phase 5: 演示站 (v0.5.1)** — demo.xitongapp.com 部署 + 数据重置 cron + 高危操作屏蔽，不阻塞 v0.5 主线
+- [ ] **Phase 5: 演示站** — demo.xitongapp.com 部署 + 数据重置 cron + 高危操作屏蔽，先拿出看得见的成果
+- [ ] **Phase 6: 插件市场 + 对外展示** — 启停控制、安装链路、安全校验、市场数据边界 + 官网、Release Notes、CI audit
+- [ ] **Phase 7: 质量基座** — 7个Bug修复 + 4项一期补缺（密码重置/2FA强制/数据权限/日志策略）
+- [ ] **Phase 8: 云存储插件** — 阿里云 OSS + 腾讯云 COS Filament 插件
+- [ ] **Phase 9: 编辑器插件** — 富文本编辑器 + Markdown 编辑器 Filament 插件
+- [ ] **Phase 10: 官网插件** — 普通企业官网插件，页面管理、文章/产品发布、SEO、主题切换
+- [ ] **Phase 11: 代码整理收尾** — 基于已开发功能和所有已知 Bug，全面审查整理代码、修复问题、统一风格
 
 ---
 
@@ -129,9 +135,9 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 04-01-PLAN.md — release.yml 全自动发版 workflow（subtree split → 推 GitHub 包仓库 → 打 tag → gh release create → verify tag/Packagist）（RELEASE-01）
-- [ ] 04-02-PLAN.md — 发版脚本三件套 scripts/{release-package,verify-package-install,release-rollback}.sh（含 Gitee 推送）（RELEASE-02）
-- [ ] 04-03-PLAN.md — 根 CI 补 composer audit + APP_KEY 改 secret 引用 + 测试断言 + AGENTS.md 发版段 + 包 README Codecov TODO 占位（RELEASE-03/04/05）
+- [x] 04-01-PLAN.md — release.yml 全自动发版 workflow（subtree split → 推 GitHub 包仓库 → 打 tag → gh release create → verify tag/Packagist）（RELEASE-01）
+- [x] 04-02-PLAN.md — 发版脚本三件套 scripts/{release-package,verify-package-install,release-rollback}.sh（含 Gitee 推送）（RELEASE-02）
+- [x] 04-03-PLAN.md — 根 CI 补 composer audit + APP_KEY 改 secret 引用 + 测试断言 + AGENTS.md 发版段 + 包 README Codecov TODO 占位（RELEASE-03/04/05）
 
 **Wave 2** *(blocked on Wave 1 completion)*
 
@@ -139,19 +145,150 @@ Plans:
 
 ---
 
-### Phase 5: 演示站 (v0.5.1)
+### Phase 5: 演示站
 
 **Goal**: demo.xitongapp.com 自动部署当前代码，每日凌晨重置数据，高危操作被屏蔽，README 加 demo 链接，让评估者无需本地安装即可体验后台全貌
-**Depends on**: Phase 4（不阻塞 v0.5 发版，可与 Phase 4 并行或 v0.5 发版后单独推进）
+**Depends on**: Phase 4（发布自动化，但可并行开发 — 演示站部署不依赖 release.yml 完成）
 **Requirements**: DEMO-01, DEMO-02, DEMO-03, DEMO-04
 **Work estimate**: 约 4-6h（部署 CI 1.5h + demo:reset 命令 1h + 高危屏蔽中间件 1.5h + README demo 链接 0.5h）
 
-**Success Criteria**（以下全部为 TRUE 才算 Phase 5 完成）:
+**Success Criteria**:
 
-1. 访问 https://demo.xitongapp.com 能看到后台登录页，使用 `demo@example.com / demo123` 登录成功进入后台首页（服务器 118.25.27.49 已部署最新代码）
-2. 在演示账号下尝试删除管理员或角色时，系统返回友好提示"演示环境屏蔽此操作"而不是实际执行删除；受屏蔽操作范围覆盖 DEMO-03 中列出的全部敏感操作
-3. 每天凌晨 4 点 cron 执行 `php artisan demo:reset` 后，后台数据恢复到初始演示状态（仅保留 demo 账号 + 角色权限 + 菜单，业务数据清空重置）
-4. `README.md`、`packages/filament-admin/README.md`、`wiki/index.md` 顶部显眼位置均包含 demo 链接和 `demo@example.com / demo123` 演示账号说明
+1. 访问 https://demo.xitongapp.com 能看到后台登录页，使用 `demo@example.com / demo123` 登录成功进入后台首页
+2. 演示账号下尝试删除管理员或角色时，系统返回友好提示"演示环境屏蔽此操作"而不是实际执行删除
+3. 每天凌晨 4 点 cron 执行 `php artisan demo:reset` 后，后台数据恢复到初始演示状态
+4. `README.md`、`packages/filament-admin/README.md`、`wiki/index.md` 顶部均包含 demo 链接和演示账号说明
+
+**Plans**: TBD
+
+---
+
+### Phase 6: 插件市场 + 对外展示
+
+**Goal**: 插件启停真实控制后台导航/Resource/Page，安装链路支持迁移+发布+种子且有进度反馈，失败可重试，有安全校验和依赖阻断；同步完成官网、Release Notes、CI 成品补齐
+**Depends on**: Phase 5（演示站上线后官网/市场才有对外入口），Phase 4（发布自动化）
+**Requirements**: PLUGIN-01~08, FINAL-01~05
+**Work estimate**: 约 28-35h
+
+**插件市场 (PLUGIN) — Success Criteria:**
+
+1. 在后台启用一个已安装插件后，其声明的导航条目、Resource、Page、Widget 真实出现在后台左侧菜单中；禁用后立即消失
+2. 方案型插件安装后点击"初始化"，自动执行迁移、资源发布、种子数据，初始化结果以日志形式展示
+3. 初始化失败时保留错误日志，详情页出现"重试初始化"按钮；重试时跳过已成功的步骤
+4. 安装/初始化过程中，后台页面以 Livewire 轮询或流式方式实时显示当前步骤和进度
+5. 安装前校验插件包来源签名或 Composer 完整性；不通过则阻断安装并提示原因
+6. 安装/卸载插件时，若存在依赖关系，给出阻断提示或风险警告
+7. 官方市场浏览不将未安装条目写入 MySQL（使用 HTTP 缓存）；仅用户实际安装的插件写入本地数据库
+8. UI 文案区分"浏览官方市场"、"扫描已安装插件"、"安装插件"
+
+**对外展示 (FINAL) — Success Criteria:**
+
+9. 官网 `filamentadmin.com`（或 `www.xitongapp.com`）部署基础页面（项目定位、功能清单、安装指引、演示站链接）
+10. 根目录 `RELEASE_NOTES.md` 含 v0.5.0 发布说明
+11. 根 CI 的 `composer test` 之后有 `composer audit --abandoned=report --no-interaction` 步骤
+12. `GeneralSettings` 新增 `logo_url` 和 `contact_email` 字段
+13. 导出功能各自有独立权限点 + 字段白名单 + 写入 ActivityLogger
+
+**Plans**: TBD
+
+---
+
+### Phase 7: 质量基座
+
+**Goal**: 先稳固后扩展 — 修复 7 个已知 Bug，补齐 4 项一期"已铺垫但未闭环"的能力（密码重置、2FA强制、数据权限、日志策略），让基础管理功能完全收敛
+**Depends on**: Phase 1（Bug 和补缺项均基于一期代码）
+**Requirements**: FIX-01~07, POLISH-01~04
+**Work estimate**: 约 14-18h（Bug修复 8-10h + 密码重置 2h + 2FA强制 1.5h + 数据权限 2h + 日志策略 1.5h）
+
+**Bug 修复 (FIX-01~07)**:
+
+1. `AdminNavigationBuilder` 正确处理 `parent_id = null` 的顶级菜单组（不依赖 `parent_id = 0`），无子菜单的顶级组仍显示为可点击导航项
+2. `MenuResource` 中 `link_type` 字段正确持久化；编辑表单根据已保存的 `link_type` 正确显示对应输入框
+3. `MenuResource` 批量启用/禁用操作增加 `->visible()` 或 `->authorize()` 权限检查
+4. `LoginLogResource` 删除冗余的 `form()` 方法定义（保持 `canCreate() = false`）
+5. Menu 和 Department 的拖拽排序/日志写入逻辑抽取为共享 Trait（`ReorderableWithLog`）
+6. `DepartmentResource` 新增 `view` 页面路由
+7. `AdminUserResource` 角色字段改用 Policy 方法检查权限（`AdminUserPolicy::assignRole()`），替代内联 `can()` 调用
+
+**一期补缺 (POLISH-01~04)**:
+
+8. 登录页有"忘记密码"链接 → ForgotPassword 页面（输入邮箱→发送重置链接）→ ResetPassword 页面完成密码重置；流程走 `admin_users` broker
+9. `SecuritySettings.force_2fa = true` 时，未启用 2FA 的管理员登录后被拦截到 2FA 设置页，无法访问任何后台页面
+10. 普通管理员访问部门列表、菜单列表时，仅能看到自己权限范围内的数据（`DataScopeResolver` + `getEloquentQuery()` 过滤）；超管不受限制
+11. `CleanActivityLogs` 和 `CleanLoginLogs` 命令从 `LogSettings` 读取保留天数，替代硬编码默认值（180/90）
+
+**Plans**: TBD
+
+---
+
+### Phase 8: 云存储插件
+
+**Goal**: 开发阿里云 OSS 和腾讯云 COS 两个 Filament 插件，覆盖文件上传、预览、删除、磁盘配置，与项目现有媒体库（spatie/laravel-medialibrary）无缝集成
+**Depends on**: Phase 1（基础架构），可与 Phase 5/6 并行
+**Requirements**: CLOUD-01, CLOUD-02
+**Work estimate**: 约 8-12h（OSS 4-6h + COS 4-6h）
+
+**Success Criteria**:
+
+1. 后台媒体管理页面上传文件时，可选择阿里云 OSS 作为存储磁盘，文件成功上传到 OSS Bucket，列表中可预览和下载，删除操作同步移除 OSS 上的文件
+2. 后台媒体管理页面上传文件时，可选择腾讯云 COS 作为存储磁盘，文件成功上传到 COS Bucket，列表中可预览和下载，删除操作同步移除 COS 上的文件
+3. 两个插件各自提供独立的配置页面（OSS: AccessKey/Secret/Bucket/Endpoint/Region；COS: SecretId/SecretKey/Bucket/Region），配置项写入 `config/filesystems.php` 的 `disks` 段
+4. 上传安全：文件大小/MIME/扩展名校验，危险文件拦截，与现有 `UploadSettings` 配置联动
+
+**Plans**: TBD
+
+---
+
+### Phase 9: 编辑器插件
+
+**Goal**: 开发富文本编辑器和 Markdown 编辑器两个 Filament 表单组件插件，支持图片上传（与媒体库联动）、代码高亮、自定义工具栏
+**Depends on**: Phase 1（基础架构），可与 Phase 5/6/8 并行
+**Requirements**: EDITOR-01, EDITOR-02
+**Work estimate**: 约 8-12h（富文本 4-6h + Markdown 4-6h）
+
+**Success Criteria**:
+
+1. Filament 表单中使用 `RichEditor::make('content')` 即可渲染富文本编辑器（TinyMCE 或 Tiptap），支持图片拖拽上传到媒体库、表格、链接、代码块
+2. Filament 表单中使用 `MarkdownEditor::make('content')` 即可渲染 Markdown 编辑器，支持实时预览、工具栏（加粗/斜体/标题/列表/链接/图片/代码）、图片上传到媒体库
+3. 两个编辑器均支持配置工具栏按钮、上传磁盘、文件大小限制，与现有 `UploadSettings` 联动
+4. 编辑器输出的内容在详情页正确渲染（HTML 安全过滤 / Markdown 转 HTML）
+
+**Plans**: TBD
+
+---
+
+### Phase 10: 官网插件
+
+**Goal**: 开发通用企业官网 Filament 插件，覆盖页面管理（首页/关于/联系等自定义页面）、文章/产品发布、基础 SEO（TDK）、主题切换（深色/浅色/品牌色），作为插件市场的示范插件
+**Depends on**: Phase 6（官网骨架 + 插件市场就绪后才能开发插件），可与 Phase 7/8/9 并行
+**Requirements**: SITE-01, SITE-02, SITE-03, SITE-04
+**Work estimate**: 约 10-15h（页面管理 3h + 文章 3h + SEO 2h + 主题 2h + 前端展示 4h）
+
+**Success Criteria**:
+
+1. 后台"官网管理"菜单下可创建/编辑/删除自定义页面（标题、slug、内容、SEO TDK），前端按 slug 路由展示页面内容
+2. 文章管理支持分类、标签、发布时间、置顶，前端列表页 + 详情页模板完整
+3. 每篇页面和文章可独立设置 SEO 标题/描述/关键词，前端自动注入 `<meta>` 标签
+4. 系统配置中提供主题选项（主色、背景色、字体），前端自动应用；支持一套免费默认主题
+
+**Plans**: TBD
+
+---
+
+### Phase 11: 代码整理收尾
+
+**Goal**: 全面审查已开发功能，修复所有已知和潜在 Bug，统一代码风格，消除重复和冗余，确保测试全覆盖
+**Depends on**: Phase 1~10（所有前序工作完成后执行）
+**Requirements**: CLEANUP-01, CLEANUP-02, CLEANUP-03
+**Work estimate**: 约 15-20h
+
+**Success Criteria**:
+
+1. 所有已知 Bug（FIX-01~07 + 开发过程中新发现的）全部修复，回归测试通过
+2. 代码重复消除（Trait 抽取、Service 合并、冗余类删除），PHPStan Level 6 零错误，Pint 零警告
+3. 测试覆盖率 ≥ 80%，关键路径（登录/权限/CRUD/插件启停）100% 覆盖；废弃代码和未使用依赖清理
+
+**Plans**: TBD
 
 ---
 
@@ -162,16 +299,22 @@ Plans:
 | 1. 包发布合规 | 8/8 | Complete    | 2026-06-10 |
 | 2. 文档与品宣 | 3/3 | Complete    | 2026-06-10 |
 | 3. 包功能补强 | 4/4 | Complete    | 2026-06-11 |
-| 4. 发布自动化 | 0/4 | Not started | - |
-| 5. 演示站 (v0.5.1) | 0/? | Not started | - |
+| 4. 发布自动化 | 3/4 | In Progress|  |
+| 5. 演示站 | 0/? | Not started | - |
+| 6. 插件市场 + 对外展示 | 0/? | Not started | - |
+| 7. 质量基座 | 0/? | Not started | - |
+| 8. 云存储插件 | 0/? | Not started | - |
+| 9. 编辑器插件 | 0/? | Not started | - |
+| 10. 官网插件 | 0/? | Not started | - |
+| 11. 代码整理收尾 | 0/? | Not started | - |
 
 ---
 
 ## Coverage
 
-**v1 Requirements (v0.5 主线):** 26 / 26 mapped ✓
-**v0.5.1 Requirements (DEMO):** 4 / 4 mapped ✓
-**Total:** 30 / 30 ✓
+**v0.5 Requirements (主线):** 30 / 30 mapped ✓
+**v0.6+ Requirements (Phase 5-11):** 39 / 39 mapped ✓
+**Total:** 69 / 69 ✓
 **Unmapped:** 0
 
 | REQ-ID | Phase | 类别 |
@@ -202,15 +345,50 @@ Plans:
 | RELEASE-04 | Phase 4 | 发布自动化 |
 | RELEASE-05 | Phase 4 | 发布自动化 |
 | RELEASE-06 | Phase 4 | 发布自动化（v0.5 出版闸门）|
-| DEMO-01 | Phase 5 (v0.5.1) | 演示站 |
-| DEMO-02 | Phase 5 (v0.5.1) | 演示站 |
-| DEMO-03 | Phase 5 (v0.5.1) | 演示站 |
-| DEMO-04 | Phase 5 (v0.5.1) | 演示站 |
+| DEMO-01 | Phase 5 | 演示站 — 部署 |
+| DEMO-02 | Phase 5 | 演示站 — 数据重置 |
+| DEMO-03 | Phase 5 | 演示站 — 高危屏蔽 |
+| DEMO-04 | Phase 5 | 演示站 — README链接 |
+| FIX-01 | Phase 7 | 质量基座 — NavigationBuilder |
+| FIX-02 | Phase 7 | 质量基座 — 菜单link_type |
+| FIX-03 | Phase 7 | 质量基座 — 批量操作权限 |
+| FIX-04 | Phase 7 | 质量基座 — LoginLog冗余 |
+| FIX-05 | Phase 7 | 质量基座 — reorder抽取 |
+| FIX-06 | Phase 7 | 质量基座 — Department缺View |
+| FIX-07 | Phase 7 | 质量基座 — 角色Policy |
+| POLISH-01 | Phase 7 | 质量基座 — 密码重置 |
+| POLISH-02 | Phase 7 | 质量基座 — 2FA强制 |
+| POLISH-03 | Phase 7 | 质量基座 — 数据权限 |
+| POLISH-04 | Phase 7 | 质量基座 — 日志策略 |
+| PLUGIN-01 | Phase 6 | 插件市场 — 启停控制 |
+| PLUGIN-02 | Phase 6 | 插件市场 — 安装链路 |
+| PLUGIN-03 | Phase 6 | 插件市场 — 失败重试 |
+| PLUGIN-04 | Phase 6 | 插件市场 — 进度反馈 |
+| PLUGIN-05 | Phase 6 | 插件市场 — 安全校验 |
+| PLUGIN-06 | Phase 6 | 插件市场 — 依赖阻断 |
+| PLUGIN-07 | Phase 6 | 插件市场 — 数据边界 |
+| PLUGIN-08 | Phase 6 | 插件市场 — 文案 |
+| FINAL-01 | Phase 6 | 对外展示 — CI audit |
+| FINAL-02 | Phase 6 | 对外展示 — Release Notes |
+| FINAL-03 | Phase 6 | 对外展示 — Settings缺口 |
+| FINAL-04 | Phase 6 | 对外展示 — 导出增强 |
+| FINAL-05 | Phase 6 | 对外展示 — 官网 |
+| CLOUD-01 | Phase 8 | 云存储 — OSS |
+| CLOUD-02 | Phase 8 | 云存储 — COS |
+| EDITOR-01 | Phase 9 | 编辑器 — 富文本 |
+| EDITOR-02 | Phase 9 | 编辑器 — Markdown |
+| SITE-01 | Phase 10 | 官网插件 — 页面管理 |
+| SITE-02 | Phase 10 | 官网插件 — 文章 |
+| SITE-03 | Phase 10 | 官网插件 — SEO |
+| SITE-04 | Phase 10 | 官网插件 — 主题 |
+| CLEANUP-01 | Phase 11 | 收尾 — Bug全修复 |
+| CLEANUP-02 | Phase 11 | 收尾 — 代码统一 |
+| CLEANUP-03 | Phase 11 | 收尾 — 测试覆盖 |
 
 ---
 
 *Created: 2026-06-09 by gsd-roadmapper*
-*Last updated: 2026-06-10*
+*Last updated: 2026-06-11 (新增 Phase 9 官网插件 + Phase 10 代码整理收尾)*
 
 ## Traceability
 
@@ -235,25 +413,79 @@ Phase 映射（由 ROADMAP.md 阶段细化，此处仅 milestone 视图）。
 | DOC-06 | Phase 2 | Complete |
 | DOC-07 | Phase 2 | Complete |
 | DOC-08 | Phase 2 | Complete |
-| FEAT-01 | Phase 3 | Pending |
+| FEAT-01 | Phase 3 | Complete |
 | FEAT-02 | Phase 3 | Complete |
-| FEAT-03 | Phase 3 | Pending |
+| FEAT-03 | Phase 3 | Complete |
 | RELEASE-01 | Phase 4 | Pending |
 | RELEASE-02 | Phase 4 | Pending |
 | RELEASE-03 | Phase 4 | Pending |
 | RELEASE-04 | Phase 4 | Pending |
 | RELEASE-05 | Phase 4 | Pending |
 | RELEASE-06 | Phase 4 | Pending |
-| DEMO-01 | Phase 5 (v0.5.1) | Pending |
-| DEMO-02 | Phase 5 (v0.5.1) | Pending |
-| DEMO-03 | Phase 5 (v0.5.1) | Pending |
-| DEMO-04 | Phase 5 (v0.5.1) | Pending |
+| FIX-01 | Phase 5 | Pending |
+| FIX-02 | Phase 5 | Pending |
+| FIX-03 | Phase 5 | Pending |
+| FIX-04 | Phase 5 | Pending |
+| FIX-05 | Phase 5 | Pending |
+| FIX-06 | Phase 5 | Pending |
+| FIX-07 | Phase 5 | Pending |
+| POLISH-01 | Phase 5 | Pending |
+| POLISH-02 | Phase 5 | Pending |
+| POLISH-03 | Phase 5 | Pending |
+| POLISH-04 | Phase 5 | Pending |
+| PLUGIN-01 | Phase 6 | Pending |
+| PLUGIN-02 | Phase 6 | Pending |
+| PLUGIN-03 | Phase 6 | Pending |
+| PLUGIN-04 | Phase 6 | Pending |
+| PLUGIN-05 | Phase 6 | Pending |
+| PLUGIN-06 | Phase 6 | Pending |
+| PLUGIN-07 | Phase 6 | Pending |
+| PLUGIN-08 | Phase 6 | Pending |
+| DEMO-01 | Phase 5 | Pending |
+| DEMO-02 | Phase 5 | Pending |
+| DEMO-03 | Phase 5 | Pending |
+| DEMO-04 | Phase 5 | Pending |
+| PLUGIN-01 | Phase 6 | Pending |
+| PLUGIN-02 | Phase 6 | Pending |
+| PLUGIN-03 | Phase 6 | Pending |
+| PLUGIN-04 | Phase 6 | Pending |
+| PLUGIN-05 | Phase 6 | Pending |
+| PLUGIN-06 | Phase 6 | Pending |
+| PLUGIN-07 | Phase 6 | Pending |
+| PLUGIN-08 | Phase 6 | Pending |
+| FINAL-01 | Phase 6 | Pending |
+| FINAL-02 | Phase 6 | Pending |
+| FINAL-03 | Phase 6 | Pending |
+| FINAL-04 | Phase 6 | Pending |
+| FINAL-05 | Phase 6 | Pending |
+| FIX-01 | Phase 7 | Pending |
+| FIX-02 | Phase 7 | Pending |
+| FIX-03 | Phase 7 | Pending |
+| FIX-04 | Phase 7 | Pending |
+| FIX-05 | Phase 7 | Pending |
+| FIX-06 | Phase 7 | Pending |
+| FIX-07 | Phase 7 | Pending |
+| POLISH-01 | Phase 7 | Pending |
+| POLISH-02 | Phase 7 | Pending |
+| POLISH-03 | Phase 7 | Pending |
+| POLISH-04 | Phase 7 | Pending |
+| CLOUD-01 | Phase 8 | Pending |
+| CLOUD-02 | Phase 8 | Pending |
+| EDITOR-01 | Phase 9 | Pending |
+| EDITOR-02 | Phase 9 | Pending |
+| SITE-01 | Phase 10 | Pending |
+| SITE-02 | Phase 10 | Pending |
+| SITE-03 | Phase 10 | Pending |
+| SITE-04 | Phase 10 | Pending |
+| CLEANUP-01 | Phase 11 | Pending |
+| CLEANUP-02 | Phase 11 | Pending |
+| CLEANUP-03 | Phase 11 | Pending |
 
 **Coverage:**
 
-- v1 requirements (v0.5): **26 total**（COMPLY 9 + DOC 8 + FEAT 3 + RELEASE 6）
-- v0.5.1 requirements (DEMO): **4 total**
-- Mapped to phases: **30 / 30** ✓
+- v0.5 requirements: **30 total**（COMPLY 9 + DOC 8 + FEAT 3 + RELEASE 6 + DEMO 4）
+- v0.6+ requirements: **24 total**（POLISH 4 + PLUGIN 8 + FIX 7 + FINAL 5）
+- Mapped to phases: **54 / 54** ✓
 - Unmapped: 0
 
 ---

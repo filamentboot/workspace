@@ -61,13 +61,15 @@ FilamentAdmin 是对标 FastAdmin / laravel-admin 的 Laravel 13 + Filament 5 �
 - [x] 根目录补 `LICENSE` 文件（GitHub 主页才能显示 MIT）— COMPLY-07
 - [x] git tag 规范化：未来发版严格 `vX.Y.Z` 不带中文后缀；CONTRIBUTING 加 SemVer 规范 — COMPLY-08
 
-**Phase 2 — 文档与品宣**
-- [ ] 包 README 重写：Hero + Badges + Quick Start 5 行 + 默认管理员账号 + 截图 + 实现能力清单
-- [ ] `.env.example` 默认值修正（`APP_LOCALE=zh_CN` / `REDIS_PASSWORD` 留空 / `DB_PORT` 加注释 / 追加 `SUPER_ADMIN_ROLE` 等包级配置占位）
-- [ ] `wiki/installation.md` 加 Prerequisites（PHP/MySQL/Redis/Node 版本 + 必需扩展）+ Quick Start + 默认账号 + 完整 `AdminPanelProvider` 示例
-- [ ] `CHANGELOG.md` 重写 Keep-a-Changelog 1.1.0 格式（Added / Changed / Deprecated / Removed / Fixed / Security）
-- [ ] 新增 `UPGRADING.md`（v0.4 → v0.5 升级路径）
-- [ ] 根 `README.md` 加截图 + Star CTA + 替换内部话术
+**Phase 2 — 文档与品宣** ✓ 完成（2026-06-10，Validated in Phase 2）
+- [x] 包 README 重写：Hero + Badges + Quick Start 5 行 + 默认管理员账号 + 截图 + 实现能力清单 — DOC-01
+- [x] `.env.example` 默认值修正（`APP_LOCALE=zh_CN` / `REDIS_PASSWORD` 留空 / `DB_PORT` 加注释 / 追加 `SUPER_ADMIN_ROLE` 等包级配置占位）— DOC-02
+- [x] `wiki/installation.md` 加 Prerequisites（PHP/MySQL/Redis/Node 版本 + 必需扩展）+ Quick Start + 默认账号 + 完整 `AdminPanelProvider` 示例 — DOC-03
+- [x] `CHANGELOG.md` 重写 Keep-a-Changelog 1.1.0 格式（根 + 包各一份，含 `[Unreleased]`）— DOC-04
+- [x] 新增 `UPGRADING.md`（v0.4 → v0.5 升级路径，根 + 包各一份）— DOC-05
+- [x] 根 `README.md` 加截图 + Star CTA + 替换内部话术（登录页截图留显式 TODO 待补）— DOC-06
+- [x] `docs/` + `wiki/` 旧坐标 `filament-admin/filament-admin` 批量替换为 `laravelstack/filament-admin` — DOC-07
+- [x] `CONTRIBUTING.md` 补本地 3380 / CI 3306 端口差异说明 — DOC-08
 
 **Phase 3 — 包功能补强**
 - [ ] User Impersonation（基于 Spatie laravel-impersonate，超管临时登录别人账号排错）— DC2
@@ -219,4 +221,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-09 after `/gsd-new-project` initialization (v0.5 milestone scoped)*
+*Last updated: 2026-06-10 — Phase 2（文档与品宣）完成，DOC-01~08 全部交付*
