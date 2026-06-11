@@ -85,6 +85,8 @@ class FilamentAdminServiceProvider extends ServiceProvider
                 Commands\MakeFilamentAdminResourceCommand::class,
                 Commands\MakeFilamentAdminMigrationCommand::class,
                 Commands\MakeFilamentAdminTestCommand::class,
+                // DEMO-02：演示站数据重置命令
+                Commands\DemoReset::class,
             ]);
         }
     }
