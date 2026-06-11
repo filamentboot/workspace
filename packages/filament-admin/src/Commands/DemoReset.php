@@ -34,9 +34,17 @@ class DemoReset extends Command
 
         // 使用 migrate:fresh --seed 重置（方案 A）：drop 所有表后重建并播种
         // 演示账号由 DatabaseSeeder（APP_DEMO=true 时含 DemoSeeder）重建
-        $this->call('migrate:fresh', ['--seed' => true, '--force' => true]);
+        $exitCode = $this->call('migrate:fresh', ['--seed' => true, '--force' => true]);
 
-        // 清理 Redis 缓存，避免悬挂引用
+        // CR-02：捕获 migrate:fresh 退出码。重置失败时演示库可能停在半重置损坏态，
+        // 必须显式失败，避免每日 04:00 cron 谎报成功而监控无感知。
+        if ($exitCode !== self::SUCCESS) {
+            $this->error("演示数据重置失败：migrate:fresh 退出码 {$exitCode}。");
+
+            return self::FAILURE;
+        }
+
+        // 清理缓存，避免悬挂引用
         $this->call('cache:clear');
 
         $this->info('演示数据已重置。');
