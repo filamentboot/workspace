@@ -22,9 +22,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null              $plugin_class
  * @property string|null              $installed_version
  * @property string|null              $description
- * @property array<string, mixed>     $requires
- * @property array<string, mixed>     $compatibility
- * @property array<string, mixed>     $config_overrides
+ * @property array<string, mixed>|null $requires
+ * @property array<string, mixed>|null $compatibility
+ * @property array<string, mixed>|null $config_overrides
  * @property bool                     $is_enabled
  * @property string                   $init_status     pending | running | done | failed
  * @property string|null              $init_log

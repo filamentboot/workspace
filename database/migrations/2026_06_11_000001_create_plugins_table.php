@@ -25,9 +25,9 @@ return new class extends Migration
             $table->string('plugin_class')->nullable();
             $table->string('installed_version')->nullable();
             $table->text('description')->nullable();
-            $table->json('requires')->default('[]');
-            $table->json('compatibility')->default('[]');
-            $table->json('config_overrides')->default('[]');
+            $table->json('requires')->nullable();
+            $table->json('compatibility')->nullable();
+            $table->json('config_overrides')->nullable();
             $table->boolean('is_enabled')->default(false);
             $table->string('init_status')->default('pending'); // pending | running | done | failed
             $table->text('init_log')->nullable();
