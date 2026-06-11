@@ -2,7 +2,7 @@
 gsd_state_version: 1.0
 milestone: v0.5
 milestone_name: milestone
-status: Phase 06 plans complete — human UAT pending (2 items)
+status: Phase 06 UAT 发现 1 个 blocker（SC-1 插件导航与 DB 导航未打通）— 需 gap 修复（方向 B）
 last_updated: "2026-06-11T09:45:21.558Z"
 progress:
   total_phases: 12
