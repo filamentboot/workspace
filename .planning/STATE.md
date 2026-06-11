@@ -3,13 +3,13 @@ gsd_state_version: 1.0
 milestone: v0.5
 milestone_name: milestone
 status: Executing Phase 04
-last_updated: "2026-06-11T02:01:59.695Z"
+last_updated: "2026-06-11T02:20:00.000Z"
 progress:
   total_phases: 5
   completed_phases: 3
   total_plans: 19
-  completed_plans: 15
-  percent: 60
+  completed_plans: 18
+  percent: 79
 ---
 
 # Project State: FilamentAdmin v0.5
@@ -31,15 +31,15 @@ progress:
 ## Current Position
 
 Phase: 04 (release-automation) — EXECUTING
-Plan: 1 of 4
+Plan: 4 of 4
 
 ```
-current_phase:   3
-current_plan:    4
+current_phase:   4
+current_plan:    3
 current_status:  completed
-last_updated:    2026-06-10
-resume_file:     .planning/phases/03-package-feature-enhancement/03-04-SUMMARY.md
-stopped_at:      Plan 03-04 完成：dedoc/scramble 引入演示项目 + config/scramble.php api/v1 路由过滤 + RestrictedDocsAccess + /docs/api 人工验证通过（FEAT-02）
+last_updated:    2026-06-11
+resume_file:     .planning/phases/04-release-automation/04-03-SUMMARY.md
+stopped_at:      Plan 04-03 完成：根 CI APP_KEY 改 secret 引用（RELEASE-04）+ composer audit 步骤（RELEASE-03）+ PHPUnit 断言 + AGENTS.md 发版流程段（D-43）+ 包 README Codecov TODO 占位（D-46）
 ```
 
 **Progress bar:**
@@ -47,11 +47,11 @@ stopped_at:      Plan 03-04 完成：dedoc/scramble 引入演示项目 + config/
 ```
 Phase 1 [##########] 100%  包发布合规（完成）
 Phase 2 [##########] 100%  文档与品宣（全部完成，3/3）
-Phase 3 [######    ]  75%  包功能补强
-Phase 4 [          ]   0%  发布自动化
+Phase 3 [##########] 100%  包功能补强（全部完成，4/4）
+Phase 4 [##########]  75%  发布自动化（3/4 完成）
 Phase 5 [          ]   0%  演示站 (v0.5.1)
 
-Overall [#####     ]  43%  (2/5 phases + 3/4 plans in Phase 3)
+Overall [########  ]  79%  (3/5 phases 完成 + Phase 4 第 3/4 计划)
 ```
 
 ---
@@ -127,9 +127,9 @@ requirements_done:  0 / 30  (COMPLY-01~09 工程落地，测试/文档验收后�
 
 ## Session Continuity
 
-**上次工作:** 2026-06-10 — Plan 03-04 完成：dedoc/scramble 引入演示项目根 require-dev（D-33）、config/scramble.php api_path=api/v1 + RestrictedDocsAccess（D-35）、AppServiceProvider 路由过滤回调（Pitfall 4）、/docs/api 人工验证通过（FEAT-02）
+**上次工作:** 2026-06-11 — Plan 04-03 完成：根 CI APP_KEY 改 secrets.CI_APP_KEY（RELEASE-04/D-44）、补 composer audit 步骤（RELEASE-03）、PHPUnit 断言两个新方法、AGENTS.md 发版流程段（D-43）、包 README Codecov TODO 占位（D-46/RELEASE-05）
 
-**下次启动时:** 执行 Phase 3 Plan 03-02（CRUD 生成器四命令，Wave 2：make:filament-admin-{model,resource,migration,test}）
+**下次启动时:** 执行 Phase 4 Plan 04-04（RELEASE-06，v0.5 出版前手动接收测试）
 
 **未解决问题:**
 
@@ -171,3 +171,8 @@ requirements_done:  0 / 30  (COMPLY-01~09 工程落地，测试/文档验收后�
 - [Phase 03-package-feature-enhancement P04]: D-35：RestrictedDocsAccess 中间件默认启用，生产环境 /docs/api 不可访问
 - [Phase 03-package-feature-enhancement P04]: Pitfall 4 缓解：api_path=api/v1 + routes() 回调双保险，精确过滤文档化范围
 - [Phase ?]: D-28 单一来源：buildListPageContent/buildCreatePageContent/buildEditPageContent 迁入 StubGenerator，PublishCommand 和 MakeFilamentAdminResourceCommand 均委托调用
+- [Phase 04-release-automation P03]: D-44 落地：根 CI APP_KEY env 行从 base64:AAAA 硬编码替换为 ${{ secrets.CI_APP_KEY }}，保留 key:generate 步骤
+- [Phase 04-release-automation P03]: D-45 遵守：包 CI 未修改，包测试不依赖 APP_KEY
+- [Phase 04-release-automation P03]: RELEASE-03 落地：根 CI 补 composer audit --abandoned=report（continue-on-error: true，仅警告不阻塞）
+- [Phase 04-release-automation P03]: D-43 落地：AGENTS.md 发版流程段明确 Gitee 同步为人工步骤，含三脚本用途与两 GitHub Secrets
+- [Phase 04-release-automation P03]: D-46 落地：包 README Codecov TODO HTML 注释占位，RELEASE-05 本期跳过
