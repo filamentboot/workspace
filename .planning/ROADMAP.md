@@ -15,7 +15,7 @@
 - [x] **Phase 3: 包功能补强** — Impersonation + Scramble API 文档 + CRUD 生成器，补齐 kaido-kit 已有的核心差异化功能 (completed 2026-06-10)
 - [ ] **Phase 4: 发布自动化** — release.yml + 发版脚本三件套 + Codecov，让下次发版从 9 条手工命令变为打 tag 就完事
 - [x] **Phase 5: 演示站** — demo.xitongapp.com 部署 + 数据重置 cron + 高危操作屏蔽，先拿出看得见的成果 (completed 2026-06-11)
-- [ ] **Phase 6: 插件市场 + 对外展示** — 启停控制、安装链路、安全校验、市场数据边界 + 官网、Release Notes、CI audit
+- [ ] **Phase 6: 插件市场 + 对外展示** — 启停控制、安装链路、安全校验、市场数据边界 + 官网、Release Notes、CI audit（计划全部完成，待人工验证 2 项 UI 行为）
 - [ ] **Phase 7: 质量基座** — 7个Bug修复 + 4项一期补缺（密码重置/2FA强制/数据权限/日志策略）
 - [ ] **Phase 8: 云存储插件** — 阿里云 OSS + 腾讯云 COS Filament 插件
 - [ ] **Phase 9: 编辑器插件** — 富文本编辑器 + Markdown 编辑器 Filament 插件
@@ -208,16 +208,16 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 06-01-PLAN.md — 数据契约与测试地基：plugins 表迁移（演示项目）+ Plugin 模型/Factory + 6 权限点 Seeder 扩充 + 8 个 Wave 0 测试桩（PLUGIN-01/02/03/05/06/07）
+- [x] 06-01-PLAN.md — 数据契约与测试地基：plugins 表迁移（演示项目）+ Plugin 模型/Factory + 6 权限点 Seeder 扩充 + 8 个 Wave 0 测试桩（PLUGIN-01/02/03/05/06/07）
 
 **Wave 2** *(blocked on 06-01；02 与 03 文件无重叠可并行)*
 
-- [ ] 06-02-PLAN.md — 服务层：MarketplaceService（HTTP 缓存浏览不写库）+ PluginManager（启停/同步初始化/包名校验/依赖检查）+ plugin:scan 命令（PLUGIN-02/03/05/06/07）
-- [ ] 06-03-PLAN.md — 对外展示 FINAL：GeneralSettings 加 logo_url/contact_email + 三 Exporter 授权+审计 + RELEASE_NOTES.md + 官网 landing 占位页（FINAL-02/03/04/05）
+- [x] 06-02-PLAN.md — 服务层：MarketplaceService（HTTP 缓存浏览不写库）+ PluginManager（启停/同步初始化/包名校验/依赖检查）+ plugin:scan 命令（PLUGIN-02/03/05/06/07）
+- [x] 06-03-PLAN.md — 对外展示 FINAL：GeneralSettings 加 logo_url/contact_email + 三 Exporter 授权+审计 + RELEASE_NOTES.md + 官网 landing 占位页（FINAL-02/03/04/05）
 
 **Wave 3** *(blocked on 06-01 + 06-02)*
 
-- [ ] 06-04-PLAN.md — UI 与生效层：PluginPolicy + PluginResource（启停/扫描）+ ViewPlugin（初始化+wire:poll进度+重试）+ MarketplacePage（浏览不写库+composer 复制命令）+ AdminPanelProvider 动态注册接入（PLUGIN-01/02/03/04/08）
+- [x] 06-04-PLAN.md — UI 与生效层：PluginPolicy + PluginResource（启停/扫描）+ ViewPlugin（初始化+wire:poll进度+重试）+ MarketplacePage（浏览不写库+composer 复制命令）+ AdminPanelProvider 动态注册接入（PLUGIN-01/02/03/04/08）
 
 ---
 
@@ -357,7 +357,7 @@ Plans:
 | 3. 包功能补强 | 4/4 | Complete    | 2026-06-11 |
 | 4. 发布自动化 | 3/4 | In Progress|  |
 | 5. 演示站 | 4/4 | Complete    | 2026-06-11 |
-| 6. 插件市场 + 对外展示 | 0/? | Not started | - |
+| 6. 插件市场 + 对外展示 | 4/4 | Complete   | 2026-06-11 |
 | 7. 质量基座 | 0/? | Not started | - |
 | 8. 云存储插件 | 0/? | Not started | - |
 | 9. 编辑器插件 | 0/? | Not started | - |

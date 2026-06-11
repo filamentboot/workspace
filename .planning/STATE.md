@@ -2,13 +2,13 @@
 gsd_state_version: 1.0
 milestone: v0.5
 milestone_name: milestone
-status: Executing Phase 06
-last_updated: "2026-06-11T08:21:17.259Z"
+status: Phase 06 plans complete — human UAT pending (2 items)
+last_updated: "2026-06-11T09:45:21.558Z"
 progress:
   total_phases: 12
   completed_phases: 5
   total_plans: 27
-  completed_plans: 23
+  completed_plans: 27
   percent: 42
 ---
 
@@ -30,17 +30,15 @@ progress:
 
 ## Current Position
 
-Phase: 06 (plugin-marketplace-launch) — EXECUTING
-Plan: 1 of 4
-Phase: 05 (演示站) — COMPLETED
+Phase: 06 (plugin-marketplace-launch) — PLANS DONE, AWAITING HUMAN UAT
+Plan: 4 of 4 DONE
 
 ```
-current_phase:   5
-current_plan:    3
-current_status:  in-progress-checkpoint
+current_phase:   6
+current_plan:    4
+current_status:  phase-complete
 last_updated:    2026-06-11
-resume_file:     .planning/phases/05-demo-site/05-03-PLAN.md
-stopped_at:      Phase 05 Plan 03 Task 1 已完成（50ef930），等待 Task 2 人工环境前置确认（checkpoint:human-action）
+stopped_at:      Phase 06 Plan 04 全部完成（3 tasks, 169 tests passed）
 ```
 
 **Progress bar:**
@@ -107,6 +105,10 @@ requirements_done:  0 / 30  (COMPLY-01~09 工程落地，测试/文档验收后�
 | Phase 05-demo-site P01 | 9 | 2 tasks | 9 files |
 | Phase 05-demo-site P04 | 41s | 1 task | 3 files |
 | Phase 05-demo-site P02 | 10min | 1 tasks | 2 files |
+| Phase 06-plugin-marketplace-launch P01 | 25 | 3 tasks | 12 files |
+| Phase 06 P02 | 30 | 2 tasks | 8 files |
+| Phase 06 P03 | 25min | 3 tasks | 12 files |
+| Phase 06 P04 | 12min | 3 tasks | 10 files |
 
 ### Critical Facts
 
@@ -131,9 +133,9 @@ requirements_done:  0 / 30  (COMPLY-01~09 工程落地，测试/文档验收后�
 
 ## Session Continuity
 
-**上次工作:** 2026-06-11 — 05-03 Task 1 完成：deploy.sh 补全前端构建（npm ci + npm run build），删除 .gitee/workflows/deploy.yml 遗留冲突文件（50ef930）。当前停在 Task 2 人工环境前置检查点。
+**上次工作:** 2026-06-11 — 06-04 全部完成（3 tasks，commits 0797121 / f0db263 / b635d6c）：PluginPolicy、PluginResource、ViewPlugin、MarketplacePage、AdminPanelProvider registerEnabledPlugins、FakeFilamentPlugin stub、PluginPanelRegistrationTest 转真，全套 169 tests passed。
 
-**下次启动时:** 继续 05-03 Task 2：用户确认 7 项人工前置全部完成后，continuation agent 创建 SUMMARY.md 并收尾。
+**下次启动时:** Phase 06 全部 4 个 Plan 已完成，可启动验收（手测）或进入下一阶段。
 
 **未解决问题:**
 
@@ -184,3 +186,13 @@ requirements_done:  0 / 30  (COMPLY-01~09 工程落地，测试/文档验收后�
 - [Phase ?]: 重置策略方案 A：migrate:fresh --seed --force（最简幂等），弃用方案 B 选择性 truncate
 - [Phase ?]: DemoReset 命令在护栏通过后临时 config(['app.demo'=>true]) 确保 DatabaseSeeder 播种 DemoSeeder
 - [Phase ?]: 合并为单一 Gate::before 回调（演示拒绝 + 超管放行），消除多回调注册顺序不确定性（DEMO-03）
+- [Phase ?]: JSON 列改用 nullable()：MySQL 8.0 不支持 json->default('[]') 字面量，改为 ->nullable()，模型 casts 透明处理 null→[]
+- [Phase ?]: Wave 0 测试桩不含 PLUGIN-04/08：其自动化断言由 Plan 04 grep 覆盖，不创建悬空测试文件
+- [Phase ?]: runMigrate/runPublish/runSeeder 拆为受保护方法：允许 partialMock 隔离 Artisan 调用，确保初始化失败路径 init_log 非空可断言
+- [Phase ?]: routes/console.php 用 Artisan::registerCommand 注册 ScanPlugins：Laravel 13 无 Kernel.php，app/Console/Commands/ 不自动发现
+- [Phase ?]: landing.blade.php 使用 CDN Tailwind：最小占位页与构建工具解耦
+- [Phase ?]: ExporterAuthorizationTest 用 Gate::check 直接断言授权行为
+- [Phase ?]: ExportAction after() 回调用 activity('admin') 链式调用，withProperties 替代 performedOn
+- [Phase 06-plugin-marketplace-launch P04]: Filament 5 Page::$view 为实例属性（非 static），子类用 protected string $view 声明
+- [Phase 06-plugin-marketplace-launch P04]: AdminPanelProvider 通过 ->tap() + 私有方法 registerEnabledPlugins 动态注册插件（Cache 30s + try/catch Throwable）
+- [Phase 06-plugin-marketplace-launch P04]: ReflectionMethod::setAccessible 直接测试私有方法三条分支（命中/过滤/异常）
