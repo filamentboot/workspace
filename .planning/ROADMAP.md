@@ -125,7 +125,17 @@ Plans:
 5. PR/push 后 Codecov 页面能看到本仓库的覆盖率报告；`packages/filament-admin/README.md` 的 Codecov 徽章链接有效且显示当前覆盖率数值
 6. **v0.5 出版闸门**：在 `/tmp/v0.5-acceptance` 干净 Laravel 13 环境（`composer create-project` 起新项目）以新用户身份执行 `composer require laravelstack/filament-admin` 并严格按 wiki/installation.md 走通完整路径，全部 7 项 acceptance 检查（publish 5 tag / migrate-seed / 登录 / Impersonation / Scramble / `make:filament-admin-resource` / `filament-admin:publish`）通过；`/tmp/v0.5-acceptance-log.md` 记录无 blocker — **此项不通过不能打 v0.5.0 正式 tag**
 
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+**Wave 1**
+
+- [ ] 04-01-PLAN.md — release.yml 全自动发版 workflow（subtree split → 推 GitHub 包仓库 → 打 tag → gh release create → verify tag/Packagist）（RELEASE-01）
+- [ ] 04-02-PLAN.md — 发版脚本三件套 scripts/{release-package,verify-package-install,release-rollback}.sh（含 Gitee 推送）（RELEASE-02）
+- [ ] 04-03-PLAN.md — 根 CI 补 composer audit + APP_KEY 改 secret 引用 + 测试断言 + AGENTS.md 发版段 + 包 README Codecov TODO 占位（RELEASE-03/04/05）
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [ ] 04-04-PLAN.md — RELEASE-06 干净环境 7 项 acceptance 人工验收（v0.5 出版闸门，autonomous: false）
 
 ---
 
@@ -152,7 +162,7 @@ Plans:
 | 1. 包发布合规 | 8/8 | Complete    | 2026-06-10 |
 | 2. 文档与品宣 | 3/3 | Complete    | 2026-06-10 |
 | 3. 包功能补强 | 4/4 | Complete    | 2026-06-11 |
-| 4. 发布自动化 | 0/? | Not started | - |
+| 4. 发布自动化 | 0/4 | Not started | - |
 | 5. 演示站 (v0.5.1) | 0/? | Not started | - |
 
 ---
