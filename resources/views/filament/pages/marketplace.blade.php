@@ -55,7 +55,7 @@
                                 </p>
                             @endif
 
-                            {{-- 安装插件：composer require 命令（D-06-15，无一键安装按钮）--}}
+                            {{-- 安装插件：展示 composer require 命令供复制（D-06-15）--}}
                             <div class="border-t border-gray-100 dark:border-gray-800 pt-3">
                                 <label class="block text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">
                                     安装命令
