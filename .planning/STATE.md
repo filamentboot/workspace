@@ -2,14 +2,14 @@
 gsd_state_version: 1.0
 milestone: v0.5
 milestone_name: milestone
-status: Executing Phase 04
-last_updated: "2026-06-11T02:20:00.000Z"
+status: Phase 04 Completed — Ready for Phase 05
+last_updated: "2026-06-11T03:00:00.000Z"
 progress:
   total_phases: 5
-  completed_phases: 3
+  completed_phases: 4
   total_plans: 19
-  completed_plans: 18
-  percent: 79
+  completed_plans: 19
+  percent: 95
 ---
 
 # Project State: FilamentAdmin v0.5
@@ -24,22 +24,22 @@ progress:
 
 **Core value:** 别人执行 `composer require laravelstack/filament-admin` 后能开箱运行、能扩展定制、能稳定升级，且包发布形态符合 Laravel 开源市场规范
 
-**Current focus:** Phase 04 — release-automation
+**Current focus:** Phase 05 — 演示站 (v0.5.1)
 
 ---
 
 ## Current Position
 
-Phase: 04 (release-automation) — EXECUTING
-Plan: 4 of 4
+Phase: 04 (release-automation) — COMPLETED ✓
+Phase: 05 (演示站) — NOT STARTED
 
 ```
-current_phase:   4
-current_plan:    3
-current_status:  completed
+current_phase:   5
+current_plan:    0
+current_status:  not_started
 last_updated:    2026-06-11
-resume_file:     .planning/phases/04-release-automation/04-03-SUMMARY.md
-stopped_at:      Plan 04-03 完成：根 CI APP_KEY 改 secret 引用（RELEASE-04）+ composer audit 步骤（RELEASE-03）+ PHPUnit 断言 + AGENTS.md 发版流程段（D-43）+ 包 README Codecov TODO 占位（D-46）
+resume_file:     .planning/phases/04-release-automation/04-VERIFICATION.md
+stopped_at:      Phase 04 全部完成：RELEASE-01~06 全通过，7/7 acceptance 验收，v0.5 出版闸门放行
 ```
 
 **Progress bar:**
@@ -48,10 +48,10 @@ stopped_at:      Plan 04-03 完成：根 CI APP_KEY 改 secret 引用（RELEASE-
 Phase 1 [##########] 100%  包发布合规（完成）
 Phase 2 [##########] 100%  文档与品宣（全部完成，3/3）
 Phase 3 [##########] 100%  包功能补强（全部完成，4/4）
-Phase 4 [##########]  75%  发布自动化（3/4 完成）
+Phase 4 [##########] 100%  发布自动化（全部完成，4/4）✓
 Phase 5 [          ]   0%  演示站 (v0.5.1)
 
-Overall [########  ]  79%  (3/5 phases 完成 + Phase 4 第 3/4 计划)
+Overall [######### ]  95%  (4/5 phases 完成，Phase 5 待启动)
 ```
 
 ---
@@ -127,9 +127,9 @@ requirements_done:  0 / 30  (COMPLY-01~09 工程落地，测试/文档验收后�
 
 ## Session Continuity
 
-**上次工作:** 2026-06-11 — Plan 04-03 完成：根 CI APP_KEY 改 secrets.CI_APP_KEY（RELEASE-04/D-44）、补 composer audit 步骤（RELEASE-03）、PHPUnit 断言两个新方法、AGENTS.md 发版流程段（D-43）、包 README Codecov TODO 占位（D-46/RELEASE-05）
+**上次工作:** 2026-06-11 — Phase 04 全部完成：RELEASE-01~06 全通过，7/7 acceptance 验收，v0.5 出版闸门放行。可打 v0.5.0 正式 tag。
 
-**下次启动时:** 执行 Phase 4 Plan 04-04（RELEASE-06，v0.5 出版前手动接收测试）
+**下次启动时:** 打 v0.5.0 tag（GitHub Actions 自动发布）或启动 Phase 05（演示站）
 
 **未解决问题:**
 
