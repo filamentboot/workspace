@@ -4,7 +4,7 @@
 **Core Value:** 别人执行 `composer require laravelstack/filament-admin` 后能开箱运行、能扩展定制、能稳定升级，且包发布形态符合 Laravel 开源市场规范
 **Created:** 2026-06-09
 **Granularity:** Fine
-**Parallelization:** 串行（单人维护）
+**Parallelization:** Phase 1-4 串行；Phase 5-9 合并规划，单人按优先级推进
 
 ---
 
@@ -21,6 +21,7 @@
 - [ ] **Phase 9: 编辑器插件** — 富文本编辑器 + Markdown 编辑器 Filament 插件
 - [ ] **Phase 10: 官网插件** — 普通企业官网插件，页面管理、文章/产品发布、SEO、主题切换
 - [ ] **Phase 11: 代码整理收尾** — 基于已开发功能和所有已知 Bug，全面审查整理代码、修复问题、统一风格
+- [ ] **Phase 12: 发版与仓库整理** — 修复包仓库 subtree split 问题、重新打正确的 v0.5.0 tag、推送两端包仓库、创建 GitHub Release、Gitee 同步
 
 ---
 
@@ -159,16 +160,32 @@ Plans:
 3. 每天凌晨 4 点 cron 执行 `php artisan demo:reset` 后，后台数据恢复到初始演示状态
 4. `README.md`、`packages/filament-admin/README.md`、`wiki/index.md` 顶部均包含 demo 链接和演示账号说明
 
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+**Wave 1**
+
+- [ ] 05-01-PLAN.md — DemoSeeder + demo:reset 命令（含生产护栏）+ cron 04:00（DEMO-02 / DEMO-03 演示账号）
+- [ ] 05-03-PLAN.md — deploy.sh 补前端构建 + 清理冲突文件 + Gitee/环境人工前置（DEMO-01，autonomous: false）
+- [ ] 05-04-PLAN.md — 三处 README/wiki 顶部加 demo 链接与演示账号（DEMO-04）
+
+**Wave 2** *(blocked on 05-01 completion)*
+
+- [ ] 05-02-PLAN.md — Gate::before 演示拒绝分支（演示判定先于超管放行，[BLOCKING]）+ isDemoUser/isWriteAbility（DEMO-03 高危屏蔽）
+
 
 ---
 
 ### Phase 6: 插件市场 + 对外展示
 
-**Goal**: 插件启停真实控制后台导航/Resource/Page，安装链路支持迁移+发布+种子且有进度反馈，失败可重试，有安全校验和依赖阻断；同步完成官网、Release Notes、CI 成品补齐
+**Goal**: 插件启停真实控制后台导航/Resource/Page，安装链路支持迁移+发布+种子且有进度反馈，失败可重试，有安全校验和依赖阻断；同步完成官网、Release Notes、Settings 补齐
 **Depends on**: Phase 5（演示站上线后官网/市场才有对外入口），Phase 4（发布自动化）
-**Requirements**: PLUGIN-01~08, FINAL-01~05
-**Work estimate**: 约 28-35h
+**Requirements**: PLUGIN-01~08, FINAL-02~05
+**Work estimate**: 约 26-33h（FINAL-01 已在 Phase 4 完成，本期移除）
+
+> **代码现状（2026-06-11 核查）**
+> - FINAL-01（CI audit 步骤）：✅ 已在 Phase 4 完成，`.github/workflows/ci.yml` 第 66-68 行，本期移除
+> - FINAL-04（导出功能）：`AdminUserExporter`、`DepartmentExporter`、`LoginLogExporter` + 字段白名单已存在；缺权限点授权和 ActivityLogger 写入
+> - PLUGIN-01~08：无任何实现（无 Plugin 模型、无 PluginResource、无 plugins 迁移）
 
 **插件市场 (PLUGIN) — Success Criteria:**
 
@@ -183,11 +200,10 @@ Plans:
 
 **对外展示 (FINAL) — Success Criteria:**
 
-9. 官网 `filamentadmin.com`（或 `www.xitongapp.com`）部署基础页面（项目定位、功能清单、安装指引、演示站链接）
-10. 根目录 `RELEASE_NOTES.md` 含 v0.5.0 发布说明
-11. 根 CI 的 `composer test` 之后有 `composer audit --abandoned=report --no-interaction` 步骤
-12. `GeneralSettings` 新增 `logo_url` 和 `contact_email` 字段
-13. 导出功能各自有独立权限点 + 字段白名单 + 写入 ActivityLogger
+9. 官网 `filamentadmin.com`（或 `www.xitongapp.com`）部署基础页面（项目定位、功能清单、安装指引、演示站链接）（FINAL-05）
+10. 根目录 `RELEASE_NOTES.md` 含 v0.5.0 发布说明（FINAL-02）
+11. `GeneralSettings` 新增 `logo_url` 和 `contact_email` 字段（FINAL-03；当前仅有 `site_name`、`admin_title`、`icp_number`、`copyright`）
+12. 三个现有 Exporter（AdminUser/Department/LoginLog）补充独立权限点授权（`->authorize()`）和导出操作写入 ActivityLogger；Menu/Media Resource 暂不添加导出（FINAL-04）
 
 **Plans**: TBD
 
@@ -198,24 +214,30 @@ Plans:
 **Goal**: 先稳固后扩展 — 修复 7 个已知 Bug，补齐 4 项一期"已铺垫但未闭环"的能力（密码重置、2FA强制、数据权限、日志策略），让基础管理功能完全收敛
 **Depends on**: Phase 1（Bug 和补缺项均基于一期代码）
 **Requirements**: FIX-01~07, POLISH-01~04
-**Work estimate**: 约 14-18h（Bug修复 8-10h + 密码重置 2h + 2FA强制 1.5h + 数据权限 2h + 日志策略 1.5h）
+**Work estimate**: 约 14-18h（Bug修复 8-10h + 密码重置 2h + 2FA强制 1.5h + 数据权限 2h + 日志策略 0.5h）
+
+> **代码现状（2026-06-11 核查）**
+> - FIX-02：UI 的 link_type Radio + 条件显示已有，但 `menus` 表无 `link_type` 列，Menu model 无该属性，实际未持久化
+> - FIX-05：MenuResource 使用独立 MenuTree 页面，无 Filament 拖拽排序；DepartmentResource 有 `rememberReorderSnapshot`/`logReorderActivity`/`buildReorderSnapshot` 三个私有方法但未抽取为 Trait
+> - FIX-07：`AdminUserPolicy::assignRole()` 已存在（第 27-30 行），Resource 第 103 行仍用内联 `can('assign_role_admin_user')` 未调用 Policy
+> - POLISH-04：`LogSettings` 已有 `activity_log_retention_days` 和 `login_log_retention_days` 字段；两个命令使用硬编码 `--days` 默认值，未读取 Settings
 
 **Bug 修复 (FIX-01~07)**:
 
-1. `AdminNavigationBuilder` 正确处理 `parent_id = null` 的顶级菜单组（不依赖 `parent_id = 0`），无子菜单的顶级组仍显示为可点击导航项
-2. `MenuResource` 中 `link_type` 字段正确持久化；编辑表单根据已保存的 `link_type` 正确显示对应输入框
-3. `MenuResource` 批量启用/禁用操作增加 `->visible()` 或 `->authorize()` 权限检查
-4. `LoginLogResource` 删除冗余的 `form()` 方法定义（保持 `canCreate() = false`）
-5. Menu 和 Department 的拖拽排序/日志写入逻辑抽取为共享 Trait（`ReorderableWithLog`）
-6. `DepartmentResource` 新增 `view` 页面路由
-7. `AdminUserResource` 角色字段改用 Policy 方法检查权限（`AdminUserPolicy::assignRole()`），替代内联 `can()` 调用
+1. `AdminNavigationBuilder` 正确处理 `parent_id = null` 的顶级菜单组（当前第 32 行硬编码 `where('parent_id', 0)`）；`Menu::defaultParentKey()` 返回 `null` 而非 `0`；无子菜单的顶级组显示为可点击导航项而不被跳过
+2. `menus` 表新增 `link_type` 列（迁移）；`Menu` model 补充 `link_type` 属性和 cast；`MenuResource` 编辑表单的 Radio 字段去掉 `->dehydrated(false)` 改为正常持久化，`defaultValue` 改从数据库读取
+3. `MenuResource` 批量启用/禁用 BulkAction 增加 `->visible(fn () => auth('admin')->user()?->can('update_menu'))` 权限检查
+4. `LoginLogResource` 删除第 43-64 行冗余 `form()` 方法（`canCreate() = false` 保留）
+5. `DepartmentResource` 的 `rememberReorderSnapshot`、`logReorderActivity`、`buildReorderSnapshot` 三个方法抽取为 `ReorderableWithLog` Trait；MenuResource 已使用独立 MenuTree 页面，不适用此 Trait
+6. `DepartmentResource::getPages()` 补充 `'view' => Pages\ViewDepartment::route('/{record}')`，新建 `ViewDepartment` 页面类
+7. `AdminUserResource` 第 103 行 `->visible()` 改为调用已有的 `AdminUserPolicy::assignRole()`，移除内联 `can('assign_role_admin_user')`
 
 **一期补缺 (POLISH-01~04)**:
 
-8. 登录页有"忘记密码"链接 → ForgotPassword 页面（输入邮箱→发送重置链接）→ ResetPassword 页面完成密码重置；流程走 `admin_users` broker
-9. `SecuritySettings.force_2fa = true` 时，未启用 2FA 的管理员登录后被拦截到 2FA 设置页，无法访问任何后台页面
-10. 普通管理员访问部门列表、菜单列表时，仅能看到自己权限范围内的数据（`DataScopeResolver` + `getEloquentQuery()` 过滤）；超管不受限制
-11. `CleanActivityLogs` 和 `CleanLoginLogs` 命令从 `LogSettings` 读取保留天数，替代硬编码默认值（180/90）
+8. 登录页有"忘记密码"链接 → ForgotPassword 页面（输入邮箱→发送重置链接）→ ResetPassword 页面完成密码重置；流程走已配置的 `admin_users` broker（`config/auth.php` 已有）
+9. `SecuritySettings.force_2fa = true` 时，未启用 2FA 的管理员登录后被拦截到 2FA 设置页，无法访问任何后台页面（当前 `force_2fa` 字段和 UI 已有，缺拦截 Middleware 或 Panel 认证钩子）
+10. 普通管理员访问部门列表、菜单列表时，仅能看到自己权限范围内的数据；`DepartmentResource::getEloquentQuery()` 和 `MenuResource::getEloquentQuery()` 补充数据范围过滤；超管不受限制（AdminUserResource/LoginLogResource 已有类似实现可参考）
+11. `CleanActivityLogs::handle()` 和 `CleanLoginLogs::handle()` 改从 `LogSettings` 读取保留天数（`$settings->activity_log_retention_days`、`$settings->login_log_retention_days`），`--days` 参数保留作为覆盖值
 
 **Plans**: TBD
 
@@ -275,6 +297,24 @@ Plans:
 
 ---
 
+### Phase 12: 发版与仓库整理
+
+**Goal**: 修复包仓库内容错误（当前 package-github / package-gitee main 分支是整个 monorepo 而非 subtree split 后的纯包代码），重建正确的 v0.5.0 发版状态
+**Depends on**: Phase 11（可单独提前执行）
+**Requirements**: RELEASE-07
+**Work estimate**: 约 1-2h
+
+**Success Criteria**:
+
+1. 执行 `git subtree split --prefix=packages/filament-admin` 生成纯包 commit，force push 到 `package-github` 和 `package-gitee` main 分支，两端 main 只含包代码
+2. 删除两端错误的 `v0.5.0` tag，在 subtree split commit 上重新打 annotated tag `v0.5.0`，推送到两端包仓库
+3. `gh release create v0.5.0 --repo john-captain/filament-admin` 创建 GitHub Release，release notes 从 `packages/filament-admin/CHANGELOG.md` 的 `[0.5.0]` 节提取
+4. Gitee 包仓库 `v0.5.0` tag 推送完成，Packagist 自动同步（或手动触发）更新为 v0.5.0
+
+**Plans**: TBD
+
+---
+
 ### Phase 11: 代码整理收尾
 
 **Goal**: 全面审查已开发功能，修复所有已知和潜在 Bug，统一代码风格，消除重复和冗余，确保测试全覆盖
@@ -307,6 +347,7 @@ Plans:
 | 9. 编辑器插件 | 0/? | Not started | - |
 | 10. 官网插件 | 0/? | Not started | - |
 | 11. 代码整理收尾 | 0/? | Not started | - |
+| 12. 发版与仓库整理 | 0/? | Not started | - |
 
 ---
 
@@ -368,7 +409,7 @@ Plans:
 | PLUGIN-06 | Phase 6 | 插件市场 — 依赖阻断 |
 | PLUGIN-07 | Phase 6 | 插件市场 — 数据边界 |
 | PLUGIN-08 | Phase 6 | 插件市场 — 文案 |
-| FINAL-01 | Phase 6 | 对外展示 — CI audit |
+| FINAL-01 | Phase 4 | 对外展示 — CI audit（已完成，Phase 4 ci.yml 中实现）|
 | FINAL-02 | Phase 6 | 对外展示 — Release Notes |
 | FINAL-03 | Phase 6 | 对外展示 — Settings缺口 |
 | FINAL-04 | Phase 6 | 对外展示 — 导出增强 |
@@ -388,7 +429,7 @@ Plans:
 ---
 
 *Created: 2026-06-09 by gsd-roadmapper*
-*Last updated: 2026-06-11 (新增 Phase 9 官网插件 + Phase 10 代码整理收尾)*
+*Last updated: 2026-06-11 (需求校准：FINAL-01 移至 Phase 4 已完成；Phase 6 FINAL-04 补充现状注释；Phase 7 FIX-02/05/07、POLISH-04 按代码实际情况细化；新增 Phase 12 发版与仓库整理)*
 
 ## Traceability
 
