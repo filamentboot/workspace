@@ -10,6 +10,7 @@
 [![PHP 版本](https://img.shields.io/packagist/php-v/laravelstack/filament-admin)](https://packagist.org/packages/laravelstack/filament-admin)
 [![License](https://img.shields.io/packagist/l/laravelstack/filament-admin)](https://packagist.org/packages/laravelstack/filament-admin)
 [![Tests](https://img.shields.io/github/actions/workflow/status/john-captain/filament-admin/ci.yml?branch=main&label=Tests)](https://github.com/john-captain/filament-admin/actions/workflows/ci.yml)
+<!-- TODO: RELEASE-05 本期跳过，Codecov 代码覆盖率徽章待将来注册 Codecov 账号后接入，届时替换此注释为真实徽章 -->
 
 ---
 
