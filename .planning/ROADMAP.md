@@ -16,7 +16,7 @@
 - [ ] **Phase 4: 发布自动化** — release.yml + 发版脚本三件套 + Codecov，让下次发版从 9 条手工命令变为打 tag 就完事
 - [x] **Phase 5: 演示站** — demo.xitongapp.com 部署 + 数据重置 cron + 高危操作屏蔽，先拿出看得见的成果 (completed 2026-06-11)
 - [x] **Phase 6: 插件市场 + 对外展示** — 启停控制、安装链路、安全校验、市场数据边界 + 官网、Release Notes、CI audit（计划全部完成，待人工验证 2 项 UI 行为） (completed 2026-06-12)
-- [ ] **Phase 7: 质量基座** — 7个Bug修复 + 4项一期补缺（密码重置/2FA强制/数据权限/日志策略）
+- [x] **Phase 7: 质量基座** — 7个Bug修复 + 4项一期补缺（密码重置/2FA强制/数据权限/日志策略） (completed 2026-06-12)
 - [ ] **Phase 8: 云存储插件** — 阿里云 OSS + 腾讯云 COS Filament 插件
 - [ ] **Phase 9: 编辑器插件** — 富文本编辑器 + Markdown 编辑器 Filament 插件
 - [ ] **Phase 10: 官网插件** — 普通企业官网插件，页面管理、文章/产品发布、SEO、主题切换
@@ -255,21 +255,21 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 07-01-PLAN.md — FIX-01/04/07：顶级导航组处理 + 删 LoginLogResource 冗余 form() + 角色分配改调 AdminUserPolicy
-- [ ] 07-02-PLAN.md — FIX-02：菜单 link_type 落库（menus 加列 + Menu 属性/cast + MenuResource Radio 去 dehydrated）
+- [x] 07-01-PLAN.md — FIX-01/04/07：顶级导航组处理 + 删 LoginLogResource 冗余 form() + 角色分配改调 AdminUserPolicy
+- [x] 07-02-PLAN.md — FIX-02：菜单 link_type 落库（menus 加列 + Menu 属性/cast + MenuResource Radio 去 dehydrated）
 
 **Wave 2** *(blocked on 07-02 — 共享 MenuResource.php)*
 
-- [ ] 07-03-PLAN.md — FIX-03/05/06：菜单批量启停加权限 + 抽 ReorderableWithLog Trait + DepartmentResource 补 ViewDepartment 页
+- [x] 07-03-PLAN.md — FIX-03/05/06：菜单批量启停加权限 + 抽 ReorderableWithLog Trait + DepartmentResource 补 ViewDepartment 页
 
 **Wave 3** *(blocked on FIX 批完成 — D-10 先 FIX 后 POLISH)*
 
-- [ ] 07-04-PLAN.md — POLISH-04 日志清理读 LogSettings + POLISH-01 管理员密码重置闭环（admin_users broker）
+- [x] 07-04-PLAN.md — POLISH-04 日志清理读 LogSettings + POLISH-01 管理员密码重置闭环（admin_users broker）
 
 **Wave 4**
 
-- [ ] 07-05-PLAN.md — POLISH-03：部门列表数据范围（本部门+子树，菜单不做范围过滤，per D-03）
-- [ ] 07-06-PLAN.md — POLISH-02：强制 2FA（超管也强制 per D-04，Filament panel 认证钩子拦截）
+- [x] 07-05-PLAN.md — POLISH-03：部门列表数据范围（本部门+子树，菜单不做范围过滤，per D-03）
+- [x] 07-06-PLAN.md — POLISH-02：强制 2FA（超管也强制 per D-04，Filament panel 认证钩子拦截）
 
 ---
 
@@ -287,7 +287,17 @@ Plans:
 3. 两个插件各自提供独立的配置页面（OSS: AccessKey/Secret/Bucket/Endpoint/Region；COS: SecretId/SecretKey/Bucket/Region），配置项写入 `config/filesystems.php` 的 `disks` 段
 4. 上传安全：文件大小/MIME/扩展名校验，危险文件拦截，与现有 `UploadSettings` 配置联动
 
-**Plans**: TBD
+**Plans**: 4 plans
+Plans:
+**Wave 1**
+
+- [ ] 08-01-PLAN.md — 阿里云 OSS 插件包（composer 契约 + OssSettings 加密 + OssSettingsPage + Storage::extend('oss')）（CLOUD-01）
+- [ ] 08-02-PLAN.md — 腾讯云 COS 插件包（composer 契约 + CosSettings 加密 + CosSettingsPage + cos 磁盘注入）（CLOUD-02）
+
+**Wave 2** *(blocked on 08-01 + 08-02)*
+
+- [ ] 08-03-PLAN.md — 上传安全校验 UploadValidator（扩展名黑名单 + finfo MIME + 大小，联动 UploadSettings）+ UploadSettingsPage 动态磁盘选项（CLOUD-01/02，type: tdd）
+- [ ] 08-04-PLAN.md — Monorepo 集成（根 composer.json repositories + config/settings.php 注册 + 集成测试 + plugin:scan 发现）（CLOUD-01/02）
 
 ---
 
@@ -376,7 +386,7 @@ Plans:
 | 4. 发布自动化 | 3/4 | In Progress|  |
 | 5. 演示站 | 4/4 | Complete    | 2026-06-11 |
 | 6. 插件市场 + 对外展示 | 6/6 | Complete   | 2026-06-12 |
-| 7. 质量基座 | 0/? | Not started | - |
+| 7. 质量基座 | 6/6 | Complete    | 2026-06-12 |
 | 8. 云存储插件 | 0/? | Not started | - |
 | 9. 编辑器插件 | 0/? | Not started | - |
 | 10. 官网插件 | 0/? | Not started | - |
