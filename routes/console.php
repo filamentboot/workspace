@@ -1,6 +1,5 @@
 <?php
 
-use App\Console\Commands\ScanPlugins;
 use FilamentAdmin\Commands\CleanActivityLogs;
 use FilamentAdmin\Commands\CleanLoginLogs;
 use FilamentAdmin\Commands\DemoReset;
@@ -11,9 +10,6 @@ use Illuminate\Support\Facades\Schedule;
 Artisan::command('inspire', function () {
     $this->comment(Inspiring::quote());
 })->purpose('Display an inspiring quote');
-
-// 注册插件扫描命令（plugin:scan）
-Artisan::registerCommand(new ScanPlugins());
 
 // 每日凌晨 2 点清理 180 天前的操作日志
 Schedule::command(CleanActivityLogs::class)->dailyAt('02:00');
