@@ -47,10 +47,7 @@ class UploadSettingsPage extends SettingsPage
                     ->helperText('例如：jpg,jpeg,png,pdf'),
                 Select::make('default_disk')
                     ->label('默认存储磁盘')
-                    ->options([
-                        'public' => 'public（本地公开）',
-                        'local'  => 'local（本地私有）',
-                    ])
+                    ->options(fn () => collect(array_keys(config('filesystems.disks', [])))->mapWithKeys(fn ($disk) => [$disk => $disk])->toArray())
                     ->required(),
             ]);
     }

@@ -90,7 +90,8 @@
         "psr-4": {
             "Tests\\": "tests/",
             "LaravelStack\\FilamentAdminOss\\Tests\\": "packages/filament-admin-oss/tests/",
-            "LaravelStack\\FilamentAdminCos\\Tests\\": "packages/filament-admin-cos/tests/"
+            "LaravelStack\\FilamentAdminCos\\Tests\\": "packages/filament-admin-cos/tests/",
+            "FilamentAdmin\\Tests\\": "packages/filament-admin/tests/"
         }
     },
     "scripts": {
