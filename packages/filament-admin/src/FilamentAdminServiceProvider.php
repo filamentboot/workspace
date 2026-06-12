@@ -13,6 +13,9 @@ use FilamentAdmin\Policies\DepartmentPolicy;
 use FilamentAdmin\Policies\LoginLogPolicy;
 use FilamentAdmin\Policies\MenuPolicy;
 use FilamentAdmin\Policies\RolePolicy;
+use FilamentAdmin\Settings\UploadSettings;
+use FilamentAdmin\Support\UploadValidator;
+use Filament\Forms\Components\FileUpload;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -60,6 +63,7 @@ class FilamentAdminServiceProvider extends ServiceProvider
         $this->registerPolicies();
         $this->registerListeners();
         $this->registerPublishes();
+        $this->registerUploadGuards();
     }
 
     /**
@@ -270,5 +274,58 @@ class FilamentAdminServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../stubs' => base_path('stubs/vendor/filament-admin'),
         ], 'filament-admin-stubs');
+    }
+
+    /**
+     * 注册上传安全守卫：
+     * 1. 依据 UploadSettings.default_disk 同步 media-library.disk_name（D-08-07）
+     * 2. 注册 FileUpload 全局校验规则，接入 UploadValidator（D-08-08/09）
+     */
+    protected function registerUploadGuards(): void
+    {
+        $this->app->booted(function (): void {
+            // 同步 media-library.disk_name（settings 表不存在时静默跳过）
+            try {
+                /** @var UploadSettings $uploadSettings */
+                $uploadSettings = app(UploadSettings::class);
+                if (! empty($uploadSettings->default_disk)) {
+                    config(['media-library.disk_name' => $uploadSettings->default_disk]);
+                }
+            } catch (\Throwable) {
+                // settings 表不存在（首次迁移前）或 UploadSettings 未注册，静默跳过
+            }
+
+            // 注册全局 FileUpload 校验规则
+            FileUpload::configureUsing(function (FileUpload $component): void {
+                $component->afterStateUpdated(function ($state) use ($component): void {
+                    if (! $state) {
+                        return;
+                    }
+
+                    try {
+                        $uploadSettings = app(UploadSettings::class);
+                        $validator      = new UploadValidator($uploadSettings);
+                    } catch (\Throwable) {
+                        return;
+                    }
+
+                    $files = is_array($state) ? $state : [$state];
+
+                    foreach ($files as $file) {
+                        if (! $file instanceof \Illuminate\Http\UploadedFile) {
+                            continue;
+                        }
+
+                        try {
+                            $validator->validate($file);
+                        } catch (\InvalidArgumentException $e) {
+                            $component->state(null);
+                            $component->callAfterStateUpdated();
+                            throw \Filament\Support\Exceptions\Halt::make($e->getMessage());
+                        }
+                    }
+                });
+            });
+        });
     }
 }

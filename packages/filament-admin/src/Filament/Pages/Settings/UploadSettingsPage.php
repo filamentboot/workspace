@@ -51,4 +51,17 @@ class UploadSettingsPage extends SettingsPage
                     ->required(),
             ]);
     }
+
+    /**
+     * 保存后同步 media-library.disk_name（D-08-07）
+     */
+    protected function afterSave(): void
+    {
+        /** @var UploadSettings $settings */
+        $settings = $this->getSettings();
+
+        if (! empty($settings->default_disk)) {
+            config(['media-library.disk_name' => $settings->default_disk]);
+        }
+    }
 }
