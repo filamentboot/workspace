@@ -78,26 +78,33 @@ it('PluginResource 路由 filament.admin.resources.plugins.index 已注册并可
 });
 
 it('plugins 表不存在时 Panel 启动不抛异常', function (): void {
-    // 清缓存确保走查库分支
-    Cache::forget('plugins.enabled_list');
+    // WR-05 修复：不再使用 Schema::dropIfExists 实际删表
+    // MySQL DDL 语句会自动提交事务，破坏 RefreshDatabase 隔离。
+    // 改用 Cache Facade Mock，在 Cache::remember 回调中直接抛出 QueryException，
+    // 模拟 plugins 表不存在场景，完全不触碰数据库 Schema。
+    $queryException = new \Illuminate\Database\QueryException(
+        'sqlite',
+        "select `plugin_class` from `plugins` where `is_enabled` = ?",
+        [],
+        new \PDOException("SQLSTATE[HY000]: General error: 1 no such table: plugins")
+    );
 
-    // 模拟表不存在：通过 DB 抛出 QueryException（用 Mockery/closure 不破坏数据库状态）
-    // 直接测试：即使插件表查询抛 Throwable，registerEnabledPlugins 也不传播异常
+    Cache::shouldReceive('get')
+        ->withAnyArgs()
+        ->andReturnNull()
+        ->byDefault();
+
+    Cache::shouldReceive('remember')
+        ->once()
+        ->with('plugins.enabled_list', 30, Mockery::type(\Closure::class))
+        ->andThrow($queryException);
+
     $panel    = new Panel();
     $provider = new AdminPanelProvider(app());
 
     $method = new \ReflectionMethod(AdminPanelProvider::class, 'registerEnabledPlugins');
     $method->setAccessible(true);
 
-    // 用另一个测试手段：删除表后调用（try/catch Throwable 静默分支）
-    \Illuminate\Support\Facades\Schema::dropIfExists('plugins');
-
-    // 清缓存确保重新查库
-    Cache::forget('plugins.enabled_list');
-
-    // 调用不抛异常（静默跳过）
+    // 调用不抛异常（静默跳过，try/catch Throwable 分支）
     expect(fn () => $method->invoke($provider, $panel))->not->toThrow(\Throwable::class);
-
-    // 重建表（不影响其他测试）
-    \Illuminate\Support\Facades\Artisan::call('migrate', ['--force' => true]);
 });
