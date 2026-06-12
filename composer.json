@@ -3,7 +3,13 @@
     "name": "filament-admin/preview",
     "type": "project",
     "description": "Demo application for the FilamentAdmin package.",
-    "keywords": ["filament", "laravel", "admin", "rbac", "backend"],
+    "keywords": [
+        "filament",
+        "laravel",
+        "admin",
+        "rbac",
+        "backend"
+    ],
     "license": "MIT",
     "homepage": "https://github.com/john-captain/filament-admin",
     "authors": [
@@ -40,6 +46,13 @@
             "options": {
                 "symlink": true
             }
+        },
+        {
+            "type": "path",
+            "url": "packages/filament-admin-oss",
+            "options": {
+                "symlink": true
+            }
         }
     ],
     "require-dev": {
@@ -52,6 +65,7 @@
         "laravel/pint": "^1.27",
         "mockery/mockery": "^1.6",
         "nunomaduro/collision": "^8.6",
+        "orchestra/testbench": "^11.0",
         "pestphp/pest": "^4.7",
         "pestphp/pest-plugin-laravel": "^4.1",
         "phpunit/phpunit": "^12.5.12"
@@ -60,12 +74,14 @@
         "psr-4": {
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
-            "Database\\Seeders\\": "database/seeders/"
+            "Database\\Seeders\\": "database/seeders/",
+            "LaravelStack\\FilamentAdminOss\\": "packages/filament-admin-oss/src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Tests\\": "tests/"
+            "Tests\\": "tests/",
+            "LaravelStack\\FilamentAdminOss\\Tests\\": "packages/filament-admin-oss/tests/"
         }
     },
     "scripts": {
