@@ -1,13 +1,10 @@
 <?php
 
-use FilamentAdmin\Models\Menu;
+// 菜单 link_type 字段持久化测试
+// 验证 menus.link_type 列可以正确写入与回读，
+// 覆盖 FIX-02：link_type Radio 从 dehydrated(false) 改为正常持久化。
 
-/**
- * 菜单 link_type 字段持久化测试
- *
- * 验证 menus.link_type 列可以正确写入与回读，
- * 覆盖 FIX-02：link_type Radio 从 dehydrated(false) 改为正常持久化。
- */
+use FilamentAdmin\Models\Menu;
 
 it('link_type=url 的菜单可以正确持久化与回读', function () {
     $menu = Menu::create([
