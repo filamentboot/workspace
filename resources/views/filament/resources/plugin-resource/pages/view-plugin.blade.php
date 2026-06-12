@@ -81,6 +81,10 @@
                                 <x-filament::button wire:click="initialize" color="warning">
                                     重试初始化
                                 </x-filament::button>
+                                {{-- SC-3 幂等重跑说明文案：整体幂等重跑，不补步骤级状态表 --}}
+                                <p class="mt-2 text-sm text-gray-500 dark:text-gray-400">
+                                    迁移、发布、种子操作均为幂等，重试初始化可安全重跑，不会重复写入或破坏已有数据。
+                                </p>
                             </div>
                         @endif
                     </div>
