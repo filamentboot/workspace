@@ -33,7 +33,7 @@ function makeActivity(array $attributes = []): Activity
 
 it('清理操作日志：未传 --days 时从 LogSettings 读保留天数', function () {
     // 设置 LogSettings.activity_log_retention_days = 30
-    $settings = app(LogSettings::class);
+    $settings                              = app(LogSettings::class);
     $settings->activity_log_retention_days = 30;
     $settings->save();
     app()->forgetInstance(LogSettings::class);
@@ -53,7 +53,7 @@ it('清理操作日志：未传 --days 时从 LogSettings 读保留天数', func
 
 it('清理操作日志：传 --days=5 时覆盖 Settings 值', function () {
     // 设置 LogSettings.activity_log_retention_days = 30
-    $settings = app(LogSettings::class);
+    $settings                              = app(LogSettings::class);
     $settings->activity_log_retention_days = 30;
     $settings->save();
     app()->forgetInstance(LogSettings::class);
@@ -72,7 +72,7 @@ it('清理操作日志：传 --days=5 时覆盖 Settings 值', function () {
 
 it('清理操作日志：保留天数为 0 时永久保留不删除', function () {
     // 设置 LogSettings.activity_log_retention_days = 0（永久保留）
-    $settings = app(LogSettings::class);
+    $settings                              = app(LogSettings::class);
     $settings->activity_log_retention_days = 0;
     $settings->save();
     app()->forgetInstance(LogSettings::class);
@@ -92,7 +92,7 @@ it('清理操作日志：保留天数为 0 时永久保留不删除', function (
 
 it('清理登录日志：未传 --days 时从 LogSettings 读保留天数', function () {
     // 设置 LogSettings.login_log_retention_days = 60
-    $settings = app(LogSettings::class);
+    $settings                           = app(LogSettings::class);
     $settings->login_log_retention_days = 60;
     $settings->save();
     app()->forgetInstance(LogSettings::class);

@@ -2,16 +2,17 @@
 
 namespace FilamentAdmin\Models;
 
-use FilamentAdmin\Database\Factories\AdminUserFactory;
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasName;
 use Filament\Panel;
+use FilamentAdmin\Database\Factories\AdminUserFactory;
 use FilamentAdmin\Enums\AdminUserStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Notifications\Notifiable;
 use Illuminate\Support\Carbon;
 use Laravel\Sanctum\HasApiTokens;
 use Spatie\MediaLibrary\HasMedia;
@@ -51,9 +52,11 @@ class AdminUser extends Authenticatable implements FilamentUser, HasMedia, HasNa
     use HasApiTokens;
 
     /** @use HasFactory<AdminUserFactory> */
-    use HasFactory; // 提供 Sanctum API Token 能力
-    use HasRoles; // 提供角色与权限管理方法
-    use InteractsWithMedia; // 提供媒体库操作方法
+    use HasFactory;           // 提供模型工厂支持
+
+    use HasRoles;             // 提供角色与权限管理方法
+    use InteractsWithMedia;   // 提供媒体库操作方法
+    use Notifiable;           // 提供 notify() 方法，密码重置通知所需
     use SoftDeletes;
     use TwoFactorAuthenticatable; // 提供 TOTP 双因素认证方法
 

@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Password;
 /**
  * 管理员密码重置功能测试（admin_users broker 闭环）
  */
-
 it('发送密码重置链接：通过 admin_users broker 发送通知到指定邮箱', function () {
     Notification::fake();
 

@@ -50,6 +50,7 @@ class AdminPanelProvider extends PanelProvider
             ->profile(Profile::class)       // 使用自定义个人资料页
             ->authGuard('admin')            // 使用 admin guard
             ->authPasswordBroker('admin_users')
+            ->passwordReset()               // 启用密码重置（使用 admin_users broker，框架默认 token/限流/邮件）
             ->plugin(FilamentAdminPlugin::make())
             ->plugin(
                 TwoFactorAuthenticationPlugin::make()
