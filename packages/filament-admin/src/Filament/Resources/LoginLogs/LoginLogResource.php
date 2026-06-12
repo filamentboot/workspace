@@ -5,11 +5,8 @@ namespace FilamentAdmin\Filament\Resources\LoginLogs;
 use BackedEnum;
 use Filament\Actions\ViewAction;
 use Filament\Forms\Components\DateTimePicker;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Resources\Resource;
-use Filament\Schemas\Schema;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
@@ -39,29 +36,6 @@ class LoginLogResource extends Resource
     protected static ?string $modelLabel = '管理员日志';
 
     protected static ?string $pluralModelLabel = '管理员日志';
-
-    public static function form(Schema $schema): Schema
-    {
-        return $schema
-            ->components([
-                TextInput::make('adminUser.account')
-                    ->label('管理员'),
-                TextInput::make('username')
-                    ->label('登录账号'),
-                Select::make('status')
-                    ->label('结果')
-                    ->options(static::getStatusOptions()),
-                TextInput::make('ip_address')
-                    ->label('IP'),
-                TextInput::make('failure_reason')
-                    ->label('失败原因'),
-                DateTimePicker::make('created_at')
-                    ->label('时间'),
-                Textarea::make('user_agent')
-                    ->label('User-Agent')
-                    ->columnSpanFull(),
-            ]);
-    }
 
     public static function table(Table $table): Table
     {
