@@ -3,9 +3,12 @@
 namespace App\Providers;
 
 use App\Enums\ApiErrorCode;
+use App\Models\Plugin;
+use App\Policies\PluginPolicy;
 use Dedoc\Scramble\Scramble;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Routing\Route;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Response;
 use Illuminate\Support\ServiceProvider;
 
@@ -27,6 +30,11 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        // 显式注册 PluginPolicy，避免依赖 Laravel 约定自动发现（CR-03 修复）
+        // 约定发现在 Model/Policy 迁移命名空间后会静默失效；
+        // 若 Gate::guessPolicyNamesUsing() 被 Shield 等覆盖，约定也会失效。
+        Gate::policy(Plugin::class, PluginPolicy::class);
+
         $this->registerApiResponseMacros();
         $this->registerScrambleRouteFilter();
     }
