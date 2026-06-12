@@ -36,23 +36,9 @@ it('Packagist API 返回 404 时阻断安装', function () {
     expect($result)->toBeFalse();
 });
 
-it('semver 版本约束不满足时阻断安装', function () {
-    // 模拟 Packagist 返回一个版本，但该版本不满足约束
-    Http::fake([
-        'repo.packagist.org/p2/some-vendor/some-package.json' => Http::response([
-            'packages' => [
-                'some-vendor/some-package' => [
-                    ['version' => '1.0.0'],
-                ],
-            ],
-        ], 200),
-    ]);
-
-    $manager = new PluginManager();
-
-    // 当前 Laravel 约束为 ^13.x，但我们在测试中构造一个不满足约束的场景
-    // validatePackageName 内部用 getCompatibilityConstraint，无约束时直通 true
-    // 因此这里测试通过 Packagist API OK 但无 packages 返回的场景（空版本列表）
+it('Packagist 返回空版本列表时阻断安装', function () {
+    // Packagist API 正常响应，但 packages 数组为空（包刚删除或无版本发布）
+    // validatePackageName 判断 empty($versions) => false（WR-04 修复：删除原死代码块）
     Http::fake([
         'repo.packagist.org/p2/empty-vendor/empty-package.json' => Http::response([
             'packages' => [
@@ -61,9 +47,10 @@ it('semver 版本约束不满足时阻断安装', function () {
         ], 200),
     ]);
 
-    $result = $manager->validatePackageName('empty-vendor/empty-package');
+    $manager = new PluginManager();
+    $result  = $manager->validatePackageName('empty-vendor/empty-package');
 
-    // 版本列表为空 => false
+    // 版本列表为空 => false（阻断安装）
     expect($result)->toBeFalse();
 });
 
