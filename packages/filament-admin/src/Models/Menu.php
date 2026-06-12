@@ -20,6 +20,7 @@ use SolutionForest\FilamentTree\Concern\ModelTree;
  * @property string|null $icon
  * @property string|null $route_name
  * @property string|null $url
+ * @property string $link_type
  * @property string|null $permission_name
  * @property int $sort
  * @property bool $is_active
