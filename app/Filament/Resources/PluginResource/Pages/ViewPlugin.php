@@ -46,9 +46,14 @@ class ViewPlugin extends ViewRecord
      * 执行同步初始化（调 PluginManager::initialize，OQ1 同步语义）
      *
      * 初始化完成后立即读取最终状态。
+     * 注意：此方法通过 wire:click 直接暴露为 Livewire 端点，必须显式授权，
+     * 不能依赖 Filament Action 的 ->authorize() 守卫（CR-02 修复）。
      */
     public function initialize(): void
     {
+        // 显式授权：走 PluginPolicy::initialize()，防止绕过 Action 权限检查
+        $this->authorize('initialize', $this->record);
+
         app(PluginManager::class)->initialize($this->record);
         $this->refreshInitProgress();
     }
