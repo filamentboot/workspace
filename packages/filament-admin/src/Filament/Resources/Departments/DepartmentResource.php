@@ -20,6 +20,7 @@ use Filament\Tables\Table;
 use FilamentAdmin\Filament\Resources\Departments\Pages\CreateDepartment;
 use FilamentAdmin\Filament\Resources\Departments\Pages\EditDepartment;
 use FilamentAdmin\Filament\Resources\Departments\Pages\ListDepartments;
+use FilamentAdmin\Filament\Resources\Departments\Pages\ViewDepartment;
 use FilamentAdmin\Models\Department;
 use FilamentAdmin\Services\ActivityLogger;
 use FilamentAdmin\Services\DepartmentTree;
@@ -152,6 +153,7 @@ class DepartmentResource extends Resource
             'index'  => ListDepartments::route('/'),
             'create' => CreateDepartment::route('/create'),
             'edit'   => EditDepartment::route('/{record}/edit'),
+            'view'   => ViewDepartment::route('/{record}'),
         ];
     }
 
