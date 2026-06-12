@@ -18,15 +18,18 @@ class UploadValidatorTest extends TestCase
 {
     /**
      * 构造基础 UploadSettings，允许 jpg/jpeg/png，大小 10240KB
+     *
+     * 使用反射绕过 Spatie Settings 的 final __construct 对容器的依赖，
+     * 使得纯单元测试不需要 Laravel 容器即可运行。
      */
     private function makeSettings(
         int $maxFileSizeKb = 10240,
         string $allowedMimes = 'jpg,jpeg,png,gif,webp,pdf,doc,docx,xls,xlsx,zip'
     ): UploadSettings {
-        // 直接 new，绕过 spatie/laravel-settings 持久化层
-        $settings                = new class extends UploadSettings {
-            public static function group(): string { return 'upload'; }
-        };
+        // 用反射跳过 final __construct，避免触发 spatie/laravel-settings 对容器的依赖
+        $reflection = new \ReflectionClass(UploadSettings::class);
+        /** @var UploadSettings $settings */
+        $settings                = $reflection->newInstanceWithoutConstructor();
         $settings->max_file_size = $maxFileSizeKb;
         $settings->allowed_mimes = $allowedMimes;
         $settings->default_disk  = 'public';
