@@ -52,6 +52,12 @@ FilamentAdmin 是对标 FastAdmin / laravel-admin 的 Laravel 13 + Filament 5 �
 
 按 phase 分组（具体 REQ-ID 映射在 REQUIREMENTS.md，phase 顺序在 ROADMAP.md）：
 
+**Phase 8 — 云存储插件** ✓ 完成（2026-06-12，Validated in Phase 8）
+- ✓ CLOUD-01: 阿里云 OSS 插件包（OssSettings 加密 + OssSettingsPage + Storage::extend oss 磁盘）— Phase 8
+- ✓ CLOUD-02: 腾讯云 COS 插件包（CosSettings 加密 + CosSettingsPage + cos 磁盘注入）— Phase 8
+- ✓ UploadValidator 三重安全校验（扩展名黑名单 + finfo MIME + 大小），联动 UploadSettings — Phase 8
+- ✓ Monorepo 集成（根 composer.json repositories + plugin:scan 发现 + medialibrary disk_name 同步）— Phase 8
+
 **Phase 7 — 质量基座** ✓ 完成（2026-06-12，Validated in Phase 7）
 - ✓ FIX-01: NavigationBuilder 多余「设置」项修复 — Phase 7
 - ✓ FIX-02: 菜单 link_type 字段不持久化修复 — Phase 7
@@ -234,4 +240,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-12 — Phase 7（质量基座）完成，FIX-01~07 + POLISH-01~04 全部交付；发现旁置 bug：parent_id=0 根菜单无法通过 Filament 表单保存（relationship() 验证失败），已推迟至 Phase 11*
+*Last updated: 2026-06-12 — Phase 8（云存储插件）完成，CLOUD-01/02 全部交付；新增 packages/filament-admin-oss、packages/filament-admin-cos；UploadValidator 三重安全校验；275 tests passing*

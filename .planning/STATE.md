@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v0.5
 milestone_name: milestone
 status: executing
-stopped_at: Phase 08 规划完成（4 plans，Wave 1-3），ready to execute
-last_updated: "2026-06-12T09:24:13.797Z"
+stopped_at: Phase 08 云存储插件完成（4/4 plans，13/13 must-haves PASSED，275 tests passing）
+last_updated: "2026-06-12T00:00:00.000Z"
 progress:
   total_phases: 12
-  completed_phases: 7
+  completed_phases: 8
   total_plans: 39
-  completed_plans: 35
-  percent: 58
+  completed_plans: 39
+  percent: 67
 ---
 
 # Project State: FilamentAdmin v0.5
@@ -27,22 +27,22 @@ See: .planning/PROJECT.md (updated 2026-06-12)
 
 **Core value:** 别人执行 `composer require laravelstack/filament-admin` 后能开箱运行、能扩展定制、能稳定升级，且包发布形态符合 Laravel 开源市场规范
 
-**Current focus:** Phase 08 — cloud-storage-plugins
+**Current focus:** Phase 09 — 编辑器插件（待规划）
 
 ---
 
 ## Current Position
 
-Phase: 08 (cloud-storage-plugins) — EXECUTING
-Plan: 1 of 4
-Status: Executing Phase 08
+Phase: 08 (cloud-storage-plugins) — COMPLETED
+Plan: 4 of 4
+Status: Phase 08 全部完成，等待 Phase 09 规划
 
 ```
 current_phase:   8
-current_plan:    0
-current_status:  planned
+current_plan:    4
+current_status:  completed
 last_updated:    2026-06-12
-stopped_at:      Phase 07 全部 6 Plan 完成（FIX-01~07 + POLISH-01~04，202 tests passed，UAT 3/3 通过）
+stopped_at:      Phase 08 全部 4 Plan 完成（CLOUD-01/02 + UploadValidator + monorepo 集成，275 tests passed，UAT 13/13 通过）
 ```
 
 **Progress bar:**
@@ -55,13 +55,13 @@ Phase 04 [##########] 100%  发布自动化（4/4）✓
 Phase 05 [##########] 100%  演示站（4/4）✓
 Phase 06 [##########] 100%  插件市场启动（4/4）✓
 Phase 07 [##########] 100%  质量基座（6/6）✓
-Phase 08 [          ]   0%  云存储插件（已规划，4 plans，Wave 1-3）
+Phase 08 [##########] 100%  云存储插件（4/4）✓
 Phase 09 [          ]   0%  编辑器插件（待规划）
 Phase 10 [          ]   0%  官网插件（待规划）
 Phase 11 [          ]   0%  代码整理收尾（待规划）
 Phase 12 [          ]   0%  发版与仓库整理（待规划）
 
-Overall  [#######   ]  58%  (7/12 phases, 35/35 plans)
+Overall  [########  ]  67%  (8/12 phases)
 ```
 
 ---
@@ -71,21 +71,28 @@ Overall  [#######   ]  58%  (7/12 phases, 35/35 plans)
 | Phase | Name | REQs | Work estimate | Status |
 |-------|------|------|---------------|--------|
 | 1 | 包发布合规 | COMPLY-01~09 (9) | 10-15h | Completed |
-| 2 | 文档与品宣 | DOC-01~08 (8) | ~12h | Not started |
-| 3 | 包功能补强 | FEAT-01~03 (3) | ~14h | Not started |
-| 4 | 发布自动化 | RELEASE-01~06 (6) | ~13-14h | Not started |
-| 5 | 演示站 (v0.5.1) | DEMO-01~04 (4) | 4-6h | Not started |
-
-**Total work estimate:** 约 53-61h（按 4h/周 ≈ 13-15 周）
+| 2 | 文档与品宣 | DOC-01~08 (8) | ~12h | Completed |
+| 3 | 包功能补强 | FEAT-01~03 (3) | ~14h | Completed |
+| 4 | 发布自动化 | RELEASE-01~06 (6) | ~13-14h | Completed |
+| 5 | 演示站 | DEMO-01~04 (4) | 4-6h | Completed |
+| 6 | 插件市场 + 对外展示 | PLUGIN-01~08, FINAL-02~05 | ~26-33h | Completed |
+| 7 | 质量基座 | FIX-01~07, POLISH-01~04 | ~14-18h | Completed |
+| 8 | 云存储插件 | CLOUD-01~02 | ~8-12h | Completed |
+| 9 | 编辑器插件 | EDITOR-01~02 | ~8-12h | Not started |
+| 10 | 官网插件 | SITE-01~04 | ~10-15h | Not started |
+| 11 | 代码整理收尾 | CLEANUP-01~03 | ~15-20h | Not started |
+| 12 | 发版与仓库整理 | RELEASE-07 | ~1-2h | Not started |
 
 ---
 
 ## Performance Metrics
 
 ```
-phases_complete:    1 / 5
-plans_complete:     6 / 6  (Phase 1)
-requirements_done:  0 / 30  (COMPLY-01~09 工程落地，测试/文档验收后更新)
+phases_complete:    8 / 12
+plans_complete:     39 / 39
+requirements_done:  COMPLY-01~09, DOC-01~08, FEAT-01~03, RELEASE-01~06, DEMO-01~04,
+                    PLUGIN-01~08, FINAL-02~05, FIX-01~07, POLISH-01~04, CLOUD-01~02
+test_count:         275 / 275 passing（67 包测试 + 174 feature 测试 + 34 unit 测试）
 ```
 
 ---
@@ -125,6 +132,9 @@ requirements_done:  0 / 30  (COMPLY-01~09 工程落地，测试/文档验收后�
 
 - 主包当前状态：ServiceProvider 5 个 `publishes()` 已注册，PublishCommand 真实实现，EnsureTwoFactorEnabled 中间件已注册
 - Phase 07 已通过 UAT（3/3 passed，202 tests）
+- Phase 08 已通过 UAT（13/13 must-haves passed，275 tests）
+- 新增包：`packages/filament-admin-oss/`（阿里云 OSS）、`packages/filament-admin-cos/`（腾讯云 COS）
+- UploadValidator 三重安全校验（扩展名黑名单 + finfo MIME + 大小），与 UploadSettings 联动
 - 已知旁置 bug：parent_id=0 根菜单通过 Filament 表单保存报 relationship() validation error，推迟 Phase 11 修复
 - 工具链：PHP 8.3+, Laravel 13.x, Filament 5.x
 - CI：包 CI 用 `packages/filament-admin/.github/workflows/ci.yml`，根 CI 用根目录 workflows
@@ -134,19 +144,20 @@ requirements_done:  0 / 30  (COMPLY-01~09 工程落地，测试/文档验收后�
 
 无
 
-### Recent Decisions（Phase 07）
+### Recent Decisions（Phase 08）
 
-- EnsureTwoFactorEnabled 中间件走 Filament panel authMiddleware（非 route group），白名单放行登出/2FA设置/个人资料
-- force_2fa=true 时超管未开 2FA 同样被拦（D-04 不豁免超管）
-- DepartmentResource.php namespace 修复：从 App\Enums\AdminUserStatus → FilamentAdmin\Enums\AdminUserStatus
-- ReorderableWithLog Trait 抽取：避免部门/菜单 reorder 日志逻辑重复
+- filament-admin-oss / filament-admin-cos 作为独立 Composer 包，monorepo 内通过 path repositories 引入
+- OssSettings / CosSettings 使用 Spatie laravel-settings 加密存储 AccessKey/SecretKey
+- UploadValidator 抽取为主包共享服务，通过 FilamentAdminServiceProvider 绑定到容器
+- medialibrary disk_name 与插件 is_enabled 状态同步，禁用插件时自动回落 local 磁盘
+- plugin:scan 命令可发现 OSS/COS 插件并写入 plugins 表
 
 ---
 
 ## Session Continuity
 
 Last session: 2026-06-12
-Stopped at: Phase 08 规划完成（4 plans，Wave 1-3），ready to execute
+Stopped at: Phase 08 云存储插件全部完成（4/4 plans，13/13 must-haves PASSED，275 tests passing）
 Resume file: None
 
 **未解决问题:**
