@@ -6,10 +6,6 @@ use FilamentAdmin\Settings\SecuritySettings;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
-use Tests\TestCase;
-
-// 由于测试文件位于 worktree，须在文件内显式声明 uses 以引导 Laravel 测试环境
-uses(TestCase::class, RefreshDatabase::class);
 
 /**
  * 强制 2FA 拦截中间件测试（POLISH-02）
