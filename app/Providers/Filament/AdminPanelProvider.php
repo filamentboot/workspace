@@ -22,6 +22,7 @@ use Filament\Widgets\FilamentInfoWidget;
 use FilamentAdmin\Filament\Pages\Auth\Login;
 use FilamentAdmin\Filament\Pages\Profile;
 use FilamentAdmin\FilamentAdminPlugin;
+use FilamentAdmin\Http\Middleware\EnsureTwoFactorEnabled;
 use FilamentAdmin\Models\AdminUser;
 use FilamentAdmin\Services\AdminNavigationBuilder;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
@@ -106,6 +107,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->authMiddleware([
                 Authenticate::class,
+                EnsureTwoFactorEnabled::class, // POLISH-02：强制 2FA 拦截（Authenticate 后执行，确保有用户）
             ]);
     }
 
