@@ -4,8 +4,53 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "6841f66f818cda6080a0e4ddd017e09c",
+    "content-hash": "59d1ca9c276112eedb65875b88438336",
     "packages": [
+        {
+            "name": "aliyuncs/oss-sdk-php",
+            "version": "v2.7.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/aliyun/aliyun-oss-php-sdk.git",
+                "reference": "483dd0b8bff5d47f0e4ffc99f6077a295c5ccbb5"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/aliyun/aliyun-oss-php-sdk/zipball/483dd0b8bff5d47f0e4ffc99f6077a295c5ccbb5",
+                "reference": "483dd0b8bff5d47f0e4ffc99f6077a295c5ccbb5",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=5.3"
+            },
+            "require-dev": {
+                "php-coveralls/php-coveralls": "*",
+                "phpunit/phpunit": "*"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "OSS\\": "src/OSS"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Aliyuncs",
+                    "homepage": "http://www.aliyun.com"
+                }
+            ],
+            "description": "Aliyun OSS SDK for PHP",
+            "homepage": "http://www.aliyun.com/product/oss/",
+            "support": {
+                "issues": "https://github.com/aliyun/aliyun-oss-php-sdk/issues",
+                "source": "https://github.com/aliyun/aliyun-oss-php-sdk/tree/v2.7.2"
+            },
+            "time": "2024-10-28T10:41:12+00:00"
+        },
         {
             "name": "alizharb/filament-activity-log",
             "version": "v1.3.2",
@@ -2533,6 +2578,62 @@
             "time": "2026-05-23T22:00:21+00:00"
         },
         {
+            "name": "iidestiny/flysystem-oss",
+            "version": "4.8.3",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/iiDestiny/flysystem-oss.git",
+                "reference": "4f2b4729b309d991ce3e5133a68fa39fabbfeca7"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/iiDestiny/flysystem-oss/zipball/4f2b4729b309d991ce3e5133a68fa39fabbfeca7",
+                "reference": "4f2b4729b309d991ce3e5133a68fa39fabbfeca7",
+                "shasum": ""
+            },
+            "require": {
+                "aliyuncs/oss-sdk-php": "^2",
+                "ext-curl": "*",
+                "ext-json": "*",
+                "ext-openssl": "*",
+                "league/flysystem": "^3.0",
+                "php": "^8.0.2"
+            },
+            "require-dev": {
+                "mockery/mockery": "^1.5",
+                "phpunit/phpunit": "^9.5",
+                "symfony/var-dumper": "^3.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Iidestiny\\Flysystem\\Oss\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "iidestiny",
+                    "email": "iidestiny@vip.qq.com"
+                }
+            ],
+            "description": "Flysystem adapter for the Oss storage.",
+            "keywords": [
+                "alioss",
+                "laravel",
+                "oss",
+                "阿里oss"
+            ],
+            "support": {
+                "issues": "https://github.com/iiDestiny/flysystem-oss/issues",
+                "source": "https://github.com/iiDestiny/flysystem-oss/tree/4.8.3"
+            },
+            "time": "2026-05-20T10:42:19+00:00"
+        },
+        {
             "name": "kirschbaum-development/eloquent-power-joins",
             "version": "4.3.2",
             "source": {
@@ -3073,7 +3174,7 @@
         },
         {
             "name": "laravelstack/filament-admin",
-            "version": "dev-main",
+            "version": "dev-worktree-agent-a14ee95b4045fec81",
             "dist": {
                 "type": "path",
                 "url": "packages/filament-admin",
@@ -3174,6 +3275,218 @@
                 "issues": "https://github.com/john-captain/filament-admin/issues",
                 "source": "https://github.com/john-captain/filament-admin",
                 "docs": "https://github.com/john-captain/filament-admin/blob/main/wiki/installation.md",
+                "wiki": "https://github.com/john-captain/filament-admin/tree/main/wiki"
+            },
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "laravelstack/filament-admin-cos",
+            "version": "dev-worktree-agent-a14ee95b4045fec81",
+            "dist": {
+                "type": "path",
+                "url": "packages/filament-admin-cos",
+                "reference": "e4a05fd1a42639c9acdb8e5af4b12e6db7a70f29"
+            },
+            "require": {
+                "filament/spatie-laravel-settings-plugin": "^5.6",
+                "laravelstack/filament-admin": "^0.5",
+                "overtrue/laravel-filesystem-cos": "^4.0",
+                "php": "^8.3",
+                "spatie/laravel-settings": "^3.9"
+            },
+            "require-dev": {
+                "larastan/larastan": "^3.0",
+                "laravel/pint": "^1.27",
+                "orchestra/testbench": "^11.0",
+                "phpunit/phpunit": "^12.5.12"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "LaravelStack\\FilamentAdminCos\\CosServiceProvider"
+                    ]
+                },
+                "filament-admin": {
+                    "slug": "filament-admin-cos",
+                    "name": "腾讯云 COS 存储",
+                    "type": "package",
+                    "source": "official_listed",
+                    "plugin_class": "LaravelStack\\FilamentAdminCos\\CosPlugin",
+                    "service_provider": "LaravelStack\\FilamentAdminCos\\CosServiceProvider",
+                    "description": "腾讯云对象存储（COS）驱动插件，支持超管在后台直接配置凭证，无需修改 .env 文件。",
+                    "requires": [],
+                    "compatibility": {
+                        "laravel/framework": "^13.0",
+                        "filament/filament": "^5.0"
+                    }
+                },
+                "branch-alias": {
+                    "dev-main": "0.5.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "LaravelStack\\FilamentAdminCos\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "LaravelStack\\FilamentAdminCos\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "vendor/bin/phpunit -c phpunit.xml.dist"
+                ],
+                "test-coverage": [
+                    "vendor/bin/phpunit -c phpunit.xml.dist --coverage-clover=coverage.xml"
+                ],
+                "phpstan": [
+                    "vendor/bin/phpstan analyse --memory-limit=2G"
+                ],
+                "pint": [
+                    "vendor/bin/pint"
+                ],
+                "pint:test": [
+                    "vendor/bin/pint --test"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "johncaptain",
+                    "email": "JasonTodd0521@gmail.com",
+                    "role": "developer"
+                }
+            ],
+            "description": "腾讯云 COS 存储插件：为 laravelstack/filament-admin 提供 COS 凭证后台配置与 Flysystem 磁盘注入。",
+            "homepage": "https://github.com/john-captain/filament-admin",
+            "keywords": [
+                "admin-panel",
+                "cloud-storage",
+                "cos",
+                "filament",
+                "filament-plugin",
+                "laravel",
+                "storage",
+                "tencent"
+            ],
+            "support": {
+                "issues": "https://github.com/john-captain/filament-admin/issues",
+                "source": "https://github.com/john-captain/filament-admin",
+                "docs": "https://github.com/john-captain/filament-admin/blob/main/wiki/cos-plugin.md",
+                "wiki": "https://github.com/john-captain/filament-admin/tree/main/wiki"
+            },
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "laravelstack/filament-admin-oss",
+            "version": "dev-worktree-agent-a14ee95b4045fec81",
+            "dist": {
+                "type": "path",
+                "url": "packages/filament-admin-oss",
+                "reference": "948b4f0072234057543f3fca4f8895d9f0f1e8d1"
+            },
+            "require": {
+                "filament/spatie-laravel-settings-plugin": "^5.6",
+                "iidestiny/flysystem-oss": "^4.8",
+                "laravelstack/filament-admin": "^0.5",
+                "php": "^8.3",
+                "spatie/laravel-settings": "^3.9"
+            },
+            "require-dev": {
+                "larastan/larastan": "^3.0",
+                "laravel/pint": "^1.27",
+                "orchestra/testbench": "^11.0",
+                "phpunit/phpunit": "^12.5.12"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "LaravelStack\\FilamentAdminOss\\OssServiceProvider"
+                    ]
+                },
+                "filament-admin": {
+                    "slug": "filament-admin-oss",
+                    "name": "阿里云 OSS 存储",
+                    "type": "package",
+                    "source": "official_listed",
+                    "plugin_class": "LaravelStack\\FilamentAdminOss\\OssPlugin",
+                    "service_provider": "LaravelStack\\FilamentAdminOss\\OssServiceProvider",
+                    "description": "阿里云 OSS 对象存储驱动，凭证由超管在后台配置页加密存储，无需修改 .env 文件。",
+                    "requires": [],
+                    "compatibility": {
+                        "laravel/framework": "^13.0",
+                        "filament/filament": "^5.0"
+                    }
+                },
+                "branch-alias": {
+                    "dev-main": "0.5.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "LaravelStack\\FilamentAdminOss\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "LaravelStack\\FilamentAdminOss\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "vendor/bin/phpunit -c phpunit.xml.dist"
+                ],
+                "test-coverage": [
+                    "vendor/bin/phpunit -c phpunit.xml.dist --coverage-clover=coverage.xml"
+                ],
+                "phpstan": [
+                    "vendor/bin/phpstan analyse --memory-limit=2G"
+                ],
+                "pint": [
+                    "vendor/bin/pint"
+                ],
+                "pint:test": [
+                    "vendor/bin/pint --test"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "johncaptain",
+                    "email": "JasonTodd0521@gmail.com",
+                    "role": "developer"
+                }
+            ],
+            "description": "阿里云 OSS 存储插件，为 laravelstack/filament-admin 提供 Flysystem OSS 磁盘驱动与后台凭证配置页。",
+            "homepage": "https://github.com/john-captain/filament-admin",
+            "keywords": [
+                "aliyun",
+                "cloud-storage",
+                "filament",
+                "filament-plugin",
+                "flysystem",
+                "laravel",
+                "oss",
+                "storage"
+            ],
+            "support": {
+                "issues": "https://github.com/john-captain/filament-admin/issues",
+                "source": "https://github.com/john-captain/filament-admin",
+                "docs": "https://github.com/john-captain/filament-admin/blob/main/wiki/oss.md",
                 "wiki": "https://github.com/john-captain/filament-admin/tree/main/wiki"
             },
             "transport-options": {
@@ -4813,6 +5126,203 @@
                 }
             ],
             "time": "2025-09-03T16:03:54+00:00"
+        },
+        {
+            "name": "overtrue/flysystem-cos",
+            "version": "5.2.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/overtrue/flysystem-cos.git",
+                "reference": "1cc9db072a66356f8ff88bfe6cd247a04e6644f8"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/overtrue/flysystem-cos/zipball/1cc9db072a66356f8ff88bfe6cd247a04e6644f8",
+                "reference": "1cc9db072a66356f8ff88bfe6cd247a04e6644f8",
+                "shasum": ""
+            },
+            "require": {
+                "league/flysystem": "^3.0",
+                "overtrue/qcloud-cos-client": "^2.1.4",
+                "php": ">=8.0.2"
+            },
+            "require-dev": {
+                "laravel/pint": "^1.6",
+                "league/flysystem-adapter-test-utilities": "^3.0",
+                "mockery/mockery": "^1.0",
+                "phpunit/phpunit": "^9.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Overtrue\\Flysystem\\Cos\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "overtrue",
+                    "email": "i@overtrue.me"
+                }
+            ],
+            "description": "Flysystem adapter for the QCloud COS storage.",
+            "support": {
+                "issues": "https://github.com/overtrue/flysystem-cos/issues",
+                "source": "https://github.com/overtrue/flysystem-cos/tree/5.2.0"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/overtrue",
+                    "type": "github"
+                }
+            ],
+            "time": "2025-09-25T04:21:07+00:00"
+        },
+        {
+            "name": "overtrue/laravel-filesystem-cos",
+            "version": "v4.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/overtrue/laravel-filesystem-cos.git",
+                "reference": "b33fdf93ed9ae590e8b41bdd7847a234833f0868"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/overtrue/laravel-filesystem-cos/zipball/b33fdf93ed9ae590e8b41bdd7847a234833f0868",
+                "reference": "b33fdf93ed9ae590e8b41bdd7847a234833f0868",
+                "shasum": ""
+            },
+            "require": {
+                "laravel/framework": "^13.0",
+                "overtrue/flysystem-cos": "^5.1",
+                "php": "^8.3"
+            },
+            "require-dev": {
+                "brainmaestro/composer-git-hooks": "dev-master",
+                "laravel/pint": "^1.29",
+                "mockery/mockery": "^1.6.10",
+                "orchestra/testbench": "^11.0",
+                "phpunit/phpunit": "^12.0"
+            },
+            "type": "library",
+            "extra": {
+                "hooks": {
+                    "pre-push": [
+                        "composer check-style"
+                    ],
+                    "pre-commit": [
+                        "composer check-style"
+                    ]
+                },
+                "laravel": {
+                    "providers": [
+                        "Overtrue\\LaravelFilesystem\\Cos\\CosStorageServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Overtrue\\LaravelFilesystem\\Cos\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "overtrue",
+                    "email": "i@overtrue.me"
+                }
+            ],
+            "description": "A Cos storage filesystem for Laravel.",
+            "support": {
+                "issues": "https://github.com/overtrue/laravel-filesystem-cos/issues",
+                "source": "https://github.com/overtrue/laravel-filesystem-cos/tree/v4.0.0"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/overtrue",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-03-21T14:18:25+00:00"
+        },
+        {
+            "name": "overtrue/qcloud-cos-client",
+            "version": "2.2.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/overtrue/qcloud-cos-client.git",
+                "reference": "e66935db0b5e38f6262cde7feaba76730a92b9c0"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/overtrue/qcloud-cos-client/zipball/e66935db0b5e38f6262cde7feaba76730a92b9c0",
+                "reference": "e66935db0b5e38f6262cde7feaba76730a92b9c0",
+                "shasum": ""
+            },
+            "require": {
+                "ext-dom": "*",
+                "ext-json": "*",
+                "ext-libxml": "*",
+                "ext-simplexml": "*",
+                "guzzlehttp/guzzle": "^7.4",
+                "php": ">=8.0.2",
+                "psr/http-message": "^1.0|^2.0",
+                "thenorthmemory/xml": "^1.0"
+            },
+            "require-dev": {
+                "brainmaestro/composer-git-hooks": "^2.8",
+                "friendsofphp/php-cs-fixer": "^3.5",
+                "laravel/pint": "^1.2",
+                "mockery/mockery": "^1.0",
+                "monolog/monolog": "^2.5",
+                "phpunit/phpunit": "^9.5"
+            },
+            "type": "library",
+            "extra": {
+                "hooks": {
+                    "pre-push": [
+                        "composer test",
+                        "composer check-style"
+                    ],
+                    "pre-commit": [
+                        "composer test",
+                        "composer check-style"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Overtrue\\CosClient\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "overtrue",
+                    "email": "anzhengchao@gmail.com"
+                }
+            ],
+            "description": "Client of QCloud.com COS",
+            "support": {
+                "issues": "https://github.com/overtrue/qcloud-cos-client/issues",
+                "source": "https://github.com/overtrue/qcloud-cos-client/tree/2.2.1"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/overtrue",
+                    "type": "github"
+                }
+            ],
+            "time": "2026-05-22T08:48:02+00:00"
         },
         {
             "name": "paragonie/constant_time_encoding",
@@ -10440,6 +10950,57 @@
             "time": "2026-03-30T13:44:50+00:00"
         },
         {
+            "name": "thenorthmemory/xml",
+            "version": "1.1.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/TheNorthMemory/xml.git",
+                "reference": "6f50c63450a0b098772423f8bdc3c4ad2c4c30bb"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/TheNorthMemory/xml/zipball/6f50c63450a0b098772423f8bdc3c4ad2c4c30bb",
+                "reference": "6f50c63450a0b098772423f8bdc3c4ad2c4c30bb",
+                "shasum": ""
+            },
+            "require": {
+                "ext-libxml": "*",
+                "ext-simplexml": "*",
+                "php": ">=7.1.2"
+            },
+            "require-dev": {
+                "phpstan/phpstan": "^0.12.89 || ^1.0",
+                "phpunit/phpunit": "^7.5 || ^8.5.16 || ^9.3.5"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "TheNorthMemory\\Xml\\": "src/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "Apache-2.0"
+            ],
+            "authors": [
+                {
+                    "name": "James ZHANG",
+                    "homepage": "https://github.com/TheNorthMemory"
+                }
+            ],
+            "description": "A wrapper of the XML parser and builder",
+            "homepage": "https://github.com/TheNorthMemory/xml",
+            "keywords": [
+                "xml-builder",
+                "xml-parser"
+            ],
+            "support": {
+                "issues": "https://github.com/TheNorthMemory/xml/issues",
+                "source": "https://github.com/TheNorthMemory/xml/tree/1.1.1"
+            },
+            "time": "2023-01-15T06:01:13+00:00"
+        },
+        {
             "name": "tijsverkoyen/css-to-inline-styles",
             "version": "v2.4.0",
             "source": {
@@ -15207,10 +15768,19 @@
             "time": "2025-12-08T11:19:18+00:00"
         }
     ],
-    "aliases": [],
+    "aliases": [
+        {
+            "package": "laravelstack/filament-admin",
+            "version": "dev-worktree-agent-a14ee95b4045fec81",
+            "alias": "0.5.0",
+            "alias_normalized": "0.5.0.0"
+        }
+    ],
     "minimum-stability": "stable",
     "stability-flags": {
-        "laravelstack/filament-admin": 20
+        "laravelstack/filament-admin": 20,
+        "laravelstack/filament-admin-cos": 20,
+        "laravelstack/filament-admin-oss": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,
