@@ -1,10 +1,10 @@
 <?php
 
+use Filament\Navigation\NavigationGroup;
+use Filament\Navigation\NavigationItem;
 use FilamentAdmin\Models\AdminUser;
 use FilamentAdmin\Models\Menu;
 use FilamentAdmin\Services\AdminNavigationBuilder;
-use Filament\Navigation\NavigationGroup;
-use Filament\Navigation\NavigationItem;
 use Spatie\Permission\PermissionRegistrar;
 
 beforeEach(function () {
@@ -31,7 +31,7 @@ it('无子项但有 url 的顶级菜单应作为可点击导航项出现', funct
         'sort'            => 1,
     ]);
 
-    $builder = new AdminNavigationBuilder();
+    $builder = new AdminNavigationBuilder;
     $result  = $builder->build($admin);
 
     // 结果应包含该顶级导航项
@@ -89,7 +89,7 @@ it('有子菜单的顶级菜单应渲染为分组且包含子项', function () {
         'sort'            => 1,
     ]);
 
-    $builder = new AdminNavigationBuilder();
+    $builder = new AdminNavigationBuilder;
     $result  = $builder->build($admin);
 
     // 结果应包含该 NavigationGroup
@@ -123,7 +123,7 @@ it('无子项且无 url 的顶级菜单应被跳过', function () {
         'sort'            => 1,
     ]);
 
-    $builder = new AdminNavigationBuilder();
+    $builder = new AdminNavigationBuilder;
     $result  = $builder->build($admin);
 
     // 结果应为空（没有任何导航项）
@@ -159,7 +159,7 @@ it('parent_id 为 NULL 的历史根菜单也应被识别为根（防御性兼容
         'deleted_at'      => null,
     ]);
 
-    $builder = new AdminNavigationBuilder();
+    $builder = new AdminNavigationBuilder;
     $result  = $builder->build($admin);
 
     // null 根菜单也应出现在顶级导航项中

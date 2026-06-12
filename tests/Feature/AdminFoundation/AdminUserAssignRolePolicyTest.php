@@ -3,7 +3,6 @@
 use FilamentAdmin\Database\Seeders\AdminFoundationPermissionSeeder;
 use FilamentAdmin\Models\AdminUser;
 use Illuminate\Support\Facades\Gate;
-use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 

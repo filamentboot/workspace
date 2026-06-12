@@ -100,7 +100,9 @@ class AdminUserResource extends Resource
                     ->multiple()
                     ->searchable()
                     ->preload()
-                    ->visible(fn (): bool => auth('admin')->user()?->can('assign_role_admin_user') ?? false),
+                    // 通过 Gate 调用 AdminUserPolicy::assignRole，不再内联权限字符串
+                    // Policy 签名：assignRole(Authenticatable $user, Model $model)，传 new AdminUser() 作为 model 占位
+                    ->visible(fn (): bool => auth('admin')->user()?->can('assignRole', new AdminUser) ?? false),
             ]);
     }
 
