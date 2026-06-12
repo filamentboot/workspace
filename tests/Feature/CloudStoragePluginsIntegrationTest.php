@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\PluginManager;
 use LaravelStack\FilamentAdminCos\CosPlugin;
 use LaravelStack\FilamentAdminCos\CosServiceProvider;
 use LaravelStack\FilamentAdminCos\Settings\CosSettings;
@@ -98,4 +99,33 @@ it('无凭证时应用正常启动不抛出异常', function () {
 
     // 验证 artisan config:clear 正常运行
     $this->artisan('config:clear')->assertExitCode(0);
+});
+
+it('plugin:scan 发现 OSS 与 COS 两个云存储插件', function () {
+    /** @var PluginManager $pluginManager */
+    $pluginManager = app(PluginManager::class);
+
+    // 执行同步：从 vendor/composer/installed.json 读取 extra.filament-admin 元信息
+    $count = $pluginManager->syncFromInstalled();
+
+    // 验证同步了至少 2 个插件（OSS + COS）
+    expect($count)->toBeGreaterThanOrEqual(2);
+
+    // 验证 OSS 插件记录已写入
+    $ossPlugin = \App\Models\Plugin::where('package_name', 'laravelstack/filament-admin-oss')->first();
+    expect($ossPlugin)->not->toBeNull('期望 filament-admin-oss 插件记录存在');
+    expect($ossPlugin->slug)->toBe('filament-admin-oss');
+    expect($ossPlugin->plugin_class)->not->toBeEmpty('期望 plugin_class 字段非空');
+    expect($ossPlugin->service_provider)->not->toBeEmpty('期望 service_provider 字段非空');
+
+    // 验证 COS 插件记录已写入
+    $cosPlugin = \App\Models\Plugin::where('package_name', 'laravelstack/filament-admin-cos')->first();
+    expect($cosPlugin)->not->toBeNull('期望 filament-admin-cos 插件记录存在');
+    expect($cosPlugin->slug)->toBe('filament-admin-cos');
+    expect($cosPlugin->plugin_class)->not->toBeEmpty('期望 plugin_class 字段非空');
+    expect($cosPlugin->service_provider)->not->toBeEmpty('期望 service_provider 字段非空');
+
+    // 验证 compatibility 字段含 laravel/framework ^13.0
+    expect($ossPlugin->compatibility)->toHaveKey('laravel/framework');
+    expect($cosPlugin->compatibility)->toHaveKey('laravel/framework');
 });
