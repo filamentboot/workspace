@@ -2,7 +2,6 @@
 
 namespace FilamentAdmin\Filament\Resources\Departments;
 
-use App\Enums\AdminUserStatus;
 use BackedEnum;
 use Closure;
 use Filament\Actions\DeleteAction;
@@ -17,6 +16,7 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use FilamentAdmin\Enums\AdminUserStatus;
 use FilamentAdmin\Filament\Resources\Concerns\ReorderableWithLog;
 use FilamentAdmin\Filament\Resources\Departments\Pages\CreateDepartment;
 use FilamentAdmin\Filament\Resources\Departments\Pages\EditDepartment;

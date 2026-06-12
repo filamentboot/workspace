@@ -3,6 +3,7 @@
 use FilamentAdmin\Filament\Resources\Departments\DepartmentResource;
 use FilamentAdmin\Models\AdminUser;
 use FilamentAdmin\Models\Department;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -26,7 +27,7 @@ it('部门排序后写入一条 reordered 活动日志', function () {
     $b = Department::factory()->create(['sort' => 2]);
 
     // 模拟 Filament 拖拽排序：通过反射调用 protected static 方法
-    $ref = new \ReflectionClass(DepartmentResource::class);
+    $ref = new ReflectionClass(DepartmentResource::class);
 
     // beforeReordering：记录排序前快照（a=sort1, b=sort2）
     $remember = $ref->getMethod('rememberReorderSnapshot');
@@ -43,7 +44,7 @@ it('部门排序后写入一条 reordered 活动日志', function () {
     $logActivity->invoke(null, [$b->id, $a->id]);
 
     // 断言 activity_log 表新增了 reordered 事件
-    $log = \Spatie\Activitylog\Models\Activity::query()
+    $log = Activity::query()
         ->where('event', 'reordered')
         ->where('subject_type', Department::class)
         ->latest()
@@ -65,11 +66,11 @@ it('无操作人时 logReorderActivity 不写日志', function () {
     $a = Department::factory()->create(['sort' => 1]);
     $b = Department::factory()->create(['sort' => 2]);
 
-    $initialCount = \Spatie\Activitylog\Models\Activity::query()
+    $initialCount = Activity::query()
         ->where('event', 'reordered')
         ->count();
 
-    $ref = new \ReflectionClass(DepartmentResource::class);
+    $ref = new ReflectionClass(DepartmentResource::class);
 
     $remember = $ref->getMethod('rememberReorderSnapshot');
     $remember->setAccessible(true);
@@ -79,7 +80,7 @@ it('无操作人时 logReorderActivity 不写日志', function () {
     $logActivity->setAccessible(true);
     $logActivity->invoke(null, [$b->id, $a->id]);
 
-    $afterCount = \Spatie\Activitylog\Models\Activity::query()
+    $afterCount = Activity::query()
         ->where('event', 'reordered')
         ->count();
 

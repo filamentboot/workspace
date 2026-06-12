@@ -3,7 +3,6 @@
 use FilamentAdmin\Http\Middleware\EnsureTwoFactorEnabled;
 use FilamentAdmin\Models\AdminUser;
 use FilamentAdmin\Settings\SecuritySettings;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -13,11 +12,10 @@ use Spatie\Permission\PermissionRegistrar;
  * 验证 EnsureTwoFactorEnabled 中间件在 SecuritySettings.force_2fa=true 时
  * 正确拦截未开 2FA 的管理员，并放行登出/2FA设置/个人资料等页面。
  */
-
 beforeEach(function () {
     app(PermissionRegistrar::class)->forgetCachedPermissions();
     // 确保每个测试开始时 force_2fa 为 false（测试隔离）
-    $settings           = app(SecuritySettings::class);
+    $settings            = app(SecuritySettings::class);
     $settings->force_2fa = false;
     $settings->save();
     // 清除 settings 实例缓存
@@ -30,7 +28,7 @@ beforeEach(function () {
 // =============================================================
 it('force_2fa=true 时未开 2FA 的管理员访问后台被重定向到 2FA 设置页', function () {
     // 准备：启用强制 2FA
-    $settings           = app(SecuritySettings::class);
+    $settings            = app(SecuritySettings::class);
     $settings->force_2fa = true;
     $settings->save();
     app()->forgetInstance(SecuritySettings::class);
@@ -44,7 +42,7 @@ it('force_2fa=true 时未开 2FA 的管理员访问后台被重定向到 2FA 设
         ->assertRedirect();
 
     // 验证重定向目标包含 two-factor-setup
-    $response = $this->actingAs($user, 'admin')->get('/admin');
+    $response       = $this->actingAs($user, 'admin')->get('/admin');
     $redirectTarget = $response->headers->get('Location');
     expect($redirectTarget)->toContain('two-factor-setup');
 });
@@ -54,7 +52,7 @@ it('force_2fa=true 时未开 2FA 的管理员访问后台被重定向到 2FA 设
 //           同时验证访问登出路由也被放行
 // =============================================================
 it('force_2fa=true 时未开 2FA 的管理员访问 2FA 设置页不被拦截（防锁死）', function () {
-    $settings           = app(SecuritySettings::class);
+    $settings            = app(SecuritySettings::class);
     $settings->force_2fa = true;
     $settings->save();
     app()->forgetInstance(SecuritySettings::class);
@@ -68,7 +66,7 @@ it('force_2fa=true 时未开 2FA 的管理员访问 2FA 设置页不被拦截（
 });
 
 it('force_2fa=true 时未开 2FA 的管理员访问 Profile 页不被拦截（防锁死）', function () {
-    $settings           = app(SecuritySettings::class);
+    $settings            = app(SecuritySettings::class);
     $settings->force_2fa = true;
     $settings->save();
     app()->forgetInstance(SecuritySettings::class);
@@ -87,7 +85,7 @@ it('force_2fa=true 时未开 2FA 的管理员访问 Profile 页不被拦截（�
 // 本用例验证：重定向目标不含 two-factor-setup（即不被我们的中间件拦截）
 // =============================================================
 it('force_2fa=true 时已开 2FA 的管理员不被重定向到 2FA 设置页（EnsureTwoFactorEnabled 放行）', function () {
-    $settings           = app(SecuritySettings::class);
+    $settings            = app(SecuritySettings::class);
     $settings->force_2fa = true;
     $settings->save();
     app()->forgetInstance(SecuritySettings::class);
@@ -112,7 +110,7 @@ it('force_2fa=true 时已开 2FA 的管理员不被重定向到 2FA 设置页（
 // 用例 D：force_2fa=true + 超管未开 2FA → 同样被拦（D-04 不豁免）
 // =============================================================
 it('force_2fa=true 时超管未开 2FA 也被拦截（不豁免）', function () {
-    $settings           = app(SecuritySettings::class);
+    $settings            = app(SecuritySettings::class);
     $settings->force_2fa = true;
     $settings->save();
     app()->forgetInstance(SecuritySettings::class);
