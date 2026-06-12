@@ -74,7 +74,11 @@ class PluginManager
             }
 
             $packageName = $pkg['name'];
-            $slug        = $meta['slug'] ?? str($packageName)->afterLast('/')->value();
+            // slug 降级包含 vendor 前缀以避免唯一约束冲突（WR-03 修复）：
+            // vendor-a/my-plugin 与 vendor-b/my-plugin 均缺省 slug 时，
+            // afterLast('/') 均得到 my-plugin，触发 UNIQUE 约束违反。
+            // 改为 replace('/', '-') 得到 vendor-a-my-plugin 确保唯一性。
+            $slug        = $meta['slug'] ?? str($packageName)->replace('/', '-')->value();
 
             // 预查询已有记录，用于保留 installed_at（幂等：首次写入 now()，重复扫描保留原值）
             // CR-01 修复：updateOrCreate 属性数组不可含 Closure，否则 preg_match 收到 Closure 抛 TypeError
