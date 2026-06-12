@@ -1,0 +1,81 @@
+{
+    "$schema": "https://getcomposer.org/schema.json",
+    "name": "laravelstack/filament-admin-cos",
+    "description": "腾讯云 COS 存储插件：为 laravelstack/filament-admin 提供 COS 凭证后台配置与 Flysystem 磁盘注入。",
+    "type": "library",
+    "license": "MIT",
+    "keywords": ["filament", "laravel", "cos", "tencent", "storage", "filament-plugin", "cloud-storage", "admin-panel"],
+    "homepage": "https://github.com/john-captain/filament-admin",
+    "authors": [
+        {
+            "name": "johncaptain",
+            "email": "JasonTodd0521@gmail.com",
+            "role": "developer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/john-captain/filament-admin/issues",
+        "source": "https://github.com/john-captain/filament-admin",
+        "docs": "https://github.com/john-captain/filament-admin/blob/main/wiki/cos-plugin.md",
+        "wiki": "https://github.com/john-captain/filament-admin/tree/main/wiki"
+    },
+    "require": {
+        "php": "^8.3",
+        "filament/spatie-laravel-settings-plugin": "^5.6",
+        "laravelstack/filament-admin": "^0.5",
+        "overtrue/laravel-filesystem-cos": "^4.0",
+        "spatie/laravel-settings": "^3.9"
+    },
+    "require-dev": {
+        "larastan/larastan": "^3.0",
+        "laravel/pint": "^1.27",
+        "orchestra/testbench": "^11.0",
+        "phpunit/phpunit": "^12.5.12"
+    },
+    "autoload": {
+        "psr-4": {
+            "LaravelStack\\FilamentAdminCos\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "LaravelStack\\FilamentAdminCos\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "LaravelStack\\FilamentAdminCos\\CosServiceProvider"
+            ]
+        },
+        "filament-admin": {
+            "slug": "filament-admin-cos",
+            "name": "腾讯云 COS 存储",
+            "type": "package",
+            "source": "official_listed",
+            "plugin_class": "LaravelStack\\FilamentAdminCos\\CosPlugin",
+            "service_provider": "LaravelStack\\FilamentAdminCos\\CosServiceProvider",
+            "description": "腾讯云对象存储（COS）驱动插件，支持超管在后台直接配置凭证，无需修改 .env 文件。",
+            "requires": [],
+            "compatibility": {
+                "laravel/framework": "^13.0",
+                "filament/filament": "^5.0"
+            }
+        },
+        "branch-alias": {
+            "dev-main": "0.5.x-dev"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit -c phpunit.xml.dist",
+        "test-coverage": "vendor/bin/phpunit -c phpunit.xml.dist --coverage-clover=coverage.xml",
+        "phpstan": "vendor/bin/phpstan analyse --memory-limit=2G",
+        "pint": "vendor/bin/pint",
+        "pint:test": "vendor/bin/pint --test"
+    },
+    "config": {
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
