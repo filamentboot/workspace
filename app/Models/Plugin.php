@@ -19,7 +19,8 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string                   $name
  * @property string                   $kind            package | solution_plugin
  * @property string                   $source          official_trusted | official_listed | community
- * @property string|null              $plugin_class
+ * @property string|null              $plugin_class      Filament Plugin 接口实现类名
+ * @property string|null              $service_provider  ServiceProvider 子类名（供 vendor:publish 使用）
  * @property string|null              $installed_version
  * @property string|null              $description
  * @property array<string, mixed>|null $requires
@@ -46,6 +47,7 @@ class Plugin extends Model
         'kind',
         'source',
         'plugin_class',
+        'service_provider',
         'installed_version',
         'description',
         'requires',

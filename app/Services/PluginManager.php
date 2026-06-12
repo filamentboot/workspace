@@ -87,6 +87,10 @@ class PluginManager
                     'name'              => $meta['name'] ?? $packageName,
                     'kind'              => $meta['type'] ?? 'package',
                     'plugin_class'      => $meta['plugin_class'] ?? null,
+                    // service_provider 与 plugin_class 分离（WR-02 修复）：
+                    // plugin_class 是 Filament Plugin 接口实现，
+                    // service_provider 是 ServiceProvider 子类（供 vendor:publish 使用）
+                    'service_provider'  => $meta['service_provider'] ?? null,
                     'installed_version' => $pkg['version'] ?? null,
                     'description'       => $meta['description'] ?? null,
                     'requires'          => $meta['requires'] ?? [],
@@ -158,18 +162,33 @@ class PluginManager
 
     /**
      * 发布插件资源（拆为独立方法便于测试 mock）
+     *
+     * vendor:publish --provider 期望接收 ServiceProvider 子类，
+     * plugin_class 存储的是 Filament Plugin 接口实现，两者不同（WR-02 修复）。
+     * 插件须在 extra.filament-admin 中额外声明 service_provider 字段，
+     * 若未声明则记录说明日志并跳过，避免 PublishCommand 静默空输出。
      */
     protected function runPublish(string $slug, Plugin $plugin): void
     {
-        // 仅当插件声明了 provider 时才发布资源（初始化命令参数来自 Plugin 声明，T-06-07 缓解）
-        if (! $plugin->plugin_class) {
-            $this->appendInitLog($slug, '无 plugin_class 声明，跳过资源发布。');
+        // 优先取 service_provider 字段（ServiceProvider 类名，供 vendor:publish 使用）
+        // plugin_class 是 Filament Plugin 接口实现，不是 ServiceProvider，无法作 --provider 参数
+        $serviceProvider = $plugin->service_provider ?? null;
+
+        if (! $serviceProvider) {
+            $this->appendInitLog($slug, '无 service_provider 声明，跳过资源发布。');
+
+            return;
+        }
+
+        // 安全守卫：仅允许已注册的 ServiceProvider 子类，防止任意类被注入
+        if (! is_subclass_of($serviceProvider, \Illuminate\Support\ServiceProvider::class)) {
+            $this->appendInitLog($slug, "service_provider '{$serviceProvider}' 不是有效的 ServiceProvider，跳过资源发布。");
 
             return;
         }
 
         Artisan::call('vendor:publish', [
-            '--provider' => $plugin->plugin_class,
+            '--provider' => $serviceProvider,
             '--force'    => true,
         ]);
         $this->appendInitLog($slug, '资源发布完成：' . trim(Artisan::output()));
