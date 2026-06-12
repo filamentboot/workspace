@@ -192,12 +192,14 @@ class MenuResource extends Resource
                         ->label('批量启用')
                         ->icon('heroicon-o-check-circle')
                         ->color('success')
+                        ->visible(fn (): bool => auth('admin')->user()?->can('update_menu') ?? false)
                         ->requiresConfirmation()
                         ->action(fn (Collection $records) => $records->each->update(['is_active' => true])),
                     BulkAction::make('disable')
                         ->label('批量禁用')
                         ->icon('heroicon-o-x-circle')
                         ->color('warning')
+                        ->visible(fn (): bool => auth('admin')->user()?->can('update_menu') ?? false)
                         ->requiresConfirmation()
                         ->action(fn (Collection $records) => $records->each->update(['is_active' => false])),
                     DeleteBulkAction::make(),
