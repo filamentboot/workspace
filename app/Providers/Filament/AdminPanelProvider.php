@@ -4,6 +4,7 @@ namespace App\Providers\Filament;
 
 use AlizHarb\ActivityLog\ActivityLogPlugin;
 use App\Filament\Pages\Marketplace\MarketplacePage;
+use App\Filament\Resources\PluginResource;
 use App\Models\Plugin;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
 use Filament\Facades\Filament;
@@ -79,6 +80,9 @@ class AdminPanelProvider extends PanelProvider
                 return (new NavigationBuilder)
                     ->groups($builder->build($user instanceof AdminUser ? $user : null));
             })
+            ->resources([
+                PluginResource::class,  // 显式注册插件资源（修复 SC-1 路由缺失）
+            ])
             ->pages([
                 Dashboard::class,
                 MarketplacePage::class,

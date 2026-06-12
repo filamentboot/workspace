@@ -123,6 +123,9 @@ class AdminFoundationMenuSeeder extends Seeder
 
         // 第六步：在"系统管理"组下添加媒体库菜单
         $this->seedMediaMenu($systemGroup->id);
+
+        // 第七步：确保顶层分组"插件市场"及其子菜单存在（SC-1 兜底 fallback）
+        $this->seedPluginMarketplaceMenus();
     }
 
     /**
@@ -271,6 +274,77 @@ class AdminFoundationMenuSeeder extends Seeder
                 'target'          => 'self',
             ],
         ];
+    }
+
+    /**
+     * 确保顶层分组"插件市场"及子菜单存在（SC-1 兜底 fallback）
+     *
+     * 子菜单 route_name 补全显式值：
+     * - 官方市场 → filament.admin.pages.marketplace
+     * - 已安装插件 → filament.admin.resources.plugins.index
+     * 使 AdminNavigationBuilder 可通过 resolveUrl 直接渲染，无需依赖面板补全逻辑。
+     */
+    private function seedPluginMarketplaceMenus(): void
+    {
+        $pluginGroup = Menu::query()->updateOrCreate(
+            ['title' => '插件市场', 'source' => 'core', 'type' => 'menu', 'parent_id' => 0],
+            [
+                'icon'            => 'heroicon-o-puzzle-piece',
+                'route_name'      => null,
+                'url'             => null,
+                'permission_name' => null,
+                'sort'            => 30,
+                'is_active'       => true,
+                'target'          => 'self',
+                'source'          => 'core',
+                'type'            => 'menu',
+                'parent_id'       => 0,
+            ],
+        );
+
+        // 官方市场子菜单 - route_name 显式补全（兜底 fallback）
+        Menu::query()->updateOrCreate(
+            [
+                'title'     => '浏览官方市场',
+                'source'    => 'core',
+                'type'      => 'menu',
+                'parent_id' => $pluginGroup->id,
+            ],
+            [
+                'icon'            => 'heroicon-o-shopping-bag',
+                'route_name'      => 'filament.admin.pages.marketplace',
+                'url'             => null,
+                'sort'            => 10,
+                'permission_name' => null,
+                'is_active'       => true,
+                'target'          => 'self',
+                'source'          => 'core',
+                'type'            => 'menu',
+                'parent_id'       => $pluginGroup->id,
+            ],
+        );
+
+        // 已安装插件子菜单 - route_name 显式补全（兜底 fallback）
+        Menu::query()->updateOrCreate(
+            [
+                'title'     => '已安装插件',
+                'source'    => 'core',
+                'type'      => 'menu',
+                'parent_id' => $pluginGroup->id,
+            ],
+            [
+                'icon'            => 'heroicon-o-puzzle-piece',
+                'route_name'      => 'filament.admin.resources.plugins.index',
+                'url'             => null,
+                'sort'            => 20,
+                'permission_name' => 'view_any_plugin',
+                'is_active'       => true,
+                'target'          => 'self',
+                'source'          => 'core',
+                'type'            => 'menu',
+                'parent_id'       => $pluginGroup->id,
+            ],
+        );
     }
 
     /**
