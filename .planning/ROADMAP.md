@@ -251,7 +251,25 @@ Plans:
 10. 普通管理员访问部门列表、菜单列表时，仅能看到自己权限范围内的数据；`DepartmentResource::getEloquentQuery()` 和 `MenuResource::getEloquentQuery()` 补充数据范围过滤；超管不受限制（AdminUserResource/LoginLogResource 已有类似实现可参考）
 11. `CleanActivityLogs::handle()` 和 `CleanLoginLogs::handle()` 改从 `LogSettings` 读取保留天数（`$settings->activity_log_retention_days`、`$settings->login_log_retention_days`），`--days` 参数保留作为覆盖值
 
-**Plans**: TBD
+**Plans**: 6 plans
+Plans:
+**Wave 1**
+
+- [ ] 07-01-PLAN.md — FIX-01/04/07：顶级导航组处理 + 删 LoginLogResource 冗余 form() + 角色分配改调 AdminUserPolicy
+- [ ] 07-02-PLAN.md — FIX-02：菜单 link_type 落库（menus 加列 + Menu 属性/cast + MenuResource Radio 去 dehydrated）
+
+**Wave 2** *(blocked on 07-02 — 共享 MenuResource.php)*
+
+- [ ] 07-03-PLAN.md — FIX-03/05/06：菜单批量启停加权限 + 抽 ReorderableWithLog Trait + DepartmentResource 补 ViewDepartment 页
+
+**Wave 3** *(blocked on FIX 批完成 — D-10 先 FIX 后 POLISH)*
+
+- [ ] 07-04-PLAN.md — POLISH-04 日志清理读 LogSettings + POLISH-01 管理员密码重置闭环（admin_users broker）
+
+**Wave 4**
+
+- [ ] 07-05-PLAN.md — POLISH-03：部门列表数据范围（本部门+子树，菜单不做范围过滤，per D-03）
+- [ ] 07-06-PLAN.md — POLISH-02：强制 2FA（超管也强制 per D-04，Filament panel 认证钩子拦截）
 
 ---
 
