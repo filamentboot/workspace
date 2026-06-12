@@ -53,6 +53,13 @@
             "options": {
                 "symlink": true
             }
+        },
+        {
+            "type": "path",
+            "url": "packages/filament-admin-cos",
+            "options": {
+                "symlink": true
+            }
         }
     ],
     "require-dev": {
@@ -75,7 +82,8 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/",
-            "LaravelStack\\FilamentAdminOss\\": "packages/filament-admin-oss/src/"
+            "LaravelStack\\FilamentAdminOss\\": "packages/filament-admin-oss/src/",
+            "LaravelStack\\FilamentAdminCos\\": "packages/filament-admin-cos/src/"
         }
     },
     "autoload-dev": {

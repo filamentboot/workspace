@@ -14,6 +14,9 @@
         <testsuite name="OssUnit">
             <directory>packages/filament-admin-oss/tests/Unit</directory>
         </testsuite>
+        <testsuite name="CosUnit">
+            <directory>packages/filament-admin-cos/tests/Unit</directory>
+        </testsuite>
     </testsuites>
     <source>
         <include>
