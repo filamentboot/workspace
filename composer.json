@@ -40,6 +40,13 @@
             "options": {
                 "symlink": true
             }
+        },
+        {
+            "type": "path",
+            "url": "packages/filament-admin-oss",
+            "options": {
+                "symlink": true
+            }
         }
     ],
     "require-dev": {
@@ -60,12 +67,14 @@
         "psr-4": {
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
-            "Database\\Seeders\\": "database/seeders/"
+            "Database\\Seeders\\": "database/seeders/",
+            "LaravelStack\\FilamentAdminOss\\": "packages/filament-admin-oss/src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "Tests\\": "tests/"
+            "Tests\\": "tests/",
+            "LaravelStack\\FilamentAdminOss\\Tests\\": "packages/filament-admin-oss/tests/"
         }
     },
     "scripts": {
