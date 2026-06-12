@@ -4,6 +4,7 @@ namespace LaravelStack\FilamentAdminOss;
 
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Filesystem\FilesystemAdapter;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\ServiceProvider;
 use LaravelStack\FilamentAdminOss\Settings\OssSettings;
@@ -45,6 +46,18 @@ class OssServiceProvider extends ServiceProvider
         // 从 OssSettings 读取凭证，注入 filesystems.disks.oss 运行时配置
         // try/catch 防止 settings 表未迁移时崩溃（Pitfall 2，T-08-02）
         try {
+            // D-08-10：仅当插件在后台启用时才注入磁盘配置
+            $isEnabled = DB::table('plugins')
+                ->where('slug', 'filament-admin-oss')
+                ->where('is_enabled', true)
+                ->exists();
+
+            if (! $isEnabled) {
+                $this->registerMigrations();
+
+                return;
+            }
+
             /** @var OssSettings $settings */
             $settings = app(OssSettings::class);
 

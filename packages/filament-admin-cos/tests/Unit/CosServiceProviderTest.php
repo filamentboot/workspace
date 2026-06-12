@@ -42,11 +42,16 @@ class CosServiceProviderTest extends TestCase
 
         // 使 app() / config() 辅助函数指向此 application
         Application::setInstance($this->app);
+
+        // 清除 Facade 静态缓存，确保 DB facade 使用本测试的 Application
+        \Illuminate\Support\Facades\Facade::clearResolvedInstances();
+        \Illuminate\Support\Facades\Facade::setFacadeApplication($this->app);
     }
 
     protected function tearDown(): void
     {
         parent::tearDown();
+        \Illuminate\Support\Facades\Facade::clearResolvedInstances();
         Application::setInstance(null);
     }
 
@@ -70,9 +75,31 @@ class CosServiceProviderTest extends TestCase
 
     /**
      * 凭证完整时，boot 后 filesystems.disks.cos.driver 应为 'cos'
+     *
+     * 使用匿名类 mock `db` 服务，模拟 plugins 表中 filament-admin-cos 已启用（D-08-10）。
      */
     public function test_cos_disk_config_injected_when_credentials_present(): void
     {
+        // Mock DB facade：模拟 DB::table('plugins')->where()->where()->exists() 返回 true
+        $this->app->instance('db', new class {
+            /** @phpstan-ignore-next-line */
+            public function table(string $table): static
+            {
+                return $this;
+            }
+
+            /** @phpstan-ignore-next-line */
+            public function where(string $column, mixed $value): static
+            {
+                return $this;
+            }
+
+            public function exists(): bool
+            {
+                return true;
+            }
+        });
+
         $this->app->instance(CosSettings::class, $this->makeCosSettingsStub());
 
         $provider = new CosServiceProvider($this->app);

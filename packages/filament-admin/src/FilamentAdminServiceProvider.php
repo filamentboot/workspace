@@ -318,7 +318,7 @@ class FilamentAdminServiceProvider extends ServiceProvider
 
                         try {
                             $validator->validate($file);
-                        } catch (\InvalidArgumentException $e) {
+                        } catch (\RuntimeException $e) {
                             $component->state(null);
                             $component->callAfterStateUpdated();
                             throw \Filament\Support\Exceptions\Halt::make($e->getMessage());

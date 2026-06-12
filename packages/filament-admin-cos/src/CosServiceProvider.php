@@ -2,6 +2,7 @@
 
 namespace LaravelStack\FilamentAdminCos;
 
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use LaravelStack\FilamentAdminCos\Settings\CosSettings;
 
@@ -35,6 +36,18 @@ class CosServiceProvider extends ServiceProvider
         // 从 CosSettings 读取凭证并注入 filesystems.disks.cos 磁盘配置
         // try/catch 防止 settings 表未迁移时崩溃（Pitfall 2）
         try {
+            // D-08-10：仅当插件在后台启用时才注入磁盘配置
+            $isEnabled = DB::table('plugins')
+                ->where('slug', 'filament-admin-cos')
+                ->where('is_enabled', true)
+                ->exists();
+
+            if (! $isEnabled) {
+                $this->registerMigrations();
+
+                return;
+            }
+
             /** @var CosSettings $settings */
             $settings = app(CosSettings::class);
 

@@ -2,55 +2,66 @@
 gsd_state_version: 1.0
 milestone: v0.5
 milestone_name: milestone
-status: Executing Phase 07
-last_updated: "2026-06-12T06:03:48.666Z"
+status: executing
+stopped_at: Phase 08 规划完成（4 plans，Wave 1-3），ready to execute
+last_updated: "2026-06-12T09:24:13.797Z"
 progress:
   total_phases: 12
-  completed_phases: 6
-  total_plans: 35
-  completed_plans: 29
-  percent: 50
+  completed_phases: 7
+  total_plans: 39
+  completed_plans: 35
+  percent: 58
 ---
 
 # Project State: FilamentAdmin v0.5
 
 **Milestone:** v0.5 — 让主包"全部完成"形态
 **Project:** laravelstack/filament-admin
-**Last updated:** 2026-06-10
+**Last updated:** 2026-06-12
 
 ---
 
 ## Project Reference
 
+See: .planning/PROJECT.md (updated 2026-06-12)
+
 **Core value:** 别人执行 `composer require laravelstack/filament-admin` 后能开箱运行、能扩展定制、能稳定升级，且包发布形态符合 Laravel 开源市场规范
 
-**Current focus:** Phase 07 — quality-foundation
+**Current focus:** Phase 08 — cloud-storage-plugins
 
 ---
 
 ## Current Position
 
-Phase: 07 (quality-foundation) — EXECUTING
-Plan: 1 of 6
+Phase: 08 (cloud-storage-plugins) — EXECUTING
+Plan: 1 of 4
+Status: Executing Phase 08
 
 ```
-current_phase:   6
-current_plan:    4
-current_status:  phase-complete
-last_updated:    2026-06-11
-stopped_at:      Phase 06 Plan 04 全部完成（3 tasks, 169 tests passed）
+current_phase:   8
+current_plan:    0
+current_status:  planned
+last_updated:    2026-06-12
+stopped_at:      Phase 07 全部 6 Plan 完成（FIX-01~07 + POLISH-01~04，202 tests passed，UAT 3/3 通过）
 ```
 
 **Progress bar:**
 
 ```
-Phase 1 [##########] 100%  包发布合规（完成）
-Phase 2 [##########] 100%  文档与品宣（全部完成，3/3）
-Phase 3 [##########] 100%  包功能补强（全部完成，4/4）
-Phase 4 [##########] 100%  发布自动化（全部完成，4/4）✓
-Phase 5 [##########] 100%  演示站 (v0.5.1) ✓
+Phase 01 [##########] 100%  包发布合规（6/6）✓
+Phase 02 [##########] 100%  文档与品宣（3/3）✓
+Phase 03 [##########] 100%  包功能补强（4/4）✓
+Phase 04 [##########] 100%  发布自动化（4/4）✓
+Phase 05 [##########] 100%  演示站（4/4）✓
+Phase 06 [##########] 100%  插件市场启动（4/4）✓
+Phase 07 [##########] 100%  质量基座（6/6）✓
+Phase 08 [          ]   0%  云存储插件（已规划，4 plans，Wave 1-3）
+Phase 09 [          ]   0%  编辑器插件（待规划）
+Phase 10 [          ]   0%  官网插件（待规划）
+Phase 11 [          ]   0%  代码整理收尾（待规划）
+Phase 12 [          ]   0%  发版与仓库整理（待规划）
 
-Overall [##########] 100%  (5/5 phases 完成，v0.5 全部完成) ✓
+Overall  [#######   ]  58%  (7/12 phases, 35/35 plans)
 ```
 
 ---
@@ -112,34 +123,36 @@ requirements_done:  0 / 30  (COMPLY-01~09 工程落地，测试/文档验收后�
 
 ### Critical Facts
 
-- 主包当前状态：ServiceProvider **5 个 `publishes()` 已注册（Plan 01-03 完成）**，PublishCommand **真实实现（Plan 01-04 完成）**
-- Phase 1 是阻塞项：未完成前不能发 v0.5
-- Phase 5 (演示站) 不阻塞 v0.5 主线，可在 Phase 4 完成后 / v0.5.0 发版后独立推进
-- 串行执行：Phase 1 → 2 → 3 → 4 → 5（不并行）
+- 主包当前状态：ServiceProvider 5 个 `publishes()` 已注册，PublishCommand 真实实现，EnsureTwoFactorEnabled 中间件已注册
+- Phase 07 已通过 UAT（3/3 passed，202 tests）
+- 已知旁置 bug：parent_id=0 根菜单通过 Filament 表单保存报 relationship() validation error，推迟 Phase 11 修复
 - 工具链：PHP 8.3+, Laravel 13.x, Filament 5.x
 - CI：包 CI 用 `packages/filament-admin/.github/workflows/ci.yml`，根 CI 用根目录 workflows
 - 默认账号：`admin@example.com / password`（SuperAdminSeeder 创建）
 
 ### Active Blockers
 
-无（Phase 1 待开始）
+无
 
-### Todos
+### Recent Decisions（Phase 07）
 
-- [ ] 开始 Phase 1：先写 `/gsd-plan-phase 1` 生成执行计划
-- [ ] Phase 1 完成后验证 5 个 vendor:publish tag 全部可用
+- EnsureTwoFactorEnabled 中间件走 Filament panel authMiddleware（非 route group），白名单放行登出/2FA设置/个人资料
+- force_2fa=true 时超管未开 2FA 同样被拦（D-04 不豁免超管）
+- DepartmentResource.php namespace 修复：从 App\Enums\AdminUserStatus → FilamentAdmin\Enums\AdminUserStatus
+- ReorderableWithLog Trait 抽取：避免部门/菜单 reorder 日志逻辑重复
 
 ---
 
 ## Session Continuity
 
-**上次工作:** 2026-06-11 — 06-04 全部完成（3 tasks，commits 0797121 / f0db263 / b635d6c）：PluginPolicy、PluginResource、ViewPlugin、MarketplacePage、AdminPanelProvider registerEnabledPlugins、FakeFilamentPlugin stub、PluginPanelRegistrationTest 转真，全套 169 tests passed。
-
-**下次启动时:** Phase 06 全部 4 个 Plan 已完成，可启动验收（手测）或进入下一阶段。
+Last session: 2026-06-12
+Stopped at: Phase 08 规划完成（4 plans，Wave 1-3），ready to execute
+Resume file: None
 
 **未解决问题:**
 
 - 登录页截图（art/login.png）待用户后补，README 已留显式 TODO 占位
+- parent_id=0 根菜单表单保存 bug → Phase 11
 
 ---
 

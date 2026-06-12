@@ -17,7 +17,7 @@
 - [x] **Phase 5: 演示站** — demo.xitongapp.com 部署 + 数据重置 cron + 高危操作屏蔽，先拿出看得见的成果 (completed 2026-06-11)
 - [x] **Phase 6: 插件市场 + 对外展示** — 启停控制、安装链路、安全校验、市场数据边界 + 官网、Release Notes、CI audit（计划全部完成，待人工验证 2 项 UI 行为） (completed 2026-06-12)
 - [x] **Phase 7: 质量基座** — 7个Bug修复 + 4项一期补缺（密码重置/2FA强制/数据权限/日志策略） (completed 2026-06-12)
-- [ ] **Phase 8: 云存储插件** — 阿里云 OSS + 腾讯云 COS Filament 插件
+- [x] **Phase 8: 云存储插件** — 阿里云 OSS + 腾讯云 COS Filament 插件 (completed 2026-06-12)
 - [ ] **Phase 9: 编辑器插件** — 富文本编辑器 + Markdown 编辑器 Filament 插件
 - [ ] **Phase 10: 官网插件** — 普通企业官网插件，页面管理、文章/产品发布、SEO、主题切换
 - [ ] **Phase 11: 代码整理收尾** — 基于已开发功能和所有已知 Bug，全面审查整理代码、修复问题、统一风格
@@ -291,13 +291,16 @@ Plans:
 Plans:
 **Wave 1**
 
-- [ ] 08-01-PLAN.md — 阿里云 OSS 插件包（composer 契约 + OssSettings 加密 + OssSettingsPage + Storage::extend('oss')）（CLOUD-01）
-- [ ] 08-02-PLAN.md — 腾讯云 COS 插件包（composer 契约 + CosSettings 加密 + CosSettingsPage + cos 磁盘注入）（CLOUD-02）
+- [x] 08-01-PLAN.md — 阿里云 OSS 插件包（composer 契约 + OssSettings 加密 + OssSettingsPage + Storage::extend('oss')）（CLOUD-01）
+- [x] 08-02-PLAN.md — 腾讯云 COS 插件包（composer 契约 + CosSettings 加密 + CosSettingsPage + cos 磁盘注入）（CLOUD-02）
 
 **Wave 2** *(blocked on 08-01 + 08-02)*
 
-- [ ] 08-03-PLAN.md — 上传安全校验 UploadValidator（扩展名黑名单 + finfo MIME + 大小，联动 UploadSettings）+ UploadSettingsPage 动态磁盘选项（CLOUD-01/02，type: tdd）
-- [ ] 08-04-PLAN.md — Monorepo 集成（根 composer.json repositories + config/settings.php 注册 + 集成测试 + plugin:scan 发现）（CLOUD-01/02）
+- [x] 08-03-PLAN.md — 上传安全校验 UploadValidator（扩展名黑名单 + finfo MIME + 大小，联动 UploadSettings）+ UploadSettingsPage 动态磁盘选项 + medialibrary 磁盘同步（CLOUD-01/02，type: tdd）
+
+**Wave 3** *(blocked on 08-01 + 08-02 + 08-03)*
+
+- [x] 08-04-PLAN.md — Monorepo 集成（根 composer.json repositories + config/settings.php 注册 + 集成测试 + plugin:scan 发现 + medialibrary 端到端断言）（CLOUD-01/02）
 
 ---
 
@@ -387,7 +390,7 @@ Plans:
 | 5. 演示站 | 4/4 | Complete    | 2026-06-11 |
 | 6. 插件市场 + 对外展示 | 6/6 | Complete   | 2026-06-12 |
 | 7. 质量基座 | 6/6 | Complete    | 2026-06-12 |
-| 8. 云存储插件 | 0/? | Not started | - |
+| 8. 云存储插件 | 4/4 | Complete   | 2026-06-12 |
 | 9. 编辑器插件 | 0/? | Not started | - |
 | 10. 官网插件 | 0/? | Not started | - |
 | 11. 代码整理收尾 | 0/? | Not started | - |

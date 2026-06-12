@@ -52,6 +52,19 @@ FilamentAdmin 是对标 FastAdmin / laravel-admin 的 Laravel 13 + Filament 5 �
 
 按 phase 分组（具体 REQ-ID 映射在 REQUIREMENTS.md，phase 顺序在 ROADMAP.md）：
 
+**Phase 7 — 质量基座** ✓ 完成（2026-06-12，Validated in Phase 7）
+- ✓ FIX-01: NavigationBuilder 多余「设置」项修复 — Phase 7
+- ✓ FIX-02: 菜单 link_type 字段不持久化修复 — Phase 7
+- ✓ FIX-03: 批量操作权限拦截修复 — Phase 7
+- ✓ FIX-04: LoginLog 外键冗余 admin_user_id 移除 — Phase 7
+- ✓ FIX-05: 部门/菜单排序日志抽取为 ReorderableWithLog Trait — Phase 7
+- ✓ FIX-06: DepartmentResource 补 ViewDepartment 页 — Phase 7
+- ✓ FIX-07: RolePolicy 补 viewAny/view 方法修复 — Phase 7
+- ✓ POLISH-01: Filament 密码重置 `->passwordReset()` 接入 — Phase 7
+- ✓ POLISH-02: EnsureTwoFactorEnabled 中间件（force_2fa=true 强制拦截）— Phase 7
+- ✓ POLISH-03: DepartmentResource 数据权限 scopeQuery 注入 — Phase 7
+- ✓ POLISH-04: 操作日志清理命令 + LogSettings 保留天数策略 — Phase 7
+
 **Phase 1 — 包发布合规** ✓ 完成（2026-06-10，Validated in Phase 1）
 - [x] 主包 ServiceProvider 提供 5 个 `publishes()` 出口（config / migrations / views / lang / stubs），让用户 `vendor:publish` 可用 — COMPLY-01
 - [x] `PublishCommand` 真实实现 stub 复制能力（`--model=X --resource=Y --all`），兑现文档承诺（D1 选 A）— COMPLY-02
@@ -221,4 +234,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-06-10 — Phase 2（文档与品宣）完成，DOC-01~08 全部交付*
+*Last updated: 2026-06-12 — Phase 7（质量基座）完成，FIX-01~07 + POLISH-01~04 全部交付；发现旁置 bug：parent_id=0 根菜单无法通过 Filament 表单保存（relationship() 验证失败），已推迟至 Phase 11*
