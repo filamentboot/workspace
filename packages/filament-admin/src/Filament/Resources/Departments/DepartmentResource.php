@@ -17,12 +17,12 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use FilamentAdmin\Filament\Resources\Concerns\ReorderableWithLog;
 use FilamentAdmin\Filament\Resources\Departments\Pages\CreateDepartment;
 use FilamentAdmin\Filament\Resources\Departments\Pages\EditDepartment;
 use FilamentAdmin\Filament\Resources\Departments\Pages\ListDepartments;
 use FilamentAdmin\Filament\Resources\Departments\Pages\ViewDepartment;
 use FilamentAdmin\Models\Department;
-use FilamentAdmin\Services\ActivityLogger;
 use FilamentAdmin\Services\DepartmentTree;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -33,6 +33,8 @@ use UnitEnum;
  */
 class DepartmentResource extends Resource
 {
+    use ReorderableWithLog;
+
     protected static ?string $model = Department::class;
 
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-building-office';
@@ -155,66 +157,6 @@ class DepartmentResource extends Resource
             'edit'   => EditDepartment::route('/{record}/edit'),
             'view'   => ViewDepartment::route('/{record}'),
         ];
-    }
-
-    /**
-     * 缓存排序前快照
-     *
-     * @param  array<int, string|int>  $order
-     */
-    protected static function rememberReorderSnapshot(array $order): void
-    {
-        request()->attributes->set('department_reorder_before', static::buildReorderSnapshot($order));
-    }
-
-    /**
-     * 记录部门排序日志
-     *
-     * @param  array<int, string|int>  $order
-     */
-    protected static function logReorderActivity(array $order): void
-    {
-        $logger = app(ActivityLogger::class);
-        $causer = $logger->currentCauser();
-        $record = Department::query()->find($order[0] ?? null);
-
-        if (! $causer || ! $record) {
-            return;
-        }
-
-        $before = request()->attributes->get('department_reorder_before', []);
-        $after  = static::buildReorderSnapshot($order);
-
-        $logger->logChanges(
-            causer: $causer,
-            subject: $record,
-            action: 'reordered',
-            before: ['order' => $before],
-            after: ['order' => $after],
-        );
-    }
-
-    /**
-     * 构建排序快照
-     *
-     * @param  array<int, string|int>  $order
-     * @return array<int, array<string, mixed>>
-     */
-    protected static function buildReorderSnapshot(array $order): array
-    {
-        return Department::query()
-            ->whereKey($order)
-            ->orderBy('sort')
-            ->get(['id', 'parent_id', 'name', 'sort', 'is_active'])
-            ->map(fn (Department $department): array => [
-                'id'        => $department->id,
-                'parent_id' => $department->parent_id,
-                'name'      => $department->name,
-                'sort'      => $department->sort,
-                'is_active' => $department->is_active,
-            ])
-            ->values()
-            ->all();
     }
 
     /**
