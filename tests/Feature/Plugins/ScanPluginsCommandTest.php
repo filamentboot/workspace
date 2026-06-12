@@ -1,12 +1,8 @@
 <?php
 
 use App\Models\Plugin;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
-use Tests\TestCase;
-
-uses(TestCase::class, RefreshDatabase::class);
 
 /**
  * ScanPlugins 命令集成测试（PLUGIN-01 / CR-01 修复验证）
