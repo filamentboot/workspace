@@ -43,7 +43,8 @@
                         ->firstWhere('package_name', $this->record->package_name);
                     $docUrl = $entry['documentation_url'] ?? null;
                 @endphp
-                @if ($docUrl)
+                {{-- CR-04：scheme 白名单校验，仅 http/https 渲染为链接，javascript: 等伪协议不渲染 --}}
+                @if ($docUrl && preg_match('#^https?://#i', $docUrl))
                     <div class="mt-3">
                         <a href="{{ $docUrl }}" target="_blank" rel="noopener noreferrer"
                            class="text-sm text-primary-600 hover:text-primary-500 dark:text-primary-400">
