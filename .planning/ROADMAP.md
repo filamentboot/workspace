@@ -15,7 +15,7 @@
 - [x] **Phase 3: 包功能补强** — Impersonation + Scramble API 文档 + CRUD 生成器，补齐 kaido-kit 已有的核心差异化功能 (completed 2026-06-10)
 - [ ] **Phase 4: 发布自动化** — release.yml + 发版脚本三件套 + Codecov，让下次发版从 9 条手工命令变为打 tag 就完事
 - [x] **Phase 5: 演示站** — demo.xitongapp.com 部署 + 数据重置 cron + 高危操作屏蔽，先拿出看得见的成果 (completed 2026-06-11)
-- [ ] **Phase 6: 插件市场 + 对外展示** — 启停控制、安装链路、安全校验、市场数据边界 + 官网、Release Notes、CI audit（计划全部完成，待人工验证 2 项 UI 行为）
+- [x] **Phase 6: 插件市场 + 对外展示** — 启停控制、安装链路、安全校验、市场数据边界 + 官网、Release Notes、CI audit（计划全部完成，待人工验证 2 项 UI 行为） (completed 2026-06-12)
 - [ ] **Phase 7: 质量基座** — 7个Bug修复 + 4项一期补缺（密码重置/2FA强制/数据权限/日志策略）
 - [ ] **Phase 8: 云存储插件** — 阿里云 OSS + 腾讯云 COS Filament 插件
 - [ ] **Phase 9: 编辑器插件** — 富文本编辑器 + Markdown 编辑器 Filament 插件
@@ -357,7 +357,7 @@ Plans:
 | 3. 包功能补强 | 4/4 | Complete    | 2026-06-11 |
 | 4. 发布自动化 | 3/4 | In Progress|  |
 | 5. 演示站 | 4/4 | Complete    | 2026-06-11 |
-| 6. 插件市场 + 对外展示 | 4/4 | Complete   | 2026-06-11 |
+| 6. 插件市场 + 对外展示 | 5/5 | Complete   | 2026-06-12 |
 | 7. 质量基座 | 0/? | Not started | - |
 | 8. 云存储插件 | 0/? | Not started | - |
 | 9. 编辑器插件 | 0/? | Not started | - |

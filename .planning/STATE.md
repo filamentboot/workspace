@@ -2,12 +2,12 @@
 gsd_state_version: 1.0
 milestone: v0.5
 milestone_name: milestone
-status: Phase 06 UAT 发现 1 个 blocker（SC-1 插件导航与 DB 导航未打通）— 需 gap 修复（方向 B）
-last_updated: "2026-06-11T09:45:21.558Z"
+status: Executing Phase 06
+last_updated: "2026-06-12T02:00:15.926Z"
 progress:
   total_phases: 12
   completed_phases: 5
-  total_plans: 27
+  total_plans: 34
   completed_plans: 27
   percent: 42
 ---
@@ -30,8 +30,8 @@ progress:
 
 ## Current Position
 
-Phase: 06 (plugin-marketplace-launch) — PLANS DONE, AWAITING HUMAN UAT
-Plan: 4 of 4 DONE
+Phase: 06 (plugin-marketplace-launch) — EXECUTING
+Plan: 1 of 5
 
 ```
 current_phase:   6
