@@ -70,9 +70,10 @@
                                     </code>
                                 </div>
 
-                                {{-- 文档链接 --}}
-                                @if (!empty($entry['documentation_url']))
-                                    <a href="{{ $entry['documentation_url'] }}" target="_blank" rel="noopener noreferrer"
+                                {{-- 文档链接（CR-04：scheme 白名单校验，仅 http/https 渲染为链接）--}}
+                                @php $docUrl = $entry['documentation_url'] ?? ''; @endphp
+                                @if (!empty($docUrl) && preg_match('#^https?://#i', $docUrl))
+                                    <a href="{{ $docUrl }}" target="_blank" rel="noopener noreferrer"
                                        class="mt-2 inline-block text-xs text-primary-600 hover:text-primary-500 dark:text-primary-400">
                                         查看文档 →
                                     </a>
