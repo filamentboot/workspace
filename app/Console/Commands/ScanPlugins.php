@@ -51,6 +51,10 @@ class ScanPlugins extends Command
             // slug 取 extra.filament-admin.slug，或降级为包名最后一段
             $slug = $meta['slug'] ?? str($packageName)->afterLast('/')->value();
 
+            // 预查询已有记录，用于保留 installed_at（幂等：首次写入 now()，重复扫描保留原值）
+            // CR-01 修复：updateOrCreate 属性数组不可含 Closure，否则 preg_match 收到 Closure 抛 TypeError
+            $existing = Plugin::where('package_name', $packageName)->first();
+
             // updateOrCreate 第二参数不含 is_enabled / config_overrides，保留运行时状态
             Plugin::updateOrCreate(
                 ['package_name' => $packageName],
@@ -64,8 +68,8 @@ class ScanPlugins extends Command
                     'requires'          => $meta['requires'] ?? [],
                     'compatibility'     => $meta['compatibility'] ?? [],
                     'source'            => $meta['source'] ?? 'community',
-                    // installed_at：保留旧值，首次写入时用 now()
-                    'installed_at'      => fn ($p) => $p?->installed_at ?? now(),
+                    // installed_at：保留旧值，首次写入时用 now()（预查询具体值，消除 Closure）
+                    'installed_at'      => $existing?->installed_at ?? now(),
                 ]
             );
 
