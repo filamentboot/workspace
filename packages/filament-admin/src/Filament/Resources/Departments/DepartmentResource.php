@@ -22,6 +22,7 @@ use FilamentAdmin\Filament\Resources\Departments\Pages\CreateDepartment;
 use FilamentAdmin\Filament\Resources\Departments\Pages\EditDepartment;
 use FilamentAdmin\Filament\Resources\Departments\Pages\ListDepartments;
 use FilamentAdmin\Filament\Resources\Departments\Pages\ViewDepartment;
+use FilamentAdmin\Models\AdminUser;
 use FilamentAdmin\Models\Department;
 use FilamentAdmin\Services\DepartmentTree;
 use Illuminate\Database\Eloquent\Builder;
@@ -142,11 +143,34 @@ class DepartmentResource extends Resource
 
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery()
+        $query = parent::getEloquentQuery()
             ->with(['parent', 'leader'])
             ->withoutGlobalScopes([
                 SoftDeletingScope::class,
             ]);
+
+        $user = auth('admin')->user();
+
+        // 无登录上下文或非管理员用户，返回空结果
+        if (! $user instanceof AdminUser) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        // 超级管理员看全部部门，不加限制
+        if ($user->hasRole(config('filament-admin.super_admin_role'))) {
+            return $query;
+        }
+
+        // 普通管理员无所属部门，返回空结果（安全收敛）
+        if (blank($user->department_id)) {
+            return $query->whereRaw('1 = 0');
+        }
+
+        // 普通管理员只能看本部门及其所有子孙部门
+        $dept = $user->department;
+        $ids  = app(DepartmentTree::class)->getSelfAndDescendantIds($dept);
+
+        return $query->whereIn('id', $ids);
     }
 
     public static function getPages(): array
