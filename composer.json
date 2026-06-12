@@ -89,6 +89,7 @@
     "autoload-dev": {
         "psr-4": {
             "Tests\\": "tests/",
+            "FilamentAdmin\\Tests\\": "packages/filament-admin/tests/",
             "LaravelStack\\FilamentAdminOss\\Tests\\": "packages/filament-admin-oss/tests/",
             "LaravelStack\\FilamentAdminCos\\Tests\\": "packages/filament-admin-cos/tests/"
         }
