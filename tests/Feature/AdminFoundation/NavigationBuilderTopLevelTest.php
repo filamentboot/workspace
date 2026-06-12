@@ -1,10 +1,5 @@
 <?php
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Tests\TestCase;
-
-uses(TestCase::class, RefreshDatabase::class);
-
 use FilamentAdmin\Models\AdminUser;
 use FilamentAdmin\Models\Menu;
 use FilamentAdmin\Services\AdminNavigationBuilder;

@@ -17,7 +17,17 @@ class AdminNavigationBuilder
     /**
      * 构建当前管理员可见导航
      *
-     * @return array<NavigationGroup>
+     * 根节点判定逻辑：
+     * - 正常情况下，根节点 parent_id = Menu::defaultParentKey()（整数 0，filament-tree 约定）
+     * - 防御性兼容：若库中存在 parent_id IS NULL 的历史行也纳入根集合
+     *
+     * 顶级组处理逻辑：
+     * - 有可见子菜单时：渲染为 NavigationGroup + 子项
+     * - 无可见子菜单、但自身可解析为可点击项（有 url/route_name 且权限放行）时：
+     *   渲染为顶级可点击 NavigationItem
+     * - 无可见子菜单且自身无法解析为可点击项时：跳过（不产生空组）
+     *
+     * @return array<NavigationGroup|NavigationItem>
      */
     public function build(?AdminUser $user): array
     {
@@ -25,16 +35,21 @@ class AdminNavigationBuilder
             return [];
         }
 
-        $groups = [];
+        $result = [];
 
+        // 根节点查询：兼容 parent_id = defaultParentKey()(=0) 与历史 parent_id IS NULL 的行
         $topMenus = Menu::query()
             ->active()
             ->where('type', 'menu')
-            ->where('parent_id', 0)
+            ->where(function ($query): void {
+                $query->where('parent_id', Menu::defaultParentKey())
+                    ->orWhereNull('parent_id');
+            })
             ->orderBy('sort')
             ->get();
 
         foreach ($topMenus as $topMenu) {
+            // 查询该顶级菜单下的可见子菜单
             $items = Menu::query()
                 ->active()
                 ->where('type', 'menu')
@@ -46,14 +61,24 @@ class AdminNavigationBuilder
                 ->values()
                 ->all();
 
-            if ($items === []) {
+            if ($items !== []) {
+                // 有可见子菜单：渲染为导航分组
+                $result[] = NavigationGroup::make($topMenu->title)->items($items);
+
                 continue;
             }
 
-            $groups[] = NavigationGroup::make($topMenu->title)->items($items);
+            // 无可见子菜单：尝试将顶级组自身解析为可点击导航项
+            $topItem = $this->toNavigationItem($topMenu, $user);
+
+            if ($topItem !== null) {
+                // 顶级菜单自身可点击（有 url/route_name 且权限放行）：作为顶级导航项
+                $result[] = $topItem;
+            }
+            // 既无子项也无可点击 url：跳过，不产生空组
         }
 
-        return $groups;
+        return $result;
     }
 
     /**
