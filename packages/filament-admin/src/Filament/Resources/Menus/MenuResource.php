@@ -86,10 +86,9 @@ class MenuResource extends Resource
                         'route' => '路由名称',
                         'url'   => '自定义 URL',
                     ])
-                    ->default(fn ($record): string => filled($record?->url) ? 'url' : 'route')
+                    ->default(fn ($record): string => filled($record?->link_type) ? $record->link_type : (filled($record?->url) ? 'url' : 'route'))
                     ->inline()
                     ->live()
-                    ->dehydrated(false)
                     ->visible(fn (Get $get): bool => $get('type') !== 'action'),
                 TextInput::make('route_name')
                     ->label('路由名称')
