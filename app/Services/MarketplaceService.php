@@ -22,16 +22,19 @@ class MarketplaceService
     {
         $url = config('plugin-platform.official_market_index_url');
 
-        return Cache::remember('market.index', 300, function () use ($url): array {
-            try {
+        try {
+            // 仅成功响应写入缓存；4xx/5xx 或网络故障走 catch 分支，不污染缓存
+            return Cache::remember('market.index', 300, function () use ($url): array {
                 return Http::retry(2, 100)
                     ->timeout(10)
+                    ->throw()           // 4xx/5xx 进入 catch 分支（CR-01 修复）
                     ->get($url)
                     ->json('entries', []);
-            } catch (\Throwable) {
-                // 网络失败时兜底本地配置（D-06-08 MITM 缓解：网络失败兜底本地 config）
-                return config('official-market.entries', []);
-            }
-        });
+            });
+        } catch (\Throwable) {
+            // 网络/HTTP 错误：返回本地兜底配置，不写入缓存，下次请求仍会回源
+            // （D-06-08 MITM 缓解：兜底本地 config，避免缓存污染）
+            return config('official-market.entries', []);
+        }
     }
 }
