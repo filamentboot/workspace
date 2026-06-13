@@ -1,0 +1,81 @@
+{
+    "$schema": "https://getcomposer.org/schema.json",
+    "name": "laravelstack/filament-admin-wang-editor",
+    "description": "wangEditor 富文本编辑器插件，为 laravelstack/filament-admin 提供轻量级国内生态友好的 wangEditor，可一键替换默认 Tiptap，图片上传经 UploadValidator 三重安全校验后落到当前生效磁盘。",
+    "type": "library",
+    "license": "MIT",
+    "keywords": ["filament", "laravel", "wang-editor", "wangeditor", "rich-editor", "filament-plugin", "wysiwyg"],
+    "homepage": "https://github.com/john-captain/filament-admin",
+    "authors": [
+        {
+            "name": "johncaptain",
+            "email": "JasonTodd0521@gmail.com",
+            "role": "developer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/john-captain/filament-admin/issues",
+        "source": "https://github.com/john-captain/filament-admin",
+        "docs": "https://github.com/john-captain/filament-admin/blob/main/wiki/wang-editor.md",
+        "wiki": "https://github.com/john-captain/filament-admin/tree/main/wiki"
+    },
+    "require": {
+        "php": "^8.3",
+        "filament/filament": "^5.0",
+        "laravelstack/filament-admin": "*"
+    },
+    "require-dev": {
+        "mockery/mockery": "^1.6",
+        "orchestra/testbench": "^11.0",
+        "phpunit/phpunit": "^12.5.12"
+    },
+    "autoload": {
+        "psr-4": {
+            "LaravelStack\\FilamentAdminWangEditor\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "LaravelStack\\FilamentAdminWangEditor\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "LaravelStack\\FilamentAdminWangEditor\\WangEditorServiceProvider"
+            ]
+        },
+        "filament-admin": {
+            "slug": "filament-admin-wang-editor",
+            "name": "wangEditor 富文本编辑器",
+            "type": "package",
+            "source": "official_listed",
+            "plugin_class": "LaravelStack\\FilamentAdminWangEditor\\WangEditorPlugin",
+            "service_provider": "LaravelStack\\FilamentAdminWangEditor\\WangEditorServiceProvider",
+            "description": "国内生态友好的 wangEditor 富文本编辑器，启用后可一键替换默认 Tiptap，图片上传经 UploadValidator 三重安全校验后落到当前生效磁盘（D-09-03/D-09-04）。",
+            "requires": ["laravelstack/filament-admin"],
+            "compatibility": {
+                "laravel/framework": "^13.0",
+                "filament/filament": "^5.0"
+            }
+        },
+        "branch-alias": {
+            "dev-main": "0.5.x-dev"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit -c phpunit.xml.dist",
+        "test-coverage": "vendor/bin/phpunit -c phpunit.xml.dist --coverage-clover=coverage.xml",
+        "phpstan": "vendor/bin/phpstan analyse --memory-limit=2G",
+        "pint": "vendor/bin/pint",
+        "pint:test": "vendor/bin/pint --test"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        },
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}
