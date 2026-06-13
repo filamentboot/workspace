@@ -5,22 +5,19 @@ namespace LaravelStack\FilamentAdminSite;
 use Filament\Contracts\Plugin;
 use Filament\Panel;
 use LaravelStack\FilamentAdminSite\Filament\Pages\SiteSettingsPage;
+use LaravelStack\FilamentAdminSite\Filament\Resources\ContactMessageResource;
+use LaravelStack\FilamentAdminSite\Filament\Resources\SiteCaseResource;
+use LaravelStack\FilamentAdminSite\Filament\Resources\SitePageResource;
+use LaravelStack\FilamentAdminSite\Filament\Resources\SiteProductResource;
+use LaravelStack\FilamentAdminSite\Filament\Resources\SiteSolutionResource;
+use LaravelStack\FilamentAdminSite\Filament\Widgets\UnreadContactMessagesWidget;
 
 /**
  * 官网插件 Filament Plugin 类
  *
  * 通过 ->plugins([SitePlugin::make()]) 注册到 Filament Panel，
- * 自动挂载 SiteSettingsPage 到后台导航。
+ * 自动挂载 SiteSettingsPage 及五个内容 Resource 到后台导航（官网管理分组）。
  * 前台路由/视图/Livewire 组件注册由 SiteServiceProvider::boot() 完成。
- *
- * 本 Plan 10-01 仅注册 SiteSettingsPage，五个 Resource 将由 Plan 10-03 追加：
- * $panel->resources([
- *     SiteCaseResource::class,
- *     SiteSolutionResource::class,
- *     SiteProductResource::class,
- *     SitePageResource::class,
- *     ContactMessageResource::class,
- * ]);
  */
 class SitePlugin implements Plugin
 {
@@ -41,16 +38,33 @@ class SitePlugin implements Plugin
     }
 
     /**
-     * 向 Panel 注册官网设置页面
+     * 向 Panel 注册官网设置页面与五个内容资源
      *
-     * 五个内容资源（SiteCaseResource、SiteSolutionResource、SiteProductResource、
-     * SitePageResource、ContactMessageResource）将由 Plan 10-03 在此处追加注册。
+     * 注册的内容：
+     * - SiteSettingsPage：官网设置（spatie/laravel-settings）
+     * - SiteCaseResource：装修案例 CRUD（SITE-01）
+     * - SiteSolutionResource：智能方案 CRUD（SITE-01）
+     * - SiteProductResource：智能产品 CRUD（SITE-01）
+     * - SitePageResource：静态页面 CRUD（SITE-01）
+     * - ContactMessageResource：询盘只读 + 状态流转（D-10-15）
+     * - UnreadContactMessagesWidget：未读询盘 StatsWidget（D-10-15）
      *
      * @param  Panel  $panel  当前 Filament 面板实例
      */
     public function register(Panel $panel): void
     {
-        $panel->pages([SiteSettingsPage::class]);
+        $panel
+            ->pages([SiteSettingsPage::class])
+            ->resources([
+                SiteCaseResource::class,
+                SiteSolutionResource::class,
+                SiteProductResource::class,
+                SitePageResource::class,
+                ContactMessageResource::class,
+            ])
+            ->widgets([
+                UnreadContactMessagesWidget::class,
+            ]);
     }
 
     /**
