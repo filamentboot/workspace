@@ -4,6 +4,7 @@ namespace LaravelStack\FilamentAdminMarkdownEditor\Tests\Unit;
 
 use FilamentAdmin\Settings\UploadSettings;
 use LaravelStack\FilamentAdminMarkdownEditor\Forms\MarkdownEditorField;
+use LaravelStack\FilamentAdminMarkdownEditor\MarkdownEditorServiceProvider;
 use Filament\Forms\Components\MarkdownEditor;
 use Orchestra\Testbench\TestCase;
 
@@ -17,6 +18,17 @@ use Orchestra\Testbench\TestCase;
  */
 class MarkdownEditorFieldTest extends TestCase
 {
+    /**
+     * 注册包服务提供者
+     *
+     * @param  \Illuminate\Foundation\Application  $app
+     * @return list<class-string>
+     */
+    protected function getPackageProviders($app): array
+    {
+        return [MarkdownEditorServiceProvider::class];
+    }
+
     /**
      * 验证 MarkdownEditorField 继承自 Filament 内置 MarkdownEditor
      */
@@ -35,16 +47,10 @@ class MarkdownEditorFieldTest extends TestCase
     public function test_disk_reads_upload_settings(): void
     {
         $this->app->bind(UploadSettings::class, function () {
-            $mock = new class extends UploadSettings {
-                public string $default_disk = 'cos';
+            $stub = $this->createStub(UploadSettings::class);
+            $stub->default_disk = 'cos';
 
-                public static function group(): string
-                {
-                    return 'upload';
-                }
-            };
-
-            return $mock;
+            return $stub;
         });
 
         $field = MarkdownEditorField::make('content');
@@ -62,16 +68,10 @@ class MarkdownEditorFieldTest extends TestCase
     public function test_disk_local_falls_back_to_public(): void
     {
         $this->app->bind(UploadSettings::class, function () {
-            $mock = new class extends UploadSettings {
-                public string $default_disk = 'local';
+            $stub = $this->createStub(UploadSettings::class);
+            $stub->default_disk = 'local';
 
-                public static function group(): string
-                {
-                    return 'upload';
-                }
-            };
-
-            return $mock;
+            return $stub;
         });
 
         $field = MarkdownEditorField::make('content');
@@ -87,8 +87,6 @@ class MarkdownEditorFieldTest extends TestCase
      */
     public function test_disk_falls_back_to_config_when_settings_unavailable(): void
     {
-        // 解除 UploadSettings 绑定，模拟 settings 表未迁移场景
-        // app()->forgetInstance() 仅清除实例，bind 会抛异常，故通过配置测试
         config(['filesystems.default' => 'public']);
 
         $this->app->bind(UploadSettings::class, function () {
