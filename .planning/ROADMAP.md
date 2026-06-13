@@ -29,3 +29,60 @@ Plans:
 - [x] 09-04-PLAN.md — Monorepo 集成（根 composer.json repositories/require/autoload，含 rich-editor / markdown-editor / wang-editor 三包 + config/purifier.php richeditor 白名单）+ 集成测试（plugin:scan 发现 + 类加载 + 渲染过滤）（EDITOR-01/02）
 
 ---
+
+### Phase 10: 官网插件
+
+**Goal**: 开发官网插件（`laravelstack/filament-admin-site`），让客户可在后台管理并发布自己公司的前台官网（页面、文章、产品），作为插件市场的示范旗舰插件
+
+**Depends on**: Phase 6（插件市场契约），Phase 8（图片上传磁盘），Phase 9（富文本编辑器）
+**Requirements**: SITE-01, SITE-02, SITE-03, SITE-04
+**Work estimate**: 约 10-15h
+
+**Success Criteria**:
+
+1. `packages/filament-admin-site/` 独立 Composer 包，按 Phase 6 `extra.filament-admin` 契约构建，可被 `plugin:scan` 发现并在后台启停
+2. 后台提供页面（Page）、文章（Article）、产品（Product）的 Filament Resource CRUD，含分类、标签、发布状态、置顶
+3. 前台路由在插件启用时自动接管根域 `/`（首页）与 `/{slug}`（单页/文章/产品详情），禁用时不影响现有 routes/web.php
+4. 前台模板采用 Blade + Tailwind CSS 响应式设计 + Livewire 按需交互，SEO meta（TDK）直出
+5. 支持多套可切换主题（整体皮肤切换，不只配色）
+
+**Plans**: TBD
+
+---
+
+### Phase 11: 代码整理收尾
+
+**Goal**: 清理累积的技术债、修复已登记 bug、将代码质量提升到发版标准
+
+**Depends on**: Phase 1~10 全部完成
+**Requirements**: CLEANUP-01, CLEANUP-02, CLEANUP-03
+**Work estimate**: 约 15-20h
+
+**Success Criteria**:
+
+1. PHPStan Level 6 零错误
+2. Pint 格式零警告，Feature 层测试覆盖率 ≥ 80%
+3. 所有已登记 bug（CR-01 等，含 parent_id=0 根菜单保存 bug）修复完毕
+
+**Plans**: TBD（执行前用 gsd-plan-phase 读已登记缺陷账目生成计划）
+
+---
+
+### Phase 12: 发版与仓库整理
+
+**Goal**: 打 v0.5.0 tag，完成 Packagist 发版、subtree split 子包同步、CHANGELOG 更新
+
+**Depends on**: Phase 11
+**Requirements**: RELEASE-07
+**Work estimate**: 约 1-2h
+
+**Success Criteria**:
+
+1. v0.5.0 tag 推送到 GitHub 和 Gitee
+2. Packagist 自动更新，`composer require laravelstack/filament-admin:^0.5` 可安装
+3. subtree split 各子包仓库同步
+4. CHANGELOG 更新，README 版本号更新
+
+**Plans**: TBD
+
+---

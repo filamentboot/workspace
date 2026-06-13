@@ -56,12 +56,12 @@ Phase 05 [##########] 100%  演示站（4/4）✓
 Phase 06 [##########] 100%  插件市场启动（4/4）✓
 Phase 07 [##########] 100%  质量基座（6/6）✓
 Phase 08 [##########] 100%  云存储插件（4/4）✓
-Phase 09 [          ]   0%  编辑器插件（待规划）
+Phase 09 [##########] 100%  编辑器插件（4/4）✓
 Phase 10 [          ]   0%  官网插件（待规划）
 Phase 11 [          ]   0%  代码整理收尾（待规划）
 Phase 12 [          ]   0%  发版与仓库整理（待规划）
 
-Overall  [########  ]  67%  (8/12 phases)
+Overall  [#########  ]  75%  (9/12 phases)
 ```
 
 ---
@@ -78,7 +78,7 @@ Overall  [########  ]  67%  (8/12 phases)
 | 6 | 插件市场 + 对外展示 | PLUGIN-01~08, FINAL-02~05 | ~26-33h | Completed |
 | 7 | 质量基座 | FIX-01~07, POLISH-01~04 | ~14-18h | Completed |
 | 8 | 云存储插件 | CLOUD-01~02 | ~8-12h | Completed |
-| 9 | 编辑器插件 | EDITOR-01~02 | ~8-12h | Not started |
+| 9 | 编辑器插件 | EDITOR-01~02 | ~8-12h | Completed |
 | 10 | 官网插件 | SITE-01~04 | ~10-15h | Not started |
 | 11 | 代码整理收尾 | CLEANUP-01~03 | ~15-20h | Not started |
 | 12 | 发版与仓库整理 | RELEASE-07 | ~1-2h | Not started |
@@ -92,7 +92,7 @@ phases_complete:    8 / 12
 plans_complete:     39 / 39
 requirements_done:  COMPLY-01~09, DOC-01~08, FEAT-01~03, RELEASE-01~06, DEMO-01~04,
                     PLUGIN-01~08, FINAL-02~05, FIX-01~07, POLISH-01~04, CLOUD-01~02
-test_count:         275 / 275 passing（67 包测试 + 174 feature 测试 + 34 unit 测试）
+test_count:         287 / 287 passing（Phase 09 新增 12 tests：8 集成 + 4 wang-editor Feature）
 ```
 
 ---
@@ -133,8 +133,11 @@ test_count:         275 / 275 passing（67 包测试 + 174 feature 测试 + 34 u
 - 主包当前状态：ServiceProvider 5 个 `publishes()` 已注册，PublishCommand 真实实现，EnsureTwoFactorEnabled 中间件已注册
 - Phase 07 已通过 UAT（3/3 passed，202 tests）
 - Phase 08 已通过 UAT（13/13 must-haves passed，275 tests）
+- Phase 09 完成（4/4 plans，287 tests passing）
 - 新增包：`packages/filament-admin-oss/`（阿里云 OSS）、`packages/filament-admin-cos/`（腾讯云 COS）
+- 新增编辑器包：`packages/filament-admin-rich-editor/`、`packages/filament-admin-markdown-editor/`、`packages/filament-admin-wang-editor/`
 - UploadValidator 三重安全校验（扩展名黑名单 + finfo MIME + 大小），与 UploadSettings 联动
+- config/purifier.php 含 richeditor 白名单段，解决富文本样式丢失（Pitfall 4）
 - 已知旁置 bug：parent_id=0 根菜单通过 Filament 表单保存报 relationship() validation error，推迟 Phase 11 修复
 - 工具链：PHP 8.3+, Laravel 13.x, Filament 5.x
 - CI：包 CI 用 `packages/filament-admin/.github/workflows/ci.yml`，根 CI 用根目录 workflows

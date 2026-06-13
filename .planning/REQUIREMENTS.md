@@ -106,6 +106,27 @@
 
 ---
 
+## v0.5 Phase 10-12 Requirements (当前 milestone 剩余)
+
+### 官网插件（Phase 10）
+
+- **SITE-01**: 后台内容管理 — 支持页面（Page）、文章（Article）、产品（Product）三种内容类型；各含 Filament Resource CRUD、分类（Category）、标签（Tag）、发布状态（draft/published）、置顶（is_pinned）；内容编辑集成 Phase 9 富文本编辑器
+- **SITE-02**: 前台渲染 — Blade + Tailwind CSS 响应式模板 + Livewire 按需交互；插件启用时前台路由接管根域 `/`（首页）与 `/{slug}`（单页/文章/产品详情），禁用时不影响现有 routes/web.php；SEO 字段（TDK：title/description/keywords）直出 `<meta>`
+- **SITE-03**: 主题系统 — 支持多套可切换主题（整体皮肤切换，不只配色）；后台可选择当前生效主题
+- **SITE-04**: 插件市场集成 — 作为独立 Composer 包（`packages/filament-admin-site/`），按 Phase 6 `extra.filament-admin` 契约构建；可被 `plugin:scan` 发现并在后台启停；图片上传走 Phase 8 配置的默认磁盘
+
+### 代码整理收尾（Phase 11）
+
+- **CLEANUP-01**: PHPStan Level 6 零错误（当前 Level 5 已过，Level 6 需补类型声明）
+- **CLEANUP-02**: Pint 格式零警告 + 测试覆盖率 ≥ 80%（Feature 层）
+- **CLEANUP-03**: 跨阶段累积 bug 修复（含 parent_id=0 根菜单保存 bug，及 CR-01 等已登记缺陷）
+
+### 发版与仓库整理（Phase 12）
+
+- **RELEASE-07**: 打 v0.5.0 tag + 推送 Packagist + subtree split 同步子包仓库 + 发版 CHANGELOG + 更新 README 版本号
+
+---
+
 ## v2 Requirements (推到 v0.6+ milestone)
 
 ### v0.6 系统配置 / 媒体库 / 导出 / API 规范（26 项 0 完成，独立 milestone）
