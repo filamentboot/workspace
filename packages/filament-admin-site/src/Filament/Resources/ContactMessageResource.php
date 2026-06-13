@@ -3,10 +3,10 @@
 namespace LaravelStack\FilamentAdminSite\Filament\Resources;
 
 use BackedEnum;
-use Filament\Resources\Resource;
-use Filament\Schemas\Schema;
-use Filament\Schemas\Components\Infolist;
 use Filament\Infolists\Components\TextEntry;
+use Filament\Resources\Resource;
+use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Schema;
 use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
@@ -69,6 +69,39 @@ class ContactMessageResource extends Resource
     public static function canCreate(): bool
     {
         return false;
+    }
+
+    /**
+     * 详情页 Infolist 定义（ViewContactMessage 页面展示询盘完整信息）
+     *
+     * @param Schema $schema
+     * @return Schema
+     */
+    public static function infolist(Schema $schema): Schema
+    {
+        return $schema->components([
+            Grid::make(2)->schema([
+                TextEntry::make('name')->label('姓名'),
+                TextEntry::make('phone')->label('电话'),
+            ]),
+            TextEntry::make('message')
+                ->label('留言')
+                ->placeholder('-')
+                ->columnSpanFull(),
+            Grid::make(2)->schema([
+                TextEntry::make('status')
+                    ->label('状态')
+                    ->formatStateUsing(
+                        fn (mixed $state): string => $state instanceof ContactMessageStatus
+                            ? $state->label()
+                            : (string) $state
+                    ),
+                TextEntry::make('ip')->label('IP 地址')->placeholder('-'),
+            ]),
+            TextEntry::make('created_at')
+                ->label('提交时间')
+                ->dateTime('Y-m-d H:i:s'),
+        ]);
     }
 
     /**
