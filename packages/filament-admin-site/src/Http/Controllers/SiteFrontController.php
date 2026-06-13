@@ -175,25 +175,27 @@ class SiteFrontController extends Controller
         $isEn = $locale === 'en';
 
         // 标题回退：记录 seo_title → 记录标题字段 → 全局默认 → app.name
+        // 使用 isset() 检查 Eloquent 动态属性（property_exists 对 __get 魔术属性无效）
         $titleFallback = $isEn
-            ? (property_exists($record, 'title_en') ? ($record->title_en ?: '') : '')
-            : (property_exists($record, 'title_zh') ? ($record->title_zh ?: '') : '');
+            ? (isset($record->title_en) ? ($record->title_en ?: '') : '')
+            : (isset($record->title_zh) ? ($record->title_zh ?: '') : '');
 
         $globalTitle = $settings
             ? ($isEn ? ($settings->seo_default_title_en ?: '') : ($settings->seo_default_title_zh ?: ''))
             : '';
 
-        $title = $record->seo_title
+        $title = ($record->seo_title ?: '')
             ?: $titleFallback
             ?: $globalTitle
             ?: config('app.name', '');
 
         // 描述回退：记录 seo_description → 记录 description 字段 → 全局默认
+        // 使用 isset() 检查 Eloquent 动态属性
         $descFallback = '';
-        if (property_exists($record, 'description_zh') || property_exists($record, 'description_en')) {
+        if (isset($record->description_zh) || isset($record->description_en)) {
             $descFallback = $isEn
-                ? (property_exists($record, 'description_en') ? ($record->description_en ?: '') : '')
-                : (property_exists($record, 'description_zh') ? ($record->description_zh ?: '') : '');
+                ? (isset($record->description_en) ? ($record->description_en ?: '') : '')
+                : (isset($record->description_zh) ? ($record->description_zh ?: '') : '');
         }
 
         $globalDesc = $settings
