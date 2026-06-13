@@ -36,12 +36,12 @@ class RichEditorFieldTest extends TestCase
      */
     public function test_disk_override(): void
     {
-        // 绑定 UploadSettings mock，默认磁盘为 'public'
+        // 绑定 UploadSettings stub，默认磁盘为 'public'
         $this->app->bind(UploadSettings::class, function () {
-            $mock = $this->createMock(UploadSettings::class);
-            $mock->default_disk = 'public';
+            $stub = $this->createStub(UploadSettings::class);
+            $stub->default_disk = 'public';
 
-            return $mock;
+            return $stub;
         });
 
         $field = RichEditorField::make('content');
@@ -57,12 +57,12 @@ class RichEditorFieldTest extends TestCase
      */
     public function test_disk_reads_upload_settings(): void
     {
-        // 绑定 UploadSettings mock，默认磁盘为 'cos'
+        // 绑定 UploadSettings stub，默认磁盘为 'cos'
         $this->app->bind(UploadSettings::class, function () {
-            $mock = $this->createMock(UploadSettings::class);
-            $mock->default_disk = 'cos';
+            $stub = $this->createStub(UploadSettings::class);
+            $stub->default_disk = 'cos';
 
-            return $mock;
+            return $stub;
         });
 
         $field = RichEditorField::make('content');
@@ -77,12 +77,12 @@ class RichEditorFieldTest extends TestCase
      */
     public function test_disk_local_falls_back_public(): void
     {
-        // 绑定 UploadSettings mock，默认磁盘为 'local'
+        // 绑定 UploadSettings stub，默认磁盘为 'local'
         $this->app->bind(UploadSettings::class, function () {
-            $mock = $this->createMock(UploadSettings::class);
-            $mock->default_disk = 'local';
+            $stub = $this->createStub(UploadSettings::class);
+            $stub->default_disk = 'local';
 
-            return $mock;
+            return $stub;
         });
 
         $field = RichEditorField::make('content');
