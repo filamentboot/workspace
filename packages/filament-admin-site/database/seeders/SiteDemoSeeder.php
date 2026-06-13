@@ -393,7 +393,10 @@ class SiteDemoSeeder extends Seeder
         ];
 
         foreach ($messagesData as $data) {
-            ContactMessage::create($data);
+            ContactMessage::firstOrCreate(
+                ['name' => $data['name'], 'phone' => $data['phone']],
+                $data
+            );
         }
     }
 }
