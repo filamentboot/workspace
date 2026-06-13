@@ -53,6 +53,11 @@ Thumbs.db
 /packages/filament-admin-markdown-editor/vendor/
 /packages/filament-admin-markdown-editor/composer.lock
 /packages/filament-admin-markdown-editor/.phpunit.result.cache
+!/packages/filament-admin-wang-editor/
+!/packages/filament-admin-wang-editor/**
+/packages/filament-admin-wang-editor/vendor/
+/packages/filament-admin-wang-editor/composer.lock
+/packages/filament-admin-wang-editor/.phpunit.result.cache
 
 # 插件市场集成测试（依赖未发布包，暂不公开）
 /tests/Feature/PluginPlatform/
