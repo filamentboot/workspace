@@ -46,6 +46,8 @@ Thumbs.db
 !/packages/filament-admin-oss/**
 !/packages/filament-admin-cos/
 !/packages/filament-admin-cos/**
+!/packages/filament-admin-rich-editor/
+!/packages/filament-admin-rich-editor/**
 
 # 插件市场集成测试（依赖未发布包，暂不公开）
 /tests/Feature/PluginPlatform/
