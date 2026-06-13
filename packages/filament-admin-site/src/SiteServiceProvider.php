@@ -2,6 +2,7 @@
 
 namespace LaravelStack\FilamentAdminSite;
 
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
 use LaravelStack\FilamentAdminSite\Http\Livewire\CaseFilter;
@@ -32,10 +33,14 @@ class SiteServiceProvider extends ServiceProvider
     public function boot(): void
     {
         try {
-            $isEnabled = DB::table('plugins')
-                ->where('slug', 'filament-admin-site')
-                ->where('is_enabled', true)
-                ->exists();
+            $isEnabled = Cache::remember(
+                'filament-admin-site:is_enabled',
+                now()->addMinutes(10),
+                fn () => DB::table('plugins')
+                    ->where('slug', 'filament-admin-site')
+                    ->where('is_enabled', true)
+                    ->exists()
+            );
 
             if (! $isEnabled) {
                 // 插件未启用：只注册迁移，不加载前台资源
