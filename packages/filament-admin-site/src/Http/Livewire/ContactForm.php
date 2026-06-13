@@ -43,12 +43,12 @@ class ContactForm extends Component
     public string $phone = '';
 
     /**
-     * 留言内容
+     * 留言内容（选填，与视图 placeholder "选填" 保持一致）
      *
-     * @var string
+     * @var string|null
      */
-    #[Validate('required|string|max:500')]
-    public string $message = '';
+    #[Validate('nullable|string|max:500')]
+    public ?string $message = null;
 
     /**
      * 提交成功标志（切换视图为感谢提示）
@@ -81,11 +81,11 @@ class ContactForm extends Component
         // 字段校验
         $this->validate();
 
-        // 写入询盘记录（含 IP，防刷审计）
+        // 写入询盘记录（含 IP，防刷审计；message 为选填，null 时存空字符串）
         ContactMessage::create([
             'name'    => $this->name,
             'phone'   => $this->phone,
-            'message' => $this->message,
+            'message' => $this->message ?? '',
             'status'  => ContactMessageStatus::UNREAD,
             'ip'      => request()->ip(),
         ]);
@@ -94,7 +94,7 @@ class ContactForm extends Component
         $this->submitted = true;
         $this->name      = '';
         $this->phone     = '';
-        $this->message   = '';
+        $this->message   = null;
     }
 
     /**
