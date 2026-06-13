@@ -181,7 +181,7 @@ class SiteCaseResource extends Resource
                 TextColumn::make('category.name_zh')
                     ->label('分类')
                     ->default('-'),
-                IconColumn::make('is_published')
+                IconColumn::make('publication_status')
                     ->label('状态')
                     ->getStateUsing(fn (SiteCase $record): bool => $record->published_at !== null && $record->published_at <= now())
                     ->boolean()
