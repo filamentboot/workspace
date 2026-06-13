@@ -25,6 +25,9 @@ class ContactMessage extends Model
 {
     use HasFactory;
 
+    /** @var string */
+    protected $table = 'site_contact_messages';
+
     /** @var list<string> */
     protected $guarded = [];
 

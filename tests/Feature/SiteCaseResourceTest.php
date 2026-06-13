@@ -2,15 +2,20 @@
 
 namespace Tests\Feature;
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
+use LaravelStack\FilamentAdminSite\Enums\ContactMessageStatus;
+use LaravelStack\FilamentAdminSite\Models\ContactMessage;
+use LaravelStack\FilamentAdminSite\Models\SiteCase;
 use Tests\TestCase;
 
 /**
- * 装修案例资源测试桩（SiteCaseResourceTest）
+ * 装修案例资源测试（SiteCaseResourceTest）
  *
  * Wave 0 安全网测试：
- * - test_site_cases_table_exists：由 Plan 10-02（数据层迁移）落地转绿
- * - test_site_case_factory_persists：由 Plan 10-02（SiteCase 模型工厂）落地转绿
- * - test_contact_message_default_status_unread：由 Plan 10-02（ContactMessage 模型）落地转绿
+ * - test_site_cases_table_exists：Plan 10-02 数据层迁移（已转绿）
+ * - test_site_case_factory_persists：Plan 10-02 SiteCase 模型工厂（已转绿）
+ * - test_contact_message_default_status_unread：Plan 10-02 ContactMessage 模型（已转绿）
  * - test_site_case_resource_registered_and_list_accessible：由 Plan 10-03（Filament Resource）落地转绿
  *
  * @group site
@@ -18,36 +23,57 @@ use Tests\TestCase;
  */
 class SiteCaseResourceTest extends TestCase
 {
+    use RefreshDatabase;
+
     /**
-     * 目标可观测信号：php artisan migrate 后 Schema::hasTable('site_cases') 为 true
-     * 由 Plan 10-02 创建 create_site_cases_table 迁移后落地转绿。
+     * 目标可观测信号：migrate 后 Schema::hasTable('site_cases') 为 true
+     * Plan 10-02 数据层迁移已完成，此断言应转绿。
      */
     public function test_site_cases_table_exists(): void
     {
-        $this->markTestIncomplete(
-            '待 10-02 落地：php artisan migrate 后 Schema::hasTable(\'site_cases\') 应为 true'
+        $this->assertTrue(
+            Schema::hasTable('site_cases'),
+            'site_cases 表应在迁移后存在'
         );
     }
 
     /**
      * 目标可观测信号：SiteCase::factory()->create() 成功落库，DB 可查询到记录
-     * 由 Plan 10-02 创建 SiteCase 模型与 SiteCaseFactory 后落地转绿。
+     * Plan 10-02 SiteCase 模型与 SiteCaseFactory 已创建，此断言应转绿。
      */
     public function test_site_case_factory_persists(): void
     {
-        $this->markTestIncomplete(
-            '待 10-02 落地：SiteCase::factory()->create() 应成功落库并可通过 DB 查询到记录'
-        );
+        $case = SiteCase::factory()->create([
+            'title_zh' => '测试装修案例',
+        ]);
+
+        $this->assertDatabaseHas('site_cases', [
+            'id'       => $case->id,
+            'title_zh' => '测试装修案例',
+        ]);
     }
 
     /**
-     * 目标可观测信号：ContactMessage::factory()->create() 后 status 默认为 'unread'
-     * 由 Plan 10-02 创建 ContactMessage 模型与默认 status 后落地转绿。
+     * 目标可观测信号：ContactMessage::create() 后 status 默认为 ContactMessageStatus::UNREAD
+     * Plan 10-02 ContactMessage 模型与枚举 cast 已创建，此断言应转绿。
      */
     public function test_contact_message_default_status_unread(): void
     {
-        $this->markTestIncomplete(
-            '待 10-02 落地：ContactMessage 默认 status 应为 \'unread\'（询盘状态流转初始值）'
+        $message = ContactMessage::create([
+            'name'    => '测试用户',
+            'phone'   => '13800138000',
+            'message' => '测试留言内容',
+        ]);
+
+        $this->assertDatabaseHas('site_contact_messages', [
+            'id'     => $message->id,
+            'status' => 'unread',
+        ]);
+
+        $this->assertSame(
+            ContactMessageStatus::UNREAD,
+            $message->fresh()->status,
+            'ContactMessage status 默认应为 ContactMessageStatus::UNREAD'
         );
     }
 

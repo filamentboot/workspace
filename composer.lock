@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "299db276038333cb30c74a263e69d102",
+    "content-hash": "80884ff0b8245fc052af0ec6ef6f08bc",
     "packages": [
         {
             "name": "aliyuncs/oss-sdk-php",
@@ -3764,6 +3764,120 @@
                 "issues": "https://github.com/john-captain/filament-admin/issues",
                 "source": "https://github.com/john-captain/filament-admin",
                 "docs": "https://github.com/john-captain/filament-admin/blob/main/wiki/rich-editor.md",
+                "wiki": "https://github.com/john-captain/filament-admin/tree/main/wiki"
+            },
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "laravelstack/filament-admin-site",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "packages/filament-admin-site",
+                "reference": "530cf79a965d7b71d79e29013a666d93ff35359e"
+            },
+            "require": {
+                "danharrin/livewire-rate-limiting": "^2.2",
+                "filament/filament": "^5.0",
+                "filament/spatie-laravel-media-library-plugin": "^5.6",
+                "filament/spatie-laravel-settings-plugin": "^5.6",
+                "laravelstack/filament-admin": "*",
+                "laravelstack/filament-admin-rich-editor": "*",
+                "livewire/livewire": "^4.3",
+                "mews/purifier": "^3.4",
+                "php": "^8.3",
+                "spatie/laravel-settings": "^3.9"
+            },
+            "require-dev": {
+                "mockery/mockery": "^1.6",
+                "orchestra/testbench": "^11.0",
+                "phpunit/phpunit": "^12.5.12"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "LaravelStack\\FilamentAdminSite\\SiteServiceProvider"
+                    ]
+                },
+                "filament-admin": {
+                    "slug": "filament-admin-site",
+                    "name": "官网插件",
+                    "type": "solution_plugin",
+                    "source": "official_trusted",
+                    "plugin_class": "LaravelStack\\FilamentAdminSite\\SitePlugin",
+                    "settings_page_slug": "settings/site",
+                    "service_provider": "LaravelStack\\FilamentAdminSite\\SiteServiceProvider",
+                    "description": "面向中小企业的前台官网管理插件（案例/方案/产品/页面/询盘五类内容，双语+主题可切换）",
+                    "requires": [
+                        "laravelstack/filament-admin"
+                    ],
+                    "compatibility": {
+                        "laravel/framework": "^13.0",
+                        "filament/filament": "^5.0"
+                    }
+                },
+                "branch-alias": {
+                    "dev-main": "0.5.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "LaravelStack\\FilamentAdminSite\\": "src/",
+                    "LaravelStack\\FilamentAdminSite\\Database\\Factories\\": "database/factories/",
+                    "LaravelStack\\FilamentAdminSite\\Database\\Seeders\\": "database/seeders/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "LaravelStack\\FilamentAdminSite\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "vendor/bin/phpunit -c phpunit.xml.dist"
+                ],
+                "test-coverage": [
+                    "vendor/bin/phpunit -c phpunit.xml.dist --coverage-clover=coverage.xml"
+                ],
+                "phpstan": [
+                    "vendor/bin/phpstan analyse --memory-limit=2G"
+                ],
+                "pint": [
+                    "vendor/bin/pint"
+                ],
+                "pint:test": [
+                    "vendor/bin/pint --test"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "johncaptain",
+                    "email": "JasonTodd0521@gmail.com",
+                    "role": "developer"
+                }
+            ],
+            "description": "面向中小企业的前台官网管理插件，提供案例/方案/产品/页面/询盘五类内容管理，支持中英双语与主题切换。",
+            "homepage": "https://github.com/john-captain/filament-admin",
+            "keywords": [
+                "bilingual",
+                "cms",
+                "filament",
+                "filament-plugin",
+                "laravel",
+                "official-site",
+                "website"
+            ],
+            "support": {
+                "issues": "https://github.com/john-captain/filament-admin/issues",
+                "source": "https://github.com/john-captain/filament-admin",
+                "docs": "https://github.com/john-captain/filament-admin/blob/main/wiki/site.md",
                 "wiki": "https://github.com/john-captain/filament-admin/tree/main/wiki"
             },
             "transport-options": {
@@ -16235,6 +16349,7 @@
         "laravelstack/filament-admin-markdown-editor": 20,
         "laravelstack/filament-admin-oss": 20,
         "laravelstack/filament-admin-rich-editor": 20,
+        "laravelstack/filament-admin-site": 20,
         "laravelstack/filament-admin-wang-editor": 20
     },
     "prefer-stable": true,
