@@ -54,6 +54,7 @@
             "type": "package",
             "source": "official_listed",
             "plugin_class": "LaravelStack\\FilamentAdminCos\\CosPlugin",
+            "settings_page_slug": "settings/cos",
             "service_provider": "LaravelStack\\FilamentAdminCos\\CosServiceProvider",
             "description": "腾讯云对象存储（COS）驱动插件，支持超管在后台直接配置凭证，无需修改 .env 文件。",
             "requires": [],

@@ -20,6 +20,9 @@ class OssSettingsPage extends SettingsPage
     /** 关联的 Settings 类 */
     protected static string $settings = OssSettings::class;
 
+    /** 页面标题 */
+    protected static ?string $title = 'OSS 存储配置';
+
     /** 导航图标 */
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-cloud-arrow-up';
 

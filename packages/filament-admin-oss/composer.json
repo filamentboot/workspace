@@ -54,6 +54,7 @@
             "type": "package",
             "source": "official_listed",
             "plugin_class": "LaravelStack\\FilamentAdminOss\\OssPlugin",
+            "settings_page_slug": "settings/oss",
             "service_provider": "LaravelStack\\FilamentAdminOss\\OssServiceProvider",
             "description": "阿里云 OSS 对象存储驱动，凭证由超管在后台配置页加密存储，无需修改 .env 文件。",
             "requires": [],

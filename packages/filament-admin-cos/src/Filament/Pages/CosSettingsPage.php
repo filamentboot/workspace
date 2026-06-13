@@ -19,6 +19,8 @@ class CosSettingsPage extends SettingsPage
 {
     protected static string $settings = CosSettings::class;
 
+    protected static ?string $title = 'COS 存储配置';
+
     protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-cloud-arrow-up';
 
     protected static ?string $navigationLabel = 'COS 配置';

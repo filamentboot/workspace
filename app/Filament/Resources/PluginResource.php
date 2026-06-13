@@ -10,6 +10,7 @@ use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
 use Filament\Resources\Resource;
+use Illuminate\Support\Facades\Route;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -65,6 +66,19 @@ class PluginResource extends Resource
             ])
             ->recordActions([
                 ViewAction::make(),
+                Action::make('settings')
+                    ->label('设置')
+                    ->icon('heroicon-o-cog-6-tooth')
+                    ->url(function (Plugin $record): ?string {
+                        if (blank($record->settings_page_slug)) {
+                            return null;
+                        }
+
+                        $routeName = 'filament.admin.pages.' . str_replace('/', '.', $record->settings_page_slug);
+
+                        return Route::has($routeName) ? route($routeName) : null;
+                    })
+                    ->visible(fn (Plugin $record): bool => $record->is_enabled && filled($record->settings_page_slug)),
                 Action::make('toggle')
                     ->label(fn (Plugin $record): string => $record->is_enabled ? '禁用' : '启用')
                     ->action(function (Plugin $record): void {

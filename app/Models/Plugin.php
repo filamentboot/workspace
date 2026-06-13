@@ -47,6 +47,7 @@ class Plugin extends Model
         'kind',
         'source',
         'plugin_class',
+        'settings_page_slug',
         'service_provider',
         'installed_version',
         'description',

@@ -90,11 +90,12 @@ class PluginManager
                     'slug'              => $slug,
                     'name'              => $meta['name'] ?? $packageName,
                     'kind'              => $meta['type'] ?? 'package',
-                    'plugin_class'      => $meta['plugin_class'] ?? null,
+                    'plugin_class'       => $meta['plugin_class'] ?? null,
+                    'settings_page_slug' => $meta['settings_page_slug'] ?? null,
                     // service_provider 与 plugin_class 分离（WR-02 修复）：
                     // plugin_class 是 Filament Plugin 接口实现，
                     // service_provider 是 ServiceProvider 子类（供 vendor:publish 使用）
-                    'service_provider'  => $meta['service_provider'] ?? null,
+                    'service_provider'   => $meta['service_provider'] ?? null,
                     'installed_version' => $pkg['version'] ?? null,
                     'description'       => $meta['description'] ?? null,
                     'requires'          => $meta['requires'] ?? [],
