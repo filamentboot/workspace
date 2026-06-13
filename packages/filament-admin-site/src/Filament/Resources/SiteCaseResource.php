@@ -4,7 +4,6 @@ namespace LaravelStack\FilamentAdminSite\Filament\Resources;
 
 use BackedEnum;
 use Filament\Actions\DeleteAction;
-use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
