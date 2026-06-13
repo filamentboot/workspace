@@ -27,7 +27,11 @@
         "bezhansalleh/filament-shield": "^4.0",
         "laravelstack/filament-admin": "@dev",
         "laravelstack/filament-admin-cos": "@dev",
+        "laravelstack/filament-admin-markdown-editor": "@dev",
         "laravelstack/filament-admin-oss": "@dev",
+        "laravelstack/filament-admin-rich-editor": "@dev",
+        "laravelstack/filament-admin-wang-editor": "@dev",
+        "mews/purifier": "^3.4",
         "filament/filament": "^5.0",
         "filament/spatie-laravel-media-library-plugin": "^5.6",
         "filament/spatie-laravel-settings-plugin": "^5.6",
@@ -62,6 +66,27 @@
             "options": {
                 "symlink": true
             }
+        },
+        {
+            "type": "path",
+            "url": "packages/filament-admin-rich-editor",
+            "options": {
+                "symlink": true
+            }
+        },
+        {
+            "type": "path",
+            "url": "packages/filament-admin-markdown-editor",
+            "options": {
+                "symlink": true
+            }
+        },
+        {
+            "type": "path",
+            "url": "packages/filament-admin-wang-editor",
+            "options": {
+                "symlink": true
+            }
         }
     ],
     "require-dev": {
@@ -84,16 +109,22 @@
             "App\\": "app/",
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/",
+            "LaravelStack\\FilamentAdminCos\\": "packages/filament-admin-cos/src/",
+            "LaravelStack\\FilamentAdminMarkdownEditor\\": "packages/filament-admin-markdown-editor/src/",
             "LaravelStack\\FilamentAdminOss\\": "packages/filament-admin-oss/src/",
-            "LaravelStack\\FilamentAdminCos\\": "packages/filament-admin-cos/src/"
+            "LaravelStack\\FilamentAdminRichEditor\\": "packages/filament-admin-rich-editor/src/",
+            "LaravelStack\\FilamentAdminWangEditor\\": "packages/filament-admin-wang-editor/src/"
         }
     },
     "autoload-dev": {
         "psr-4": {
             "Tests\\": "tests/",
             "FilamentAdmin\\Tests\\": "packages/filament-admin/tests/",
-            "LaravelStack\\FilamentAdminOss\\Tests\\": "packages/filament-admin-oss/tests/",
             "LaravelStack\\FilamentAdminCos\\Tests\\": "packages/filament-admin-cos/tests/",
+            "LaravelStack\\FilamentAdminMarkdownEditor\\Tests\\": "packages/filament-admin-markdown-editor/tests/",
+            "LaravelStack\\FilamentAdminOss\\Tests\\": "packages/filament-admin-oss/tests/",
+            "LaravelStack\\FilamentAdminRichEditor\\Tests\\": "packages/filament-admin-rich-editor/tests/",
+            "LaravelStack\\FilamentAdminWangEditor\\Tests\\": "packages/filament-admin-wang-editor/tests/",
             "FilamentAdmin\\Tests\\": "packages/filament-admin/tests/"
         }
     },
