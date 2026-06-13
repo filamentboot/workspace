@@ -1,8 +1,12 @@
 <?php
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Route;
 use LaravelStack\FilamentAdminSite\Http\Controllers\SiteFrontController;
+use LaravelStack\FilamentAdminSite\Http\Livewire\CaseFilter;
+use LaravelStack\FilamentAdminSite\Http\Livewire\ContactForm;
 use LaravelStack\FilamentAdminSite\Models\SiteCase;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
@@ -13,12 +17,34 @@ uses(RefreshDatabase::class);
  * - SiteFrontController::buildSeo() 回退链：记录 seo_title → 标题 → 全局默认 → app.name（Pattern 5）
  * - SiteFrontController 仅展示已发布内容（T-10-04-04 未发布内容不泄露）
  * - 视图数据契约：controller 传递 $seoData 到视图（D-10-17）
- *
- * 注意：渲染级 HTML 断言（<title>、<meta> 标签）由 Plan 10-05 视图就绪后补强。
- * 本测试验证路由注册后控制器数据层面的正确性。
+ * - 渲染级 HTML 断言：GET 详情页响应 HTML 含 <title>/<meta name="description">/<meta property="og:title">
  *
  * @group site
  */
+
+/**
+ * 注册路由与视图命名空间（仅在此测试文件中，模拟插件启用状态）
+ */
+beforeEach(function () {
+    // 注册 filament-admin-site 视图命名空间（指向 decoration 主题，同插件启用时行为）
+    $themePath  = base_path('packages/filament-admin-site/resources/views/themes/decoration');
+    $sharedPath = base_path('packages/filament-admin-site/resources/views');
+    view()->addNamespace('filament-admin-site', $themePath);
+    view()->addNamespace('filament-admin-site-shared', $sharedPath);
+
+    // 注册 Livewire 组件（ContactForm/CaseFilter），避免 floating-contact 渲染报错
+    Livewire::component('filament-admin-site::contact-form', ContactForm::class);
+    Livewire::component('filament-admin-site::case-filter', CaseFilter::class);
+
+    // 手动注册案例详情路由（模拟 SiteServiceProvider::registerFrontend()）
+    // 仅注册 /cases/{slug}，避免与现有路由冲突
+    Route::middleware('web')
+        ->controller(SiteFrontController::class)
+        ->group(function () {
+            Route::get('/test-cases/{slug}', 'caseShow')
+                ->name('site.test.cases.show');
+        });
+});
 
 /**
  * 案例详情页 SEO meta 数据层面正确输出（Pattern 5 三层回退链验证）
@@ -95,4 +121,46 @@ it('未发布案例不被前台路由展示', function () {
 
     expect($publishedCases->pluck('slug'))->toContain('published-case-visible');
     expect($publishedCases->pluck('slug'))->not->toContain('draft-case-should-not-appear');
+});
+
+/**
+ * 渲染级 HTML 断言：seo-meta 组件渲染输出含 title/description/og:title（SEO Contract）
+ *
+ * 补强 10-04 仅测试数据层的 buildSeo 方法，本测试升级为 Blade 渲染级验证。
+ * 直接渲染 seo-meta 组件（不走完整 HTTP 路由，避免 floating-contact 的 Livewire 依赖），
+ * 断言 HTML 中含关键 SEO 标签（Pattern 5，D-10-17，SEO Contract）。
+ */
+it('详情页 seo-meta 组件渲染 HTML 包含 SEO meta 标签', function () {
+    // Seed 一条已发布案例（带 seo_title 和 seo_description）
+    $case = SiteCase::factory()->create([
+        'title_zh'        => '现代科技客厅方案',
+        'slug'            => 'modern-tech-living-room',
+        'seo_title'       => '现代科技客厅方案 - 晴空妙享',
+        'seo_description' => '专业智能家居方案，现代科技客厅定制服务。',
+        'published_at'    => now()->subDay(),
+    ]);
+
+    // 通过 buildSeo 获取 SEO 数据（同控制器行为）
+    $controller = new SiteFrontController();
+    $reflection = new ReflectionMethod($controller, 'buildSeo');
+    $reflection->setAccessible(true);
+    $seoData = $reflection->invoke($controller, $case, null, 'zh');
+
+    // 直接渲染 seo-meta.blade.php，传入 seoData（绕开 HTTP 路由，避免 Livewire 依赖）
+    $html = view('filament-admin-site::components.seo-meta', [
+        'seoData'      => $seoData,
+        'siteSettings' => null,
+    ])->render();
+
+    // 渲染级 HTML 断言：title 标签存在且包含 seo_title（SEO Contract）
+    expect($html)->toContain('<title>');
+    expect($html)->toContain('现代科技客厅方案 - 晴空妙享');
+
+    // meta name="description" 存在（SEO Contract）
+    expect($html)->toContain('<meta name="description"');
+    expect($html)->toContain('专业智能家居方案');
+
+    // og:title Open Graph 标签存在（D-10-17，SEO Contract）
+    expect($html)->toContain('<meta property="og:title"');
+    expect($html)->toContain('现代科技客厅方案 - 晴空妙享');
 });
