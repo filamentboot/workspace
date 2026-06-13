@@ -41,24 +41,40 @@ class CaseFilter extends Component
     public ?string $houseType = null;
 
     /**
-     * 风格更新时重置分页
+     * 风格更新时校验枚举白名单并重置分页
      *
-     * @param string|null $value 新风格值
+     * 非法枚举值直接重置为 null，防止任意字符串进入 URL 参数与查询（WR-04）。
+     *
+     * @param mixed $value 新风格值
      * @return void
      */
     public function updatingStyle(mixed $value): void
     {
+        $validValues = array_column(CaseStyle::cases(), 'value');
+        if ($value !== null && ! in_array($value, $validValues, true)) {
+            $this->style = null;
+
+            return;
+        }
         $this->resetPage();
     }
 
     /**
-     * 户型更新时重置分页
+     * 户型更新时校验枚举白名单并重置分页
      *
-     * @param string|null $value 新户型值
+     * 非法枚举值直接重置为 null，防止任意字符串进入 URL 参数与查询（WR-04）。
+     *
+     * @param mixed $value 新户型值
      * @return void
      */
     public function updatingHouseType(mixed $value): void
     {
+        $validValues = array_column(HouseType::cases(), 'value');
+        if ($value !== null && ! in_array($value, $validValues, true)) {
+            $this->houseType = null;
+
+            return;
+        }
         $this->resetPage();
     }
 
