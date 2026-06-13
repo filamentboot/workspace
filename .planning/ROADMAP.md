@@ -46,7 +46,17 @@ Plans:
 4. 前台模板采用 Blade + Tailwind CSS 响应式设计 + Livewire 按需交互，SEO meta（TDK）直出
 5. 支持多套可切换主题（整体皮肤切换，不只配色）
 
-**Plans**: TBD
+**Plans**: 5 plans
+
+Plans:
+
+**Wave 1**
+
+- [ ] 10-01-PLAN.md — 包骨架：composer.json extra.filament-admin 契约 + SitePlugin/SiteServiceProvider/SiteSettings/SiteSettingsPage + 8 个 Wave 0 测试桩（SITE-04）
+- [ ] 10-02-PLAN.md — 数据层：8 张 site_ 迁移表 + 7 个 Eloquent 模型 + 3 枚举 + 工厂 + SiteDemoSeeder（SITE-01）  *(wave 2, blocked on 10-01)*
+- [ ] 10-03-PLAN.md — 后台：5 个 Filament Resource CRUD（双语 Tab/SEO/图片/分类/标签/发布/置顶）+ Policy + 未读 Widget + SitePlugin 注册（SITE-01）  *(wave 3, blocked on 10-02)*
+- [ ] 10-04-PLAN.md — 前台接管层：条件路由 + SiteFrontController + 双语中间件 + ContactForm/CaseFilter Livewire + monorepo 集成（SITE-02）  *(wave 4, blocked on 10-03)*
+- [ ] 10-05-PLAN.md — 前台视觉层：decoration 全套 Blade + tech-product 骨架 + 2 套 Tailwind 主题 CSS + 主题切换 + SEO 直出（SITE-02/SITE-03）  *(wave 5, blocked on 10-04)*
 
 ---
 
