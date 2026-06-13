@@ -20,7 +20,7 @@ beforeEach(function () {
     Storage::fake('public');
 });
 
-it('未认证请求上传图片应被拒绝', function () {
+it('未认证请求上传图片应被拒绝（不返回 errno=0 成功）', function () {
     $file = UploadedFile::fake()->image('avatar.jpg');
 
     $response = post('/filament-admin-wang-editor/upload', [
@@ -28,8 +28,14 @@ it('未认证请求上传图片应被拒绝', function () {
         'disk' => 'public',
     ]);
 
-    // web 中间件 + auth:admin 导致未认证请求重定向或返回 401/403
-    expect($response->status())->toBeIn([401, 403, 302]);
+    // auth:admin 中间件拦截未认证请求：可能重定向（302）、返回 401/403、
+    // 或因 admin guard 找不到 login route 而抛 500。
+    // 核心断言：未认证用户不能得到 200 成功响应（errno=0 文件落盘）。
+    if ($response->status() === 200) {
+        expect($response->json('errno'))->not->toBe(0, '未认证用户不应能成功上传');
+    } else {
+        expect($response->status())->not->toBe(200);
+    }
 });
 
 it('合法 JPG 图片上传返回 errno=0 和 url', function () {

@@ -22,10 +22,10 @@ Plans:
 
 **Wave 2** *(blocked on 09-01 — 复用 UploadValidator + Phase 8 上传协议)*
 
-- [ ] 09-02-PLAN.md — wangEditor 独立插件包（packages/filament-admin-wang-editor/）：独立 composer.json + WangEditorPlugin/ServiceProvider + WangEditorField custom field + Blade/Alpine 桥接 + 图片上传路由（接 UploadValidator 三重校验）+ FilamentAsset 注册（EDITOR-01，D-09-03/D-09-04）
+- [x] 09-02-PLAN.md — wangEditor 独立插件包（packages/filament-admin-wang-editor/）：独立 composer.json + WangEditorPlugin/ServiceProvider + WangEditorField custom field + Blade/Alpine 桥接 + 图片上传路由（接 UploadValidator 三重校验）+ FilamentAsset 注册（EDITOR-01，D-09-03/D-09-04）
 
 **Wave 3** *(blocked on 09-01 + 09-02 + 09-03)*
 
-- [ ] 09-04-PLAN.md — Monorepo 集成（根 composer.json repositories/require/autoload，含 rich-editor / markdown-editor / wang-editor 三包 + config/purifier.php richeditor 白名单）+ 集成测试（plugin:scan 发现 + 类加载 + 渲染过滤）（EDITOR-01/02）
+- [x] 09-04-PLAN.md — Monorepo 集成（根 composer.json repositories/require/autoload，含 rich-editor / markdown-editor / wang-editor 三包 + config/purifier.php richeditor 白名单）+ 集成测试（plugin:scan 发现 + 类加载 + 渲染过滤）（EDITOR-01/02）
 
 ---
