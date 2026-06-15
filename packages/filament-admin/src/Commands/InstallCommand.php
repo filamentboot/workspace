@@ -9,14 +9,15 @@ use Illuminate\Support\ServiceProvider;
 /**
  * FilamentAdmin 一键安装命令
  *
- * 按 D-11-02 七步顺序执行安装流程：
+ * 六步顺序执行安装流程：
  * Step 1: 生成 AdminPanelProvider（幂等检测，D-11-03）
  * Step 2: vendor:publish filament-admin-config
- * Step 3: vendor:publish filament-admin-migrations
- * Step 4: vendor:publish filament-admin-lang
- * Step 5: migrate（失败则中断，T-11-03 缓解）
- * Step 6: db:seed SuperAdminSeeder
- * Step 7: 输出安装报告（T-11-02 缓解：提示修改默认密码）
+ * Step 3: vendor:publish filament-admin-lang
+ * Step 4: migrate（迁移由 FilamentAdminServiceProvider::loadMigrationsFrom 自动加载，
+ *           不 publish migrations，避免与 loadMigrationsFrom 同名类冲突；
+ *           需要自定义迁移的用户可手动运行 vendor:publish --tag=filament-admin-migrations）
+ * Step 5: db:seed SuperAdminSeeder
+ * Step 6: 输出安装报告（T-11-02 缓解：提示修改默认密码）
  */
 class InstallCommand extends Command
 {
@@ -50,15 +51,13 @@ class InstallCommand extends Command
         $this->callSilently('vendor:publish', ['--tag' => 'filament-admin-config', '--ansi' => false]);
         $this->components->info('✓ 配置文件已发布到 config/filament-admin.php');
 
-        // Step 3: vendor:publish migrations
-        $this->callSilently('vendor:publish', ['--tag' => 'filament-admin-migrations', '--ansi' => false]);
-        $this->components->info('✓ 迁移文件已发布到 database/migrations/');
-
-        // Step 4: vendor:publish lang
+        // Step 3: vendor:publish lang
         $this->callSilently('vendor:publish', ['--tag' => 'filament-admin-lang', '--ansi' => false]);
         $this->components->info('✓ 语言文件已发布到 lang/vendor/filament-admin/');
 
-        // Step 5: migrate（失败时中断，T-11-03 缓解措施）
+        // Step 4: migrate（迁移由 FilamentAdminServiceProvider::loadMigrationsFrom 自动加载，
+        //   不再 publish migrations，避免与 auto-load 产生同名类冲突。
+        //   若需自定义迁移，可手动运行 vendor:publish --tag=filament-admin-migrations）
         $this->components->info('正在执行数据库迁移...');
 
         if ($this->call('migrate') !== 0) {
@@ -69,7 +68,7 @@ class InstallCommand extends Command
 
         $this->components->info('✓ 数据库迁移完成');
 
-        // Step 6: 创建超级管理员（T-11-02：输出默认密码提示）
+        // Step 5: 创建超级管理员（T-11-02：输出默认密码提示）
         $this->callSilently('db:seed', ['--class' => 'FilamentAdmin\\Database\\Seeders\\SuperAdminSeeder']);
         $this->components->info('✓ 超级管理员已创建：admin@example.com / password');
 
