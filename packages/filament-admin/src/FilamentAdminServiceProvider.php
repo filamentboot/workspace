@@ -2,6 +2,8 @@
 
 namespace FilamentAdmin;
 
+use Filament\Forms\Components\FileUpload;
+use Filament\Support\Exceptions\Halt;
 use FilamentAdmin\Models\AdminUser;
 use FilamentAdmin\Models\Department;
 use FilamentAdmin\Models\LoginLog;
@@ -15,10 +17,10 @@ use FilamentAdmin\Policies\MenuPolicy;
 use FilamentAdmin\Policies\RolePolicy;
 use FilamentAdmin\Settings\UploadSettings;
 use FilamentAdmin\Support\UploadValidator;
-use Filament\Forms\Components\FileUpload;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\ServiceProvider;
@@ -81,6 +83,7 @@ class FilamentAdminServiceProvider extends ServiceProvider
     {
         if ($this->app->runningInConsole()) {
             $this->commands([
+                Commands\InstallCommand::class,
                 Commands\PublishCommand::class,
                 Commands\CleanActivityLogs::class,
                 Commands\CleanLoginLogs::class,
@@ -312,7 +315,7 @@ class FilamentAdminServiceProvider extends ServiceProvider
                     $files = is_array($state) ? $state : [$state];
 
                     foreach ($files as $file) {
-                        if (! $file instanceof \Illuminate\Http\UploadedFile) {
+                        if (! $file instanceof UploadedFile) {
                             continue;
                         }
 
@@ -321,7 +324,7 @@ class FilamentAdminServiceProvider extends ServiceProvider
                         } catch (\RuntimeException $e) {
                             $component->state(null);
                             $component->callAfterStateUpdated();
-                            throw \Filament\Support\Exceptions\Halt::make($e->getMessage());
+                            throw Halt::make($e->getMessage());
                         }
                     }
                 });

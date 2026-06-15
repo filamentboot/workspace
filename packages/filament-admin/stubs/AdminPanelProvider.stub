@@ -1,0 +1,55 @@
+<?php
+
+namespace App\Providers\Filament;
+
+use Filament\Http\Middleware\Authenticate;
+use Filament\Http\Middleware\AuthenticateSession;
+use Filament\Http\Middleware\DisableBladeIconComponents;
+use Filament\Http\Middleware\DispatchServingFilamentEvent;
+use Filament\Panel;
+use Filament\PanelProvider;
+use FilamentAdmin\Filament\Pages\Auth\Login;
+use FilamentAdmin\Filament\Pages\Profile;
+use FilamentAdmin\FilamentAdminPlugin;
+use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
+use Illuminate\Cookie\Middleware\EncryptCookies;
+use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
+use Illuminate\Routing\Middleware\SubstituteBindings;
+use Illuminate\Session\Middleware\StartSession;
+use Illuminate\View\Middleware\ShareErrorsFromSession;
+
+/**
+ * 管理员面板服务提供者（由 filament-admin:install 生成）
+ *
+ * 最简化配置：注册 FilamentAdminPlugin 核心插件，使用 admin guard。
+ * 如需扩展（Shield / 2FA / ActivityLog），请参阅文档后手动添加插件。
+ */
+class AdminPanelProvider extends PanelProvider
+{
+    public function panel(Panel $panel): Panel
+    {
+        return $panel
+            ->default()
+            ->id('admin')
+            ->path('admin')
+            ->login(Login::class)
+            ->profile(Profile::class)
+            ->authGuard('admin')
+            ->authPasswordBroker('admin_users')
+            ->plugin(FilamentAdminPlugin::make())
+            ->middleware([
+                EncryptCookies::class,
+                AddQueuedCookiesToResponse::class,
+                StartSession::class,
+                AuthenticateSession::class,
+                ShareErrorsFromSession::class,
+                PreventRequestForgery::class,
+                DisableBladeIconComponents::class,
+                DispatchServingFilamentEvent::class,
+                SubstituteBindings::class,
+            ])
+            ->authMiddleware([
+                Authenticate::class,
+            ]);
+    }
+}
