@@ -72,7 +72,7 @@
 
         {{-- 面板内容：Livewire ContactForm --}}
         <div class="flex-1 overflow-y-auto p-6">
-            <livewire:filament-admin-site::contact-form />
+            @livewire('filament-admin-site::contact-form')
         </div>
     </div>
 </div>

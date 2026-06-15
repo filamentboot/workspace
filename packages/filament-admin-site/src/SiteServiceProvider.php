@@ -5,8 +5,6 @@ namespace LaravelStack\FilamentAdminSite;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
-use LaravelStack\FilamentAdminSite\Http\Livewire\CaseFilter;
-use LaravelStack\FilamentAdminSite\Http\Livewire\ContactForm;
 use LaravelStack\FilamentAdminSite\Settings\SiteSettings;
 use Livewire\Livewire;
 
@@ -82,19 +80,22 @@ class SiteServiceProvider extends ServiceProvider
     }
 
     /**
-     * 注册 Livewire 前台组件
+     * 注册 Livewire 前台命名空间（Livewire v4 fix）
      *
-     * 注册两个前台组件到全局 Livewire 注册表（Pattern 6）：
-     * - filament-admin-site::contact-form → ContactForm
-     * - filament-admin-site::case-filter  → CaseFilter
+     * Livewire v4 Finder::parseNamespaceAndName() 将 '::' 识别为命名空间分隔符，
+     * Livewire::component() 显式注册的组件在命名空间查找路径中不可见（会直接返回 null）。
+     * 必须改用 addNamespace() 注册类命名空间，
+     * 使 filament-admin-site::case-filter 自动解析到 Http\Livewire\CaseFilter，
+     *    filament-admin-site::contact-form  自动解析到 Http\Livewire\ContactForm。
      *
-     * 必须在 registerFrontend()（loadRoutesFrom）之前调用，
-     * 避免视图渲染时组件尚未注册（Pitfall 6）。
+     * 必须在 registerFrontend()（loadRoutesFrom）之前调用（Pitfall 6）。
      */
     protected function registerLivewireComponents(): void
     {
-        Livewire::component('filament-admin-site::contact-form', ContactForm::class);
-        Livewire::component('filament-admin-site::case-filter', CaseFilter::class);
+        Livewire::addNamespace(
+            'filament-admin-site',
+            classNamespace: 'LaravelStack\\FilamentAdminSite\\Http\\Livewire',
+        );
     }
 
     /**
@@ -130,18 +131,19 @@ class SiteServiceProvider extends ServiceProvider
             $activeTheme = 'decoration';
         }
 
-        // 将 'filament-admin-site' 命名空间根指向当前主题目录
+        // 将 'filament-admin-site' 命名空间根指向当前主题目录（优先）
         // 10-05 在 themes/{active_theme}/ 下提供 home.blade.php、cases/index.blade.php 等
         $this->loadViewsFrom(
             __DIR__ . '/../resources/views/themes/' . $activeTheme,
             'filament-admin-site'
         );
 
-        // 注册共享视图命名空间，使 Livewire 视图（resources/views/livewire/）可解析
-        // 10-05 将 Livewire 视图放于 resources/views/livewire/，非主题子目录下
+        // Fallback：Livewire 视图在 resources/views/livewire/，不在主题子目录下
+        // Livewire 组件 render() 调用 view('filament-admin-site::livewire.*')，
+        // 主题目录无该路径时 Laravel 视图查找器自动降级到此路径（Livewire v4 view resolution fix）
         $this->loadViewsFrom(
             __DIR__ . '/../resources/views',
-            'filament-admin-site-shared'
+            'filament-admin-site'
         );
     }
 

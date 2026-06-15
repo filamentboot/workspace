@@ -24,7 +24,7 @@
             </div>
 
             {{-- Livewire 筛选组件（含网格 + 分页，UI-SPEC §Component 11） --}}
-            <livewire:filament-admin-site::case-filter />
+            @livewire('filament-admin-site::case-filter')
 
         </div>
     </section>
