@@ -5,7 +5,7 @@
     "type": "library",
     "license": "MIT",
     "keywords": ["filament", "laravel", "website", "cms", "official-site", "filament-plugin", "bilingual"],
-    "homepage": "https://github.com/john-captain/filament-admin",
+    "homepage": "https://github.com/john-captain/filament-admin-site",
     "authors": [
         {
             "name": "johncaptain",
@@ -14,10 +14,10 @@
         }
     ],
     "support": {
-        "issues": "https://github.com/john-captain/filament-admin/issues",
-        "source": "https://github.com/john-captain/filament-admin",
-        "docs": "https://github.com/john-captain/filament-admin/blob/main/wiki/site.md",
-        "wiki": "https://github.com/john-captain/filament-admin/tree/main/wiki"
+        "issues": "https://github.com/john-captain/filament-admin-site/issues",
+        "source": "https://github.com/john-captain/filament-admin-site",
+        "docs": "https://github.com/john-captain/filament-admin-site/blob/main/wiki/site.md",
+        "wiki": "https://github.com/john-captain/filament-admin-site/tree/main/wiki"
     },
     "require": {
         "php": "^8.3",
