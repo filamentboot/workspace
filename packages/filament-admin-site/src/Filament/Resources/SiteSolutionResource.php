@@ -24,7 +24,7 @@ use Filament\Tables\Table;
 use FilamentAdmin\Settings\UploadSettings;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use LaravelStack\FilamentAdminRichEditor\Forms\RichEditorField;
+use Filament\Forms\Components\RichEditor as RichEditorField;
 use LaravelStack\FilamentAdminSite\Filament\Resources\SiteSolutionResource\Pages\CreateSiteSolution;
 use LaravelStack\FilamentAdminSite\Filament\Resources\SiteSolutionResource\Pages\EditSiteSolution;
 use LaravelStack\FilamentAdminSite\Filament\Resources\SiteSolutionResource\Pages\ListSiteSolutions;

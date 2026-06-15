@@ -24,7 +24,7 @@ use Filament\Tables\Table;
 use FilamentAdmin\Settings\UploadSettings;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use LaravelStack\FilamentAdminRichEditor\Forms\RichEditorField;
+use Filament\Forms\Components\RichEditor as RichEditorField;
 use LaravelStack\FilamentAdminSite\Enums\CaseStyle;
 use LaravelStack\FilamentAdminSite\Enums\HouseType;
 use LaravelStack\FilamentAdminSite\Filament\Resources\SiteCaseResource\Pages\CreateSiteCase;

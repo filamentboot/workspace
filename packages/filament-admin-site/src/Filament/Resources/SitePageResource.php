@@ -19,7 +19,7 @@ use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
-use LaravelStack\FilamentAdminRichEditor\Forms\RichEditorField;
+use Filament\Forms\Components\RichEditor as RichEditorField;
 use LaravelStack\FilamentAdminSite\Filament\Resources\SitePageResource\Pages\CreateSitePage;
 use LaravelStack\FilamentAdminSite\Filament\Resources\SitePageResource\Pages\EditSitePage;
 use LaravelStack\FilamentAdminSite\Filament\Resources\SitePageResource\Pages\ListSitePages;
