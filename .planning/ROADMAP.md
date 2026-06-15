@@ -52,15 +52,67 @@ Plans:
 
 **Wave 1**
 
-- [ ] 10-01-PLAN.md — 包骨架：composer.json extra.filament-admin 契约 + SitePlugin/SiteServiceProvider/SiteSettings/SiteSettingsPage + 8 个 Wave 0 测试桩（SITE-04）
-- [ ] 10-02-PLAN.md — 数据层：8 张 site_ 迁移表 + 7 个 Eloquent 模型 + 3 枚举 + 工厂 + SiteDemoSeeder（SITE-01）  *(wave 2, blocked on 10-01)*
-- [ ] 10-03-PLAN.md — 后台：5 个 Filament Resource CRUD（双语 Tab/SEO/图片/分类/标签/发布/置顶）+ Policy + 未读 Widget + SitePlugin 注册（SITE-01）  *(wave 3, blocked on 10-02)*
-- [ ] 10-04-PLAN.md — 前台接管层：条件路由 + SiteFrontController + 双语中间件 + ContactForm/CaseFilter Livewire + monorepo 集成（SITE-02）  *(wave 4, blocked on 10-03)*
-- [ ] 10-05-PLAN.md — 前台视觉层：decoration 全套 Blade + tech-product 骨架 + 2 套 Tailwind 主题 CSS + 主题切换 + SEO 直出（SITE-02/SITE-03）  *(wave 5, blocked on 10-04)*
+- [x] 10-01-PLAN.md — 包骨架：composer.json extra.filament-admin 契约 + SitePlugin/SiteServiceProvider/SiteSettings/SiteSettingsPage + 8 个 Wave 0 测试桩（SITE-04）
+- [x] 10-02-PLAN.md — 数据层：8 张 site_ 迁移表 + 7 个 Eloquent 模型 + 3 枚举 + 工厂 + SiteDemoSeeder（SITE-01）  *(wave 2, blocked on 10-01)*
+- [x] 10-03-PLAN.md — 后台：5 个 Filament Resource CRUD（双语 Tab/SEO/图片/分类/标签/发布/置顶）+ Policy + 未读 Widget + SitePlugin 注册（SITE-01）  *(wave 3, blocked on 10-02)*
+- [x] 10-04-PLAN.md — 前台接管层：条件路由 + SiteFrontController + 双语中间件 + ContactForm/CaseFilter Livewire + monorepo 集成（SITE-02）  *(wave 4, blocked on 10-03)*
+- [x] 10-05-PLAN.md — 前台视觉层：decoration 全套 Blade + tech-product 骨架 + 2 套 Tailwind 主题 CSS + 主题切换 + SEO 直出（SITE-02/SITE-03）  *(wave 5, blocked on 10-04)*
 
 ---
 
-### Phase 11: 代码整理收尾
+### Phase 11: 官网插件实战 + 晴空上线
+
+**Goal**: 以"晴空智能家"真实项目为蓝本，调试并打磨 filament-admin-site 官网插件与 decoration 主题，使其达到开箱即用的展示级水准，同时将晴空官网部署上线替换现有 Next.js 站
+
+**Depends on**: Phase 10（官网插件）
+**Requirements**: SITE-DEBUG-01, SITE-THEME-01, SITE-DEPLOY-01
+**Work estimate**: 约 20-30h
+
+**Background**:
+decoration 主题的参考实现即晴空智能家官网（湖北晴空妙享科技有限公司，智能家居系统设计安装）。现有站为 Next.js + Ant Design v5，内容图片文案齐备，替换后同域名上线。主题打磨成果回合进 filament-admin-site 包，让其他用户拿到的 Seeder 示例数据具备真实质感，换图换文即可直接投入使用。
+
+**Delivery Steps**:
+
+1. **主题打磨** — decoration 主题品牌适配：晴空配色、Hero 真实背景图、service-card 数据循环、展示级视觉
+2. **补全安装命令** — 新增 `filament-admin:install` Artisan 命令，自动生成 AdminPanelProvider、注册插件、跑迁移（修补包完成度不足的缺口，成果回合进主包）
+3. **新建独立项目** — 全新独立目录 + 独立 git 仓库，不在 monorepo 内
+4. **走完整安装流程** — 命令能跑的用命令；若有残缺顺手修命令，确保安装流程端到端可复现
+5. **数据初始化 + Playwright 全流程验证** — 运行 SiteDemoSeeder，Playwright 覆盖：所有页面加载、联系表单提交、案例筛选、主题切换
+6. **SSH 部署上线** — 域名/git/服务器由用户提供；SSH 上服务器 git clone + composer install + nginx 配置 + SSL；替换 Next.js 站，旧路由 301 重定向
+
+**Success Criteria**:
+
+1. `php artisan filament-admin:install` 命令可在全新 Laravel 13 项目中一键完成基础接入（AdminPanelProvider + 迁移 + 插件注册）
+2. filament-admin-site 在独立新项目中可完整安装、plugin:scan 发现、后台管理内容
+3. decoration 主题完成晴空品牌适配，视觉效果明显优于原 Ant Design 站
+4. Playwright 完整流程全绿：所有页面加载正常，联系表单可提交，案例筛选可用，主题切换正常
+5. 晴空智能家官网 SSH 部署上线，同域名替换 Next.js 站，旧路由 301 重定向
+6. SiteDemoSeeder 更新为晴空品质示例数据，主题改进与 install 命令均合并回对应包
+
+**Plans**: 5 plans
+
+Plans:
+
+**Wave 1**
+
+- [ ] 11-01-PLAN.md — filament-admin:install 命令（七步一键接入）+ AdminPanelProvider stub + InstallCommandTest（SITE-DEBUG-01）
+- [ ] 11-02-PLAN.md — decoration 主题晴空品牌适配（Hero 背景图 + service-card 文案）+ SiteDemoSeeder 真实内容（本地图片优先降级）（SITE-THEME-01）
+
+**Wave 2** *(blocked on 11-01 + 11-02，需先 commit)*
+
+- [ ] 11-03-PLAN.md — filament-admin-site subtree split 发布 v0.10.0 → 独立 GitHub 仓库 → Packagist 收录 + 干净环境验证（SITE-DEBUG-01）
+
+**Wave 3** *(blocked on 11-03 发包)*
+
+- [ ] 11-04-PLAN.md — 晴空独立项目端到端安装链路（composer require → install → plugin:scan → 启用 → Seeder）+ 真实图片 + Playwright 全流程（SITE-DEBUG-01 / SITE-THEME-01）
+
+**Wave 4** *(blocked on 11-04 本地验证)*
+
+- [ ] 11-05-PLAN.md — SSH 部署 qkznj.com 上线（/var/www/qkznj + nginx php8.4-fpm + acme.sh SSL + 旧路由 301）替换 Next.js 站（SITE-DEPLOY-01）
+
+---
+
+### Phase 21: 代码整理收尾
 
 **Goal**: 清理累积的技术债、修复已登记 bug、将代码质量提升到发版标准
 
@@ -78,11 +130,11 @@ Plans:
 
 ---
 
-### Phase 12: 发版与仓库整理
+### Phase 22: 发版与仓库整理
 
 **Goal**: 打 v0.5.0 tag，完成 Packagist 发版、subtree split 子包同步、CHANGELOG 更新
 
-**Depends on**: Phase 11
+**Depends on**: Phase 21
 **Requirements**: RELEASE-07
 **Work estimate**: 约 1-2h
 
