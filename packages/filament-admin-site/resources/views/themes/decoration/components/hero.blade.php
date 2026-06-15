@@ -3,6 +3,11 @@
  *
  * min-h-dvh 全屏高度，eyebrow 标签，响应式 H1，品牌渐变关键词，副标题，CTA 行，scroll indicator。
  * 文案来自 UI-SPEC §Copywriting，支持中英双语。
+ *
+ * 背景图支持（D-11-10 SITE-THEME-01）：
+ * 读取 config('filament-admin-site.hero_background_image')，存在时叠加背景图（底层）；
+ * 渐变光圈保持在背景图之上（z-index 叠加）。
+ * 无配置时回落到现有 bg-site-base 纯色+渐变，不报错。
  --}}
 @php
     $isZh = app()->getLocale() !== 'en';
@@ -15,12 +20,20 @@
     $ctaLabel     = $isZh ? '预约咨询' : 'Book a Consultation';
     $ctaSecondary = $isZh ? '查看案例' : 'View Cases';
     $casesUrl     = $isZh ? url('/cases') : url('/en/cases');
+
+    // 背景图支持（D-11-10，SITE-THEME-01）
+    // 来源：config('filament-admin-site.hero_background_image')
+    // 管理员在 config 中配置图片 URL，无配置时 null，回落纯色背景
+    $heroBg = config('filament-admin-site.hero_background_image', null);
 @endphp
 
 <section class="relative min-h-dvh min-h-screen overflow-hidden bg-site-base flex items-center justify-center"
+         @if($heroBg)
+         style="background-image: url('{{ $heroBg }}'); background-size: cover; background-position: center;"
+         @endif
          aria-labelledby="hero-heading">
 
-    {{-- 背景装饰光圈（径向渐变，只在支持 motion 时动画） --}}
+    {{-- 背景装饰光圈（径向渐变叠加在背景图之上，只在支持 motion 时动画） --}}
     <div class="absolute inset-0 pointer-events-none" aria-hidden="true">
         <div class="absolute inset-0"
              style="background: radial-gradient(ellipse 80% 60% at 50% 100%, rgba(0, 212, 255, 0.10), transparent);">
