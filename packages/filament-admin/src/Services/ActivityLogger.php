@@ -57,10 +57,17 @@ class ActivityLogger
 
     /**
      * 获取当前操作人
+     *
+     * 在 Seeder / Console 等场景下 'admin' guard 可能未注册，
+     * 用 try-catch 静默降级返回 null，避免中断安装流程。
      */
     public function currentCauser(): ?AdminUser
     {
-        $user = auth('admin')->user();
+        try {
+            $user = auth('admin')->user();
+        } catch (\Throwable) {
+            return null;
+        }
 
         return $user instanceof AdminUser ? $user : null;
     }

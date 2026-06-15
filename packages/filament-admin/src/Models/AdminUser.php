@@ -63,6 +63,9 @@ class AdminUser extends Authenticatable implements FilamentUser, HasMedia, HasNa
     /** @var string */
     protected $table = 'admin_users';
 
+    /** Spatie Permission guard（必须与 AdminPanelProvider->authGuard 一致） */
+    protected string $guard_name = 'admin';
+
     /** @var list<string> */
     protected $guarded = [];
 
