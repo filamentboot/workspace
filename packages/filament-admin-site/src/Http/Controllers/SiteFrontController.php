@@ -121,7 +121,7 @@ class SiteFrontController extends Controller
     {
         $settings = $this->resolveSettings();
         $locale   = app()->getLocale();
-        $records  = SiteProduct::published()->take(12)->get();
+        $records  = SiteProduct::published()->paginate(12);
         $seoData  = $this->buildListSeo('产品', 'Products', $settings, $locale);
 
         return view('filament-admin-site::products.index', compact('records', 'seoData', 'locale', 'settings'));

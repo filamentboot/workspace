@@ -4,8 +4,8 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\PluginResource\Pages\ListPlugins;
 use App\Filament\Resources\PluginResource\Pages\ViewPlugin;
-use App\Models\Plugin;
 use App\Services\PluginManager;
+use FilamentAdmin\Models\Plugin;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\ViewAction;

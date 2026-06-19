@@ -20,8 +20,10 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
 
-    {{-- decoration 主题 CSS（Tailwind v4 CSS-first，包含 @theme token + 语义工具类） --}}
-    @vite('packages/filament-admin-site/resources/css/themes/decoration.css')
+    {{-- decoration 主题 CSS（Tailwind v4 CSS-first，包含 @theme token + 语义工具类）
+         Vite 入口路径通过 vendor/ 访问，与宿主项目 vite.config.js 输入声明一致。
+         须在宿主项目 vite.config.js 的 input 中添加此路径后执行 npm run build。 --}}
+    @vite('vendor/laravelstack/filament-admin-site/resources/css/themes/decoration.css')
 
     @stack('head')
 </head>

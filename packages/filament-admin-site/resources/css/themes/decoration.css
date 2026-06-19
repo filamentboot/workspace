@@ -14,6 +14,9 @@
 /* Pitfall 5 防 purge：扫描包内视图与 vendor publish 后视图 */
 @source '../views/**/*.blade.php';
 @source '../../../../../../resources/views/vendor/filament-admin-site/**/*.blade.php';
+/* Pitfall 6 防 symlink purge：当包以 path repository 形式安装（开发模式 symlink）时，
+   preserveSymlinks:true 阻止 Tailwind 跟随 symlink，改用相对项目根的路径兜底 */
+@source './../../views/**/*.blade.php';
 
 @theme {
     /* === decoration 主题：深色科技/智能家居 === */

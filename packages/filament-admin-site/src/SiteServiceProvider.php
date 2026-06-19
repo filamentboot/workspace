@@ -30,23 +30,31 @@ class SiteServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
+        $isEnabled = false;
+
         try {
+            // 优先从缓存读取，缓存写失败时降级为直接查 DB（不把写缓存异常误判为"未启用"）
             $isEnabled = Cache::remember(
                 'filament-admin-site:is_enabled',
-                now()->addMinutes(10),
+                now()->addHours(24),
                 fn () => DB::table('plugins')
                     ->where('slug', 'filament-admin-site')
                     ->where('is_enabled', true)
                     ->exists()
             );
-
-            if (! $isEnabled) {
-                // 插件未启用：只注册迁移，不加载前台资源
-                $this->registerMigrationsAndViews();
-
-                return;
+        } catch (\Throwable) {
+            // 缓存不可用（权限、驱动故障）时直接查 DB
+            try {
+                $isEnabled = DB::table('plugins')
+                    ->where('slug', 'filament-admin-site')
+                    ->where('is_enabled', true)
+                    ->exists();
+            } catch (\Throwable) {
+                // plugins 表未迁移或 DB 不可用：静默降级，不注册前台资源
             }
+        }
 
+        if ($isEnabled) {
             // 插件已启用：注册 Livewire 组件（须先于路由，Pitfall 6）
             $this->registerLivewireComponents();
 
@@ -55,12 +63,6 @@ class SiteServiceProvider extends ServiceProvider
 
             // 注册前台路由（loadRoutesFrom site.php）
             $this->registerFrontend();
-        } catch (\Throwable) {
-            // plugins 表未迁移或数据库不可用时静默跳过前台注册
-            // 此分支已 return，registerFrontend 不会被调用（符合 Pitfall 1/2 防护）
-            $this->registerMigrationsAndViews();
-
-            return;
         }
 
         // 无论启用与否，均注册迁移与视图发布

@@ -95,20 +95,43 @@ Plans:
 
 **Wave 1**
 
-- [ ] 11-01-PLAN.md — filament-admin:install 命令（七步一键接入）+ AdminPanelProvider stub + InstallCommandTest（SITE-DEBUG-01）
-- [ ] 11-02-PLAN.md — decoration 主题晴空品牌适配（Hero 背景图 + service-card 文案）+ SiteDemoSeeder 真实内容（本地图片优先降级）（SITE-THEME-01）
+- [x] 11-01-PLAN.md — filament-admin:install 命令（七步一键接入）+ AdminPanelProvider stub + InstallCommandTest（SITE-DEBUG-01）
+- [x] 11-02-PLAN.md — decoration 主题晴空品牌适配（Hero 背景图 + service-card 文案）+ SiteDemoSeeder 真实内容（本地图片优先降级）（SITE-THEME-01）
 
 **Wave 2** *(blocked on 11-01 + 11-02，需先 commit)*
 
-- [ ] 11-03-PLAN.md — filament-admin-site subtree split 发布 v0.10.0 → 独立 GitHub 仓库 → Packagist 收录 + 干净环境验证（SITE-DEBUG-01）
+- [x] 11-03-PLAN.md — filament-admin-site subtree split 发布 v0.10.0 → 独立 GitHub 仓库 → Packagist 收录 + 干净环境验证（SITE-DEBUG-01）
 
 **Wave 3** *(blocked on 11-03 发包)*
 
-- [ ] 11-04-PLAN.md — 晴空独立项目端到端安装链路（composer require → install → plugin:scan → 启用 → Seeder）+ 真实图片 + Playwright 全流程（SITE-DEBUG-01 / SITE-THEME-01）
+- [x] 11-04-PLAN.md — 晴空独立项目端到端安装链路（composer require → install → plugin:scan → 启用 → Seeder）+ 真实图片 + Playwright 全流程（SITE-DEBUG-01 / SITE-THEME-01）
 
 **Wave 4** *(blocked on 11-04 本地验证)*
 
-- [ ] 11-05-PLAN.md — SSH 部署 qkznj.com 上线（/var/www/qkznj + nginx php8.4-fpm + acme.sh SSL + 旧路由 301）替换 Next.js 站（SITE-DEPLOY-01）
+- [x] 11-05-PLAN.md — SSH 部署 qkznj.com 上线（/var/www/qkznj + nginx php8.4-fpm + acme.sh SSL + 旧路由 301）替换 Next.js 站（SITE-DEPLOY-01）
+
+---
+
+### Phase 12: 插件市场重构 — Filament 生态对接
+
+**Goal**: 将 Phase 6 实现的自定义插件协议迁移到 `Filament\Contracts\Plugin` 标准，使 filament-admin 后台插件市场能无障碍容纳并管理任意符合 Filament 规范的社区开源插件，实现"浏览 → 安装 → 启用 → 卸载"全流程
+
+**Depends on**: Phase 6（插件市场基础架构），Phase 11（完成）
+**Requirements**: MKTPLACE-01, MKTPLACE-02, MKTPLACE-03, MKTPLACE-04, MKTPLACE-05, MKTPLACE-06, MKTPLACE-07, MKTPLACE-08
+**Work estimate**: 约 25-35h
+**UI hint**: yes（插件目录浏览页、安装状态 UI、依赖冲突提示）
+
+**Success Criteria**:
+
+1. `PluginScanCommand` 扫描 `vendor/` 中实现 `Filament\Contracts\Plugin` 的类，而非依赖自定义协议
+2. 后台"安装"按钮能触发 `composer require` 并全程反馈状态
+3. 安装成功后自动完成 publish / migrate / dump-autoload，无需手动干预
+4. 依赖冲突时显示可读错误 + 手动安装命令，不崩溃
+5. 插件目录显示 Filament 兼容版本标签，不兼容插件禁止安装
+6. 卸载流程完整（composer remove + DB 清理 + cache 清理）
+7. 安装前环境自检通过（权限 + Composer 路径）
+
+**Plans**: TBD（执行前用 gsd-plan-phase 生成）
 
 ---
 

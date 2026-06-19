@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Models;
+namespace FilamentAdmin\Models;
 
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -10,29 +10,30 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 /**
  * 插件运行时状态模型
  *
- * 存储已扫描/已安装插件的元数据与状态。
- * 写入仅经 plugin:scan / PluginManager（服务层），本模型仅提供数据契约。
+ * 存储已扫描/已安装插件的元数据与启用状态。
+ * 写入仅经 plugin:scan / PluginManager，本模型仅提供数据契约。
  *
- * @property int                      $id
- * @property string                   $package_name    vendor/package 格式
- * @property string                   $slug
- * @property string                   $name
- * @property string                   $kind            package | solution_plugin
- * @property string                   $source          official_trusted | official_listed | community
- * @property string|null              $plugin_class      Filament Plugin 接口实现类名
- * @property string|null              $service_provider  ServiceProvider 子类名（供 vendor:publish 使用）
- * @property string|null              $installed_version
- * @property string|null              $description
+ * @property int                       $id
+ * @property string                    $package_name    vendor/package 格式
+ * @property string                    $slug
+ * @property string                    $name
+ * @property string                    $kind            package | solution_plugin
+ * @property string                    $source          official_trusted | official_listed | community
+ * @property string|null               $plugin_class      Filament Plugin 接口实现类名
+ * @property string|null               $settings_page_slug Filament settings 页 slug
+ * @property string|null               $service_provider  ServiceProvider 子类名（供 vendor:publish 使用）
+ * @property string|null               $installed_version
+ * @property string|null               $description
  * @property array<string, mixed>|null $requires
  * @property array<string, mixed>|null $compatibility
  * @property array<string, mixed>|null $config_overrides
- * @property bool                     $is_enabled
- * @property string                   $init_status     pending | running | done | failed
- * @property string|null              $init_log
- * @property \Carbon\Carbon|null      $installed_at
- * @property \Carbon\Carbon           $created_at
- * @property \Carbon\Carbon           $updated_at
- * @property \Carbon\Carbon|null      $deleted_at
+ * @property bool                      $is_enabled
+ * @property string                    $init_status     pending | running | done | failed
+ * @property string|null               $init_log
+ * @property \Carbon\Carbon|null       $installed_at
+ * @property \Carbon\Carbon            $created_at
+ * @property \Carbon\Carbon            $updated_at
+ * @property \Carbon\Carbon|null       $deleted_at
  */
 class Plugin extends Model
 {

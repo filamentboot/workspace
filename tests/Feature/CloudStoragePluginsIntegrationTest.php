@@ -112,14 +112,14 @@ it('plugin:scan 发现 OSS 与 COS 两个云存储插件', function () {
     expect($count)->toBeGreaterThanOrEqual(2);
 
     // 验证 OSS 插件记录已写入
-    $ossPlugin = \App\Models\Plugin::where('package_name', 'laravelstack/filament-admin-oss')->first();
+    $ossPlugin = \FilamentAdmin\Models\Plugin::where('package_name', 'laravelstack/filament-admin-oss')->first();
     expect($ossPlugin)->not->toBeNull('期望 filament-admin-oss 插件记录存在');
     expect($ossPlugin->slug)->toBe('filament-admin-oss');
     expect($ossPlugin->plugin_class)->not->toBeEmpty('期望 plugin_class 字段非空');
     expect($ossPlugin->service_provider)->not->toBeEmpty('期望 service_provider 字段非空');
 
     // 验证 COS 插件记录已写入
-    $cosPlugin = \App\Models\Plugin::where('package_name', 'laravelstack/filament-admin-cos')->first();
+    $cosPlugin = \FilamentAdmin\Models\Plugin::where('package_name', 'laravelstack/filament-admin-cos')->first();
     expect($cosPlugin)->not->toBeNull('期望 filament-admin-cos 插件记录存在');
     expect($cosPlugin->slug)->toBe('filament-admin-cos');
     expect($cosPlugin->plugin_class)->not->toBeEmpty('期望 plugin_class 字段非空');

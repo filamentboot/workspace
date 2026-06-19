@@ -1,12 +1,12 @@
 <?php
 
-namespace Database\Factories;
+namespace Database\Factories\FilamentAdmin\Models;
 
-use App\Models\Plugin;
+use FilamentAdmin\Models\Plugin;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * 插件模型工厂
+ * 插件模型工厂（自动发现命名空间：Database\Factories\{Model full path}）
  *
  * @extends Factory<Plugin>
  */
@@ -22,7 +22,7 @@ class PluginFactory extends Factory
      */
     public function definition(): array
     {
-        $vendor = $this->faker->slug(2);
+        $vendor  = $this->faker->slug(2);
         $package = $this->faker->slug(2);
 
         return [

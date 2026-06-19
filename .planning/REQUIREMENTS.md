@@ -8,6 +8,7 @@
 
 - `COMPLY-XX` — 包发布合规（Composer/PSR/Filament Plugin 规范性）
 - `DOC-XX` — 文档与品宣
+- `MKTPLACE-XX` — 插件市场重构（Phase 12，对接 Filament 社区生态）
 - `FEAT-XX` — 包功能补强（按 GAP-ANALYSIS 决策点选入）
 - `RELEASE-XX` — 发布自动化
 - `DEMO-XX` — 演示站（v0.5.1，不阻塞 v0.5 主线）
@@ -227,5 +228,36 @@ Phase 映射（由 ROADMAP.md 阶段细化，此处仅 milestone 视图）。
 
 ---
 
+---
+
+## 插件市场重构需求（Phase 12）
+
+> 将 Phase 6 实现的自定义插件协议迁移到 Filament 社区标准，让 filament-admin 能无障碍容纳任意符合 `Filament\Contracts\Plugin` 规范的社区插件。
+> 架构决策详见：`.planning/notes/plugin-marketplace-refactor-architecture.md`
+
+- [ ] **MKTPLACE-01**: 插件协议对齐 — 将 `PluginScanCommand` 和 `PluginManager` 的发现机制从自定义协议改为扫描 `vendor/` 中实现了 `Filament\Contracts\Plugin` 接口的类；`plugins` 表保留 enable/disable 状态，移除自定义协议专属字段
+- [ ] **MKTPLACE-02**: 运行时 Composer 安装 — 后台"安装"按钮触发 Queue Job，通过 `proc_open()` 执行 `composer require vendor/package`；安装过程实时推送状态（进行中 / 成功 / 失败）
+- [ ] **MKTPLACE-03**: Post-install 生命周期 — 安装成功后自动执行：`artisan vendor:publish`（按插件声明的 tags）、`artisan migrate`、`composer dump-autoload`；任一步骤失败记录日志并提示用户手动处理
+- [ ] **MKTPLACE-04**: 依赖冲突处理 UX — 捕获 Composer 错误输出，解析冲突原因，在后台以可读方式展示；降级方案：显示手动安装命令（`composer require ...`）供用户复制
+- [ ] **MKTPLACE-05**: 版本兼容性过滤 — 读取候选插件的 `composer.json` 中 `require.filament/filament` 约束，与当前环境版本比对；目录中标注兼容性标签，不兼容的插件不显示"安装"按钮
+- [ ] **MKTPLACE-06**: 卸载流程 — 后台"卸载"触发 Queue Job：`composer remove vendor/package` + 删除 `plugins` 表记录 + `artisan optimize:clear`；卸载前提示"此操作不可逆"
+- [ ] **MKTPLACE-07**: 运行环境自检 — 安装前检测：`vendor/` 目录写权限、Composer 可执行文件路径（按优先级探测：env `COMPOSER_PATH` → `which composer` → `/usr/local/bin/composer`）；检测失败时后台显示操作指引
+- [ ] **MKTPLACE-08**: 插件目录数据源 — 提供可浏览的社区插件目录；初期方案：内置精选列表（JSON 配置文件，手动维护），后期可对接 Packagist API（keyword=filament）；每条目录项含：包名、描述、Filament 兼容版本、GitHub stars、安装命令
+
+### 插件市场需求追踪表
+
+| REQ-ID | Phase | Status |
+|--------|-------|--------|
+| MKTPLACE-01 | Phase 12 | Pending |
+| MKTPLACE-02 | Phase 12 | Pending |
+| MKTPLACE-03 | Phase 12 | Pending |
+| MKTPLACE-04 | Phase 12 | Pending |
+| MKTPLACE-05 | Phase 12 | Pending |
+| MKTPLACE-06 | Phase 12 | Pending |
+| MKTPLACE-07 | Phase 12 | Pending |
+| MKTPLACE-08 | Phase 12 | Pending |
+
+---
+
 *Requirements defined: 2026-06-09*
-*Last updated: 2026-06-09 after `/gsd-new-project` initialization*
+*Last updated: 2026-06-20 — 新增 MKTPLACE-01~08（插件市场重构，Phase 12）*

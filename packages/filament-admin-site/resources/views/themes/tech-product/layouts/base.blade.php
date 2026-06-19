@@ -36,7 +36,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
 
     {{-- tech-product 主题 CSS（浅色 token，Tailwind v4 CSS-first） --}}
-    @vite('packages/filament-admin-site/resources/css/themes/tech-product.css')
+    @vite('vendor/laravelstack/filament-admin-site/resources/css/themes/tech-product.css')
 
     @stack('head')
 </head>

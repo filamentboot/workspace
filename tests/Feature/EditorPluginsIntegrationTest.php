@@ -1,6 +1,6 @@
 <?php
 
-use App\Models\Plugin;
+use FilamentAdmin\Models\Plugin;
 use App\Services\PluginManager;
 use FilamentAdmin\Models\AdminUser;
 use Illuminate\Http\UploadedFile;

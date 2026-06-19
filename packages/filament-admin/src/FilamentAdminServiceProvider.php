@@ -94,6 +94,8 @@ class FilamentAdminServiceProvider extends ServiceProvider
                 Commands\MakeFilamentAdminTestCommand::class,
                 // DEMO-02：演示站数据重置命令
                 Commands\DemoReset::class,
+                // PLUGIN：插件扫描命令
+                Commands\PluginScanCommand::class,
             ]);
         }
     }

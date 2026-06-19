@@ -3,8 +3,8 @@
 namespace App\Providers;
 
 use App\Enums\ApiErrorCode;
-use App\Models\Plugin;
 use App\Policies\PluginPolicy;
+use FilamentAdmin\Models\Plugin;
 use Dedoc\Scramble\Scramble;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Routing\Route;

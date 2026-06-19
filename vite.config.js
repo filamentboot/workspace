@@ -9,8 +9,8 @@ export default defineConfig({
             input: [
                 'resources/css/app.css',
                 'resources/js/app.js',
-                'packages/filament-admin-site/resources/css/themes/decoration.css',
-                'packages/filament-admin-site/resources/css/themes/tech-product.css',
+                'vendor/laravelstack/filament-admin-site/resources/css/themes/decoration.css',
+                'vendor/laravelstack/filament-admin-site/resources/css/themes/tech-product.css',
             ],
             refresh: true,
             fonts: [

@@ -3,14 +3,14 @@ gsd_state_version: 1.0
 milestone: v0.5
 milestone_name: milestone
 status: executing
-stopped_at: Phase 11 context gathered
-last_updated: "2026-06-15T06:09:45.163Z"
+stopped_at: Phase 11 force-closed（Plugin 系统已移入主包，Phase 12 将重构插件市场协议）
+last_updated: "2026-06-20T00:00:00.000Z"
 progress:
-  total_phases: 5
-  completed_phases: 2
-  total_plans: 9
-  completed_plans: 9
-  percent: 40
+  total_phases: 6
+  completed_phases: 3
+  total_plans: 19
+  completed_plans: 14
+  percent: 74
 ---
 
 # Project State: FilamentAdmin v0.5
@@ -27,15 +27,15 @@ See: .planning/PROJECT.md (updated 2026-06-12)
 
 **Core value:** 别人执行 `composer require laravelstack/filament-admin` 后能开箱运行、能扩展定制、能稳定升级，且包发布形态符合 Laravel 开源市场规范
 
-**Current focus:** Phase 10 — official-website-plugin
+**Current focus:** Phase 11 — official-website-debugging-launch
 
 ---
 
 ## Current Position
 
-Phase: 10 (official-website-plugin) — EXECUTING
+Phase: 11 (official-website-debugging-launch) — EXECUTING
 Plan: 1 of 5
-Status: Executing Phase 10
+Status: Executing Phase 11
 
 ```
 current_phase:   8

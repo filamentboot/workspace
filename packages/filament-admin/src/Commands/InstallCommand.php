@@ -9,15 +9,16 @@ use Illuminate\Support\ServiceProvider;
 /**
  * FilamentAdmin 一键安装命令
  *
- * 六步顺序执行安装流程：
+ * 七步顺序执行安装流程：
  * Step 1: 生成 AdminPanelProvider（幂等检测，D-11-03）
- * Step 2: vendor:publish filament-admin-config
- * Step 3: vendor:publish filament-admin-lang
- * Step 4: migrate（迁移由 FilamentAdminServiceProvider::loadMigrationsFrom 自动加载，
+ * Step 2: 注入 admin guard 到 config/auth.php（幂等：已存在时跳过）
+ * Step 3: vendor:publish filament-admin-config
+ * Step 4: vendor:publish filament-admin-lang
+ * Step 5: migrate（迁移由 FilamentAdminServiceProvider::loadMigrationsFrom 自动加载，
  *           不 publish migrations，避免与 loadMigrationsFrom 同名类冲突；
  *           需要自定义迁移的用户可手动运行 vendor:publish --tag=filament-admin-migrations）
- * Step 5: db:seed SuperAdminSeeder
- * Step 6: 输出安装报告（T-11-02 缓解：提示修改默认密码）
+ * Step 6: db:seed SuperAdminSeeder
+ * Step 7: 输出安装报告（T-11-02 缓解：提示修改默认密码）
  */
 class InstallCommand extends Command
 {
@@ -47,7 +48,10 @@ class InstallCommand extends Command
             return self::FAILURE;
         }
 
-        // Step 2: vendor:publish config（使用 tag 规避 Pitfall 1）
+        // Step 2: 注入 admin guard 到 config/auth.php
+        $this->injectAuthGuard();
+
+        // Step 3: vendor:publish config（使用 tag 规避 Pitfall 1）
         $this->callSilently('vendor:publish', ['--tag' => 'filament-admin-config', '--ansi' => false]);
         $this->components->info('✓ 配置文件已发布到 config/filament-admin.php');
 
@@ -86,6 +90,85 @@ class InstallCommand extends Command
         $this->line('  <fg=cyan>php artisan plugin:scan</>');
 
         return self::SUCCESS;
+    }
+
+    /**
+     * 向 config/auth.php 注入 admin guard、admin_users provider 和密码重置配置
+     *
+     * 幂等：已存在 admin guard 时跳过，防止重复添加。
+     * 使用字符串替换而非 AST 解析，保持文件原有格式。
+     */
+    protected function injectAuthGuard(): void
+    {
+        $authConfig = config_path('auth.php');
+
+        if (! file_exists($authConfig)) {
+            $this->components->warn('config/auth.php 不存在，跳过 admin guard 注入');
+
+            return;
+        }
+
+        $content = file_get_contents($authConfig);
+
+        // 幂等：已包含 admin guard 时跳过
+        if (str_contains($content, "'admin'")) {
+            $this->components->info('✓ admin guard 已存在，跳过注入');
+
+            return;
+        }
+
+        // 注入 admin guard（在 'web' guard 之后）
+        $guardSnippet = <<<'PHP'
+
+        // 管理员 guard（由 filament-admin:install 添加）
+        'admin' => [
+            'driver'   => 'session',
+            'provider' => 'admin_users',
+        ],
+PHP;
+        $content = str_replace(
+            "'web' => [\n            'driver' => 'session',\n            'provider' => 'users',\n        ],\n    ],",
+            "'web' => [\n            'driver' => 'session',\n            'provider' => 'users',\n        ]," . $guardSnippet . "\n    ],",
+            $content
+        );
+
+        // 注入 admin_users provider
+        $providerSnippet = <<<'PHP'
+
+        // 管理员用户 provider（由 filament-admin:install 添加）
+        'admin_users' => [
+            'driver' => 'eloquent',
+            'model'  => \FilamentAdmin\Models\AdminUser::class,
+        ],
+PHP;
+        // 在 providers 数组的末尾 ], 之前插入（找到 users provider 结束处）
+        $content = preg_replace(
+            "/(\\s+'users'\\s*=>\\s*\\[[^\\]]+\\],\\s*)(\\n\\s+\\/\\/.*?\\n\\s+\\],|\\n\\s+\\],)/s",
+            '$1' . $providerSnippet . '$2',
+            $content,
+            1
+        );
+
+        // 注入 admin_users 密码重置
+        $passwordSnippet = <<<'PHP'
+
+        // 管理员密码重置（由 filament-admin:install 添加）
+        'admin_users' => [
+            'provider' => 'admin_users',
+            'table'    => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),
+            'expire'   => 60,
+            'throttle' => 60,
+        ],
+PHP;
+        $content = preg_replace(
+            "/(\\s+'users'\\s*=>\\s*\\[\\s*'provider'\\s*=>\\s*'users'[^\\]]+\\],\\s*)(\\n\\s+\\],)/s",
+            '$1' . $passwordSnippet . '$2',
+            $content,
+            1
+        );
+
+        file_put_contents($authConfig, $content);
+        $this->components->info('✓ admin guard 已注入到 config/auth.php');
     }
 
     /**
