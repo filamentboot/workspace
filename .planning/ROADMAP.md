@@ -117,8 +117,8 @@ Plans:
 **Goal**: 将 Phase 6 实现的自定义插件协议迁移到 `Filament\Contracts\Plugin` 标准，使 filament-admin 后台插件市场能无障碍容纳并管理任意符合 Filament 规范的社区开源插件，实现"浏览 → 安装 → 启用 → 卸载"全流程
 
 **Depends on**: Phase 6（插件市场基础架构），Phase 11（完成）
-**Requirements**: MKTPLACE-01, MKTPLACE-02, MKTPLACE-03, MKTPLACE-04, MKTPLACE-05, MKTPLACE-06, MKTPLACE-07, MKTPLACE-08
-**Work estimate**: 约 25-35h
+**Requirements**: MKTPLACE-01~09, DOC-09, DOC-10, DOC-11
+**Work estimate**: 约 30-40h
 **UI hint**: yes（插件目录浏览页、安装状态 UI、依赖冲突提示）
 
 **Success Criteria**:
@@ -130,6 +130,10 @@ Plans:
 5. 插件目录显示 Filament 兼容版本标签，不兼容插件禁止安装
 6. 卸载流程完整（composer remove + DB 清理 + cache 清理）
 7. 安装前环境自检通过（权限 + Composer 路径）
+8. 所有现有一方插件（OSS / COS / 编辑器系列 / filament-admin-site）通过合规审查，符合 Filament\Contracts\Plugin 规范
+9. `wiki/plugin-development.md` 完整，国内开发者可照着文档从零写一个兼容插件
+10. `wiki/plugin-usage.md` 完整，涵盖手动安装、后台管理、常见问题排查
+11. 主包 README 新增插件生态章节，一方插件列表与文档链接齐备
 
 **Plans**: TBD（执行前用 gsd-plan-phase 生成）
 

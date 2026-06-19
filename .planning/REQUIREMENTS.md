@@ -243,6 +243,7 @@ Phase 映射（由 ROADMAP.md 阶段细化，此处仅 milestone 视图）。
 - [ ] **MKTPLACE-06**: 卸载流程 — 后台"卸载"触发 Queue Job：`composer remove vendor/package` + 删除 `plugins` 表记录 + `artisan optimize:clear`；卸载前提示"此操作不可逆"
 - [ ] **MKTPLACE-07**: 运行环境自检 — 安装前检测：`vendor/` 目录写权限、Composer 可执行文件路径（按优先级探测：env `COMPOSER_PATH` → `which composer` → `/usr/local/bin/composer`）；检测失败时后台显示操作指引
 - [ ] **MKTPLACE-08**: 插件目录数据源 — 提供可浏览的社区插件目录；初期方案：内置精选列表（JSON 配置文件，手动维护），后期可对接 Packagist API（keyword=filament）；每条目录项含：包名、描述、Filament 兼容版本、GitHub stars、安装命令
+- [ ] **MKTPLACE-09**: 现有一方插件合规审查 — 逐一验证 `packages/` 下所有插件包（filament-admin-oss / cos / rich-editor / markdown-editor / wang-editor / filament-admin-site）是否完整实现 `Filament\Contracts\Plugin` 接口（`getId` / `register` / `boot` / `make`）及 `composer.json` 规范字段（`type: library`、`keywords` 含 `filament`、`extra.laravel.providers`）；审查结果生成合规报告，不合规项当场修复；**本次不实际提交 filamentphp.com，仅确保"随时可提交"状态**
 
 ### 插件市场需求追踪表
 
@@ -256,8 +257,43 @@ Phase 映射（由 ROADMAP.md 阶段细化，此处仅 milestone 视图）。
 | MKTPLACE-06 | Phase 12 | Pending |
 | MKTPLACE-07 | Phase 12 | Pending |
 | MKTPLACE-08 | Phase 12 | Pending |
+| MKTPLACE-09 | Phase 12 | Pending |
+
+---
+
+## 插件生态文档需求（Phase 12 配套）
+
+> 面向国内开发者的中文文档体系。目标读者有两类：**插件开发者**（想给 filament-admin 写兼容插件的技术人）和**插件使用者**（装了 filament-admin 想用/管理插件的用户）。
+> 策略：国际合规被动保持（现有插件符合 Filament 规范即可），国内文档主动建设。
+
+- [ ] **DOC-09**: 插件开发规范文档（中文）— `wiki/plugin-development.md`，涵盖：
+  - 什么是 filament-admin 兼容插件（与 Filament 原生插件的关系）
+  - 必须实现的接口：`Filament\Contracts\Plugin`（`getId` / `register` / `boot` / `make`）
+  - filament-admin 扩展约定：如何声明所需迁移、如何注册设置页、如何声明 post-install hooks
+  - `composer.json` 规范字段清单（type / keywords / extra.laravel.providers）
+  - 完整示例：从零创建一个最小兼容插件的代码骨架
+  - 如何提交到 filament-admin 插件目录（内置列表 PR 流程）
+  - 可选：如何同时上架 filamentphp.com 官方市场
+
+- [ ] **DOC-10**: 插件安装与管理文档（中文）— `wiki/plugin-usage.md`，涵盖：
+  - 通过后台插件市场一键安装（Phase 12 实现后）
+  - 手动安装方式：`composer require` + 后台启用
+  - 插件启用后如何生效（Panel 注册机制说明）
+  - 插件配置：进入插件设置页
+  - 禁用与卸载插件
+  - 常见问题：依赖冲突处理、权限不足、插件不显示排查
+
+- [ ] **DOC-11**: 主包 README 插件生态章节 — 在 `packages/filament-admin/README.md` 新增"插件生态"章节，简要介绍官方一方插件列表（OSS / COS / 编辑器 / 官网插件）、安装方式、及"如何开发兼容插件"的链接跳转（指向 wiki/plugin-development.md）
+
+### 插件生态文档需求追踪表
+
+| REQ-ID | Phase | Status |
+|--------|-------|--------|
+| DOC-09 | Phase 12 | Pending |
+| DOC-10 | Phase 12 | Pending |
+| DOC-11 | Phase 12 | Pending |
 
 ---
 
 *Requirements defined: 2026-06-09*
-*Last updated: 2026-06-20 — 新增 MKTPLACE-01~08（插件市场重构，Phase 12）*
+*Last updated: 2026-06-20 — 新增 MKTPLACE-01~09（插件市场重构）+ DOC-09~11（插件生态文档，Phase 12）*
