@@ -135,7 +135,7 @@ Plans:
 10. `wiki/plugin-usage.md` 完整，涵盖手动安装、后台管理、常见问题排查
 11. 主包 README 新增插件生态章节，一方插件列表与文档链接齐备
 
-**Plans**: 7/7 plans complete + 2 gap-closure plans (UAT)
+**Plans**: 9/9 plans complete
 
 Plans:
 **Wave 1**
@@ -159,8 +159,8 @@ Plans:
 
 **Gap closure** *(from 12-UAT.md — major/minor findings)*
 
-- [ ] 12-07-PLAN.md — 市场一键安装 firstOrCreate 修复（installPlugin/installCommunityPlugin no-op）+ composer require 版本约束（MKTPLACE-02/04）
-- [ ] 12-08-PLAN.md — Filament 自定义主题（->viteTheme）编译市场 blade 自定义 utility，修复未渲染样式（MKTPLACE-04）
+- [x] 12-07-PLAN.md — 市场一键安装 firstOrCreate 修复（installPlugin/installCommunityPlugin no-op）+ composer require 版本约束（MKTPLACE-02/04）
+- [x] 12-08-PLAN.md — Filament 自定义主题（->viteTheme）编译市场 blade 自定义 utility，修复未渲染样式（MKTPLACE-04）
 
 ---
 

@@ -2,15 +2,17 @@
 gsd_state_version: 1.0
 milestone: v0.5
 milestone_name: milestone
+current_phase: 21
+current_phase_name: 代码整理收尾
 status: executing
-stopped_at: Phase 11 force-closed（Plugin 系统已移入主包，Phase 12 将重构插件市场协议）
-last_updated: "2026-06-20T00:00:00.000Z"
+stopped_at: Completed 12-06-PLAN.md (plugin ecosystem docs — DOC-09/10/11)
+last_updated: "2026-06-20T16:39:48.611Z"
 progress:
-  total_phases: 6
-  completed_phases: 3
-  total_plans: 19
-  completed_plans: 14
-  percent: 74
+  total_phases: 7
+  completed_phases: 4
+  total_plans: 23
+  completed_plans: 23
+  percent: 57
 ---
 
 # Project State: FilamentAdmin v0.5
@@ -27,15 +29,15 @@ See: .planning/PROJECT.md (updated 2026-06-12)
 
 **Core value:** 别人执行 `composer require laravelstack/filament-admin` 后能开箱运行、能扩展定制、能稳定升级，且包发布形态符合 Laravel 开源市场规范
 
-**Current focus:** Phase 11 — official-website-debugging-launch
+**Current focus:** Phase 12 — filament
 
 ---
 
 ## Current Position
 
-Phase: 11 (official-website-debugging-launch) — EXECUTING
-Plan: 1 of 5
-Status: Executing Phase 11
+Phase: 21 — 代码整理收尾
+Plan: Not started
+Status: Ready to execute
 
 ```
 current_phase:   8
@@ -59,10 +61,11 @@ Phase 08 [##########] 100%  云存储插件（4/4）✓
 Phase 09 [##########] 100%  编辑器插件（4/4）✓
 Phase 10 [          ]   0%  官网插件（待规划）
 Phase 11 [          ]   0%  调试官网插件（待规划）
+Phase 13 [          ]   0%  改名基础设施（待规划）
 Phase 21 [          ]   0%  代码整理收尾（待规划）
 Phase 22 [          ]   0%  发版与仓库整理（待规划）
 
-Overall  [#######    ]  60%  (9/15 phases)
+Overall  [#######    ]  56%  (9/16 phases)
 ```
 
 ---
@@ -82,6 +85,8 @@ Overall  [#######    ]  60%  (9/15 phases)
 | 9 | 编辑器插件 | EDITOR-01~02 | ~8-12h | Completed |
 | 10 | 官网插件 | SITE-01~04 | ~10-15h | Not started |
 | 11 | 调试官网插件 | SITE-DEBUG-01 | TBD | Not started |
+| 12 | 插件市场重构 | MKTPLACE-01~09, DOC-09~11 | ~30-40h | Not started |
+| 13 | 改名基础设施 | — | ~8-12h | Not started |
 | 21 | 代码整理收尾 | CLEANUP-01~03 | ~15-20h | Not started |
 | 22 | 发版与仓库整理 | RELEASE-07 | ~1-2h | Not started |
 
@@ -129,6 +134,15 @@ test_count:         287 / 287 passing（Phase 09 新增 12 tests：8 集成 + 4 
 | Phase 06 P02 | 30 | 2 tasks | 8 files |
 | Phase 06 P03 | 25min | 3 tasks | 12 files |
 | Phase 06 P04 | 12min | 3 tasks | 10 files |
+| Phase 12-filament P00 | 321 | 2 tasks | 8 files |
+| Phase 12-filament P02 | 408 | 3 tasks | 7 files |
+| Phase 12-filament P03 | 452 | 2 tasks | 4 files |
+| Phase 12-filament P05 | 420s | 2 tasks | 9 files |
+| Phase 12-filament P04 | 268 | 3 tasks | 3 files |
+| Phase 12-filament P04 | 268 | 4 tasks | 3 files |
+| Phase 12-filament P06 | 278 | 2 tasks | 3 files |
+| Phase 12-filament P07 | 653 | 3 tasks | 4 files |
+| Phase 12-filament P08 | 20min | 3 tasks | 3 files |
 
 ### Critical Facts
 
@@ -161,9 +175,9 @@ test_count:         287 / 287 passing（Phase 09 新增 12 tests：8 集成 + 4 
 
 ## Session Continuity
 
-Last session: 2026-06-15T06:09:45.142Z
-Stopped at: Phase 11 context gathered
-Resume file: .planning/phases/11-official-website-debugging-launch/11-CONTEXT.md
+Last session: 2026-06-20T16:15:13.978Z
+Stopped at: Completed 12-06-PLAN.md (plugin ecosystem docs — DOC-09/10/11)
+Resume file: None
 
 **未解决问题:**
 
@@ -225,3 +239,11 @@ Resume file: .planning/phases/11-official-website-debugging-launch/11-CONTEXT.md
 - [Phase 06-plugin-marketplace-launch P04]: Filament 5 Page::$view 为实例属性（非 static），子类用 protected string $view 声明
 - [Phase 06-plugin-marketplace-launch P04]: AdminPanelProvider 通过 ->tap() + 私有方法 registerEnabledPlugins 动态注册插件（Cache 30s + try/catch Throwable）
 - [Phase 06-plugin-marketplace-launch P04]: ReflectionMethod::setAccessible 直接测试私有方法三条分支（命中/过滤/异常）
+- [Phase ?]: Wave 0 markTestIncomplete pattern: use $this->markTestIncomplete() in Pest closures
+- [Phase ?]: T-12-02-01: validatePackageName strict regex before any Process spawn
+- [Phase ?]: buildComposerProcess: array command only, COMPOSER_HOME isolated to tmpdir/PID
+- [Phase ?]: postInstall idempotent: migrate failure caught+logged (Pitfall 6), seeders catch per-class, dump-autoload fallback
+- [Phase ?]: uninstall: disable()-first before composer remove to prevent class-not-found on next request (Pitfall 5)
+- [Phase ?]: DOC-09 uses laravelstack/filament-admin-oss as the worked sample — real post_install block from 12-05 compliance
+- [Phase ?]: README 插件生态 section appended above 许可证, listing 6 first-party plugins + links to plugin-development.md and plugin-usage.md
+- [Phase ?]: 12-08: ->viteTheme() custom theme chosen over blade rewrite — lower regression risk, canonical Filament v5 mechanism
