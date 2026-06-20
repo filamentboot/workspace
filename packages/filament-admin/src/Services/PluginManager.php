@@ -428,6 +428,10 @@ class PluginManager
      * 检查单个 PHP 文件是否实现 Filament Plugin 接口
      *
      * 排除 /tests/ 路径（T-12-01-02）和抽象类（T-12-01-01）。
+     *
+     * WR-03：使用正则匹配 class 声明行中的 implements Plugin，而非纯字符串搜索。
+     * 这样 use Filament\Contracts\Plugin 导入语句或方法参数 Plugin $p 不会误报。
+     * 不调用 class_exists / 不实例化任何类（T-12-01-01 威胁缓解）。
      */
     private function fileMatchesPluginInterface(string $filePath, string $interfaceMarker): bool
     {
@@ -443,13 +447,20 @@ class PluginManager
 
         $content = file_get_contents($filePath);
 
-        // 跳过抽象类
+        // 跳过抽象类（T-12-01-01）
         if (str_contains($content, 'abstract class')) {
             return false;
         }
 
-        return str_contains($content, $interfaceMarker) ||
-               str_contains($content, 'implements Plugin');
+        // WR-03：仅匹配 class 声明行中出现 implements ... Plugin
+        // 正则说明：
+        //   \bclass\s+\w+      → 类名声明
+        //   [^{]*\bimplements\b → implements 关键字（类体 { 之前）
+        //   [^{]*\bPlugin\b     → 接口名 Plugin（完整词边界，排除 PluginFoo 等误匹配）
+        return (bool) preg_match(
+            '/\bclass\s+\w+[^{]*\bimplements\b[^{]*\bPlugin\b/s',
+            $content
+        );
     }
 
     /**
