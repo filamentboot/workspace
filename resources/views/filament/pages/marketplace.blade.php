@@ -129,7 +129,7 @@
                                     @if ($envCheckOk && $compatStatus !== 'incompatible')
                                         @php $pkgName = $entry['package_name'] ?? $entry['slug'] ?? ''; @endphp
                                         <x-filament::button
-                                            wire:click="$dispatch('install-plugin', { package: '{{ $pkgName }}' })"
+                                            wire:click="installPlugin('{{ $pkgName }}')"
                                             color="primary"
                                             size="sm"
                                             icon="heroicon-o-arrow-down-tray">
@@ -244,9 +244,9 @@
                                 {{-- 安装区块 --}}
                                 <div class="border-t border-gray-100 dark:border-gray-800 pt-3">
                                     @if ($envCheckOk && $compatStatus !== 'incompatible')
-                                        {{-- 社区插件安装按钮：点击会触发第三方风险确认 (D-12-13 通过 PluginResource Action 处理) --}}
+                                        {{-- 社区插件安装按钮（CR-02 修复：直接调用 Livewire 方法，含社区风险提示） --}}
                                         <x-filament::button
-                                            wire:click="$dispatch('install-community-plugin', { package: '{{ $item['name'] }}' })"
+                                            wire:click="installCommunityPlugin('{{ $item['name'] }}')"
                                             color="warning"
                                             size="sm"
                                             icon="heroicon-o-arrow-down-tray">
@@ -290,7 +290,7 @@
                         </p>
                         <div class="mt-3">
                             <x-filament::button
-                                wire:click="$dispatch('scan-installed-plugins')"
+                                wire:click="scanInstalledPlugins()"
                                 color="gray"
                                 size="sm"
                                 icon="heroicon-o-magnifying-glass">
@@ -352,14 +352,14 @@
                                 <div class="border-t border-gray-100 dark:border-gray-800 pt-3 flex gap-2">
                                     @if ($plugin->init_status === 'failed')
                                         <x-filament::button
-                                            wire:click="$dispatch('retry-install', { pluginId: {{ $plugin->id }} })"
+                                            wire:click="retryInstall({{ $plugin->id }})"
                                             color="warning"
                                             size="sm">
                                             重试安装
                                         </x-filament::button>
                                     @endif
                                     <x-filament::button
-                                        wire:click="$dispatch('uninstall-plugin', { pluginId: {{ $plugin->id }} })"
+                                        wire:click="uninstallPlugin({{ $plugin->id }})"
                                         color="danger"
                                         size="sm"
                                         icon="heroicon-o-trash">

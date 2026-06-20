@@ -9,6 +9,8 @@ use Filament\Pages\Page;
 use FilamentAdmin\Models\Plugin;
 use FilamentAdmin\Services\EnvironmentChecker;
 use FilamentAdmin\Services\PluginCompatibility;
+use FilamentAdmin\Services\PluginManager;
+use Illuminate\Support\Facades\Artisan;
 use UnitEnum;
 
 /**
@@ -18,6 +20,9 @@ use UnitEnum;
  * mount() 调 MarketplaceService::fetchIndex 加载官方条目；
  * loadCommunity() 调 PackagistService 检索社区插件并映射兼容性；
  * checkInstallStatus() 供 wire:poll 轮询安装进度。
+ *
+ * CR-02：所有安装/卸载操作通过直接 Livewire 方法调用（不使用 $dispatch 浏览器事件），
+ * 并在方法体内执行显式权限检查，防止绕过授权。
  */
 class MarketplacePage extends Page
 {
@@ -125,6 +130,89 @@ class MarketplacePage extends Page
         if (in_array($plugin->init_status, ['done', 'failed'], true)) {
             $this->pollingPluginId = null;
         }
+    }
+
+    /**
+     * 安装官方市场插件
+     *
+     * 根据包名查找或创建 Plugin 记录，授权后触发后台安装 Job。
+     * 按 CR-02 修复：直接 Livewire 方法调用，替代无监听器的 $dispatch('install-plugin')。
+     *
+     * @param  string  $package  vendor/package 格式
+     */
+    public function installPlugin(string $package): void
+    {
+        $this->authorize('install_plugin', new Plugin());
+
+        $plugin = Plugin::where('package_name', $package)->first();
+
+        if ($plugin === null) {
+            return;
+        }
+
+        app(PluginManager::class)->install($plugin);
+        $this->pollingPluginId = $plugin->id;
+    }
+
+    /**
+     * 安装社区插件
+     *
+     * 与 installPlugin 相同逻辑，但社区来源在 PluginResource 中有额外风险确认 (D-12-13)。
+     * 此方法在 MarketplacePage 内直接执行，UI 层已在 Blade 侧展示社区风险提示。
+     *
+     * @param  string  $package  vendor/package 格式
+     */
+    public function installCommunityPlugin(string $package): void
+    {
+        $this->authorize('install_plugin', new Plugin());
+
+        $plugin = Plugin::where('package_name', $package)->first();
+
+        if ($plugin === null) {
+            return;
+        }
+
+        app(PluginManager::class)->install($plugin);
+        $this->pollingPluginId = $plugin->id;
+    }
+
+    /**
+     * 扫描并同步已安装插件到数据库（调 plugin:scan artisan 命令）
+     *
+     * 按 CR-02 修复：替代无监听器的 $dispatch('scan-installed-plugins')。
+     */
+    public function scanInstalledPlugins(): void
+    {
+        $this->authorize('view_any_plugin', new Plugin());
+
+        Artisan::call('plugin:scan');
+    }
+
+    /**
+     * 重试失败的插件安装
+     *
+     * @param  int  $pluginId  目标插件 ID
+     */
+    public function retryInstall(int $pluginId): void
+    {
+        $plugin = Plugin::findOrFail($pluginId);
+        $this->authorize('install_plugin', $plugin);
+
+        app(PluginManager::class)->install($plugin);
+        $this->pollingPluginId = $plugin->id;
+    }
+
+    /**
+     * 卸载插件（不删除数据表，MarketplacePage 不暴露 drop_tables 选项）
+     *
+     * @param  int  $pluginId  目标插件 ID
+     */
+    public function uninstallPlugin(int $pluginId): void
+    {
+        $plugin = Plugin::findOrFail($pluginId);
+        $this->authorize('uninstall_plugin', $plugin);
+
+        app(PluginManager::class)->uninstall($plugin, false);
     }
 
     /**
