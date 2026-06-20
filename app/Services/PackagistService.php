@@ -65,10 +65,17 @@ class PackagistService
      * 获取指定包声明的 filament/filament 约束（取最新稳定版）
      *
      * 过滤 dev/alpha/beta 版本（RESEARCH Pitfall 3 — 不稳定版本排在前面）。
-     * 非 200 或无稳定版时返回 null。
+     * 非 200、无稳定版或无效包名时返回 null。
+     *
+     * WR-01：防御性校验 $packageName 格式，避免 list-destructure 崩溃。
      */
     public function getPackageConstraint(string $packageName): ?string
     {
+        // WR-01：包名必须包含斜杠，否则 explode 返回单元素数组，导致 PHP Warning
+        if (! str_contains($packageName, '/')) {
+            return null;
+        }
+
         [$vendor, $pkg] = explode('/', $packageName, 2);
         $cacheKey       = "packagist.p2.{$vendor}.{$pkg}";
 
