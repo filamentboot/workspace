@@ -193,6 +193,35 @@ php artisan filament-admin:publish --model=Product --force
 
 ---
 
+## 插件生态
+
+filament-admin 提供开箱即用的插件市场（后台"插件市场"Tab），支持一键安装 Composer 插件、
+启用/禁用、自动执行 `post_install` 钩子（发布资源、迁移、种子）。
+
+### 一方插件（官方出品）
+
+| 插件 | Composer 安装命令 | 功能 |
+|------|------------------|------|
+| 阿里云 OSS 存储 | `composer require laravelstack/filament-admin-oss` | Flysystem OSS 磁盘驱动，后台凭证管理页 |
+| 腾讯云 COS 存储 | `composer require laravelstack/filament-admin-cos` | Flysystem COS 磁盘驱动，后台凭证管理页 |
+| 富文本编辑器 | `composer require laravelstack/filament-admin-rich-editor` | 基于 Quill.js 的富文本编辑器 Field |
+| Markdown 编辑器 | `composer require laravelstack/filament-admin-markdown-editor` | Markdown 编辑器 Field，实时预览 |
+| WangEditor 编辑器 | `composer require laravelstack/filament-admin-wang-editor` | 基于 WangEditor 5 的中文富文本编辑器 Field |
+| 官网插件 | `composer require laravelstack/filament-admin-site` | 企业官网内容管理（页面、文章、联系信息） |
+
+### 如何开发兼容插件
+
+参阅 [wiki/plugin-development.md](https://github.com/john-captain/filament-admin/blob/main/wiki/plugin-development.md)
+了解从零创建 filament-admin 兼容插件的完整流程：接口实现、`composer.json` 规范字段、
+`extra.filament-admin` 扩展约定、`post_install` 钩子声明，以及提交到官方市场的步骤。
+
+### 如何使用与管理插件
+
+参阅 [wiki/plugin-usage.md](https://github.com/john-captain/filament-admin/blob/main/wiki/plugin-usage.md)
+了解后台一键安装、手动安装、启用/禁用、插件配置、卸载及常见问题排查。
+
+---
+
 ## 许可证
 
 MIT License © [FilamentAdmin](https://github.com/john-captain/filament-admin)
