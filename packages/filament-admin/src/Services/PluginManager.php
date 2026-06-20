@@ -2,10 +2,11 @@
 
 namespace FilamentAdmin\Services;
 
-use Composer\Semver\Semver;
+use Composer\InstalledVersions;
 use FilamentAdmin\Models\Plugin;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\ServiceProvider;
 
 /**
  * 插件管理服务（基础版）
@@ -25,7 +26,7 @@ class PluginManager
         $issues = $this->checkDependencies($plugin);
         if (! empty($issues)) {
             throw new \RuntimeException(
-                '插件兼容性不满足，无法启用：' . implode('；', $issues)
+                '插件兼容性不满足，无法启用：'.implode('；', $issues)
             );
         }
 
@@ -85,8 +86,6 @@ class PluginManager
                     'service_provider'   => $meta['service_provider'] ?? null,
                     'installed_version'  => $pkg['version'] ?? null,
                     'description'        => $meta['description'] ?? null,
-                    'requires'           => $meta['requires'] ?? [],
-                    'compatibility'      => $meta['compatibility'] ?? [],
                     'source'             => $meta['source'] ?? 'community',
                     'installed_at'       => $existing?->installed_at ?? now(),
                 ]
@@ -120,7 +119,7 @@ class PluginManager
             $plugin->update(['init_status' => 'done']);
             $this->updateCacheStatus($slug, 'done');
         } catch (\Throwable $e) {
-            $this->appendInitLog($slug, '初始化失败：' . $e->getMessage());
+            $this->appendInitLog($slug, '初始化失败：'.$e->getMessage());
             $log = $this->getInitLog($slug);
             $plugin->update([
                 'init_status' => 'failed',
@@ -137,33 +136,9 @@ class PluginManager
      */
     public function checkDependencies(Plugin $plugin): array
     {
-        $issues        = [];
-        $compatibility = $plugin->compatibility ?? [];
-
-        if (empty($compatibility)) {
-            return [];
-        }
-
-        $currentVersions = $this->getCurrentEnvironmentVersions();
-
-        foreach ($compatibility as $package => $constraint) {
-            $currentVersion = $currentVersions[$package] ?? null;
-
-            if ($currentVersion === null) {
-                $issues[] = "未知依赖包 '{$package}'，请手动确认兼容性";
-                continue;
-            }
-
-            try {
-                if (! Semver::satisfies($currentVersion, $constraint)) {
-                    $issues[] = "'{$package}' 当前版本 {$currentVersion} 不满足约束 {$constraint}";
-                }
-            } catch (\Throwable) {
-                $issues[] = "'{$package}' 版本约束 '{$constraint}' 格式无效";
-            }
-        }
-
-        return $issues;
+        // Phase 12: compatibility 字段已迁移至 Packagist p2 端点（MKTPLACE-05，Plan 02）
+        // 本方法保留供 Plan 02 扩展，当前版本返回空数组（无阻塞）
+        return [];
     }
 
     /**
@@ -172,7 +147,7 @@ class PluginManager
     protected function runMigrate(string $slug): void
     {
         Artisan::call('migrate', ['--force' => true]);
-        $this->appendInitLog($slug, '迁移完成：' . trim(Artisan::output()));
+        $this->appendInitLog($slug, '迁移完成：'.trim(Artisan::output()));
     }
 
     /**
@@ -190,7 +165,7 @@ class PluginManager
             return;
         }
 
-        if (! is_subclass_of($serviceProvider, \Illuminate\Support\ServiceProvider::class)) {
+        if (! is_subclass_of($serviceProvider, ServiceProvider::class)) {
             $this->appendInitLog($slug, "service_provider '{$serviceProvider}' 不是有效的 ServiceProvider，跳过。");
 
             return;
@@ -200,7 +175,7 @@ class PluginManager
             '--provider' => $serviceProvider,
             '--force'    => true,
         ]);
-        $this->appendInitLog($slug, '资源发布完成：' . trim(Artisan::output()));
+        $this->appendInitLog($slug, '资源发布完成：'.trim(Artisan::output()));
     }
 
     /**
@@ -222,7 +197,7 @@ class PluginManager
         }
 
         Artisan::call('db:seed', $seederArgs);
-        $this->appendInitLog($slug, '数据填充完成：' . trim(Artisan::output()));
+        $this->appendInitLog($slug, '数据填充完成：'.trim(Artisan::output()));
     }
 
     /**
@@ -247,8 +222,8 @@ class PluginManager
     protected function resolvePackageVersion(string $packageName): string
     {
         try {
-            if (\Composer\InstalledVersions::isInstalled($packageName)) {
-                return \Composer\InstalledVersions::getPrettyVersion($packageName) ?? '0.0.0';
+            if (InstalledVersions::isInstalled($packageName)) {
+                return InstalledVersions::getPrettyVersion($packageName) ?? '0.0.0';
             }
         } catch (\Throwable) {
             // 忽略
@@ -270,8 +245,8 @@ class PluginManager
 
     private function updateCacheStatus(string $slug, string $status): void
     {
-        $key           = "plugin.init.{$slug}";
-        $current       = Cache::get($key, ['status' => $status, 'logs' => []]);
+        $key               = "plugin.init.{$slug}";
+        $current           = Cache::get($key, ['status' => $status, 'logs' => []]);
         $current['status'] = $status;
         Cache::put($key, $current, 300);
     }

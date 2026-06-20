@@ -26,17 +26,15 @@ class PluginFactory extends Factory
         $package = $this->faker->slug(2);
 
         return [
-            'package_name'      => $vendor . '/' . $package,
-            'slug'              => $vendor . '-' . $package,
+            'package_name'      => $vendor.'/'.$package,
+            'slug'              => $vendor.'-'.$package,
             'name'              => $this->faker->words(3, true),
             'kind'              => 'package',
             'source'            => 'community',
             'plugin_class'      => null,
             'installed_version' => null,
             'description'       => $this->faker->sentence(),
-            'requires'          => [],
-            'compatibility'     => [],
-            'config_overrides'  => [],
+            'post_install_data' => null,
             'is_enabled'        => false,
             'init_status'       => 'pending',
             'init_log'          => null,
@@ -62,7 +60,7 @@ class PluginFactory extends Factory
     {
         return $this->state([
             'kind'         => 'solution_plugin',
-            'plugin_class' => 'App\\Plugins\\' . $this->faker->word() . 'Plugin',
+            'plugin_class' => 'App\\Plugins\\'.$this->faker->word().'Plugin',
         ]);
     }
 }
