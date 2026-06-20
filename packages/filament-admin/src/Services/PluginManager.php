@@ -499,23 +499,30 @@ class PluginManager
 
     /**
      * 执行插件 Seeder
+     *
+     * 仅在能够解析出具体 Seeder 类时执行 db:seed，否则跳过。
+     * 不允许不带 --class 参数调用 db:seed，防止触发应用根 DatabaseSeeder（CR-01）。
      */
     protected function runSeeder(string $slug, Plugin $plugin): void
     {
-        $seederArgs = ['--force' => true];
+        if (! $plugin->plugin_class) {
+            $this->appendInitLog($slug, '无 plugin_class 声明，跳过数据填充。');
 
-        if ($plugin->plugin_class) {
-            $seederClass = str($plugin->plugin_class)
-                ->beforeLast('\\')
-                ->append('\\DatabaseSeeder')
-                ->toString();
-
-            if (class_exists($seederClass)) {
-                $seederArgs['--class'] = $seederClass;
-            }
+            return;
         }
 
-        Artisan::call('db:seed', $seederArgs);
+        $seederClass = str($plugin->plugin_class)
+            ->beforeLast('\\')
+            ->append('\\DatabaseSeeder')
+            ->toString();
+
+        if (! class_exists($seederClass)) {
+            $this->appendInitLog($slug, "未找到 Seeder 类 {$seederClass}，跳过数据填充。");
+
+            return;
+        }
+
+        Artisan::call('db:seed', ['--class' => $seederClass, '--force' => true]);
         $this->appendInitLog($slug, '数据填充完成：'.trim(Artisan::output()));
     }
 
