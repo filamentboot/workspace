@@ -96,6 +96,8 @@ class FilamentAdminServiceProvider extends ServiceProvider
                 Commands\DemoReset::class,
                 // PLUGIN：插件扫描命令
                 Commands\PluginScanCommand::class,
+                // MKTPLACE-09：一方插件合规审查命令
+                Commands\AuditPluginsCommand::class,
             ]);
         }
     }
