@@ -33,3 +33,39 @@ function assertDatabaseHasInOrder(string $table, array $data): void
     }
     expect($query->exists())->toBeTrue();
 }
+
+/**
+ * Packagist 搜索 API fake 响应（MKTPLACE-08 / Wave 0 shared fixture）
+ *
+ * 返回符合 packagist.org/search.json 文档结构的 fake 数据：
+ * { results: [{name, description, url, repository, downloads, favers}], total: INT, next: URL|null }
+ *
+ * 来源：RESEARCH §Code Examples "Packagist 搜索结果字段完整示例"（实测验证）
+ *
+ * @return array{results: list<array{name: string, description: string, url: string, repository: string, downloads: int, favers: int}>, total: int, next: string|null}
+ */
+function fakePackagistSearch(): array
+{
+    return [
+        'results' => [
+            [
+                'name'        => 'bezhansalleh/filament-shield',
+                'description' => 'Filament support for `spatie/laravel-permission`.',
+                'url'         => 'https://packagist.org/packages/bezhansalleh/filament-shield',
+                'repository'  => 'https://github.com/bezhanSalleh/filament-shield',
+                'downloads'   => 3712246,
+                'favers'      => 2785,
+            ],
+            [
+                'name'        => 'awcodes/filament-tiptap-editor',
+                'description' => 'A Tiptap integration for Filament Forms.',
+                'url'         => 'https://packagist.org/packages/awcodes/filament-tiptap-editor',
+                'repository'  => 'https://github.com/awcodes/filament-tiptap-editor',
+                'downloads'   => 1250000,
+                'favers'      => 980,
+            ],
+        ],
+        'total' => 1445,
+        'next'  => 'https://packagist.org/search.json?q=&page=2&tags%5B0%5D=filament&per_page=15',
+    ];
+}
