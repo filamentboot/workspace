@@ -4,24 +4,26 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\PluginResource\Pages\ListPlugins;
 use App\Filament\Resources\PluginResource\Pages\ViewPlugin;
-use App\Services\PluginManager;
-use FilamentAdmin\Models\Plugin;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\ViewAction;
+use Filament\Forms\Components\Checkbox;
 use Filament\Resources\Resource;
-use Illuminate\Support\Facades\Route;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
+use FilamentAdmin\Models\Plugin;
+use FilamentAdmin\Services\PluginManager;
+use Illuminate\Support\Facades\Route;
 use UnitEnum;
 
 /**
  * 插件管理后台资源
  *
- * 提供已安装插件的列表展示、启停操作和初始化入口。
- * 扫描功能通过 ListPlugins 页头按钮调 plugin:scan 命令触发。
+ * 提供已安装插件的列表展示、启停操作和安装/卸载入口。
+ * 安装 Action：调 PluginManager::install()，社区来源触发第三方风险确认（D-12-13）。
+ * 卸载 Action：带 drop_tables 复选框（默认未勾选），调 PluginManager::uninstall()（D-12-14）。
  */
 class PluginResource extends Resource
 {
@@ -63,9 +65,57 @@ class PluginResource extends Resource
                 TextColumn::make('init_status')
                     ->label('初始化状态')
                     ->badge(),
+                TextColumn::make('compatibility_status')
+                    ->label('兼容性')
+                    ->badge()
+                    ->color(fn (?string $state): string => match ($state) {
+                        'compatible'   => 'success',
+                        'incompatible' => 'danger',
+                        default        => 'warning',
+                    })
+                    ->formatStateUsing(fn (?string $state): string => match ($state) {
+                        'compatible'   => '兼容',
+                        'incompatible' => '不兼容',
+                        default        => '未知',
+                    }),
             ])
             ->recordActions([
                 ViewAction::make(),
+                Action::make('install')
+                    ->label('安装插件')
+                    ->icon('heroicon-o-arrow-down-tray')
+                    ->color('primary')
+                    ->requiresConfirmation(fn (Plugin $record): bool => $record->source === 'community')
+                    ->modalHeading(fn (Plugin $record): string => $record->source === 'community' ? '安装第三方插件' : '安装插件')
+                    ->modalDescription(fn (Plugin $record): string => $record->source === 'community'
+                        ? '此插件来自社区，未经官方审核。安装前请自行评估安全风险。继续安装即表示您接受相关风险。'
+                        : '确认安装此插件？')
+                    ->modalSubmitActionLabel(fn (Plugin $record): string => $record->source === 'community' ? '我已了解，继续安装' : '确认安装')
+                    ->action(function (Plugin $record): void {
+                        app(PluginManager::class)->install($record);
+                    })
+                    ->authorize('install_plugin')
+                    ->visible(fn (Plugin $record): bool => $record->init_status !== 'done'
+                        && $record->compatibility_status !== 'incompatible'),
+                Action::make('uninstall')
+                    ->label('卸载')
+                    ->icon('heroicon-o-trash')
+                    ->color('danger')
+                    ->requiresConfirmation()
+                    ->modalHeading('卸载插件')
+                    ->modalDescription('此操作不可逆。卸载将移除 Composer 包并清除插件状态记录。')
+                    ->modalSubmitActionLabel('确认卸载')
+                    ->form([
+                        Checkbox::make('drop_tables')
+                            ->label('同时删除插件自建数据表')
+                            ->default(false)
+                            ->helperText(fn (Plugin $record): string => self::buildDropTablesHelperText($record)),
+                    ])
+                    ->action(function (Plugin $record, array $data): void {
+                        app(PluginManager::class)->uninstall($record, $data['drop_tables'] ?? false);
+                    })
+                    ->authorize('uninstall_plugin')
+                    ->visible(fn (Plugin $record): bool => $record->init_status === 'done'),
                 Action::make('settings')
                     ->label('设置')
                     ->icon('heroicon-o-cog-6-tooth')
@@ -74,7 +124,7 @@ class PluginResource extends Resource
                             return null;
                         }
 
-                        $routeName = 'filament.admin.pages.' . str_replace('/', '.', $record->settings_page_slug);
+                        $routeName = 'filament.admin.pages.'.str_replace('/', '.', $record->settings_page_slug);
 
                         return Route::has($routeName) ? route($routeName) : null;
                     })
@@ -99,5 +149,23 @@ class PluginResource extends Resource
             'index' => ListPlugins::route('/'),
             'view'  => ViewPlugin::route('/{record}'),
         ];
+    }
+
+    /**
+     * 构建卸载弹窗中受影响数据表的提示文案
+     */
+    protected static function buildDropTablesHelperText(Plugin $record): string
+    {
+        $data   = $record->post_install_data ?? [];
+        $tables = $data['tables'] ?? [];
+
+        if (empty($tables)) {
+            return '（该插件未声明自建数据表）';
+        }
+
+        return '受影响的数据表：'.implode('、', array_map(
+            fn (string $t): string => "`{$t}`",
+            $tables
+        ));
     }
 }
