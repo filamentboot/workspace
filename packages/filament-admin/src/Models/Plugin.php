@@ -26,6 +26,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $installed_version
  * @property string|null $description
  * @property array<string, mixed>|null $post_install_data extra.filament-admin.post_install 声明块
+ * @property string $compatibility_status compatible | incompatible | unknown（由 plugin:scan 写入，CR-04）
  * @property bool $is_enabled
  * @property string $init_status pending | running | done | failed
  * @property string|null $init_log
@@ -52,6 +53,7 @@ class Plugin extends Model
         'installed_version',
         'description',
         'post_install_data',
+        'compatibility_status',
         'is_enabled',
         'init_status',
         'init_log',

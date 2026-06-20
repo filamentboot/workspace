@@ -53,6 +53,7 @@ class PluginManager
      * 从 vendor/composer/installed.json 同步已安装插件到数据库（混合发现）
      *
      * 每个已安装包通过 detectPluginClass 判断是否为 Filament 插件。
+     * 同时根据包的 require.filament/filament 约束计算三态兼容性并持久化（CR-04）。
      *
      * @return int 同步的插件数量
      */
@@ -65,8 +66,9 @@ class PluginManager
         }
 
         /** @var array{packages: array<int, array<string, mixed>>} $data */
-        $data  = json_decode(file_get_contents($installedJson), true) ?? [];
-        $count = 0;
+        $data       = json_decode(file_get_contents($installedJson), true) ?? [];
+        $compat     = app(PluginCompatibility::class);
+        $count      = 0;
 
         foreach ($data['packages'] ?? [] as $pkg) {
             /** @var array<string, mixed>|null $meta */
@@ -83,21 +85,26 @@ class PluginManager
             $slug        = $meta['slug'] ?? str($packageName)->replace('/', '-')->value();
             $existing    = Plugin::where('package_name', $packageName)->first();
 
+            // CR-04：从包的 require 字段提取 filament/filament 约束，计算三态兼容性
+            $filamentConstraint    = $pkg['require']['filament/filament'] ?? null;
+            $compatibilityStatus   = $compat->checkFilamentCompatibility($filamentConstraint);
+
             // 元数据优先读 extra.filament-admin；无则回落 composer.json 标准字段
             Plugin::updateOrCreate(
                 ['package_name' => $packageName],
                 [
-                    'slug'               => $slug,
-                    'name'               => $meta['name'] ?? $pkg['description'] ?? $packageName,
-                    'kind'               => $meta['type'] ?? 'package',
-                    'plugin_class'       => $pluginClass ?? $meta['plugin_class'] ?? null,
-                    'settings_page_slug' => $meta['settings_page_slug'] ?? null,
-                    'service_provider'   => $meta['service_provider'] ?? null,
-                    'installed_version'  => $pkg['version'] ?? null,
-                    'description'        => $meta['description'] ?? $pkg['description'] ?? null,
-                    'source'             => $meta['source'] ?? 'community',
-                    'post_install_data'  => $meta['post_install'] ?? null,
-                    'installed_at'       => $existing?->installed_at ?? now(),
+                    'slug'                 => $slug,
+                    'name'                 => $meta['name'] ?? $pkg['description'] ?? $packageName,
+                    'kind'                 => $meta['type'] ?? 'package',
+                    'plugin_class'         => $pluginClass ?? $meta['plugin_class'] ?? null,
+                    'settings_page_slug'   => $meta['settings_page_slug'] ?? null,
+                    'service_provider'     => $meta['service_provider'] ?? null,
+                    'installed_version'    => $pkg['version'] ?? null,
+                    'description'          => $meta['description'] ?? $pkg['description'] ?? null,
+                    'source'               => $meta['source'] ?? 'community',
+                    'post_install_data'    => $meta['post_install'] ?? null,
+                    'compatibility_status' => $compatibilityStatus,
+                    'installed_at'         => $existing?->installed_at ?? now(),
                 ]
             );
 
