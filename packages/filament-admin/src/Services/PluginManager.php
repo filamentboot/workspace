@@ -3,11 +3,14 @@
 namespace FilamentAdmin\Services;
 
 use Composer\InstalledVersions;
+use FilamentAdmin\Jobs\ComposerInstallJob;
+use FilamentAdmin\Jobs\ComposerRemoveJob;
 use FilamentAdmin\Models\Plugin;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\ServiceProvider;
+use Symfony\Component\Process\Process;
 
 /**
  * 插件管理服务（基础版）
@@ -147,6 +150,122 @@ class PluginManager
     public function checkDependencies(Plugin $plugin): array
     {
         return [];
+    }
+
+    /**
+     * 触发后台 composer 安装（先环境自检，通过则 dispatch ComposerInstallJob）
+     *
+     * 若自检失败，设置 init_status='failed' 并记录降级提示（Plan 04 UI 展示手动命令）。
+     */
+    public function install(Plugin $plugin): void
+    {
+        $check = app(EnvironmentChecker::class)->check();
+
+        if (! $check['ok']) {
+            $issues = implode('；', $check['issues']);
+            $plugin->update([
+                'init_status' => 'failed',
+                'init_log'    => "环境自检失败，请手动安装：{$issues}",
+            ]);
+
+            return;
+        }
+
+        $plugin->update(['init_status' => 'running']);
+        ComposerInstallJob::dispatch($plugin->id, $plugin->package_name);
+    }
+
+    /**
+     * 触发后台 composer 卸载（先 disable，再 dispatch ComposerRemoveJob）
+     *
+     * 先 disable 防止下次请求 class-not-found（RESEARCH Pitfall 5）。
+     */
+    public function uninstall(Plugin $plugin, bool $dropTables = false): void
+    {
+        $this->disable($plugin);
+        ComposerRemoveJob::dispatch($plugin->id, $plugin->package_name, $dropTables);
+    }
+
+    /**
+     * post-install 生命周期：vendor:publish（按声明 tags）+ migrate --force + dump-autoload
+     *
+     * 任意步骤失败仅记日志，不致命（D-12-04）。
+     * 社区插件未声明 post_install 块时走通用兜底（Pattern 6）。
+     */
+    public function postInstall(Plugin $plugin): void
+    {
+        $slug = $plugin->slug;
+        $data = $plugin->post_install_data ?? [];
+
+        $this->runPostPublish($slug, $plugin, $data);
+        $this->runPostMigrate($slug);
+        $this->runPostSeeders($slug, $data);
+        $this->runDumpAutoload($slug);
+    }
+
+    /**
+     * 执行 composer require 流程（供 ComposerInstallJob::handle 委托）
+     *
+     * 严格包名验证 → 构建 Process → 流式追加 init_log → 成功后 postInstall。
+     */
+    public function runComposerInstall(Plugin $plugin, string $packageName): void
+    {
+        $slug = $plugin->slug;
+
+        if (! $this->validatePackageName($packageName)) {
+            $plugin->update(['init_status' => 'failed', 'init_log' => "包名格式无效：{$packageName}"]);
+
+            return;
+        }
+
+        $composerPath = $this->resolveComposerExec();
+        $process      = $this->buildComposerProcess([$composerPath, 'require', $packageName, '--no-interaction', '--no-ansi']);
+
+        $logLines = [];
+        try {
+            $process->start(function (string $type, string $data) use ($plugin, &$logLines): void {
+                $this->appendProcessOutput($plugin, $logLines, $data);
+            });
+            $process->wait();
+
+            if ($process->isSuccessful()) {
+                $plugin->update(['init_status' => 'done', 'init_log' => implode("\n", $logLines)]);
+                $this->postInstall($plugin);
+            } else {
+                $plugin->update(['init_status' => 'failed', 'init_log' => implode("\n", $logLines)]);
+            }
+        } catch (\Throwable $e) {
+            $logLines[] = 'ERROR: '.$e->getMessage();
+            $plugin->update(['init_status' => 'failed', 'init_log' => implode("\n", $logLines)]);
+        }
+    }
+
+    /**
+     * 执行 composer remove 流程（供 ComposerRemoveJob::handle 委托）
+     *
+     * disable → composer remove → 可选删表 → delete plugins 记录 → optimize:clear。
+     */
+    public function runComposerRemove(Plugin $plugin, string $packageName, bool $dropTables = false): void
+    {
+        $logLines     = [];
+        $composerPath = $this->resolveComposerExec();
+
+        if ($packageName !== '' && ! $this->validatePackageName($packageName)) {
+            Log::warning("[PluginManager] 包名格式无效，跳过 composer remove：{$packageName}");
+        } elseif ($packageName !== '') {
+            $process = $this->buildComposerProcess([$composerPath, 'remove', $packageName, '--no-interaction', '--no-ansi']);
+            try {
+                $process->start(function (string $type, string $data) use (&$logLines): void {
+                    $logLines[] = trim($data);
+                });
+                $process->wait();
+            } catch (\Throwable $e) {
+                Log::error("[PluginManager] composer remove 失败：{$e->getMessage()}");
+            }
+        }
+
+        $plugin->delete();
+        Artisan::call('optimize:clear');
     }
 
     /**
@@ -430,6 +549,154 @@ class PluginManager
         }
 
         return '0.0.0';
+    }
+
+    /**
+     * 严格验证 composer 包名格式（T-12-02-01 命令注入缓解）
+     *
+     * 仅允许 lowercase 字母、数字、点、下划线、连字符的 vendor/package 格式。
+     */
+    private function validatePackageName(string $name): bool
+    {
+        return (bool) preg_match('/^[a-z0-9_.-]+\/[a-z0-9_.-]+$/', $name);
+    }
+
+    /**
+     * 解析 composer 可执行路径（不抛异常，无法找到时返回 'composer'）
+     */
+    private function resolveComposerExec(): string
+    {
+        if ($path = env('COMPOSER_PATH')) {
+            if (is_executable($path)) {
+                return $path;
+            }
+        }
+
+        try {
+            $process = new Process(['which', 'composer']);
+            $process->run();
+            $which = trim($process->getOutput());
+            if ($which !== '') {
+                return $which;
+            }
+        } catch (\Throwable) {
+            // 继续下一步
+        }
+
+        return is_executable('/usr/local/bin/composer') ? '/usr/local/bin/composer' : 'composer';
+    }
+
+    /**
+     * 构建隔离环境的 composer Process（T-12-02-01/02 缓解）
+     *
+     * 使用数组命令（永不 fromShellCommandline），设置 COMPOSER_HOME 隔离。
+     *
+     * @param  list<string>  $command
+     */
+    private function buildComposerProcess(array $command): Process
+    {
+        $process = new Process(
+            command: $command,
+            cwd: base_path(),
+            env: [
+                'COMPOSER_HOME'         => sys_get_temp_dir().'/composer-home-'.getmypid(),
+                'COMPOSER_MEMORY_LIMIT' => '-1',
+                'HOME'                  => sys_get_temp_dir(),
+            ],
+            timeout: 300.0,
+        );
+        $process->setIdleTimeout(60.0);
+
+        return $process;
+    }
+
+    /**
+     * 批量追加 Process 输出到 init_log（每 10 行写一次 DB）
+     *
+     * @param  list<string>  $logLines
+     */
+    private function appendProcessOutput(Plugin $plugin, array &$logLines, string $data): void
+    {
+        $logLines[] = trim($data);
+        if (count($logLines) % 10 === 0) {
+            $plugin->update(['init_log' => implode("\n", $logLines)]);
+        }
+    }
+
+    /**
+     * post-install: 执行 vendor:publish（按 post_install.publish_tags 声明，或 service_provider 兜底）
+     *
+     * 社区插件无声明时跳过发布，记日志（Pattern 6 fallback）。
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function runPostPublish(string $slug, Plugin $plugin, array $data): void
+    {
+        $tags = $data['publish_tags'] ?? [];
+
+        if (! empty($tags)) {
+            foreach ($tags as $tag) {
+                Artisan::call('vendor:publish', ['--tag' => $tag, '--force' => true]);
+                $this->appendInitLog($slug, '发布 tag='.$tag.'：'.trim(Artisan::output()));
+            }
+
+            return;
+        }
+
+        // 兜底：使用 service_provider（已有 runPublish 逻辑）
+        if ($plugin->service_provider) {
+            $this->runPublish($slug, $plugin);
+        } else {
+            $this->appendInitLog($slug, '无 publish_tags 且无 service_provider，跳过资源发布。');
+        }
+    }
+
+    /**
+     * post-install: 执行 migrate --force（Pitfall 6：Nothing to migrate 不视为失败）
+     */
+    private function runPostMigrate(string $slug): void
+    {
+        try {
+            Artisan::call('migrate', ['--force' => true]);
+            $output = trim(Artisan::output());
+            $this->appendInitLog($slug, '迁移完成：'.($output !== '' ? $output : '（无待执行迁移）'));
+        } catch (\Throwable $e) {
+            $this->appendInitLog($slug, '迁移失败（非阻断）：'.$e->getMessage());
+        }
+    }
+
+    /**
+     * post-install: 执行声明的 Seeder 列表（社区插件无声明时跳过）
+     *
+     * @param  array<string, mixed>  $data
+     */
+    private function runPostSeeders(string $slug, array $data): void
+    {
+        $seeders = $data['seeders'] ?? [];
+        foreach ($seeders as $seederClass) {
+            try {
+                Artisan::call('db:seed', ['--class' => $seederClass, '--force' => true]);
+                $this->appendInitLog($slug, "Seeder {$seederClass} 完成：".trim(Artisan::output()));
+            } catch (\Throwable $e) {
+                $this->appendInitLog($slug, "Seeder {$seederClass} 失败（非阻断）：{$e->getMessage()}");
+            }
+        }
+    }
+
+    /**
+     * post-install: 执行 composer dump-autoload（Pitfall 2 缓解）
+     */
+    private function runDumpAutoload(string $slug): void
+    {
+        $composerPath = $this->resolveComposerExec();
+
+        try {
+            $process = new Process([$composerPath, 'dump-autoload', '--no-interaction'], base_path(), timeout: 60.0);
+            $process->run();
+            $this->appendInitLog($slug, 'dump-autoload 完成。');
+        } catch (\Throwable $e) {
+            $this->appendInitLog($slug, 'dump-autoload 失败（非阻断）：'.$e->getMessage());
+        }
     }
 
     private function appendInitLog(string $slug, string $line): void
