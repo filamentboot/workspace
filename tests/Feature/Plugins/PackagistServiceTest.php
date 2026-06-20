@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\PackagistService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
@@ -17,16 +18,14 @@ use Illuminate\Support\Facades\Http;
  */
 
 it('searchFilamentPlugins 返回 results 数组（MKTPLACE-08）', function () {
-    $this->markTestIncomplete('MKTPLACE-08: PackagistService::searchFilamentPlugins() implemented in Wave 3');
-
     Cache::flush();
 
     Http::fake([
         'packagist.org/search.json*' => Http::response(fakePackagistSearch(), 200),
     ]);
 
-    /** @var \App\Services\PackagistService $service */
-    $service = app(\App\Services\PackagistService::class);
+    /** @var PackagistService $service */
+    $service = app(PackagistService::class);
     $result  = $service->searchFilamentPlugins();
 
     expect($result)->toHaveKey('results');
@@ -36,8 +35,6 @@ it('searchFilamentPlugins 返回 results 数组（MKTPLACE-08）', function () {
 });
 
 it('getPackageConstraint 通过 p2 端点返回 filament/filament 约束（MKTPLACE-08）', function () {
-    $this->markTestIncomplete('MKTPLACE-08: PackagistService::getPackageConstraint() implemented in Wave 3');
-
     Cache::flush();
 
     Http::fake([
@@ -57,24 +54,22 @@ it('getPackageConstraint 通过 p2 端点返回 filament/filament 约束（MKTPL
         ], 200),
     ]);
 
-    /** @var \App\Services\PackagistService $service */
-    $service = app(\App\Services\PackagistService::class);
+    /** @var PackagistService $service */
+    $service = app(PackagistService::class);
     $result  = $service->getPackageConstraint('bezhansalleh/filament-shield');
 
     expect($result)->toBe('^5.0');
 });
 
 it('HTTP 非 200 时 searchFilamentPlugins 返回空兜底结构（MKTPLACE-08）', function () {
-    $this->markTestIncomplete('MKTPLACE-08: PackagistService fallback implemented in Wave 3');
-
     Cache::flush();
 
     Http::fake([
         'packagist.org/search.json*' => Http::response('Service Unavailable', 503),
     ]);
 
-    /** @var \App\Services\PackagistService $service */
-    $service = app(\App\Services\PackagistService::class);
+    /** @var PackagistService $service */
+    $service = app(PackagistService::class);
     $result  = $service->searchFilamentPlugins();
 
     // 兜底结构：{results:[], total:0, next:null}
@@ -85,16 +80,14 @@ it('HTTP 非 200 时 searchFilamentPlugins 返回空兜底结构（MKTPLACE-08�
 });
 
 it('searchFilamentPlugins 结果被缓存，相同参数二次调用不再发 HTTP（MKTPLACE-08）', function () {
-    $this->markTestIncomplete('MKTPLACE-08: PackagistService Cache::remember implemented in Wave 3');
-
     Cache::flush();
 
     Http::fake([
         'packagist.org/search.json*' => Http::response(fakePackagistSearch(), 200),
     ]);
 
-    /** @var \App\Services\PackagistService $service */
-    $service = app(\App\Services\PackagistService::class);
+    /** @var PackagistService $service */
+    $service = app(PackagistService::class);
 
     // 首次调用
     $service->searchFilamentPlugins(1, 15);
