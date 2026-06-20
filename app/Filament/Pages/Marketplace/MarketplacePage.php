@@ -77,10 +77,17 @@ class MarketplacePage extends Page
 
     /**
      * 切换标签并按需加载数据
+     *
+     * WR-05：对 $tab 值进行白名单校验，拒绝任意字符串赋值到公开属性。
      */
     public function switchTab(string $tab): void
     {
+        if (! in_array($tab, ['official', 'community', 'installed'], true)) {
+            return;
+        }
+
         $this->activeTab = $tab;
+
         if ($tab === 'community' && empty($this->communityResults)) {
             $this->loadCommunity();
         }
