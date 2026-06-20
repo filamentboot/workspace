@@ -61,6 +61,11 @@
             "compatibility": {
                 "laravel/framework": "^13.0",
                 "filament/filament": "^5.0"
+            },
+            "post_install": {
+                "publish_tags": ["filament-admin-cos-config"],
+                "run_migrations": false,
+                "seeders": []
             }
         },
         "branch-alias": {

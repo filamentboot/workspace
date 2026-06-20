@@ -70,8 +70,6 @@ it('SitePlugin 实现 Filament\\Contracts\\Plugin 接口（MKTPLACE-09）', func
 });
 
 it('filament-admin-oss 的 composer.json 含 post_install 块（MKTPLACE-09）', function () {
-    $this->markTestIncomplete('MKTPLACE-09: post_install block added to filament-admin-oss in Wave 3');
-
     $composerJson = json_decode(
         file_get_contents(base_path('packages/filament-admin-oss/composer.json')),
         true
@@ -82,8 +80,6 @@ it('filament-admin-oss 的 composer.json 含 post_install 块（MKTPLACE-09）',
 });
 
 it('filament-admin-cos 的 composer.json 含 post_install 块（MKTPLACE-09）', function () {
-    $this->markTestIncomplete('MKTPLACE-09: post_install block added to filament-admin-cos in Wave 3');
-
     $composerJson = json_decode(
         file_get_contents(base_path('packages/filament-admin-cos/composer.json')),
         true
@@ -94,8 +90,6 @@ it('filament-admin-cos 的 composer.json 含 post_install 块（MKTPLACE-09）',
 });
 
 it('filament-admin-site 的 composer.json 含 post_install 含 run_migrations（MKTPLACE-09）', function () {
-    $this->markTestIncomplete('MKTPLACE-09: post_install block added to filament-admin-site in Wave 3');
-
     $composerJson = json_decode(
         file_get_contents(base_path('packages/filament-admin-site/composer.json')),
         true

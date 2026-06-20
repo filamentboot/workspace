@@ -66,6 +66,11 @@
             "compatibility": {
                 "laravel/framework": "^13.0",
                 "filament/filament": "^5.0"
+            },
+            "post_install": {
+                "publish_tags": ["filament-admin-site-config", "filament-admin-site-assets"],
+                "run_migrations": true,
+                "seeders": ["LaravelStack\\FilamentAdminSite\\Database\\Seeders\\SiteSeeder"]
             }
         },
         "branch-alias": {
