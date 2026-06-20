@@ -135,7 +135,32 @@ Plans:
 10. `wiki/plugin-usage.md` 完整，涵盖手动安装、后台管理、常见问题排查
 11. 主包 README 新增插件生态章节，一方插件列表与文档链接齐备
 
-**Plans**: TBD（执行前用 gsd-plan-phase 生成）
+**Plans**: 7/7 plans complete + 2 gap-closure plans (UAT)
+
+Plans:
+**Wave 1**
+
+- [x] 12-00-PLAN.md — Wave 0 红测脚手架 + Queue::fake/Http::fake/Process 替身（Nyquist）
+- [x] 12-01-PLAN.md — 混合发现（Filament\Contracts\Plugin classmap grep）+ plugins 表重塑 + post_install_data（MKTPLACE-01）
+
+**Wave 2** *(blocked on Wave 1 completion)*
+
+- [x] 12-02-PLAN.md — 环境自检 + ComposerInstall/Remove Job（symfony/process）+ PluginManager 安装/卸载/post-install（MKTPLACE-02/03/04/06/07）
+- [x] 12-03-PLAN.md — PackagistService 社区实时搜索 + 三态兼容判定（MKTPLACE-05/08）
+
+**Wave 3** *(blocked on Wave 2 completion)*
+
+- [x] 12-04-PLAN.md — 三视图市场 UI + 安装/卸载 Action + 徽章/降级/风险弹窗/轮询（MKTPLACE-02/04/05/06/08）
+- [x] 12-05-PLAN.md — 6 个一方插件合规修复（post_install）+ audit-plugins 报告命令（MKTPLACE-09）
+
+**Wave 4** *(blocked on Wave 3 completion)*
+
+- [x] 12-06-PLAN.md — 插件生态文档 wiki/plugin-development.md + plugin-usage.md + README 章节（DOC-09/10/11）
+
+**Gap closure** *(from 12-UAT.md — major/minor findings)*
+
+- [ ] 12-07-PLAN.md — 市场一键安装 firstOrCreate 修复（installPlugin/installCommunityPlugin no-op）+ composer require 版本约束（MKTPLACE-02/04）
+- [ ] 12-08-PLAN.md — Filament 自定义主题（->viteTheme）编译市场 blade 自定义 utility，修复未渲染样式（MKTPLACE-04）
 
 ---
 
@@ -175,3 +200,24 @@ Plans:
 **Plans**: TBD
 
 ---
+
+### Phase 13: filamentboot 生态改名与基础设施
+
+**Goal**: 完成项目改名（filamentboot/filamentboot）、搭建 9 个 GitHub repo + Gitee 镜像、配置 GitHub Actions 发布脚本与 SSH 自动部署
+
+**Depends on**: Phase 12
+**Requirements**: 见 `.planning/todos/pending/rename-filamentboot.md`、`.planning/todos/pending/setup-ecosystem-infrastructure.md`
+**Work estimate**: 约 8-12h
+
+**Success Criteria**:
+
+1. 所有 composer.json 包名从 `laravelstack/filament-admin*` 改为 `filamentboot/filamentboot*`
+2. PHP namespace 从 `FilamentAdmin\` 全面改为 `Filamentboot\`，`composer dump-autoload` 无报错
+3. GitHub org `filamentboot` 下 9 个 repo 创建完毕，Gitee 同名镜像配置完成
+4. 本地 workspace 配置双 remote（origin GitHub + gitee Gitee），`git push` 同时推送
+5. `.github/workflows/release.yml` 完成：tag 触发 → clean 包 push → Packagist webhook 更新
+6. GitHub Actions SSH 部署：tag 触发演示站 `composer update` + `migrate` + `optimize`
+7. `composer require filamentboot/filamentboot` 在干净 Laravel 13 项目可安装
+8. `demo.filamentboot.com` 可登录访问
+
+**Plans**: TBD

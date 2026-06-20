@@ -142,20 +142,33 @@ class MarketplacePage extends Page
     /**
      * 安装官方市场插件
      *
-     * 根据包名查找或创建 Plugin 记录，授权后触发后台安装 Job。
+     * 从市场目录条目查找或创建 Plugin 行（firstOrCreate），授权后触发后台安装 Job。
+     * 空包名直接返回（无操作）。
      * 按 CR-02 修复：直接 Livewire 方法调用，替代无监听器的 $dispatch('install-plugin')。
      *
      * @param  string  $package  vendor/package 格式
      */
     public function installPlugin(string $package): void
     {
-        $this->authorize('install_plugin', new Plugin());
-
-        $plugin = Plugin::where('package_name', $package)->first();
-
-        if ($plugin === null) {
+        if ($package === '') {
             return;
         }
+
+        $this->authorize('install_plugin', new Plugin);
+
+        $entry = $this->officialEntryFor($package);
+
+        $plugin = Plugin::firstOrCreate(
+            ['package_name' => $package],
+            [
+                'slug'              => $entry['slug'] ?? str($package)->replace('/', '-')->value(),
+                'name'              => $entry['display_name'] ?? $entry['name'] ?? $package,
+                'source'            => $entry['source'] ?? 'official_listed',
+                'kind'              => $entry['kind'] ?? 'package',
+                'installed_version' => $entry['version'] ?? null,
+                'init_status'       => 'pending',
+            ]
+        );
 
         app(PluginManager::class)->install($plugin);
         $this->pollingPluginId = $plugin->id;
@@ -164,6 +177,8 @@ class MarketplacePage extends Page
     /**
      * 安装社区插件
      *
+     * 从社区检索结果查找或创建 Plugin 行（source='community'），授权后触发后台安装 Job。
+     * 空包名直接返回（无操作）。
      * 与 installPlugin 相同逻辑，但社区来源在 PluginResource 中有额外风险确认 (D-12-13)。
      * 此方法在 MarketplacePage 内直接执行，UI 层已在 Blade 侧展示社区风险提示。
      *
@@ -171,13 +186,25 @@ class MarketplacePage extends Page
      */
     public function installCommunityPlugin(string $package): void
     {
-        $this->authorize('install_plugin', new Plugin());
-
-        $plugin = Plugin::where('package_name', $package)->first();
-
-        if ($plugin === null) {
+        if ($package === '') {
             return;
         }
+
+        $this->authorize('install_plugin', new Plugin);
+
+        $entry = $this->communityEntryFor($package);
+
+        $plugin = Plugin::firstOrCreate(
+            ['package_name' => $package],
+            [
+                'slug'              => str($package)->replace('/', '-')->value(),
+                'name'              => $entry['name'] ?? $package,
+                'source'            => 'community',
+                'kind'              => 'package',
+                'installed_version' => $entry['filament_constraint'] ?? null,
+                'init_status'       => 'pending',
+            ]
+        );
 
         app(PluginManager::class)->install($plugin);
         $this->pollingPluginId = $plugin->id;
@@ -190,7 +217,7 @@ class MarketplacePage extends Page
      */
     public function scanInstalledPlugins(): void
     {
-        $this->authorize('view_any_plugin', new Plugin());
+        $this->authorize('view_any_plugin', new Plugin);
 
         Artisan::call('plugin:scan');
     }
@@ -220,6 +247,42 @@ class MarketplacePage extends Page
         $this->authorize('uninstall_plugin', $plugin);
 
         app(PluginManager::class)->uninstall($plugin, false);
+    }
+
+    /**
+     * 从官方目录 $this->entries 中查找匹配包名的条目
+     *
+     * @return array<string, mixed>|null
+     */
+    private function officialEntryFor(string $package): ?array
+    {
+        foreach ($this->entries as $entry) {
+            if (($entry['package_name'] ?? null) === $package) {
+                return $entry;
+            }
+            // 回落：通过 slug 匹配（兜底）
+            if (($entry['slug'] ?? null) === $package) {
+                return $entry;
+            }
+        }
+
+        return null;
+    }
+
+    /**
+     * 从社区检索结果 $this->communityResults 中查找匹配包名的条目
+     *
+     * @return array<string, mixed>|null
+     */
+    private function communityEntryFor(string $package): ?array
+    {
+        foreach ($this->communityResults as $entry) {
+            if (($entry['name'] ?? null) === $package) {
+                return $entry;
+            }
+        }
+
+        return null;
     }
 
     /**
