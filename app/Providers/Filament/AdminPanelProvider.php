@@ -76,6 +76,7 @@ class AdminPanelProvider extends PanelProvider
             ->colors([
                 'primary' => Color::Amber,
             ])
+            ->viteTheme('resources/css/filament/admin/theme.css')
             ->navigation(function (AdminNavigationBuilder $builder): NavigationBuilder {
                 $user = Filament::auth()->user();
 
