@@ -1,5 +1,7 @@
 <?php
 
+use FilamentAdmin\Services\EnvironmentChecker;
+
 /**
  * EnvironmentChecker 自检测试（MKTPLACE-04 / MKTPLACE-07）
  *
@@ -12,14 +14,10 @@
  * 威胁缓解：T-12-00-02 — selfCheck 永不抛异常，返回结果数组。
  * RESEARCH Pattern 5：'ok','composer_path','issues' 三键结果结构。
  */
-
 it('proc_open 被禁用时 selfCheck 返回 ok=false（MKTPLACE-04）', function () {
-    $this->markTestIncomplete('MKTPLACE-04: EnvironmentChecker::selfCheck() implemented in Wave 2');
-
-    /** @var \FilamentAdmin\Services\EnvironmentChecker $checker */
-    $checker = new \FilamentAdmin\Services\EnvironmentChecker(
-        procOpenAvailable: false,  // 注入：proc_open 不可用
-        composerPathOverride: null,
+    $checker = new EnvironmentChecker(
+        procOpenAvailable: false,
+        composerPathOverride: '/usr/local/bin/composer',
         vendorPathOverride: base_path('vendor'),
     );
 
@@ -35,12 +33,9 @@ it('proc_open 被禁用时 selfCheck 返回 ok=false（MKTPLACE-04）', function
 });
 
 it('COMPOSER_PATH 未设置且 which composer 无结果时 selfCheck 返回 ok=false（MKTPLACE-07）', function () {
-    $this->markTestIncomplete('MKTPLACE-07: EnvironmentChecker::selfCheck() implemented in Wave 2');
-
-    /** @var \FilamentAdmin\Services\EnvironmentChecker $checker */
-    $checker = new \FilamentAdmin\Services\EnvironmentChecker(
+    $checker = new EnvironmentChecker(
         procOpenAvailable: true,
-        composerPathOverride: '',  // 注入：无 composer 路径
+        composerPathOverride: '',
         vendorPathOverride: base_path('vendor'),
     );
 
@@ -54,13 +49,10 @@ it('COMPOSER_PATH 未设置且 which composer 无结果时 selfCheck 返回 ok=f
 });
 
 it('vendor/ 目录无写权限时 selfCheck 返回 ok=false（MKTPLACE-07）', function () {
-    $this->markTestIncomplete('MKTPLACE-07: EnvironmentChecker vendor writable check implemented in Wave 2');
-
-    /** @var \FilamentAdmin\Services\EnvironmentChecker $checker */
-    $checker = new \FilamentAdmin\Services\EnvironmentChecker(
+    $checker = new EnvironmentChecker(
         procOpenAvailable: true,
         composerPathOverride: '/usr/local/bin/composer',
-        vendorPathOverride: '/nonexistent-unwritable-path',  // 注入：不可写路径
+        vendorPathOverride: '/nonexistent-unwritable-path',
     );
 
     $result = $checker->selfCheck();
@@ -73,10 +65,7 @@ it('vendor/ 目录无写权限时 selfCheck 返回 ok=false（MKTPLACE-07）', f
 });
 
 it('所有条件满足时 selfCheck 返回 ok=true（MKTPLACE-04/07）', function () {
-    $this->markTestIncomplete('MKTPLACE-04/07: EnvironmentChecker ok=true path implemented in Wave 2');
-
-    /** @var \FilamentAdmin\Services\EnvironmentChecker $checker */
-    $checker = new \FilamentAdmin\Services\EnvironmentChecker(
+    $checker = new EnvironmentChecker(
         procOpenAvailable: true,
         composerPathOverride: '/usr/local/bin/composer',
         vendorPathOverride: base_path('vendor'),
