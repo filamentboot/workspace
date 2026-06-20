@@ -63,7 +63,6 @@ function noExtraPluginFixture(): string
 }
 
 it('无 extra.filament-admin 但实现 Filament\Contracts\Plugin 的包可被混合发现（MKTPLACE-01）', function () {
-    $this->markTestIncomplete('MKTPLACE-01: hybrid classmap-grep discovery implemented in Wave 1');
 
     File::ensureDirectoryExists(base_path('vendor/composer'));
     File::put(base_path('vendor/composer/installed.json'), noExtraPluginFixture());
@@ -97,7 +96,6 @@ PHP);
 });
 
 it('/tests/ 路径下的类不被混合发现误报为插件（MKTPLACE-01 Pitfall 4）', function () {
-    $this->markTestIncomplete('MKTPLACE-01: /tests/ exclusion implemented in Wave 1');
 
     File::ensureDirectoryExists(base_path('vendor/composer'));
 
@@ -144,7 +142,6 @@ PHP);
 });
 
 it('含 extra.filament-admin.plugin_class 的包优先使用声明值（MKTPLACE-01）', function () {
-    $this->markTestIncomplete('MKTPLACE-01: plugin_class priority over classmap implemented in Wave 1');
 
     File::ensureDirectoryExists(base_path('vendor/composer'));
 

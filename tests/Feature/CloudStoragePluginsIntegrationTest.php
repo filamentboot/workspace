@@ -125,9 +125,7 @@ it('plugin:scan 发现 OSS 与 COS 两个云存储插件', function () {
     expect($cosPlugin->plugin_class)->not->toBeEmpty('期望 plugin_class 字段非空');
     expect($cosPlugin->service_provider)->not->toBeEmpty('期望 service_provider 字段非空');
 
-    // 验证 compatibility 字段含 laravel/framework ^13.0
-    expect($ossPlugin->compatibility)->toHaveKey('laravel/framework');
-    expect($cosPlugin->compatibility)->toHaveKey('laravel/framework');
+    // Phase 12（D-12-09）: compatibility 字段已移除，兼容性通过 Packagist p2 端点比对（Plan 02）
 });
 
 it('medialibrary disk_name 随 UploadSettings.default_disk 切换（D-08-07 端到端验证）', function () {
