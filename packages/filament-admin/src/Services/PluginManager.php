@@ -214,20 +214,31 @@ class PluginManager
     /**
      * 执行 composer require 流程（供 ComposerInstallJob::handle 委托）
      *
-     * 严格包名验证 → 构建 Process → 流式追加 init_log → 成功后 postInstall。
+     * 严格包名验证（接收裸包名，不含约束冒号）→ 构建版本约束 require 参数 →
+     * 构建 Process → 流式追加 init_log → 成功后 postInstall。
+     *
+     * 约束来源：Plugin.installed_version（由 catalog/community 条目写入），
+     * 携带版本约束确保 dev-stability 和显式版本包在 minimum-stability=stable 下可解析。
      */
     public function runComposerInstall(Plugin $plugin, string $packageName): void
     {
         $slug = $plugin->slug;
 
+        // validatePackageName 仅接收裸包名（regex 禁止 ':'），不传 package:constraint 字符串
         if (! $this->validatePackageName($packageName)) {
             $plugin->update(['init_status' => 'failed', 'init_log' => "包名格式无效：{$packageName}"]);
 
             return;
         }
 
+        // 从 Plugin.installed_version 读取版本约束，构建 composer require 的目标参数
+        $constraint  = $plugin->installed_version;
+        $requireArg  = ($constraint !== null && $constraint !== '')
+            ? $packageName.':'.$constraint
+            : $packageName;
+
         $composerPath = $this->resolveComposerExec();
-        $process      = $this->buildComposerProcess([$composerPath, 'require', $packageName, '--no-interaction', '--no-ansi']);
+        $process      = $this->buildComposerProcess([$composerPath, 'require', $requireArg, '--no-interaction', '--no-ansi']);
 
         $logLines = [];
         try {
@@ -606,8 +617,10 @@ class PluginManager
      *
      * WR-04：使用 config('filament-admin.composer_path') 代替 env('COMPOSER_PATH')，
      * 确保 config:cache 后仍能读取到配置值（env() 在缓存环境下返回 null）。
+     *
+     * 可见性 protected（供测试子类覆盖隔离真实 composer 调用）。
      */
-    private function resolveComposerExec(): string
+    protected function resolveComposerExec(): string
     {
         if ($path = config('filament-admin.composer_path')) {
             if (is_executable($path)) {
@@ -633,10 +646,11 @@ class PluginManager
      * 构建隔离环境的 composer Process（T-12-02-01/02 缓解）
      *
      * 使用数组命令（永不 fromShellCommandline），设置 COMPOSER_HOME 隔离。
+     * 可见性 protected（供测试子类覆盖隔离真实 composer 调用）。
      *
      * @param  list<string>  $command
      */
-    private function buildComposerProcess(array $command): Process
+    protected function buildComposerProcess(array $command): Process
     {
         $process = new Process(
             command: $command,
