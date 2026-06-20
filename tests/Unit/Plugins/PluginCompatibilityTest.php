@@ -14,58 +14,45 @@
  * RESEARCH Pattern 4：Semver::satisfies 三态逻辑。
  */
 
+use FilamentAdmin\Services\PluginCompatibility;
+
 it('约束 ^5.0 与当前 Filament v5.x 比对结果为 compatible（MKTPLACE-05）', function () {
-    $this->markTestIncomplete('MKTPLACE-05: PluginManager::checkFilamentCompatibility() implemented in Wave 3');
+    $service = app(PluginCompatibility::class);
 
-    /** @var \App\Services\PluginManager $manager */
-    $manager = app(\App\Services\PluginManager::class);
-
-    $result = $manager->checkFilamentCompatibility('^5.0');
+    $result = $service->checkFilamentCompatibility('^5.0');
 
     expect($result)->toBe('compatible');
 });
 
 it('不可能满足的约束 ^3.0 结果为 incompatible（MKTPLACE-05）', function () {
-    $this->markTestIncomplete('MKTPLACE-05: PluginManager::checkFilamentCompatibility() implemented in Wave 3');
+    $service = app(PluginCompatibility::class);
 
-    /** @var \App\Services\PluginManager $manager */
-    $manager = app(\App\Services\PluginManager::class);
-
-    $result = $manager->checkFilamentCompatibility('^3.0');
+    $result = $service->checkFilamentCompatibility('^3.0');
 
     expect($result)->toBe('incompatible');
 });
 
 it('null 约束结果为 unknown（MKTPLACE-05 / D-12-15 未声明黄标）', function () {
-    $this->markTestIncomplete('MKTPLACE-05: PluginManager::checkFilamentCompatibility() implemented in Wave 3');
+    $service = app(PluginCompatibility::class);
 
-    /** @var \App\Services\PluginManager $manager */
-    $manager = app(\App\Services\PluginManager::class);
-
-    $result = $manager->checkFilamentCompatibility(null);
+    $result = $service->checkFilamentCompatibility(null);
 
     expect($result)->toBe('unknown');
 });
 
 it('空字符串约束结果为 unknown（MKTPLACE-05）', function () {
-    $this->markTestIncomplete('MKTPLACE-05: PluginManager::checkFilamentCompatibility() implemented in Wave 3');
+    $service = app(PluginCompatibility::class);
 
-    /** @var \App\Services\PluginManager $manager */
-    $manager = app(\App\Services\PluginManager::class);
-
-    $result = $manager->checkFilamentCompatibility('');
+    $result = $service->checkFilamentCompatibility('');
 
     expect($result)->toBe('unknown');
 });
 
 it('格式错误约束结果为 unknown（不抛异常，D-12-15 边界处理）', function () {
-    $this->markTestIncomplete('MKTPLACE-05: PluginManager::checkFilamentCompatibility() implemented in Wave 3');
-
-    /** @var \App\Services\PluginManager $manager */
-    $manager = app(\App\Services\PluginManager::class);
+    $service = app(PluginCompatibility::class);
 
     // 格式无效的约束字符串（非 semver 语法）
-    $result = $manager->checkFilamentCompatibility('not-a-valid-semver-constraint!!!');
+    $result = $service->checkFilamentCompatibility('not-a-valid-semver-constraint!!!');
 
     // 格式错误捕获后返回 unknown（不抛异常，异常优先原则的例外：容错设计）
     expect($result)->toBe('unknown');
