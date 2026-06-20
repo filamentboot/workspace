@@ -9,6 +9,7 @@ use FilamentAdmin\Models\Plugin;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\ServiceProvider;
 use Symfony\Component\Process\Process;
 
@@ -250,7 +251,9 @@ class PluginManager
     /**
      * 执行 composer remove 流程（供 ComposerRemoveJob::handle 委托）
      *
-     * disable → composer remove → 可选删表 → delete plugins 记录 → optimize:clear。
+     * disable → composer remove → 可选删表（WR-02）→ delete plugins 记录 → optimize:clear。
+     *
+     * @param  bool  $dropTables  是否删除插件自建数据表（来自 post_install_data.tables）
      */
     public function runComposerRemove(Plugin $plugin, string $packageName, bool $dropTables = false): void
     {
@@ -268,6 +271,18 @@ class PluginManager
                 $process->wait();
             } catch (\Throwable $e) {
                 Log::error("[PluginManager] composer remove 失败：{$e->getMessage()}");
+            }
+        }
+
+        // WR-02：删除插件自建数据表（仅在勾选且插件有声明时执行）
+        if ($dropTables) {
+            $tables = $plugin->post_install_data['tables'] ?? [];
+            foreach ($tables as $table) {
+                // 安全校验：只允许纯字母/数字/下划线表名，防止 SQL 注入
+                if (is_string($table) && preg_match('/^\w+$/', $table)) {
+                    Schema::dropIfExists($table);
+                    Log::info("[PluginManager] 已删除表 {$table}（插件：{$plugin->slug}）");
+                }
             }
         }
 
