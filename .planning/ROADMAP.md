@@ -203,21 +203,37 @@ Plans:
 
 ### Phase 13: filamentboot 生态改名与基础设施
 
-**Goal**: 完成项目改名（filamentboot/filamentboot）、搭建 9 个 GitHub repo + Gitee 镜像、配置 GitHub Actions 发布脚本与 SSH 自动部署
+**Goal**: 完成项目改名（filamentboot/filamentboot）、搭建 10 个 GitHub repo + Gitee 镜像、配置 GitHub Actions 发布流水线与部署（CONTEXT D-02/D-03 修正成功标准：repo 数 10、过渡域名 xitongapp.com）
 
 **Depends on**: Phase 12
 **Requirements**: 见 `.planning/todos/pending/rename-filamentboot.md`、`.planning/todos/pending/setup-ecosystem-infrastructure.md`
 **Work estimate**: 约 8-12h
 
-**Success Criteria**:
+**Success Criteria** (CONTEXT D-02/D-03 为准，覆盖下方过期表述):
 
 1. 所有 composer.json 包名从 `laravelstack/filament-admin*` 改为 `filamentboot/filamentboot*`
 2. PHP namespace 从 `FilamentAdmin\` 全面改为 `Filamentboot\`，`composer dump-autoload` 无报错
-3. GitHub org `filamentboot` 下 9 个 repo 创建完毕，Gitee 同名镜像配置完成
-4. 本地 workspace 配置双 remote（origin GitHub + gitee Gitee），`git push` 同时推送
-5. `.github/workflows/release.yml` 完成：tag 触发 → clean 包 push → Packagist webhook 更新
-6. GitHub Actions SSH 部署：tag 触发演示站 `composer update` + `migrate` + `optimize`
-7. `composer require filamentboot/filamentboot` 在干净 Laravel 13 项目可安装
-8. `demo.filamentboot.com` 可登录访问
+3. GitHub org `filamentboot` 下 **10 个** repo（workspace + 核心包 + 6 插件 + www + demo）创建完毕，Gitee 同名镜像配置完成（D-02）
+4. 本地 remote 重配 origin→filamentboot/workspace + gitee；镜像由 GitHub Actions 自动推 Gitee（D-11，取代手动双 push）
+5. `.github/workflows/release.yml` 重写：tag 触发 → splitsh-lite 7 包 subtree push → Gitee mirror → Packagist 验证
+6. 部署走 Gitee Go（保留现有 deploy.sh，按 D-20 调路径/worker）；官网走 GitHub Actions SSH rsync
+7. `composer require filamentboot/filamentboot` 在干净 Laravel 13 项目可安装（需人工验证，D-03）
+8. **`demo.xitongapp.com`** 可登录访问（过渡域名；`demo.filamentboot.com` 卡备案，DEFERRED 用户手动切换，D-03，需人工验证）
+9. `www.xitongapp.com` 官网占位页返回 200（修复当前 500，需人工验证，D-03/D-22）
+10. 泄露的 webhook token 已轮换并从代码库清除（D-18）
 
-**Plans**: TBD
+**Plans**: 6 plans
+
+Plans:
+
+**Wave 1 — 全量改名（agent 全自动 + 测试门，D-04）**
+
+- [ ] 13-01-PLAN.md — Wave 0 基线 + 主包改名（composer.json/namespace/类 git mv/config/命令前缀/publish tag）+ PackageMetadataTest（rename-filamentboot）
+- [ ] 13-02-PLAN.md — 6 插件包逐个改名（cos/oss/rich/markdown/wang/site，依赖顺序 + 每包测试门）（rename-filamentboot）  *(wave 1, blocked on 13-01)*
+- [ ] 13-03-PLAN.md — preview app/config/resources + 前端目录 + 品牌名 + GitHub URL + 泄露 token 清除 + 改名收尾门（rename-filamentboot）  *(wave 1, blocked on 13-02)*
+
+**Wave 2 — 生态基础设施（agent 写代码/脚本 + 手动 checklist，D-01）**
+
+- [ ] 13-04-PLAN.md — release.yml 重写（splitsh-lite 7 包 + Gitee mirror）+ ci.yml/deploy.sh/master-pipeline 路径调整 + SECRETS-CHECKLIST（setup-ecosystem-infrastructure）  *(wave 2, blocked on 13-03)*
+- [ ] 13-05-PLAN.md — INFRA-CHECKLIST 手动操作总线 + 本地 remote 重配 + 服务器迁移脚本 + demo repo scaffold（setup-ecosystem-infrastructure）  *(wave 2, blocked on 13-04)*
+- [ ] 13-06-PLAN.md — filamentboot-www 静态占位页 + SSH rsync 部署 workflow + 上线指引（setup-ecosystem-infrastructure）  *(wave 2, blocked on 13-04)*
