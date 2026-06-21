@@ -14,11 +14,11 @@ use Illuminate\Console\Command;
  * 重构后委托 StubGenerator 处理渲染/校验/写文件，IO 输出仍保留在命令层（D-28）。
  *
  * 使用示例：
- *   php artisan filament-admin:publish --model=Product
- *   php artisan filament-admin:publish --resource=Product
- *   php artisan filament-admin:publish --all
- *   php artisan filament-admin:publish --model=Product --all
- *   php artisan filament-admin:publish --resource=Product --path=app/Filament/Reseller
+ *   php artisan filamentboot:publish --model=Product
+ *   php artisan filamentboot:publish --resource=Product
+ *   php artisan filamentboot:publish --all
+ *   php artisan filamentboot:publish --model=Product --all
+ *   php artisan filamentboot:publish --resource=Product --path=app/Filament/Reseller
  */
 class PublishCommand extends Command
 {

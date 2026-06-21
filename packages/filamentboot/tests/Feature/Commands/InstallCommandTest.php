@@ -12,7 +12,7 @@ use Symfony\Component\Console\Command\Command;
 /**
  * InstallCommand 行为测试
  *
- * 验证 `filament-admin:install` 命令的核心行为：
+ * 验证 `filamentboot:install` 命令的核心行为：
  * - Test 1: 全新安装退出码 0（SUCCESS）
  * - Test 2: 生成的 AdminPanelProvider 含 authGuard('admin') 与 FilamentbootPlugin::make()
  * - Test 3: Provider 已存在且拒绝覆盖时跳过（内容不变，命令仍 SUCCESS）

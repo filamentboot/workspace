@@ -11,7 +11,7 @@ use Symfony\Component\Console\Command\Command;
 /**
  * PublishCommand 行为测试
  *
- * 验证 `filament-admin:publish` 命令的各项行为（COMPLY-02）：
+ * 验证 `filamentboot:publish` 命令的各项行为（COMPLY-02）：
  * - D-01: --model 选项生成 Model stub 到默认路径
  * - D-02: --resource 选项生成 Resource 及 Pages 文件
  * - D-03: 目标文件已存在时跳过（无 --force）

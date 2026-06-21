@@ -12,11 +12,11 @@ use Illuminate\Support\ServiceProvider;
  * 七步顺序执行安装流程：
  * Step 1: 生成 AdminPanelProvider（幂等检测，D-11-03）
  * Step 2: 注入 admin guard 到 config/auth.php（幂等：已存在时跳过）
- * Step 3: vendor:publish filament-admin-config
- * Step 4: vendor:publish filament-admin-lang
- * Step 5: migrate（迁移由 FilamentAdminServiceProvider::loadMigrationsFrom 自动加载，
+ * Step 3: vendor:publish filamentboot-config
+ * Step 4: vendor:publish filamentboot-lang
+ * Step 5: migrate（迁移由 FilamentbootServiceProvider::loadMigrationsFrom 自动加载，
  *           不 publish migrations，避免与 loadMigrationsFrom 同名类冲突；
- *           需要自定义迁移的用户可手动运行 vendor:publish --tag=filament-admin-migrations）
+ *           需要自定义迁移的用户可手动运行 vendor:publish --tag=filamentboot-migrations）
  * Step 6: db:seed SuperAdminSeeder
  * Step 7: 输出安装报告（T-11-02 缓解：提示修改默认密码）
  */
@@ -59,9 +59,9 @@ class InstallCommand extends Command
         $this->callSilently('vendor:publish', ['--tag' => 'filamentboot-lang', '--ansi' => false]);
         $this->components->info('✓ 语言文件已发布到 lang/vendor/filament-admin/');
 
-        // Step 4: migrate（迁移由 FilamentAdminServiceProvider::loadMigrationsFrom 自动加载，
+        // Step 4: migrate（迁移由 FilamentbootServiceProvider::loadMigrationsFrom 自动加载，
         //   不再 publish migrations，避免与 auto-load 产生同名类冲突。
-        //   若需自定义迁移，可手动运行 vendor:publish --tag=filament-admin-migrations）
+        //   若需自定义迁移，可手动运行 vendor:publish --tag=filamentboot-migrations）
         $this->components->info('正在执行数据库迁移...');
 
         if ($this->call('migrate') !== 0) {
@@ -73,7 +73,7 @@ class InstallCommand extends Command
         $this->components->info('✓ 数据库迁移完成');
 
         // Step 5: 创建超级管理员（T-11-02：输出默认密码提示）
-        $this->callSilently('db:seed', ['--class' => 'FilamentAdmin\\Database\\Seeders\\SuperAdminSeeder']);
+        $this->callSilently('db:seed', ['--class' => \Filamentboot\Database\Seeders\SuperAdminSeeder::class]);
         $this->components->info('✓ 超级管理员已创建：admin@example.com / password');
 
         // Step 7: 输出安装报告
@@ -120,7 +120,7 @@ class InstallCommand extends Command
         // 注入 admin guard（在 'web' guard 之后）
         $guardSnippet = <<<'PHP'
 
-        // 管理员 guard（由 filament-admin:install 添加）
+        // 管理员 guard（由 filamentboot:install 添加）
         'admin' => [
             'driver'   => 'session',
             'provider' => 'admin_users',
@@ -135,10 +135,10 @@ PHP;
         // 注入 admin_users provider
         $providerSnippet = <<<'PHP'
 
-        // 管理员用户 provider（由 filament-admin:install 添加）
+        // 管理员用户 provider（由 filamentboot:install 添加）
         'admin_users' => [
             'driver' => 'eloquent',
-            'model'  => \FilamentAdmin\Models\AdminUser::class,
+            'model'  => \Filamentboot\Models\AdminUser::class,
         ],
 PHP;
         // 在 providers 数组的末尾 ], 之前插入（找到 users provider 结束处）
@@ -152,7 +152,7 @@ PHP;
         // 注入 admin_users 密码重置
         $passwordSnippet = <<<'PHP'
 
-        // 管理员密码重置（由 filament-admin:install 添加）
+        // 管理员密码重置（由 filamentboot:install 添加）
         'admin_users' => [
             'provider' => 'admin_users',
             'table'    => env('AUTH_PASSWORD_RESET_TOKEN_TABLE', 'password_reset_tokens'),

@@ -280,7 +280,7 @@
         {{-- ===== 已安装标签 ===== --}}
         @if ($activeTab === 'installed')
             @php
-                $installedPlugins = \FilamentAdmin\Models\Plugin::orderBy('name')->get();
+                $installedPlugins = \Filamentboot\Models\Plugin::orderBy('name')->get();
             @endphp
             @if ($installedPlugins->isEmpty())
                 <div class="fi-section rounded-xl bg-white shadow-sm ring-1 ring-gray-950/5 dark:bg-gray-900 dark:ring-white/10">
