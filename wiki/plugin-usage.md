@@ -25,7 +25,7 @@
 
 | Tab | 内容 |
 |-----|------|
-| **官方市场** | 由 laravelstack/filament-admin 团队精选收录的一方及社区优质插件 |
+| **官方市场** | 由 filamentboot/filamentboot 团队精选收录的一方及社区优质插件 |
 | **社区插件** | 来自 Packagist（`tags=filament`）的实时搜索结果，含下载量、Stars 等信任信号 |
 | **已安装** | 当前环境已通过 Composer 安装、并由 `plugin:scan` 识别的插件 |
 
@@ -362,5 +362,5 @@ php artisan queue:listen
 
 - [插件开发指南](plugin-development.md) — 如何开发 filament-admin 兼容插件
 - [安装指南](installation.md) — filament-admin 主包安装
-- [贡献指南](https://github.com/john-captain/filament-admin/blob/main/CONTRIBUTING.md)
-- [问题反馈](https://github.com/john-captain/filament-admin/issues)
+- [贡献指南](https://github.com/filamentboot/filamentboot/blob/main/CONTRIBUTING.md)
+- [问题反馈](https://github.com/filamentboot/filamentboot/issues)

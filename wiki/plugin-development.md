@@ -1,6 +1,6 @@
 # 插件开发指南（plugin-development.md）
 
-> 面向插件作者。本文说明如何开发一个与 `laravelstack/filament-admin` 生态兼容的 Filament 插件，
+> 面向插件作者。本文说明如何开发一个与 `filamentboot/filamentboot` 生态兼容的 Filament 插件，
 > 从零创建最小合规骨架，到声明 `post_install` 安装钩子、提交到官方市场，全流程覆盖。
 
 ---
@@ -19,7 +19,7 @@
 
 ## 1. 什么是 filament-admin 兼容插件
 
-`laravelstack/filament-admin` 是基于 Filament 5 构建的后台基础平台。
+`filamentboot/filamentboot` 是基于 Filament 5 构建的后台基础平台。
 它的插件生态分两层：
 
 | 层次 | 描述 |
@@ -141,7 +141,7 @@ class YourPlugin implements Plugin
     "require": {
         "php": "^8.3",
         "filament/filament": "^5.0",
-        "laravelstack/filament-admin": "^0.5"
+        "filamentboot/filamentboot": "^0.5"
     }
 }
 ```
@@ -252,13 +252,13 @@ your-vendor-your-plugin/
 
 ### 5.2 叠加 extra.filament-admin 约定
 
-以一方插件 `laravelstack/filament-admin-oss`（阿里云 OSS 存储）为真实参考，
+以一方插件 `filamentboot/filamentboot-oss`（阿里云 OSS 存储）为真实参考，
 其 `composer.json` 中的 `extra.filament-admin` 块如下（已通过 `filament-admin:audit-plugins` 合规验证）：
 
 ```json
 {
-    "name": "laravelstack/filament-admin-oss",
-    "description": "阿里云 OSS 存储插件，为 laravelstack/filament-admin 提供 Flysystem OSS 磁盘驱动与后台凭证配置页。",
+    "name": "filamentboot/filamentboot-oss",
+    "description": "阿里云 OSS 存储插件，为 filamentboot/filamentboot 提供 Flysystem OSS 磁盘驱动与后台凭证配置页。",
     "type": "library",
     "license": "MIT",
     "keywords": ["filament", "laravel", "oss", "aliyun", "storage", "filament-plugin", "cloud-storage"],
@@ -377,7 +377,7 @@ class OssServiceProvider extends ServiceProvider
 ### 5.5 含迁移与种子的 solution_plugin 示例
 
 对于需要创建数据库表的解决方案型插件（`type: solution_plugin`），参考
-`laravelstack/filament-admin-site`（官网插件）的 `post_install` 声明：
+`filamentboot/filamentboot-site`（官网插件）的 `post_install` 声明：
 
 ```json
 "post_install": {
@@ -407,7 +407,7 @@ php artisan filament-admin:audit-plugins
 输出示例（所有项为 `[PASS]` 即合规）：
 
 ```
-## laravelstack/filament-admin-oss
+## filamentboot/filamentboot-oss
 - [PASS] implements Filament\Contracts\Plugin
 - [PASS] composer.json type: library
 - [PASS] keywords contains 'filament'
@@ -419,13 +419,13 @@ php artisan filament-admin:audit-plugins
 
 ## 6. 提交到 filament-admin 官方市场
 
-官方市场内置精选列表（`config/official-market.php`）由 laravelstack/filament-admin
+官方市场内置精选列表（`config/official-market.php`）由 filamentboot/filamentboot
 维护团队审核管理。提交流程：
 
 1. **确保合规：** 运行 `php artisan filament-admin:audit-plugins`，确认所有检查项 `[PASS]`。
 2. **发布到 Packagist：** 将插件发布至 [packagist.org](https://packagist.org)，确保包名格式
    为 `vendor/filament-admin-xxx` 或含 `filament` 关键词。
-3. **提交 PR：** 向 [filament-admin 仓库](https://github.com/john-captain/filament-admin) 提交 PR，
+3. **提交 PR：** 向 [filament-admin 仓库](https://github.com/filamentboot/filamentboot) 提交 PR，
    在 `config/official-market.php` 添加插件条目，包含以下信息：
    - 包名（Packagist 格式）
    - 展示名称与描述

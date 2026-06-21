@@ -14,7 +14,7 @@ FilamentAdmin 是一个基于 Laravel 13 + Filament 5 的后台基础能力方�
 ### 当前发布边界
 
 - 当前公开发布对象是 `packages/filament-admin`
-- 当前推荐安装方式是 `composer require laravelstack/filament-admin`
+- 当前推荐安装方式是 `composer require filamentboot/filamentboot`
 - 当前仓库根目录不直接作为包仓库发布
 - 当前主包不包含 `PluginPlatform`
 - 插件市场能力保留为后续独立包方向，不作为本次主包内置能力

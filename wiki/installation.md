@@ -67,7 +67,7 @@ packages/filament-admin
 **第一步：安装主包**
 
 ```bash
-composer require laravelstack/filament-admin
+composer require filamentboot/filamentboot
 ```
 
 **第二步：发布资源文件**
