@@ -27,10 +27,10 @@ class RichEditorPluginTest extends TestCase
     }
 
     /**
-     * 验证插件 ID 与 extra.filament-admin.slug 保持一致
+     * 验证插件 ID 与 extra.filamentboot.slug 保持一致
      *
      * RichEditorPlugin::getId() 必须返回 'filamentboot-rich-editor'，
-     * 与 composer.json 中的 extra.filament-admin.slug 字段一致，
+     * 与 composer.json 中的 extra.filamentboot.slug 字段一致，
      * 确保 plugin:scan 能正确索引并启停插件。
      */
     public function test_plugin_id_matches_slug(): void

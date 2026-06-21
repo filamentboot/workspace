@@ -8,7 +8,7 @@ use Illuminate\Console\Command;
 /**
  * 扫描已安装插件命令
  *
- * 遍历 vendor/composer/installed.json，将含 extra.filament-admin 声明的包
+ * 遍历 vendor/composer/installed.json，将含 extra.filamentboot 声明的包
  * 同步写入 plugins 表（updateOrCreate，保留 is_enabled/config_overrides）。
  */
 class PluginScanCommand extends Command
@@ -17,7 +17,7 @@ class PluginScanCommand extends Command
     protected $signature = 'plugin:scan';
 
     /** @var string */
-    protected $description = '扫描 vendor 目录中已安装的 filament-admin 插件并同步到数据库';
+    protected $description = '扫描 vendor 目录中已安装的 filamentboot 插件并同步到数据库';
 
     /**
      * 执行命令

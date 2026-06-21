@@ -7,7 +7,7 @@ use PHPUnit\Framework\TestCase;
 /**
  * COS 插件包 composer.json 元信息锁定测试
  *
- * 确保 extra.filament-admin 契约字段和 extra.laravel.providers 声明不会意外丢失。
+ * 确保 extra.filamentboot 契约字段和 extra.laravel.providers 声明不会意外丢失。
  */
 class CosPackageMetadataTest extends TestCase
 {

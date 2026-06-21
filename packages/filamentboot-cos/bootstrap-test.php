@@ -30,7 +30,7 @@ if (! $autoloadLoaded) {
 
 // 注册 COS 包 src/ 的 PSR-4 命名空间
 spl_autoload_register(function (string $class) {
-    $prefix = 'LaravelStack\\FilamentAdminCos\\';
+    $prefix = 'Filamentboot\\FilamentbootCos\\';
     $baseDir = __DIR__.'/src/';
 
     if (! str_starts_with($class, $prefix)) {

@@ -11,7 +11,7 @@ use Orchestra\Testbench\TestCase;
  * WangEditorPlugin 单元测试
  *
  * 验证：
- * - plugin_id 与 extra.filament-admin.slug 保持一致（'filamentboot-wang-editor'）
+ * - plugin_id 与 extra.filamentboot.slug 保持一致（'filamentboot-wang-editor'）
  * - WangEditorPlugin 实现 Filament\Contracts\Plugin 接口
  * - ServiceProvider boot() 在无额外依赖时不抛异常
  */
@@ -29,10 +29,10 @@ class WangEditorPluginTest extends TestCase
     }
 
     /**
-     * 验证插件 ID 与 extra.filament-admin.slug 保持一致（D-09-03/D-09-04）
+     * 验证插件 ID 与 extra.filamentboot.slug 保持一致（D-09-03/D-09-04）
      *
      * WangEditorPlugin::getId() 必须返回 'filamentboot-wang-editor'，
-     * 与 composer.json 中的 extra.filament-admin.slug 字段一致，
+     * 与 composer.json 中的 extra.filamentboot.slug 字段一致，
      * 确保 plugin:scan 能正确索引并启停插件。
      */
     public function test_plugin_id(): void

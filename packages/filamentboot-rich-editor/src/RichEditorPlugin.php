@@ -26,7 +26,7 @@ class RichEditorPlugin implements Plugin
     }
 
     /**
-     * 插件唯一标识符，与 extra.filament-admin.slug 保持一致
+     * 插件唯一标识符，与 extra.filamentboot.slug 保持一致
      */
     public function getId(): string
     {
