@@ -55,9 +55,14 @@ jobs:
           PREFIX="packages/${{ matrix.package.dir }}"
           REPO="https://x-access-token:${GITHUB_TOKEN}@github.com/filamentboot/${{ matrix.package.repo }}.git"
           SHA=$(splitsh-lite --prefix="$PREFIX")
+          # WR-03: 确保 splitsh-lite 产生了非空 SHA，且 split 树包含 composer.json
+          test -n "$SHA" || { echo "::error::splitsh-lite 为 $PREFIX 产生了空 SHA，终止推送"; exit 1; }
+          git cat-file -p "$SHA:composer.json" >/dev/null || { echo "::error::split 树缺少 composer.json（prefix=$PREFIX），终止推送"; exit 1; }
           git remote add split-target "$REPO" 2>/dev/null || true
+          # 分支镜像推送保留 --force（mirror 语义）
           git push split-target "${SHA}:refs/heads/main" --force
-          git push split-target "${SHA}:refs/tags/${TAG}" --force
+          # WR-04: tag 推送不加 --force；已发布的不可变 tag 不允许覆盖
+          git push split-target "${SHA}:refs/tags/${TAG}"
 
   release:
     runs-on: ubuntu-latest

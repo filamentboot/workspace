@@ -34,6 +34,7 @@ class PluginFactory extends Factory
             'plugin_class'       => null,
             'settings_page_slug' => null,
             'service_provider'   => null,
+            'install_constraint' => null,
             'installed_version'  => '1.0.0',
             'description'        => $this->faker->sentence(),
             'compatibility_status' => 'unknown',

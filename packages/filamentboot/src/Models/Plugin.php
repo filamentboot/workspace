@@ -23,6 +23,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $plugin_class Filament Plugin 接口实现类名
  * @property string|null $settings_page_slug Filament settings 页 slug
  * @property string|null $service_provider ServiceProvider 子类名（供 vendor:publish 使用）
+ * @property string|null $install_constraint 供 composer require 使用的版本约束（如 ^0.5.0）；与 installed_version 分离（CR-01）
  * @property string|null $installed_version
  * @property string|null $description
  * @property array<string, mixed>|null $post_install_data extra.filament-admin.post_install 声明块
@@ -50,6 +51,7 @@ class Plugin extends Model
         'plugin_class',
         'settings_page_slug',
         'service_provider',
+        'install_constraint',
         'installed_version',
         'description',
         'post_install_data',

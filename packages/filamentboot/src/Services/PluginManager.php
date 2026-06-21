@@ -73,10 +73,10 @@ class PluginManager
 
         foreach ($data['packages'] ?? [] as $pkg) {
             /** @var array<string, mixed>|null $meta */
-            // 优先读 extra.filamentboot（新键），回落 extra.filament-admin（旧键，过渡兼容）
-            $meta = $pkg['extra']['filamentboot'] ?? $pkg['extra']['filament-admin'] ?? null;
+            // 读 extra.filamentboot（唯一规范键，D-05 硬切，不向后兼容）
+            $meta = $pkg['extra']['filamentboot'] ?? null;
 
-            // 是否为 Filament 插件：有 extra.filamentboot/filament-admin 声明，或接口 classmap grep 发现
+            // 是否为 Filament 插件：有 extra.filamentboot 声明，或接口 classmap grep 发现
             $pluginClass = $this->detectPluginClass($pkg);
 
             if ($pluginClass === null && $meta === null) {
@@ -91,7 +91,7 @@ class PluginManager
             $filamentConstraint    = $pkg['require']['filament/filament'] ?? null;
             $compatibilityStatus   = $compat->checkFilamentCompatibility($filamentConstraint);
 
-            // 元数据优先读 extra.filamentboot/extra.filament-admin；无则回落 composer.json 标准字段
+            // 元数据读 extra.filamentboot；无则回落 composer.json 标准字段
             Plugin::updateOrCreate(
                 ['package_name' => $packageName],
                 [
@@ -218,8 +218,9 @@ class PluginManager
      * 严格包名验证（接收裸包名，不含约束冒号）→ 构建版本约束 require 参数 →
      * 构建 Process → 流式追加 init_log → 成功后 postInstall。
      *
-     * 约束来源：Plugin.installed_version（由 catalog/community 条目写入），
-     * 携带版本约束确保 dev-stability 和显式版本包在 minimum-stability=stable 下可解析。
+     * 约束来源（CR-01）：优先读 Plugin.install_constraint（由 catalog/community 条目写入，
+     * 供 composer require 使用），回落至 Plugin.installed_version（仅用于向后兼容已有行）。
+     * installed_version 由 syncFromInstalled 写入真实解析版本，不应再用作安装约束。
      */
     public function runComposerInstall(Plugin $plugin, string $packageName): void
     {
@@ -232,8 +233,9 @@ class PluginManager
             return;
         }
 
-        // 从 Plugin.installed_version 读取版本约束，构建 composer require 的目标参数
-        $constraint  = $plugin->installed_version;
+        // CR-01：优先使用 install_constraint（明确的安装约束），回落至 installed_version（向后兼容）。
+        // 确保 syncFromInstalled 写入的精确解析版本不会覆盖用户原始约束。
+        $constraint  = $plugin->install_constraint ?? $plugin->installed_version;
         $requireArg  = ($constraint !== null && $constraint !== '')
             ? $packageName.':'.$constraint
             : $packageName;
@@ -305,7 +307,7 @@ class PluginManager
     /**
      * 混合发现：从包元数据中检测 Filament Plugin 接口实现类名
      *
-     * 策略一：extra.filament-admin.plugin_class 直接返回（一方包快速路径）。
+     * 策略一：extra.filamentboot.plugin_class 直接返回（一方包快速路径，D-05 唯一规范键）。
      * 策略二：遍历 vendor/composer/autoload_classmap.php，过滤属于该包的条目，
      *         读取源文件内容 grep Plugin 接口特征字符串，排除 /tests/ 路径和抽象类。
      * 不调用 class_exists / 不实例化任何类（T-12-01-01 威胁缓解）。
@@ -314,8 +316,8 @@ class PluginManager
      */
     private function detectPluginClass(array $pkg): ?string
     {
-        // 策略一：一方包快速路径
-        if ($class = $pkg['extra']['filament-admin']['plugin_class'] ?? null) {
+        // 策略一：一方包快速路径（D-05 硬切，仅读 extra.filamentboot，不向后兼容）
+        if ($class = $pkg['extra']['filamentboot']['plugin_class'] ?? null) {
             return $class;
         }
 
