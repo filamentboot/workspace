@@ -183,7 +183,7 @@ class StubGenerator
     /**
      * 构建 List{Plural} Page 类的文件内容（D-28 单一来源，迁自 PublishCommand）
      *
-     * 由 PublishCommand::publishResource() 和 MakeFilamentAdminResourceCommand 共同调用，
+     * 由 PublishCommand::publishResource() 和 MakeFilamentbootResourceCommand 共同调用，
      * 不允许在命令层保留副本，统一通过此方法生成列表页文件内容。
      *
      * @param  string  $resourceNamespace  Resource 命名空间（含 Plural 子目录，如 App\Filament\Resources\Products）
@@ -215,7 +215,7 @@ PHP;
     /**
      * 构建 Create{Name} Page 类的文件内容（D-28 单一来源，迁自 PublishCommand）
      *
-     * 由 PublishCommand::publishResource() 和 MakeFilamentAdminResourceCommand 共同调用，
+     * 由 PublishCommand::publishResource() 和 MakeFilamentbootResourceCommand 共同调用，
      * 不允许在命令层保留副本，统一通过此方法生成新建页文件内容。
      *
      * @param  string  $resourceNamespace  Resource 命名空间（含 Plural 子目录）
@@ -246,7 +246,7 @@ PHP;
     /**
      * 构建 Edit{Name} Page 类的文件内容（D-28 单一来源，迁自 PublishCommand）
      *
-     * 由 PublishCommand::publishResource() 和 MakeFilamentAdminResourceCommand 共同调用，
+     * 由 PublishCommand::publishResource() 和 MakeFilamentbootResourceCommand 共同调用，
      * 不允许在命令层保留副本，统一通过此方法生成编辑页文件内容。
      *
      * @param  string  $resourceNamespace  Resource 命名空间（含 Plural 子目录）

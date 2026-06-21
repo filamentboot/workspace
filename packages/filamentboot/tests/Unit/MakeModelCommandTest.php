@@ -9,9 +9,9 @@ use Orchestra\Testbench\TestCase;
 use Symfony\Component\Console\Command\Command;
 
 /**
- * MakeFilamentAdminModelCommand 行为测试
+ * MakeFilamentbootModelCommand 行为测试
  *
- * 验证 `make:filament-admin-model` 命令的各项行为（FEAT-03）：
+ * 验证 `make:filamentboot-model` 命令的各项行为（FEAT-03）：
  * - 生成文件到 app/Models/ 并包含正确命名空间和类名
  * - 目标文件已存在时跳过（无 --force），输出含 Skipped:
  * - 带 --force 时覆盖已存在文件
@@ -122,12 +122,12 @@ class MakeModelCommandTest extends TestCase
     }
 
     /**
-     * 验证 make:filament-admin-model Product 生成 app/Models/Product.php
+     * 验证 make:filamentboot-model Product 生成 app/Models/Product.php
      * 且内容包含正确命名空间 App\Models 与类名 Product
      */
     public function test_model_generates_file_with_correct_namespace(): void
     {
-        $this->artisan('make:filament-admin-model', ['name' => 'Product'])
+        $this->artisan('make:filamentboot-model', ['name' => 'Product'])
             ->assertExitCode(Command::SUCCESS);
 
         $expectedPath = $this->tempBase.'/app/Models/Product.php';
@@ -150,7 +150,7 @@ class MakeModelCommandTest extends TestCase
         file_put_contents($modelPath, '<?php // placeholder content');
 
         // 命令应跳过并输出 Skipped: 提示
-        $this->artisan('make:filament-admin-model', ['name' => 'Product'])
+        $this->artisan('make:filamentboot-model', ['name' => 'Product'])
             ->expectsOutputToContain('Skipped:')
             ->assertExitCode(Command::SUCCESS);
 
@@ -172,7 +172,7 @@ class MakeModelCommandTest extends TestCase
         file_put_contents($modelPath, '<?php // placeholder content');
 
         // 带 --force 强制覆盖
-        $this->artisan('make:filament-admin-model', [
+        $this->artisan('make:filamentboot-model', [
             'name'    => 'Product',
             '--force' => true,
         ])->assertExitCode(Command::SUCCESS);
@@ -188,7 +188,7 @@ class MakeModelCommandTest extends TestCase
      */
     public function test_model_rejects_invalid_name(): void
     {
-        $this->artisan('make:filament-admin-model', ['name' => 'product'])
+        $this->artisan('make:filamentboot-model', ['name' => 'product'])
             ->assertExitCode(Command::FAILURE);
     }
 }

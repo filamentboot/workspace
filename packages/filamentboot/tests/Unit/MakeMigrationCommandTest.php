@@ -9,9 +9,9 @@ use Orchestra\Testbench\TestCase;
 use Symfony\Component\Console\Command\Command;
 
 /**
- * MakeFilamentAdminMigrationCommand 行为测试
+ * MakeFilamentbootMigrationCommand 行为测试
  *
- * 验证 `make:filament-admin-migration` 命令的各项行为（FEAT-03）：
+ * 验证 `make:filamentboot-migration` 命令的各项行为（FEAT-03）：
  * - 生成含时间戳前缀的迁移文件到 database/migrations/
  * - 文件内容包含正确表名（products）
  * - 目标文件已存在时跳过（无 --force），输出含 Skipped:
@@ -122,12 +122,12 @@ class MakeMigrationCommandTest extends TestCase
     }
 
     /**
-     * 验证 make:filament-admin-migration Product 生成含时间戳前缀的迁移文件
+     * 验证 make:filamentboot-migration Product 生成含时间戳前缀的迁移文件
      * 且内容包含 Schema::create('products', ...)
      */
     public function test_migration_generates_file_with_correct_namespace(): void
     {
-        $this->artisan('make:filament-admin-migration', ['name' => 'Product'])
+        $this->artisan('make:filamentboot-migration', ['name' => 'Product'])
             ->assertExitCode(Command::SUCCESS);
 
         $migrationsDir = $this->tempBase.'/database/migrations';
@@ -146,7 +146,7 @@ class MakeMigrationCommandTest extends TestCase
     public function test_migration_skips_existing_without_force(): void
     {
         // 先生成一次，得到带时间戳的文件名
-        $this->artisan('make:filament-admin-migration', ['name' => 'Product'])
+        $this->artisan('make:filamentboot-migration', ['name' => 'Product'])
             ->assertExitCode(Command::SUCCESS);
 
         $migrationsDir = $this->tempBase.'/database/migrations';
@@ -171,7 +171,7 @@ class MakeMigrationCommandTest extends TestCase
     public function test_migration_overwrites_existing_with_force(): void
     {
         // 带 --force 生成迁移文件
-        $this->artisan('make:filament-admin-migration', [
+        $this->artisan('make:filamentboot-migration', [
             'name'    => 'Product',
             '--force' => true,
         ])->assertExitCode(Command::SUCCESS);
@@ -189,7 +189,7 @@ class MakeMigrationCommandTest extends TestCase
      */
     public function test_migration_rejects_invalid_name(): void
     {
-        $this->artisan('make:filament-admin-migration', ['name' => 'product'])
+        $this->artisan('make:filamentboot-migration', ['name' => 'product'])
             ->assertExitCode(Command::FAILURE);
     }
 }

@@ -9,9 +9,9 @@ use Orchestra\Testbench\TestCase;
 use Symfony\Component\Console\Command\Command;
 
 /**
- * MakeFilamentAdminResourceCommand 行为测试
+ * MakeFilamentbootResourceCommand 行为测试
  *
- * 验证 `make:filament-admin-resource` 命令的各项行为（FEAT-03）：
+ * 验证 `make:filamentboot-resource` 命令的各项行为（FEAT-03）：
  * - 生成 Resource 主文件及 3 个 Page 文件到正确路径
  * - 目标文件已存在时跳过（无 --force），输出含 Skipped:
  * - 带 --force 时覆盖已存在的 Resource 主文件
@@ -121,11 +121,11 @@ class MakeResourceCommandTest extends TestCase
     }
 
     /**
-     * 验证 make:filament-admin-resource Product 生成 Resource 主文件及 3 个 Page 文件
+     * 验证 make:filamentboot-resource Product 生成 Resource 主文件及 3 个 Page 文件
      */
     public function test_resource_generates_file_with_correct_namespace(): void
     {
-        $this->artisan('make:filament-admin-resource', ['name' => 'Product'])
+        $this->artisan('make:filamentboot-resource', ['name' => 'Product'])
             ->assertExitCode(Command::SUCCESS);
 
         $base = $this->tempBase.'/app/Filament/Resources/Products';
@@ -164,7 +164,7 @@ class MakeResourceCommandTest extends TestCase
         file_put_contents($resourceFile, '<?php // placeholder content');
 
         // 命令应跳过并输出 Skipped: 提示
-        $this->artisan('make:filament-admin-resource', ['name' => 'Product'])
+        $this->artisan('make:filamentboot-resource', ['name' => 'Product'])
             ->expectsOutputToContain('Skipped:')
             ->assertExitCode(Command::SUCCESS);
 
@@ -186,7 +186,7 @@ class MakeResourceCommandTest extends TestCase
         file_put_contents($resourceFile, '<?php // placeholder content');
 
         // 带 --force 强制覆盖
-        $this->artisan('make:filament-admin-resource', [
+        $this->artisan('make:filamentboot-resource', [
             'name'    => 'Product',
             '--force' => true,
         ])->assertExitCode(Command::SUCCESS);
@@ -202,7 +202,7 @@ class MakeResourceCommandTest extends TestCase
      */
     public function test_resource_rejects_invalid_name(): void
     {
-        $this->artisan('make:filament-admin-resource', ['name' => 'product'])
+        $this->artisan('make:filamentboot-resource', ['name' => 'product'])
             ->assertExitCode(Command::FAILURE);
     }
 }

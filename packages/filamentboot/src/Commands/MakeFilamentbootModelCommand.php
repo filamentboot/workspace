@@ -7,26 +7,25 @@ use Illuminate\Console\Command;
 use Symfony\Component\Console\Command\Command as CommandExitCode;
 
 /**
- * 生成 FilamentAdmin FeatureTest stub 命令（FEAT-03 / D-28 薄包装）
+ * 生成 Filamentboot Model stub 命令（FEAT-03 / D-28 薄包装）
  *
- * 薄包装命令，构造注入 StubGenerator，将 FeatureTest stub 渲染后写入用户项目 tests/Feature 目录。
- * 变量绑定对齐 PublishCommand::publishFeatureTest 第 285-291 行，确保生成文件可直接运行。
+ * 薄包装命令，构造注入 StubGenerator，将 Model stub 渲染后写入用户项目。
  * 不重写渲染/写文件逻辑，全部委托 StubGenerator 处理（D-28 零重复原则）。
  *
  * 使用示例：
- *   php artisan make:filament-admin-test Product
- *   php artisan make:filament-admin-test Product --force
+ *   php artisan make:filamentboot-model Product
+ *   php artisan make:filamentboot-model Product --force
  */
-class MakeFilamentAdminTestCommand extends Command
+class MakeFilamentbootModelCommand extends Command
 {
     /**
      * 命令签名
      *
      * @var string
      */
-    protected $signature = 'make:filament-admin-test
-        {name : 模型类名（PascalCase，如 Product），将生成 ProductResourceTest.php}
-        {--path=  : 输出根路径（默认 tests/Feature/）}
+    protected $signature = 'make:filamentboot-model
+        {name : Model 类名（PascalCase，如 Product）}
+        {--path=  : 输出根路径（默认 app/Models/）}
         {--force  : 强制覆盖已存在文件}';
 
     /**
@@ -34,7 +33,7 @@ class MakeFilamentAdminTestCommand extends Command
      *
      * @var string
      */
-    protected $description = '生成 FilamentAdmin FeatureTest stub 到用户项目（FEAT-03）';
+    protected $description = '生成 Filamentboot Model stub 到用户项目（FEAT-03）';
 
     /**
      * 构造函数，注入 StubGenerator 服务（D-28）
@@ -47,7 +46,7 @@ class MakeFilamentAdminTestCommand extends Command
     /**
      * 命令主入口
      *
-     * 校验 name 参数格式（T-03-03 PascalCase 防护），渲染 FeatureTest stub，写入目标路径。
+     * 校验 name 参数格式（T-03-03 PascalCase 防护），渲染 Model stub，写入目标路径。
      *
      * @return int 命令退出码（SUCCESS / FAILURE）
      */
@@ -64,34 +63,27 @@ class MakeFilamentAdminTestCommand extends Command
 
         // 路径校验：拒绝 .. 路径上溯（T-03-04）
         $customPath = (string) ($this->option('path') ?? '');
-        if ($customPath !== '' && str_contains($customPath, '..')) {
+        if ($customPath !== '' && ! $this->generator->validatePath($customPath)) {
             $this->error('--path 不允许包含 .. 路径上溯');
 
             return CommandExitCode::FAILURE;
         }
 
-        // 推导变量（对齐 PublishCommand::publishFeatureTest 第 285-291 行）
-        $resourceNamespace = $this->generator->deriveResourceNamespace($name);
-        $appModelNamespace = $this->generator->deriveModelNamespace();
-
-        // 渲染 FeatureTest stub
-        $content = $this->generator->renderStub('FeatureTest', [
-            'namespace'         => 'Tests\\Feature',
-            'resourceNamespace' => $resourceNamespace,
-            'resource'          => $name.'Resource',
-            'model'             => $name,
-            'modelLabel'        => $name,
-            'appModelNamespace' => $appModelNamespace,
+        // 渲染 Model stub
+        $content = $this->generator->renderStub('Model', [
+            'namespace' => $this->generator->deriveModelNamespace(),
+            'class'     => $name,
+            'table'     => $this->generator->toSnakeCase($this->generator->pluralize($name)),
         ]);
 
         if ($content === '') {
-            $this->error('Stub 渲染失败：FeatureTest.stub 不存在');
+            $this->error('Stub 渲染失败：Model.stub 不存在');
 
             return CommandExitCode::FAILURE;
         }
 
         // 写文件（IO 输出保留在命令层，D-28）
-        $targetPath = base_path('tests/Feature/'.$name.'ResourceTest.php');
+        $targetPath = base_path('app/Models/'.$name.'.php');
         $written    = $this->generator->writeFile($targetPath, $content, (bool) $this->option('force'));
 
         if ($written) {

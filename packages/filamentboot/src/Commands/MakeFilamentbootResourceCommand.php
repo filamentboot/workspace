@@ -7,7 +7,7 @@ use Illuminate\Console\Command;
 use Symfony\Component\Console\Command\Command as CommandExitCode;
 
 /**
- * 生成 FilamentAdmin Resource stub 命令（FEAT-03 / D-28 薄包装）
+ * 生成 Filamentboot Resource stub 命令（FEAT-03 / D-28 薄包装）
  *
  * 薄包装命令，构造注入 StubGenerator，将 Resource stub 及三个 Page 文件渲染后写入用户项目。
  * 接受 Product 或 ProductResource 两种形式的 name 参数，自动剥离 Resource 后缀。
@@ -15,19 +15,19 @@ use Symfony\Component\Console\Command\Command as CommandExitCode;
  * 不在命令层保留副本（D-28 单一来源）。
  *
  * 使用示例：
- *   php artisan make:filament-admin-resource Product
- *   php artisan make:filament-admin-resource ProductResource
- *   php artisan make:filament-admin-resource Product --force
- *   php artisan make:filament-admin-resource Product --path=app/Filament/Reseller
+ *   php artisan make:filamentboot-resource Product
+ *   php artisan make:filamentboot-resource ProductResource
+ *   php artisan make:filamentboot-resource Product --force
+ *   php artisan make:filamentboot-resource Product --path=app/Filament/Reseller
  */
-class MakeFilamentAdminResourceCommand extends Command
+class MakeFilamentbootResourceCommand extends Command
 {
     /**
      * 命令签名
      *
      * @var string
      */
-    protected $signature = 'make:filament-admin-resource
+    protected $signature = 'make:filamentboot-resource
         {name : 模型类名或 Resource 类名（PascalCase，如 Product 或 ProductResource）}
         {--path=  : Resource 输出根路径（默认 app/Filament/Resources/）}
         {--force  : 强制覆盖已存在文件}';
@@ -37,7 +37,7 @@ class MakeFilamentAdminResourceCommand extends Command
      *
      * @var string
      */
-    protected $description = '生成 FilamentAdmin Resource stub（含三个 Page 文件）到用户项目（FEAT-03）';
+    protected $description = '生成 Filamentboot Resource stub（含三个 Page 文件）到用户项目（FEAT-03）';
 
     /**
      * 构造函数，注入 StubGenerator 服务（D-28）

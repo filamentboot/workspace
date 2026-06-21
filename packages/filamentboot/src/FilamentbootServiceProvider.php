@@ -110,10 +110,10 @@ class FilamentbootServiceProvider extends ServiceProvider
                 Commands\CleanActivityLogs::class,
                 Commands\CleanLoginLogs::class,
                 // FEAT-03：四个 CRUD 代码生成命令
-                Commands\MakeFilamentAdminModelCommand::class,
-                Commands\MakeFilamentAdminResourceCommand::class,
-                Commands\MakeFilamentAdminMigrationCommand::class,
-                Commands\MakeFilamentAdminTestCommand::class,
+                Commands\MakeFilamentbootModelCommand::class,
+                Commands\MakeFilamentbootResourceCommand::class,
+                Commands\MakeFilamentbootMigrationCommand::class,
+                Commands\MakeFilamentbootTestCommand::class,
                 // DEMO-02：演示站数据重置命令
                 Commands\DemoReset::class,
                 // PLUGIN：插件扫描命令

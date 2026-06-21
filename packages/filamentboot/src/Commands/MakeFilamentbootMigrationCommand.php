@@ -7,24 +7,24 @@ use Illuminate\Console\Command;
 use Symfony\Component\Console\Command\Command as CommandExitCode;
 
 /**
- * 生成 FilamentAdmin Migration stub 命令（FEAT-03 / D-28 薄包装）
+ * 生成 Filamentboot Migration stub 命令（FEAT-03 / D-28 薄包装）
  *
  * 薄包装命令，构造注入 StubGenerator，将 Migration stub 渲染后写入用户项目数据库迁移目录。
  * 文件名含时间戳前缀（对齐 Laravel 迁移命名约定，PublishCommand 第 269-271 行）。
  * 不重写渲染/写文件逻辑，全部委托 StubGenerator 处理（D-28 零重复原则）。
  *
  * 使用示例：
- *   php artisan make:filament-admin-migration Product
- *   php artisan make:filament-admin-migration Product --force
+ *   php artisan make:filamentboot-migration Product
+ *   php artisan make:filamentboot-migration Product --force
  */
-class MakeFilamentAdminMigrationCommand extends Command
+class MakeFilamentbootMigrationCommand extends Command
 {
     /**
      * 命令签名
      *
      * @var string
      */
-    protected $signature = 'make:filament-admin-migration
+    protected $signature = 'make:filamentboot-migration
         {name : 模型类名（PascalCase，如 Product），将转为表名 products}
         {--path=  : 输出根路径（默认 database/migrations/）}
         {--force  : 强制覆盖已存在文件}';
@@ -34,7 +34,7 @@ class MakeFilamentAdminMigrationCommand extends Command
      *
      * @var string
      */
-    protected $description = '生成 FilamentAdmin Migration stub 到用户项目（FEAT-03）';
+    protected $description = '生成 Filamentboot Migration stub 到用户项目（FEAT-03）';
 
     /**
      * 构造函数，注入 StubGenerator 服务（D-28）
