@@ -8,10 +8,10 @@ use Illuminate\Support\Facades\File;
  * ScanPlugins 命令集成测试（PLUGIN-01 / CR-01 修复验证）
  *
  * 覆盖场景：
- * 1. 含 extra.filament-admin 的包 → plugin:scan 成功退出，Plugin 记录被创建，installed_at 非空
+ * 1. 含 extra.filamentboot 的包 → plugin:scan 成功退出，Plugin 记录被创建，installed_at 非空
  * 2. 重复执行 plugin:scan（幂等）→ 记录数量不变，installed_at 与首次值完全一致
  * 3. plugin:scan 执行后 Cache::get('plugins.enabled_list') 返回 null（缓存被清除）
- * 4. installed.json 含两个包（仅一个声明 extra.filament-admin）→ 只创建 1 条 Plugin 记录
+ * 4. installed.json 含两个包（仅一个声明 extra.filamentboot）→ 只创建 1 条 Plugin 记录
  *
  * 测试策略：通过 File::put() 将 fixture 写入 base_path('vendor/composer/installed.json')，
  * ScanPlugins::handle() 直接调用 file_get_contents()，无法通过 Storage fake 拦截。
@@ -46,7 +46,7 @@ afterEach(function () use (&$originalInstalledJson, &$originalExists) {
 });
 
 /**
- * 含 extra.filament-admin 的 fixture（单包）
+ * 含 extra.filamentboot 的 fixture（单包）
  *
  * @return string JSON 字符串
  */
@@ -58,7 +58,7 @@ function singlePluginFixture(): string
                 'name'    => 'test/fake-fa-plugin',
                 'version' => '1.0.0',
                 'extra'   => [
-                    'filament-admin' => [
+                    'filamentboot' => [
                         'slug'        => 'fake-fa-plugin',
                         'name'        => 'Fake FA Plugin',
                         'type'        => 'package',
@@ -71,7 +71,7 @@ function singlePluginFixture(): string
 }
 
 /**
- * 含两个包的 fixture：一个声明 extra.filament-admin，一个不声明
+ * 含两个包的 fixture：一个声明 extra.filamentboot，一个不声明
  *
  * @return string JSON 字符串
  */
@@ -83,7 +83,7 @@ function twoPackagesFixture(): string
                 'name'    => 'test/fake-fa-plugin',
                 'version' => '1.0.0',
                 'extra'   => [
-                    'filament-admin' => [
+                    'filamentboot' => [
                         'slug'        => 'fake-fa-plugin',
                         'name'        => 'Fake FA Plugin',
                         'type'        => 'package',
@@ -94,7 +94,7 @@ function twoPackagesFixture(): string
             [
                 'name'    => 'test/plain-package',
                 'version' => '2.0.0',
-                // 无 extra.filament-admin 声明
+                // 无 extra.filamentboot 声明
                 'extra'   => [
                     'laravel' => [
                         'providers' => ['Test\\PlainServiceProvider'],
@@ -105,7 +105,7 @@ function twoPackagesFixture(): string
     ], JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 }
 
-it('plugin:scan 遇到含 extra.filament-admin 包时以 SUCCESS 退出且 Plugin 记录被创建', function () {
+it('plugin:scan 遇到含 extra.filamentboot 包时以 SUCCESS 退出且 Plugin 记录被创建', function () {
     // 确保 vendor/composer 目录存在
     File::ensureDirectoryExists(base_path('vendor/composer'));
     File::put(base_path('vendor/composer/installed.json'), singlePluginFixture());
@@ -159,13 +159,13 @@ it('plugin:scan 执行后 plugins.enabled_list 缓存被清除', function () {
     expect(Cache::get('plugins.enabled_list'))->toBeNull();
 });
 
-it('installed.json 含两个包（仅一个声明 extra.filament-admin）时只创建 1 条 Plugin 记录', function () {
+it('installed.json 含两个包（仅一个声明 extra.filamentboot）时只创建 1 条 Plugin 记录', function () {
     File::ensureDirectoryExists(base_path('vendor/composer'));
     File::put(base_path('vendor/composer/installed.json'), twoPackagesFixture());
 
     $this->artisan('plugin:scan')->assertSuccessful();
 
-    // 只有声明了 extra.filament-admin 的包被写入
+    // 只有声明了 extra.filamentboot 的包被写入
     expect(Plugin::count())->toBe(1);
     expect(Plugin::where('package_name', 'test/fake-fa-plugin')->exists())->toBeTrue();
     expect(Plugin::where('package_name', 'test/plain-package')->exists())->toBeFalse();

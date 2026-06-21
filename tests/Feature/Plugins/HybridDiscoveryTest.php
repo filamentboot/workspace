@@ -141,7 +141,7 @@ PHP);
     File::deleteDirectory(base_path('vendor/community'));
 });
 
-it('含 extra.filament-admin.plugin_class 的包优先使用声明值（MKTPLACE-01）', function () {
+it('含 extra.filamentboot.plugin_class 的包优先使用声明值（MKTPLACE-01）', function () {
 
     File::ensureDirectoryExists(base_path('vendor/composer'));
 
@@ -151,7 +151,7 @@ it('含 extra.filament-admin.plugin_class 的包优先使用声明值（MKTPLACE
                 'name'    => 'first/declared-plugin',
                 'version' => '1.0.0',
                 'extra'   => [
-                    'filament-admin' => [
+                    'filamentboot' => [
                         'slug'         => 'declared-plugin',
                         'name'         => 'Declared Plugin',
                         'plugin_class' => 'First\\Declared\\DeclaredPlugin',
