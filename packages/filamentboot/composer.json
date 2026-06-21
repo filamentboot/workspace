@@ -1,11 +1,11 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "laravelstack/filament-admin",
+    "name": "filamentboot/filamentboot",
     "description": "Admin foundation package for Laravel 13 and Filament 5.",
     "type": "library",
     "license": "MIT",
     "keywords": ["filament", "laravel", "admin", "rbac", "backend", "filament-plugin", "permission", "audit-log", "admin-panel"],
-    "homepage": "https://github.com/john-captain/filament-admin",
+    "homepage": "https://github.com/filamentboot/filamentboot",
     "authors": [
         {
             "name": "johncaptain",
@@ -14,10 +14,10 @@
         }
     ],
     "support": {
-        "issues": "https://github.com/john-captain/filament-admin/issues",
-        "source": "https://github.com/john-captain/filament-admin",
-        "docs": "https://github.com/john-captain/filament-admin/blob/main/wiki/installation.md",
-        "wiki": "https://github.com/john-captain/filament-admin/tree/main/wiki"
+        "issues": "https://github.com/filamentboot/filamentboot/issues",
+        "source": "https://github.com/filamentboot/filamentboot",
+        "docs": "https://github.com/filamentboot/workspace/wiki/installation",
+        "wiki": "https://github.com/filamentboot/workspace/wiki"
     },
     "require": {
         "php": "^8.3",
@@ -50,20 +50,20 @@
     },
     "autoload": {
         "psr-4": {
-            "FilamentAdmin\\": "src/",
-            "FilamentAdmin\\Database\\Factories\\": "database/factories/",
-            "FilamentAdmin\\Database\\Seeders\\": "database/seeders/"
+            "Filamentboot\\": "src/",
+            "Filamentboot\\Database\\Factories\\": "database/factories/",
+            "Filamentboot\\Database\\Seeders\\": "database/seeders/"
         }
     },
     "autoload-dev": {
         "psr-4": {
-            "FilamentAdmin\\Tests\\": "tests/"
+            "Filamentboot\\Tests\\": "tests/"
         }
     },
     "extra": {
         "laravel": {
             "providers": [
-                "FilamentAdmin\\FilamentAdminServiceProvider"
+                "Filamentboot\\FilamentbootServiceProvider"
             ]
         },
         "branch-alias": {

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "80884ff0b8245fc052af0ec6ef6f08bc",
+    "content-hash": "73c1164bcd61cf785dc2aaa8eb07fb75",
     "packages": [
         {
             "name": "aliyuncs/oss-sdk-php",
@@ -2089,6 +2089,117 @@
             "time": "2026-05-27T16:16:29+00:00"
         },
         {
+            "name": "filamentboot/filamentboot",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "packages/filamentboot",
+                "reference": "f2c9cfd3fb6eedc5f66c33ef510090b03d01b67e"
+            },
+            "require": {
+                "alizharb/filament-activity-log": "^1.3",
+                "bezhansalleh/filament-shield": "^4.0",
+                "composer/semver": "^3.4",
+                "filament/filament": "^5.0",
+                "filament/spatie-laravel-media-library-plugin": "^5.6",
+                "filament/spatie-laravel-settings-plugin": "^5.6",
+                "laravel/framework": "^13.8",
+                "laravel/sanctum": "^4.0",
+                "php": "^8.3",
+                "solution-forest/filament-tree": "^4.0",
+                "spatie/laravel-activitylog": "^4.12",
+                "spatie/laravel-medialibrary": "^11.23",
+                "spatie/laravel-permission": "^6.0",
+                "spatie/laravel-settings": "^3.9",
+                "stechstudio/filament-impersonate": "^5.5",
+                "stephenjude/filament-two-factor-authentication": "^4.1"
+            },
+            "require-dev": {
+                "larastan/larastan": "^3.0",
+                "laravel/pint": "^1.27",
+                "mockery/mockery": "^1.6",
+                "orchestra/testbench": "^11.0",
+                "pestphp/pest": "^4.7",
+                "phpunit/phpunit": "^12.5.12"
+            },
+            "suggest": {
+                "ext-redis": "Required when REDIS_CLIENT=phpredis (default in .env). 用于缓存 / 队列 / 会话驱动。"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Filamentboot\\FilamentbootServiceProvider"
+                    ]
+                },
+                "branch-alias": {
+                    "dev-main": "0.5.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Filamentboot\\": "src/",
+                    "Filamentboot\\Database\\Factories\\": "database/factories/",
+                    "Filamentboot\\Database\\Seeders\\": "database/seeders/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Filamentboot\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "vendor/bin/phpunit -c phpunit.xml.dist"
+                ],
+                "test-coverage": [
+                    "vendor/bin/phpunit -c phpunit.xml.dist --coverage-clover=coverage.xml"
+                ],
+                "phpstan": [
+                    "vendor/bin/phpstan analyse --memory-limit=2G"
+                ],
+                "pint": [
+                    "vendor/bin/pint"
+                ],
+                "pint:test": [
+                    "vendor/bin/pint --test"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "johncaptain",
+                    "email": "JasonTodd0521@gmail.com",
+                    "role": "developer"
+                }
+            ],
+            "description": "Admin foundation package for Laravel 13 and Filament 5.",
+            "homepage": "https://github.com/filamentboot/filamentboot",
+            "keywords": [
+                "admin",
+                "admin-panel",
+                "audit-log",
+                "backend",
+                "filament",
+                "filament-plugin",
+                "laravel",
+                "permission",
+                "rbac"
+            ],
+            "support": {
+                "issues": "https://github.com/filamentboot/filamentboot/issues",
+                "source": "https://github.com/filamentboot/filamentboot",
+                "docs": "https://github.com/filamentboot/workspace/wiki/installation",
+                "wiki": "https://github.com/filamentboot/workspace/wiki"
+            },
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
             "name": "fruitcake/php-cors",
             "version": "v1.4.0",
             "source": {
@@ -3235,11 +3346,17 @@
         },
         {
             "name": "laravelstack/filament-admin",
-            "version": "dev-main",
+            "version": "v0.5.2",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/john-captain/filament-admin.git",
+                "reference": "42f82bdc5d96d5992003139ebf1886dca76dc4b8"
+            },
             "dist": {
-                "type": "path",
-                "url": "packages/filament-admin",
-                "reference": "21dbd4e7120f9f4e222984833fd0276b04d8c2b1"
+                "type": "zip",
+                "url": "https://api.github.com/repos/john-captain/filament-admin/zipball/42f82bdc5d96d5992003139ebf1886dca76dc4b8",
+                "reference": "42f82bdc5d96d5992003139ebf1886dca76dc4b8",
+                "shasum": ""
             },
             "require": {
                 "alizharb/filament-activity-log": "^1.3",
@@ -3283,32 +3400,11 @@
             "autoload": {
                 "psr-4": {
                     "FilamentAdmin\\": "src/",
-                    "FilamentAdmin\\Database\\Factories\\": "database/factories/",
-                    "FilamentAdmin\\Database\\Seeders\\": "database/seeders/"
+                    "FilamentAdmin\\Database\\Seeders\\": "database/seeders/",
+                    "FilamentAdmin\\Database\\Factories\\": "database/factories/"
                 }
             },
-            "autoload-dev": {
-                "psr-4": {
-                    "FilamentAdmin\\Tests\\": "tests/"
-                }
-            },
-            "scripts": {
-                "test": [
-                    "vendor/bin/phpunit -c phpunit.xml.dist"
-                ],
-                "test-coverage": [
-                    "vendor/bin/phpunit -c phpunit.xml.dist --coverage-clover=coverage.xml"
-                ],
-                "phpstan": [
-                    "vendor/bin/phpstan analyse --memory-limit=2G"
-                ],
-                "pint": [
-                    "vendor/bin/pint"
-                ],
-                "pint:test": [
-                    "vendor/bin/pint --test"
-                ]
-            },
+            "notification-url": "https://packagist.org/downloads/",
             "license": [
                 "MIT"
             ],
@@ -3333,15 +3429,12 @@
                 "rbac"
             ],
             "support": {
+                "docs": "https://github.com/john-captain/filament-admin/blob/main/wiki/installation.md",
                 "issues": "https://github.com/john-captain/filament-admin/issues",
                 "source": "https://github.com/john-captain/filament-admin",
-                "docs": "https://github.com/john-captain/filament-admin/blob/main/wiki/installation.md",
                 "wiki": "https://github.com/john-captain/filament-admin/tree/main/wiki"
             },
-            "transport-options": {
-                "symlink": true,
-                "relative": true
-            }
+            "time": "2026-06-15T09:49:15+00:00"
         },
         {
             "name": "laravelstack/filament-admin-cos",
@@ -3349,7 +3442,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/filament-admin-cos",
-                "reference": "b66aba94c54afcec0590dee449942b54e8d75dbe"
+                "reference": "2b1b0cde1a09e849c0a105269819935f03dd79fa"
             },
             "require": {
                 "filament/spatie-laravel-settings-plugin": "^5.6",
@@ -3384,6 +3477,13 @@
                     "compatibility": {
                         "laravel/framework": "^13.0",
                         "filament/filament": "^5.0"
+                    },
+                    "post_install": {
+                        "publish_tags": [
+                            "filament-admin-cos-config"
+                        ],
+                        "run_migrations": false,
+                        "seeders": []
                     }
                 },
                 "branch-alias": {
@@ -3456,7 +3556,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/filament-admin-markdown-editor",
-                "reference": "217321d3b25c32b30fe8a04cadbd6c7dee61a87e"
+                "reference": "978f465e2ef3db0804dc93da9f8c2de42cfd056b"
             },
             "require": {
                 "filament/filament": "^5.0",
@@ -3492,6 +3592,13 @@
                     "compatibility": {
                         "laravel/framework": "^13.0",
                         "filament/filament": "^5.0"
+                    },
+                    "post_install": {
+                        "publish_tags": [
+                            "filament-admin-markdown-editor-config"
+                        ],
+                        "run_migrations": false,
+                        "seeders": []
                     }
                 },
                 "branch-alias": {
@@ -3564,7 +3671,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/filament-admin-oss",
-                "reference": "27d013a0b8b092c6fc2bafc7e3d5d7160b3f0876"
+                "reference": "8e22af030a28f56f994060683cfea7f123bd3bb3"
             },
             "require": {
                 "filament/spatie-laravel-settings-plugin": "^5.6",
@@ -3599,6 +3706,13 @@
                     "compatibility": {
                         "laravel/framework": "^13.0",
                         "filament/filament": "^5.0"
+                    },
+                    "post_install": {
+                        "publish_tags": [
+                            "filament-admin-oss-config"
+                        ],
+                        "run_migrations": false,
+                        "seeders": []
                     }
                 },
                 "branch-alias": {
@@ -3671,7 +3785,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/filament-admin-rich-editor",
-                "reference": "0e5dae7e6c75c6004aa8ed2e3df8c89707379231"
+                "reference": "c7b58dd3ffcd0cfb34b84200e5c71b28b8d96d1e"
             },
             "require": {
                 "filament/filament": "^5.0",
@@ -3706,6 +3820,13 @@
                     "compatibility": {
                         "laravel/framework": "^13.0",
                         "filament/filament": "^5.0"
+                    },
+                    "post_install": {
+                        "publish_tags": [
+                            "filament-admin-rich-editor-config"
+                        ],
+                        "run_migrations": false,
+                        "seeders": []
                     }
                 },
                 "branch-alias": {
@@ -3777,7 +3898,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/filament-admin-site",
-                "reference": "530cf79a965d7b71d79e29013a666d93ff35359e"
+                "reference": "dd2fc37aff258695b37bf22717d047f99eaf76fe"
             },
             "require": {
                 "danharrin/livewire-rate-limiting": "^2.2",
@@ -3785,7 +3906,6 @@
                 "filament/spatie-laravel-media-library-plugin": "^5.6",
                 "filament/spatie-laravel-settings-plugin": "^5.6",
                 "laravelstack/filament-admin": "*",
-                "laravelstack/filament-admin-rich-editor": "*",
                 "livewire/livewire": "^4.3",
                 "mews/purifier": "^3.4",
                 "php": "^8.3",
@@ -3818,6 +3938,16 @@
                     "compatibility": {
                         "laravel/framework": "^13.0",
                         "filament/filament": "^5.0"
+                    },
+                    "post_install": {
+                        "publish_tags": [
+                            "filament-admin-site-config",
+                            "filament-admin-site-assets"
+                        ],
+                        "run_migrations": true,
+                        "seeders": [
+                            "LaravelStack\\FilamentAdminSite\\Database\\Seeders\\SiteSeeder"
+                        ]
                     }
                 },
                 "branch-alias": {
@@ -3864,7 +3994,7 @@
                 }
             ],
             "description": "面向中小企业的前台官网管理插件，提供案例/方案/产品/页面/询盘五类内容管理，支持中英双语与主题切换。",
-            "homepage": "https://github.com/john-captain/filament-admin",
+            "homepage": "https://github.com/johnson9316-bit/filament-admin-site",
             "keywords": [
                 "bilingual",
                 "cms",
@@ -3875,10 +4005,10 @@
                 "website"
             ],
             "support": {
-                "issues": "https://github.com/john-captain/filament-admin/issues",
-                "source": "https://github.com/john-captain/filament-admin",
-                "docs": "https://github.com/john-captain/filament-admin/blob/main/wiki/site.md",
-                "wiki": "https://github.com/john-captain/filament-admin/tree/main/wiki"
+                "issues": "https://github.com/johnson9316-bit/filament-admin-site/issues",
+                "source": "https://github.com/johnson9316-bit/filament-admin-site",
+                "docs": "https://github.com/johnson9316-bit/filament-admin-site/blob/main/wiki/site.md",
+                "wiki": "https://github.com/johnson9316-bit/filament-admin-site/tree/main/wiki"
             },
             "transport-options": {
                 "symlink": true,
@@ -3891,7 +4021,7 @@
             "dist": {
                 "type": "path",
                 "url": "packages/filament-admin-wang-editor",
-                "reference": "8488c34b98a6ddcd1b6718e9f6e5b0382bc2b28e"
+                "reference": "5821bd8423060fd680dd43d3ea9cfb5ea179f035"
             },
             "require": {
                 "filament/filament": "^5.0",
@@ -3924,6 +4054,13 @@
                     "compatibility": {
                         "laravel/framework": "^13.0",
                         "filament/filament": "^5.0"
+                    },
+                    "post_install": {
+                        "publish_tags": [
+                            "filament-admin-wang-editor-config"
+                        ],
+                        "run_migrations": false,
+                        "seeders": []
                     }
                 },
                 "branch-alias": {
@@ -16344,7 +16481,7 @@
     "aliases": [],
     "minimum-stability": "stable",
     "stability-flags": {
-        "laravelstack/filament-admin": 20,
+        "filamentboot/filamentboot": 20,
         "laravelstack/filament-admin-cos": 20,
         "laravelstack/filament-admin-markdown-editor": 20,
         "laravelstack/filament-admin-oss": 20,

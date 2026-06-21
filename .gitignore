@@ -40,8 +40,8 @@ Thumbs.db
 
 # 子目录包发布
 /packages/*
-!/packages/filament-admin/
-!/packages/filament-admin/**
+!/packages/filamentboot/
+!/packages/filamentboot/**
 !/packages/filament-admin-oss/
 !/packages/filament-admin-oss/**
 !/packages/filament-admin-cos/
