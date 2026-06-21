@@ -9,14 +9,26 @@ permissions:
   contents: write
 
 jobs:
-  release:
+  subtree-split:
     runs-on: ubuntu-latest
 
     outputs:
       TAG: ${{ steps.tag.outputs.TAG }}
 
+    strategy:
+      fail-fast: false
+      matrix:
+        package:
+          - { dir: filamentboot,                repo: filamentboot }
+          - { dir: filamentboot-cos,             repo: filamentboot-cos }
+          - { dir: filamentboot-oss,             repo: filamentboot-oss }
+          - { dir: filamentboot-rich-editor,     repo: filamentboot-rich-editor }
+          - { dir: filamentboot-markdown-editor, repo: filamentboot-markdown-editor }
+          - { dir: filamentboot-wang-editor,     repo: filamentboot-wang-editor }
+          - { dir: filamentboot-site,            repo: filamentboot-site }
+
     steps:
-      - name: 检出完整历史
+      - name: 检出完整历史（splitsh-lite 强制要求）
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
@@ -30,30 +42,41 @@ jobs:
         id: tag
         run: echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
 
-      - name: subtree split（抽取包目录）
+      - name: 安装 splitsh-lite v1.0.1
+        run: |
+          curl -sL https://github.com/splitsh/lite/releases/download/v1.0.1/lite_linux_amd64.tar.gz | tar xz
+          sudo mv splitsh-lite /usr/local/bin/splitsh-lite
+
+      - name: Split 并推送 ${{ matrix.package.repo }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.PACKAGE_GITHUB_TOKEN }}
         run: |
           TAG=${{ steps.tag.outputs.TAG }}
-          git branch -D "tmp/split-$TAG" 2>/dev/null || true
-          git subtree split --prefix=packages/filament-admin -b "tmp/split-$TAG"
+          PREFIX="packages/${{ matrix.package.dir }}"
+          REPO="https://x-access-token:${GITHUB_TOKEN}@github.com/filamentboot/${{ matrix.package.repo }}.git"
+          SHA=$(splitsh-lite --prefix="$PREFIX")
+          git remote add split-target "$REPO" 2>/dev/null || true
+          git push split-target "${SHA}:refs/heads/main" --force
+          git push split-target "${SHA}:refs/tags/${TAG}" --force
 
-      - name: 配置包仓库认证（HTTPS，D-39）
-        run: |
-          git remote add package-github \
-            https://x-access-token:${{ secrets.PACKAGE_GITHUB_TOKEN }}@github.com/john-captain/filament-admin.git
+  release:
+    runs-on: ubuntu-latest
+    needs: subtree-split
 
-      - name: 推送 main（force push，D-37）
-        run: |
-          TAG=${{ steps.tag.outputs.TAG }}
-          git push package-github "tmp/split-$TAG":main --force
+    outputs:
+      TAG: ${{ steps.tag.outputs.TAG }}
 
-      - name: 推送 tag 到包仓库
-        run: |
-          TAG=${{ steps.tag.outputs.TAG }}
-          SPLIT_SHA=$(git rev-parse "tmp/split-$TAG")
-          git tag -a "$TAG" "$SPLIT_SHA" -m "$TAG 发布"
-          git push package-github "$TAG"
+    steps:
+      - name: 检出完整历史
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-      - name: 提取 CHANGELOG 版本说明（D-38，版本号过滤版）
+      - name: 获取 Tag 名称
+        id: tag
+        run: echo "TAG=${GITHUB_REF#refs/tags/}" >> $GITHUB_OUTPUT
+
+      - name: 提取 CHANGELOG 版本说明（版本号过滤版）
         run: |
           TAG=${{ steps.tag.outputs.TAG }}
           VER="${TAG#v}"
@@ -64,7 +87,7 @@ jobs:
               next
             }
             found{print}
-          ' packages/filament-admin/CHANGELOG.md > /tmp/release-notes.md
+          ' packages/filamentboot/CHANGELOG.md > /tmp/release-notes.md
           echo "=== Release Notes 预览 ==="
           cat /tmp/release-notes.md
 
@@ -74,35 +97,64 @@ jobs:
         run: |
           TAG=${{ steps.tag.outputs.TAG }}
           gh release create "$TAG" \
-            --repo john-captain/filament-admin \
+            --repo filamentboot/filamentboot \
             --title "$TAG" \
             --notes-file /tmp/release-notes.md
+
+  mirror-to-gitee:
+    runs-on: ubuntu-latest
+    needs: subtree-split
+
+    strategy:
+      fail-fast: false
+      matrix:
+        repo:
+          - filamentboot
+          - filamentboot-cos
+          - filamentboot-oss
+          - filamentboot-rich-editor
+          - filamentboot-markdown-editor
+          - filamentboot-wang-editor
+          - filamentboot-site
+          - workspace
+
+    steps:
+      - name: 检出完整历史
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: 镜像 ${{ matrix.repo }} 到 Gitee
+        uses: pixta-dev/repository-mirroring-action@v1
+        with:
+          target_repo_url: git@gitee.com:filamentboot/${{ matrix.repo }}.git
+          ssh_private_key: ${{ secrets.GITEE_SSH_KEY }}
 
   verify:
     runs-on: ubuntu-latest
     needs: release
 
     steps:
-      - name: 验证包仓库 tag 存在（D-40 主验证）
+      - name: 验证包仓库 tag 存在（主验证）
         env:
           GH_TOKEN: ${{ secrets.PACKAGE_GITHUB_TOKEN }}
         run: |
           TAG=${{ needs.release.outputs.TAG }}
-          gh api "repos/john-captain/filament-admin/git/refs/tags/$TAG"
+          gh api "repos/filamentboot/filamentboot/git/refs/tags/$TAG"
           echo "包仓库 tag $TAG 已确认存在"
 
-      - name: 等待 Packagist 同步并验证（warning-only，D-40 补充验证）
+      - name: 等待 Packagist 同步并验证（warning-only，外部状态不阻塞）
         run: |
           TAG=${{ needs.release.outputs.TAG }}
           VER="${TAG#v}"
           echo "等待 Packagist 同步（初始等待 60s）..."
           sleep 60
           for i in 1 2 3 4 5; do
-            if curl -sf "https://packagist.org/p2/laravelstack/filament-admin.json" | \
+            if curl -sf "https://packagist.org/p2/filamentboot/filamentboot.json" | \
                python3 -c "
           import sys, json
           d = json.load(sys.stdin)
-          vs = [p['version'] for p in d['packages']['laravelstack/filament-admin']]
+          vs = [p['version'] for p in d['packages']['filamentboot/filamentboot']]
           exit(0 if 'v$VER' in vs else 1)
           " 2>/dev/null; then
               echo "Packagist 已收录 v$VER"
@@ -111,5 +163,5 @@ jobs:
             echo "尝试 $i/5，等待 30s..."
             sleep 30
           done
-          echo "::warning::Packagist 在 4 分钟内未收录 $TAG，请手动检查 https://packagist.org/packages/laravelstack/filament-admin"
+          echo "::warning::Packagist 在 4 分钟内未收录 $TAG，请手动检查 https://packagist.org/packages/filamentboot/filamentboot"
           exit 0
