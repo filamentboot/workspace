@@ -24,7 +24,7 @@ use Filamentboot\Models\LoginLog;
 use Filamentboot\Models\Menu;
 
 /**
- * FilamentAdmin 插件入口
+ * Filamentboot 插件入口
  *
  * 用户在 AdminPanelProvider 中通过 ->plugins([FilamentbootPlugin::make()]) 注册。
  * 所有可替换的 Model 和 Resource 均提供绑定方法。

@@ -18,10 +18,10 @@ if (! class_exists(AuthIn::class)) {
 
 return [
     // The HTML <title> for the generated documentation.
-    'title' => 'FilamentAdmin API 文档',
+    'title' => 'Filamentboot API 文档',
 
     // A short description of your API. Will be included in the docs webpage, Postman collection and OpenAPI spec.
-    'description' => 'FilamentAdmin 后台管理 API 接口文档',
+    'description' => 'Filamentboot 后台管理 API 接口文档',
 
     // Text to place in the "Introduction" section, right after the `description`. Markdown and HTML are supported.
     'intro_text' => <<<'INTRO'
