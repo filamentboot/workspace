@@ -1,11 +1,11 @@
 <?php
 
-namespace FilamentAdmin\Services;
+namespace Filamentboot\Services;
 
 use Composer\InstalledVersions;
-use FilamentAdmin\Jobs\ComposerInstallJob;
-use FilamentAdmin\Jobs\ComposerRemoveJob;
-use FilamentAdmin\Models\Plugin;
+use Filamentboot\Jobs\ComposerInstallJob;
+use Filamentboot\Jobs\ComposerRemoveJob;
+use Filamentboot\Models\Plugin;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -615,14 +615,14 @@ class PluginManager
     /**
      * 解析 composer 可执行路径（不抛异常，无法找到时返回 'composer'）
      *
-     * WR-04：使用 config('filament-admin.composer_path') 代替 env('COMPOSER_PATH')，
+     * WR-04：使用 config('filamentboot.composer_path') 代替 env('COMPOSER_PATH')，
      * 确保 config:cache 后仍能读取到配置值（env() 在缓存环境下返回 null）。
      *
      * 可见性 protected（供测试子类覆盖隔离真实 composer 调用）。
      */
     protected function resolveComposerExec(): string
     {
-        if ($path = config('filament-admin.composer_path')) {
+        if ($path = config('filamentboot.composer_path')) {
             if (is_executable($path)) {
                 return $path;
             }

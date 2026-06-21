@@ -1,9 +1,9 @@
 <?php
 
-namespace FilamentAdmin\Filament\Resources\LoginLogs\Pages;
+namespace Filamentboot\Filament\Resources\LoginLogs\Pages;
 
 use Filament\Resources\Pages\ViewRecord;
-use FilamentAdmin\Filament\Resources\LoginLogs\LoginLogResource;
+use Filamentboot\Filament\Resources\LoginLogs\LoginLogResource;
 
 /**
  * 查看登录日志页

@@ -1,6 +1,6 @@
 <?php
 
-namespace FilamentAdmin\Tests\Unit;
+namespace Filamentboot\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 

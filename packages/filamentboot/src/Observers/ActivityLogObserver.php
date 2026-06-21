@@ -1,8 +1,8 @@
 <?php
 
-namespace FilamentAdmin\Observers;
+namespace Filamentboot\Observers;
 
-use FilamentAdmin\Services\ActivityLogger;
+use Filamentboot\Services\ActivityLogger;
 use Illuminate\Database\Eloquent\Model;
 
 /**

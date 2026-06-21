@@ -1,8 +1,8 @@
 <?php
 
-namespace FilamentAdmin\Commands;
+namespace Filamentboot\Commands;
 
-use FilamentAdmin\Services\PluginManager;
+use Filamentboot\Services\PluginManager;
 use Illuminate\Console\Command;
 
 /**

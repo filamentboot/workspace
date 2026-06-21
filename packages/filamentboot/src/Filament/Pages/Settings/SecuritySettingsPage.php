@@ -1,13 +1,13 @@
 <?php
 
-namespace FilamentAdmin\Filament\Pages\Settings;
+namespace Filamentboot\Filament\Pages\Settings;
 
 use BackedEnum;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Pages\SettingsPage;
 use Filament\Schemas\Schema;
-use FilamentAdmin\Settings\SecuritySettings;
+use Filamentboot\Settings\SecuritySettings;
 use UnitEnum;
 
 /**

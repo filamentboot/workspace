@@ -1,6 +1,6 @@
 <?php
 
-namespace FilamentAdmin\Settings;
+namespace Filamentboot\Settings;
 
 use Spatie\LaravelSettings\Settings;
 

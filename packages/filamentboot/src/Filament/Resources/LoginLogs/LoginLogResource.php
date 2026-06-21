@@ -1,6 +1,6 @@
 <?php
 
-namespace FilamentAdmin\Filament\Resources\LoginLogs;
+namespace Filamentboot\Filament\Resources\LoginLogs;
 
 use BackedEnum;
 use Filament\Actions\ViewAction;
@@ -11,10 +11,10 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use FilamentAdmin\Filament\Resources\LoginLogs\Pages\ListLoginLogs;
-use FilamentAdmin\Filament\Resources\LoginLogs\Pages\ViewLoginLog;
-use FilamentAdmin\Models\AdminUser;
-use FilamentAdmin\Models\LoginLog;
+use Filamentboot\Filament\Resources\LoginLogs\Pages\ListLoginLogs;
+use Filamentboot\Filament\Resources\LoginLogs\Pages\ViewLoginLog;
+use Filamentboot\Models\AdminUser;
+use Filamentboot\Models\LoginLog;
 use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
@@ -127,7 +127,7 @@ class LoginLogResource extends Resource
         }
 
         // 超级管理员看全部
-        if ($user->hasRole(config('filament-admin.super_admin_role'))) {
+        if ($user->hasRole(config('filamentboot.super_admin_role'))) {
             return $query;
         }
 

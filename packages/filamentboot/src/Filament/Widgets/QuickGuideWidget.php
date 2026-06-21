@@ -1,9 +1,9 @@
 <?php
 
-namespace FilamentAdmin\Filament\Widgets;
+namespace Filamentboot\Filament\Widgets;
 
 use Filament\Widgets\Widget;
-use FilamentAdmin\Models\AdminUser;
+use Filamentboot\Models\AdminUser;
 
 /**
  * 新手引导 Widget

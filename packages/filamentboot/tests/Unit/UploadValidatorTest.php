@@ -1,9 +1,9 @@
 <?php
 
-namespace FilamentAdmin\Tests\Unit;
+namespace Filamentboot\Tests\Unit;
 
-use FilamentAdmin\Settings\UploadSettings;
-use FilamentAdmin\Support\UploadValidator;
+use Filamentboot\Settings\UploadSettings;
+use Filamentboot\Support\UploadValidator;
 use Illuminate\Http\UploadedFile;
 use PHPUnit\Framework\TestCase;
 

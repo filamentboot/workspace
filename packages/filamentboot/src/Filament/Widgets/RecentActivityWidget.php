@@ -1,6 +1,6 @@
 <?php
 
-namespace FilamentAdmin\Filament\Widgets;
+namespace Filamentboot\Filament\Widgets;
 
 use Filament\Widgets\Widget;
 use Illuminate\Database\Eloquent\Collection;

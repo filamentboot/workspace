@@ -1,10 +1,10 @@
 <?php
 
-namespace FilamentAdmin\Tests\Unit;
+namespace Filamentboot\Tests\Unit;
 
-use FilamentAdmin\Listeners\ImpersonationListener;
-use FilamentAdmin\Models\AdminUser;
-use FilamentAdmin\Services\ActivityLogger;
+use Filamentboot\Listeners\ImpersonationListener;
+use Filamentboot\Models\AdminUser;
+use Filamentboot\Services\ActivityLogger;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Mockery;
 use Mockery\Adapter\Phpunit\MockeryPHPUnitIntegration;

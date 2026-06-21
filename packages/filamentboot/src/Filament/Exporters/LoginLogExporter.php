@@ -1,11 +1,11 @@
 <?php
 
-namespace FilamentAdmin\Filament\Exporters;
+namespace Filamentboot\Filament\Exporters;
 
 use Filament\Actions\Exports\ExportColumn;
 use Filament\Actions\Exports\Exporter;
 use Filament\Actions\Exports\Models\Export;
-use FilamentAdmin\Models\LoginLog;
+use Filamentboot\Models\LoginLog;
 
 /**
  * 登录日志数据导出器

@@ -1,9 +1,9 @@
 <?php
 
-namespace FilamentAdmin\Filament\Resources\Media\Pages;
+namespace Filamentboot\Filament\Resources\Media\Pages;
 
 use Filament\Resources\Pages\ListRecords;
-use FilamentAdmin\Filament\Resources\Media\MediaResource;
+use Filamentboot\Filament\Resources\Media\MediaResource;
 
 /**
  * 媒体库列表页

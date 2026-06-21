@@ -1,6 +1,6 @@
 <?php
 
-namespace FilamentAdmin\Filament\Pages;
+namespace Filamentboot\Filament\Pages;
 
 use Filament\Auth\Pages\EditProfile;
 use Filament\Forms\Components\TextInput;

@@ -1,11 +1,11 @@
 <?php
 
-namespace FilamentAdmin\Filament\Resources\Menus\Pages;
+namespace Filamentboot\Filament\Resources\Menus\Pages;
 
 use Filament\Actions\DeleteAction;
 use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\EditRecord;
-use FilamentAdmin\Filament\Resources\Menus\MenuResource;
+use Filamentboot\Filament\Resources\Menus\MenuResource;
 
 /**
  * 编辑菜单页

@@ -1,6 +1,6 @@
 <?php
 
-namespace FilamentAdmin\Filament\Resources\Media;
+namespace Filamentboot\Filament\Resources\Media;
 
 use BackedEnum;
 use Filament\Actions\Action;
@@ -10,7 +10,7 @@ use Filament\Actions\DeleteBulkAction;
 use Filament\Resources\Resource;
 use Filament\Tables;
 use Filament\Tables\Table;
-use FilamentAdmin\Filament\Resources\Media\Pages\ListMedia;
+use Filamentboot\Filament\Resources\Media\Pages\ListMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use UnitEnum;
 

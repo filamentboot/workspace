@@ -1,6 +1,6 @@
 <?php
 
-namespace FilamentAdmin\Services;
+namespace Filamentboot\Services;
 
 use Composer\InstalledVersions;
 use Composer\Semver\Semver;

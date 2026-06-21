@@ -1,6 +1,6 @@
 <?php
 
-namespace FilamentAdmin\Services;
+namespace Filamentboot\Services;
 
 use Illuminate\Support\Facades\File;
 

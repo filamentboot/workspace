@@ -1,6 +1,6 @@
 <?php
 
-namespace FilamentAdmin\Filament\Resources\AdminUsers;
+namespace Filamentboot\Filament\Resources\AdminUsers;
 
 use BackedEnum;
 use Filament\Actions\DeleteAction;
@@ -15,11 +15,11 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
-use FilamentAdmin\Enums\AdminUserStatus;
-use FilamentAdmin\Filament\Resources\AdminUsers\Pages\CreateAdminUser;
-use FilamentAdmin\Filament\Resources\AdminUsers\Pages\EditAdminUser;
-use FilamentAdmin\Filament\Resources\AdminUsers\Pages\ListAdminUsers;
-use FilamentAdmin\Models\AdminUser;
+use Filamentboot\Enums\AdminUserStatus;
+use Filamentboot\Filament\Resources\AdminUsers\Pages\CreateAdminUser;
+use Filamentboot\Filament\Resources\AdminUsers\Pages\EditAdminUser;
+use Filamentboot\Filament\Resources\AdminUsers\Pages\ListAdminUsers;
+use Filamentboot\Models\AdminUser;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use STS\FilamentImpersonate\Actions\Impersonate;
@@ -154,7 +154,7 @@ class AdminUserResource extends Resource
                     ->guard('admin')
                     ->visible(fn ($record): bool => (function () use ($record): bool {
                         $currentUser    = auth('admin')->user();
-                        $superAdminRole = config('filament-admin.super_admin_role', 'super_admin');
+                        $superAdminRole = config('filamentboot.super_admin_role', 'super_admin');
 
                         if (! $currentUser instanceof AdminUser) {
                             return false;
@@ -184,7 +184,7 @@ class AdminUserResource extends Resource
         }
 
         // 超级管理员看全部
-        if ($user->hasRole(config('filament-admin.super_admin_role'))) {
+        if ($user->hasRole(config('filamentboot.super_admin_role'))) {
             return $query;
         }
 

@@ -1,11 +1,11 @@
 <?php
 
-namespace FilamentAdmin\Filament\Widgets;
+namespace Filamentboot\Filament\Widgets;
 
 use Filament\Widgets\StatsOverviewWidget;
 use Filament\Widgets\StatsOverviewWidget\Stat;
-use FilamentAdmin\Models\AdminUser;
-use FilamentAdmin\Models\LoginLog;
+use Filamentboot\Models\AdminUser;
+use Filamentboot\Models\LoginLog;
 use Spatie\Permission\Models\Role;
 
 /**

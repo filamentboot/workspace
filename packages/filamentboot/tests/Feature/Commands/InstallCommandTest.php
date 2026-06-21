@@ -1,9 +1,9 @@
 <?php
 
-namespace FilamentAdmin\Tests\Feature\Commands;
+namespace Filamentboot\Tests\Feature\Commands;
 
-use FilamentAdmin\Commands\InstallCommand;
-use FilamentAdmin\FilamentAdminServiceProvider;
+use Filamentboot\Commands\InstallCommand;
+use Filamentboot\FilamentAdminServiceProvider;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Application;
 use Orchestra\Testbench\TestCase;

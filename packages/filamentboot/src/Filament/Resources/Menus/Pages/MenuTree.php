@@ -1,10 +1,10 @@
 <?php
 
-namespace FilamentAdmin\Filament\Resources\Menus\Pages;
+namespace Filamentboot\Filament\Resources\Menus\Pages;
 
-use FilamentAdmin\Filament\Resources\Menus\MenuResource;
-use FilamentAdmin\Models\Menu;
-use FilamentAdmin\Services\ActivityLogger;
+use Filamentboot\Filament\Resources\Menus\MenuResource;
+use Filamentboot\Models\Menu;
+use Filamentboot\Services\ActivityLogger;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
 use Livewire\Attributes\On;

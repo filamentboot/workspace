@@ -1,8 +1,8 @@
 <?php
 
-namespace FilamentAdmin\Tests\Unit;
+namespace Filamentboot\Tests\Unit;
 
-use FilamentAdmin\FilamentAdminServiceProvider;
+use Filamentboot\FilamentAdminServiceProvider;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 use Orchestra\Testbench\TestCase;

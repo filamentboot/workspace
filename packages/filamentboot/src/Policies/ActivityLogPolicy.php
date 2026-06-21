@@ -1,6 +1,6 @@
 <?php
 
-namespace FilamentAdmin\Policies;
+namespace Filamentboot\Policies;
 
 /**
  * 操作日志 Policy

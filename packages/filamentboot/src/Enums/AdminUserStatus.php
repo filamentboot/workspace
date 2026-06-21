@@ -1,6 +1,6 @@
 <?php
 
-namespace FilamentAdmin\Enums;
+namespace Filamentboot\Enums;
 
 /**
  * 管理员状态枚举

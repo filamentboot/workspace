@@ -1,6 +1,6 @@
 <?php
 
-namespace FilamentAdmin\Commands;
+namespace Filamentboot\Commands;
 
 use Illuminate\Console\Command;
 
@@ -18,7 +18,7 @@ use Illuminate\Console\Command;
 class AuditPluginsCommand extends Command
 {
     /** @var string */
-    protected $signature = 'filament-admin:audit-plugins {--output= : 报告输出文件路径}';
+    protected $signature = 'filamentboot:audit-plugins {--output= : 报告输出文件路径}';
 
     /** @var string */
     protected $description = '审查一方插件合规状态，产出 Markdown 报告（MKTPLACE-09）';

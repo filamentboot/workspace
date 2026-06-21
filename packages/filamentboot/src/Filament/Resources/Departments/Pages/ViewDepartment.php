@@ -1,9 +1,9 @@
 <?php
 
-namespace FilamentAdmin\Filament\Resources\Departments\Pages;
+namespace Filamentboot\Filament\Resources\Departments\Pages;
 
 use Filament\Resources\Pages\ViewRecord;
-use FilamentAdmin\Filament\Resources\Departments\DepartmentResource;
+use Filamentboot\Filament\Resources\Departments\DepartmentResource;
 
 /**
  * 查看部门详情页

@@ -1,22 +1,22 @@
 <?php
 
-namespace FilamentAdmin;
+namespace Filamentboot;
 
 use Filament\Forms\Components\FileUpload;
 use Filament\Support\Exceptions\Halt;
-use FilamentAdmin\Models\AdminUser;
-use FilamentAdmin\Models\Department;
-use FilamentAdmin\Models\LoginLog;
-use FilamentAdmin\Models\Menu;
-use FilamentAdmin\Observers\ActivityLogObserver;
-use FilamentAdmin\Policies\ActivityLogPolicy;
-use FilamentAdmin\Policies\AdminUserPolicy;
-use FilamentAdmin\Policies\DepartmentPolicy;
-use FilamentAdmin\Policies\LoginLogPolicy;
-use FilamentAdmin\Policies\MenuPolicy;
-use FilamentAdmin\Policies\RolePolicy;
-use FilamentAdmin\Settings\UploadSettings;
-use FilamentAdmin\Support\UploadValidator;
+use Filamentboot\Models\AdminUser;
+use Filamentboot\Models\Department;
+use Filamentboot\Models\LoginLog;
+use Filamentboot\Models\Menu;
+use Filamentboot\Observers\ActivityLogObserver;
+use Filamentboot\Policies\ActivityLogPolicy;
+use Filamentboot\Policies\AdminUserPolicy;
+use Filamentboot\Policies\DepartmentPolicy;
+use Filamentboot\Policies\LoginLogPolicy;
+use Filamentboot\Policies\MenuPolicy;
+use Filamentboot\Policies\RolePolicy;
+use Filamentboot\Settings\UploadSettings;
+use Filamentboot\Support\UploadValidator;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -34,7 +34,7 @@ use STS\FilamentImpersonate\Events\LeaveImpersonation;
  *
  * 负责注册迁移、命令、监听器、Observer、Policy 等包级资源。
  */
-class FilamentAdminServiceProvider extends ServiceProvider
+class FilamentbootServiceProvider extends ServiceProvider
 {
     /**
      * Policy 映射表
@@ -52,7 +52,7 @@ class FilamentAdminServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__.'/../config/filament-admin.php', 'filament-admin');
+        $this->mergeConfigFrom(__DIR__.'/../config/filamentboot.php', 'filamentboot');
     }
 
     public function boot(): void
@@ -107,7 +107,7 @@ class FilamentAdminServiceProvider extends ServiceProvider
      */
     protected function registerViews(): void
     {
-        $this->loadViewsFrom(__DIR__.'/../resources/views', 'filament-admin');
+        $this->loadViewsFrom(__DIR__.'/../resources/views', 'filamentboot');
     }
 
     /**
@@ -165,7 +165,7 @@ class FilamentAdminServiceProvider extends ServiceProvider
         }
 
         // 超级管理员绕过所有权限检查（含演示拒绝前置分支）
-        $superAdminRole = config('filament-admin.super_admin_role', 'super_admin');
+        $superAdminRole = config('filamentboot.super_admin_role', 'super_admin');
 
         Gate::before(function (Authenticatable $user, string $ability) use ($superAdminRole) {
             // 防御：非 HasRoles 用户（如普通 User 模型）跳过判断
@@ -243,9 +243,9 @@ class FilamentAdminServiceProvider extends ServiceProvider
     /**
      * 注册可发布资源出口（vendor:publish 5 个 tag）
      *
-     * 支持 filament-admin-config / filament-admin-migrations /
-     * filament-admin-views / filament-admin-lang / filament-admin-stubs
-     * 五个标签，让用户通过 `php artisan vendor:publish --tag=filament-admin-*` 将资源复制到项目。
+     * 支持 filamentboot-config / filamentboot-migrations /
+     * filamentboot-views / filamentboot-lang / filamentboot-stubs
+     * 五个标签，让用户通过 `php artisan vendor:publish --tag=filamentboot-*` 将资源复制到项目。
      */
     protected function registerPublishes(): void
     {
@@ -255,32 +255,32 @@ class FilamentAdminServiceProvider extends ServiceProvider
 
         // D-07: config tag — 将包内配置文件发布到用户项目 config/ 目录
         $this->publishes([
-            __DIR__.'/../config/filament-admin.php' => config_path('filament-admin.php'),
-        ], 'filament-admin-config');
+            __DIR__.'/../config/filamentboot.php' => config_path('filamentboot.php'),
+        ], 'filamentboot-config');
 
         // D-08: migrations tag — 使用 publishesMigrations 自动追加时间戳前缀（Laravel 13 原生 API）
         $this->publishesMigrations([
             __DIR__.'/../database/migrations/' => database_path('migrations'),
-        ], 'filament-admin-migrations');
+        ], 'filamentboot-migrations');
 
-        // D-09: views tag — 将包内视图目录发布到用户项目 resources/views/vendor/filament-admin
+        // D-09: views tag — 将包内视图目录发布到用户项目 resources/views/vendor/filamentboot
         $this->publishes([
-            __DIR__.'/../resources/views' => resource_path('views/vendor/filament-admin'),
-        ], 'filament-admin-views');
+            __DIR__.'/../resources/views' => resource_path('views/vendor/filamentboot'),
+        ], 'filamentboot-views');
 
         // D-10: lang tag — 分别发布 en 和 zh_CN 骨架目录；精确指向子目录避免将 2FA 翻译误发布（Pitfall 4）
         $this->publishes([
-            __DIR__.'/../resources/lang/en' => $this->app->langPath('vendor/filament-admin/en'),
-        ], 'filament-admin-lang');
+            __DIR__.'/../resources/lang/en' => $this->app->langPath('vendor/filamentboot/en'),
+        ], 'filamentboot-lang');
 
         $this->publishes([
-            __DIR__.'/../resources/lang/zh_CN' => $this->app->langPath('vendor/filament-admin/zh_CN'),
-        ], 'filament-admin-lang');
+            __DIR__.'/../resources/lang/zh_CN' => $this->app->langPath('vendor/filamentboot/zh_CN'),
+        ], 'filamentboot-lang');
 
-        // D-11: stubs tag — 将包内 stubs 目录发布到用户项目 stubs/vendor/filament-admin
+        // D-11: stubs tag — 将包内 stubs 目录发布到用户项目 stubs/vendor/filamentboot
         $this->publishes([
-            __DIR__.'/../stubs' => base_path('stubs/vendor/filament-admin'),
-        ], 'filament-admin-stubs');
+            __DIR__.'/../stubs' => base_path('stubs/vendor/filamentboot'),
+        ], 'filamentboot-stubs');
     }
 
     /**

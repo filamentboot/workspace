@@ -1,11 +1,11 @@
 <?php
 
-use FilamentAdmin\Settings\UploadSettings;
-use FilamentAdmin\Support\UploadValidator;
+use Filamentboot\Settings\UploadSettings;
+use Filamentboot\Support\UploadValidator;
 use Illuminate\Http\UploadedFile;
 use Orchestra\Testbench\TestCase;
 use Spatie\LaravelSettings\LaravelSettingsServiceProvider;
-use FilamentAdmin\FilamentAdminServiceProvider;
+use Filamentboot\FilamentAdminServiceProvider;
 
 /**
  * UploadValidator 接入测试

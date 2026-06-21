@@ -1,6 +1,6 @@
 <?php
 
-namespace FilamentAdmin\Filament\Resources\Menus;
+namespace Filamentboot\Filament\Resources\Menus;
 
 use BackedEnum;
 use Filament\Actions\BulkAction;
@@ -23,10 +23,10 @@ use Filament\Tables\Columns\ToggleColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
-use FilamentAdmin\Filament\Resources\Menus\Pages\CreateMenu;
-use FilamentAdmin\Filament\Resources\Menus\Pages\EditMenu;
-use FilamentAdmin\Filament\Resources\Menus\Pages\MenuTree;
-use FilamentAdmin\Models\Menu;
+use Filamentboot\Filament\Resources\Menus\Pages\CreateMenu;
+use Filamentboot\Filament\Resources\Menus\Pages\EditMenu;
+use Filamentboot\Filament\Resources\Menus\Pages\MenuTree;
+use Filamentboot\Models\Menu;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\SoftDeletingScope;

@@ -1,8 +1,8 @@
 <?php
 
-namespace FilamentAdmin\Models;
+namespace Filamentboot\Models;
 
-use FilamentAdmin\Database\Factories\LoginLogFactory;
+use Filamentboot\Database\Factories\LoginLogFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;

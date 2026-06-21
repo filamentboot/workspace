@@ -1,11 +1,11 @@
 <?php
 
-namespace FilamentAdmin\Filament\Resources\AdminUsers\Pages;
+namespace Filamentboot\Filament\Resources\AdminUsers\Pages;
 
 use Filament\Resources\Pages\CreateRecord;
-use FilamentAdmin\Filament\Resources\AdminUsers\AdminUserResource;
-use FilamentAdmin\Models\AdminUser;
-use FilamentAdmin\Services\ActivityLogger;
+use Filamentboot\Filament\Resources\AdminUsers\AdminUserResource;
+use Filamentboot\Models\AdminUser;
+use Filamentboot\Services\ActivityLogger;
 
 /**
  * 创建管理员页

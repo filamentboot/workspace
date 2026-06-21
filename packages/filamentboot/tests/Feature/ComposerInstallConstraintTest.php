@@ -1,7 +1,7 @@
 <?php
 
-use FilamentAdmin\Models\Plugin;
-use FilamentAdmin\Services\PluginManager;
+use Filamentboot\Models\Plugin;
+use Filamentboot\Services\PluginManager;
 use Mockery\MockInterface;
 use Orchestra\Testbench\TestCase;
 use Symfony\Component\Process\Process;

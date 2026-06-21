@@ -1,8 +1,8 @@
 <?php
 
-namespace FilamentAdmin\Support;
+namespace Filamentboot\Support;
 
-use FilamentAdmin\Settings\UploadSettings;
+use Filamentboot\Settings\UploadSettings;
 use Illuminate\Http\UploadedFile;
 
 /**

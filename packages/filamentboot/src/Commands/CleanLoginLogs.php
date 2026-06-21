@@ -1,9 +1,9 @@
 <?php
 
-namespace FilamentAdmin\Commands;
+namespace Filamentboot\Commands;
 
-use FilamentAdmin\Models\LoginLog;
-use FilamentAdmin\Settings\LogSettings;
+use Filamentboot\Models\LoginLog;
+use Filamentboot\Settings\LogSettings;
 use Illuminate\Console\Command;
 
 /**
@@ -15,7 +15,7 @@ use Illuminate\Console\Command;
 class CleanLoginLogs extends Command
 {
     /** @var string */
-    protected $signature = 'filament-admin:clean-login-logs {--days= : 覆盖配置中的保留天数（留空则读 LogSettings）}';
+    protected $signature = 'filamentboot:clean-login-logs {--days= : 覆盖配置中的保留天数（留空则读 LogSettings）}';
 
     /** @var string */
     protected $description = '清理指定天数以前的登录日志';

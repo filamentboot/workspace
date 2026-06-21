@@ -1,35 +1,35 @@
 <?php
 
-namespace FilamentAdmin;
+namespace Filamentboot;
 
 use Filament\Contracts\Plugin;
 use Filament\Panel;
-use FilamentAdmin\Filament\Pages\Settings\GeneralSettingsPage;
-use FilamentAdmin\Filament\Pages\Settings\LogSettingsPage;
-use FilamentAdmin\Filament\Pages\Settings\SecuritySettingsPage;
-use FilamentAdmin\Filament\Pages\Settings\UploadSettingsPage;
-use FilamentAdmin\Filament\Resources\AdminUsers\AdminUserResource;
-use FilamentAdmin\Filament\Resources\Departments\DepartmentResource;
-use FilamentAdmin\Filament\Resources\LoginLogs\LoginLogResource;
-use FilamentAdmin\Filament\Resources\Media\MediaResource;
-use FilamentAdmin\Filament\Resources\Menus\MenuResource;
-use FilamentAdmin\Filament\Widgets\QuickActionsWidget;
-use FilamentAdmin\Filament\Widgets\QuickGuideWidget;
-use FilamentAdmin\Filament\Widgets\RecentActivityWidget;
-use FilamentAdmin\Filament\Widgets\SystemStatsWidget;
-use FilamentAdmin\Filament\Widgets\WelcomeWidget;
-use FilamentAdmin\Models\AdminUser;
-use FilamentAdmin\Models\Department;
-use FilamentAdmin\Models\LoginLog;
-use FilamentAdmin\Models\Menu;
+use Filamentboot\Filament\Pages\Settings\GeneralSettingsPage;
+use Filamentboot\Filament\Pages\Settings\LogSettingsPage;
+use Filamentboot\Filament\Pages\Settings\SecuritySettingsPage;
+use Filamentboot\Filament\Pages\Settings\UploadSettingsPage;
+use Filamentboot\Filament\Resources\AdminUsers\AdminUserResource;
+use Filamentboot\Filament\Resources\Departments\DepartmentResource;
+use Filamentboot\Filament\Resources\LoginLogs\LoginLogResource;
+use Filamentboot\Filament\Resources\Media\MediaResource;
+use Filamentboot\Filament\Resources\Menus\MenuResource;
+use Filamentboot\Filament\Widgets\QuickActionsWidget;
+use Filamentboot\Filament\Widgets\QuickGuideWidget;
+use Filamentboot\Filament\Widgets\RecentActivityWidget;
+use Filamentboot\Filament\Widgets\SystemStatsWidget;
+use Filamentboot\Filament\Widgets\WelcomeWidget;
+use Filamentboot\Models\AdminUser;
+use Filamentboot\Models\Department;
+use Filamentboot\Models\LoginLog;
+use Filamentboot\Models\Menu;
 
 /**
  * FilamentAdmin 插件入口
  *
- * 用户在 AdminPanelProvider 中通过 ->plugins([FilamentAdminPlugin::make()]) 注册。
+ * 用户在 AdminPanelProvider 中通过 ->plugins([FilamentbootPlugin::make()]) 注册。
  * 所有可替换的 Model 和 Resource 均提供绑定方法。
  */
-class FilamentAdminPlugin implements Plugin
+class FilamentbootPlugin implements Plugin
 {
     /**
      * Guard 名称
@@ -68,7 +68,7 @@ class FilamentAdminPlugin implements Plugin
 
     public function getId(): string
     {
-        return 'filament-admin';
+        return 'filamentboot';
     }
 
     public function register(Panel $panel): void

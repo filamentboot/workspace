@@ -1,9 +1,9 @@
 <?php
 
-namespace FilamentAdmin\Listeners;
+namespace Filamentboot\Listeners;
 
-use FilamentAdmin\Models\AdminUser;
-use FilamentAdmin\Services\ActivityLogger;
+use Filamentboot\Models\AdminUser;
+use Filamentboot\Services\ActivityLogger;
 use STS\FilamentImpersonate\Events\EnterImpersonation;
 use STS\FilamentImpersonate\Events\LeaveImpersonation;
 

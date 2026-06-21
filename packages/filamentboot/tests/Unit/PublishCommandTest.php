@@ -1,8 +1,8 @@
 <?php
 
-namespace FilamentAdmin\Tests\Unit;
+namespace Filamentboot\Tests\Unit;
 
-use FilamentAdmin\FilamentAdminServiceProvider;
+use Filamentboot\FilamentAdminServiceProvider;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\File;
 use Orchestra\Testbench\TestCase;
@@ -358,7 +358,7 @@ class PublishCommandTest extends TestCase
         );
         self::assertStringContainsString('use App\\Models\\Product;', $content);
         // CR-01 修复后，包内 AdminUser 以别名导入，避免与发布的同名 Model 冲突
-        self::assertStringContainsString('use FilamentAdmin\\Models\\AdminUser as PackageAdminUser;', $content);
+        self::assertStringContainsString('use Filamentboot\\Models\\AdminUser as PackageAdminUser;', $content);
 
         self::assertStringNotContainsString('FilamentAdmin\\Filament\\Resources', $content);
         self::assertStringNotContainsString('FilamentAdmin\\Models\\Product', $content);

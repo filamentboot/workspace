@@ -1,12 +1,12 @@
 <?php
 
-namespace FilamentAdmin\Models;
+namespace Filamentboot\Models;
 
 use Filament\Models\Contracts\FilamentUser;
 use Filament\Models\Contracts\HasName;
 use Filament\Panel;
-use FilamentAdmin\Database\Factories\AdminUserFactory;
-use FilamentAdmin\Enums\AdminUserStatus;
+use Filamentboot\Database\Factories\AdminUserFactory;
+use Filamentboot\Enums\AdminUserStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;

@@ -1,6 +1,6 @@
 <?php
 
-namespace FilamentAdmin\Commands;
+namespace Filamentboot\Commands;
 
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
@@ -27,7 +27,7 @@ class InstallCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'filament-admin:install {--force : 强制覆盖已存在的 AdminPanelProvider}';
+    protected $signature = 'filamentboot:install {--force : 强制覆盖已存在的 AdminPanelProvider}';
 
     /**
      * 命令说明
@@ -52,11 +52,11 @@ class InstallCommand extends Command
         $this->injectAuthGuard();
 
         // Step 3: vendor:publish config（使用 tag 规避 Pitfall 1）
-        $this->callSilently('vendor:publish', ['--tag' => 'filament-admin-config', '--ansi' => false]);
+        $this->callSilently('vendor:publish', ['--tag' => 'filamentboot-config', '--ansi' => false]);
         $this->components->info('✓ 配置文件已发布到 config/filament-admin.php');
 
         // Step 3: vendor:publish lang
-        $this->callSilently('vendor:publish', ['--tag' => 'filament-admin-lang', '--ansi' => false]);
+        $this->callSilently('vendor:publish', ['--tag' => 'filamentboot-lang', '--ansi' => false]);
         $this->components->info('✓ 语言文件已发布到 lang/vendor/filament-admin/');
 
         // Step 4: migrate（迁移由 FilamentAdminServiceProvider::loadMigrationsFrom 自动加载，

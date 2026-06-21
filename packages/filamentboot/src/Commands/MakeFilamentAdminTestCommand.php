@@ -1,8 +1,8 @@
 <?php
 
-namespace FilamentAdmin\Commands;
+namespace Filamentboot\Commands;
 
-use FilamentAdmin\Services\StubGenerator;
+use Filamentboot\Services\StubGenerator;
 use Illuminate\Console\Command;
 use Symfony\Component\Console\Command\Command as CommandExitCode;
 

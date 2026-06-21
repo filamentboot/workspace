@@ -1,8 +1,8 @@
 <?php
 
-namespace FilamentAdmin\Models;
+namespace Filamentboot\Models;
 
-use FilamentAdmin\Database\Factories\MenuFactory;
+use Filamentboot\Database\Factories\MenuFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Factories\HasFactory;

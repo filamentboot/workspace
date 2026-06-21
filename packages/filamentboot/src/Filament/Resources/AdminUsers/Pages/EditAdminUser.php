@@ -1,14 +1,14 @@
 <?php
 
-namespace FilamentAdmin\Filament\Resources\AdminUsers\Pages;
+namespace Filamentboot\Filament\Resources\AdminUsers\Pages;
 
 use Filament\Actions\DeleteAction;
 use Filament\Actions\ForceDeleteAction;
 use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\EditRecord;
-use FilamentAdmin\Filament\Resources\AdminUsers\AdminUserResource;
-use FilamentAdmin\Models\AdminUser;
-use FilamentAdmin\Services\ActivityLogger;
+use Filamentboot\Filament\Resources\AdminUsers\AdminUserResource;
+use Filamentboot\Models\AdminUser;
+use Filamentboot\Services\ActivityLogger;
 
 /**
  * 编辑管理员页

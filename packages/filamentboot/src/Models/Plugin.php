@@ -1,6 +1,6 @@
 <?php
 
-namespace FilamentAdmin\Models;
+namespace Filamentboot\Models;
 
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;

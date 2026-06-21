@@ -1,6 +1,6 @@
 <?php
 
-namespace FilamentAdmin\Filament\Resources\Departments;
+namespace Filamentboot\Filament\Resources\Departments;
 
 use BackedEnum;
 use Closure;
@@ -16,15 +16,15 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
-use FilamentAdmin\Enums\AdminUserStatus;
-use FilamentAdmin\Filament\Resources\Concerns\ReorderableWithLog;
-use FilamentAdmin\Filament\Resources\Departments\Pages\CreateDepartment;
-use FilamentAdmin\Filament\Resources\Departments\Pages\EditDepartment;
-use FilamentAdmin\Filament\Resources\Departments\Pages\ListDepartments;
-use FilamentAdmin\Filament\Resources\Departments\Pages\ViewDepartment;
-use FilamentAdmin\Models\AdminUser;
-use FilamentAdmin\Models\Department;
-use FilamentAdmin\Services\DepartmentTree;
+use Filamentboot\Enums\AdminUserStatus;
+use Filamentboot\Filament\Resources\Concerns\ReorderableWithLog;
+use Filamentboot\Filament\Resources\Departments\Pages\CreateDepartment;
+use Filamentboot\Filament\Resources\Departments\Pages\EditDepartment;
+use Filamentboot\Filament\Resources\Departments\Pages\ListDepartments;
+use Filamentboot\Filament\Resources\Departments\Pages\ViewDepartment;
+use Filamentboot\Models\AdminUser;
+use Filamentboot\Models\Department;
+use Filamentboot\Services\DepartmentTree;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use UnitEnum;
@@ -157,7 +157,7 @@ class DepartmentResource extends Resource
         }
 
         // 超级管理员看全部部门，不加限制
-        if ($user->hasRole(config('filament-admin.super_admin_role'))) {
+        if ($user->hasRole(config('filamentboot.super_admin_role'))) {
             return $query;
         }
 

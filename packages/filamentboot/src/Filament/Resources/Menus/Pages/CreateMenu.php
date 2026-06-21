@@ -1,9 +1,9 @@
 <?php
 
-namespace FilamentAdmin\Filament\Resources\Menus\Pages;
+namespace Filamentboot\Filament\Resources\Menus\Pages;
 
 use Filament\Resources\Pages\CreateRecord;
-use FilamentAdmin\Filament\Resources\Menus\MenuResource;
+use Filamentboot\Filament\Resources\Menus\MenuResource;
 
 /**
  * 创建菜单页

@@ -1,13 +1,13 @@
 <?php
 
-namespace FilamentAdmin\Filament\Resources\Departments\Pages;
+namespace Filamentboot\Filament\Resources\Departments\Pages;
 
 use Filament\Actions\CreateAction;
 use Filament\Actions\ExportAction;
 use Filament\Resources\Pages\ListRecords;
-use FilamentAdmin\Filament\Exporters\DepartmentExporter;
-use FilamentAdmin\Filament\Resources\Departments\DepartmentResource;
-use FilamentAdmin\Services\ActivityLogger;
+use Filamentboot\Filament\Exporters\DepartmentExporter;
+use Filamentboot\Filament\Resources\Departments\DepartmentResource;
+use Filamentboot\Services\ActivityLogger;
 
 /**
  * 部门列表页

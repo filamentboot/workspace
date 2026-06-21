@@ -1,12 +1,12 @@
 <?php
 
-namespace FilamentAdmin\Filament\Resources\LoginLogs\Pages;
+namespace Filamentboot\Filament\Resources\LoginLogs\Pages;
 
 use Filament\Actions\ExportAction;
 use Filament\Resources\Pages\ListRecords;
-use FilamentAdmin\Filament\Exporters\LoginLogExporter;
-use FilamentAdmin\Filament\Resources\LoginLogs\LoginLogResource;
-use FilamentAdmin\Services\ActivityLogger;
+use Filamentboot\Filament\Exporters\LoginLogExporter;
+use Filamentboot\Filament\Resources\LoginLogs\LoginLogResource;
+use Filamentboot\Services\ActivityLogger;
 
 /**
  * 登录日志列表页

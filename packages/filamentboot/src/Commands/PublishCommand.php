@@ -1,8 +1,8 @@
 <?php
 
-namespace FilamentAdmin\Commands;
+namespace Filamentboot\Commands;
 
-use FilamentAdmin\Services\StubGenerator;
+use Filamentboot\Services\StubGenerator;
 use Illuminate\Console\Command;
 
 /**
@@ -27,7 +27,7 @@ class PublishCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'filament-admin:publish
+    protected $signature = 'filamentboot:publish
         {--model=         : 发布指定 Model 的扩展 stub（如 --model=Product）}
         {--resource=      : 发布指定 Resource 的扩展 stub（如 --resource=Product）}
         {--all            : 发布全套（无其他参数时）或为指定 name 补齐四件套（配合 --model/--resource）}

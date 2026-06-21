@@ -1,8 +1,8 @@
 <?php
 
-namespace FilamentAdmin\Services;
+namespace Filamentboot\Services;
 
-use FilamentAdmin\Models\Department;
+use Filamentboot\Models\Department;
 
 /**
  * 部门树服务

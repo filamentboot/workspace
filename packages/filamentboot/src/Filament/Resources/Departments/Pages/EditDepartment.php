@@ -1,11 +1,11 @@
 <?php
 
-namespace FilamentAdmin\Filament\Resources\Departments\Pages;
+namespace Filamentboot\Filament\Resources\Departments\Pages;
 
 use Filament\Actions\DeleteAction;
 use Filament\Actions\RestoreAction;
 use Filament\Resources\Pages\EditRecord;
-use FilamentAdmin\Filament\Resources\Departments\DepartmentResource;
+use Filamentboot\Filament\Resources\Departments\DepartmentResource;
 
 /**
  * 编辑部门页

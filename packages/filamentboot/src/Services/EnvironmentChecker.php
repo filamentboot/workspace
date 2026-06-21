@@ -1,6 +1,6 @@
 <?php
 
-namespace FilamentAdmin\Services;
+namespace Filamentboot\Services;
 
 use Symfony\Component\Process\Process;
 
@@ -85,7 +85,7 @@ class EnvironmentChecker
      *
      * 若 composerPathOverride 已注入，则以其值为准（空串表示无法找到，返回 null）。
      *
-     * WR-04：使用 config('filament-admin.composer_path') 代替 env('COMPOSER_PATH')，
+     * WR-04：使用 config('filamentboot.composer_path') 代替 env('COMPOSER_PATH')，
      * 确保 config:cache 后仍能读取到配置值（env() 在缓存环境下返回 null）。
      */
     protected function resolveComposerPath(): ?string
@@ -98,7 +98,7 @@ class EnvironmentChecker
         }
 
         // 优先级 1：config filament-admin.composer_path（WR-04：config() 在 config:cache 后仍可用）
-        if ($path = config('filament-admin.composer_path')) {
+        if ($path = config('filamentboot.composer_path')) {
             if (is_executable($path)) {
                 return $path;
             }

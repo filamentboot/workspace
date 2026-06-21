@@ -1,6 +1,6 @@
 <?php
 
-namespace FilamentAdmin\Filament\Pages\Auth;
+namespace Filamentboot\Filament\Pages\Auth;
 
 use Filament\Auth\Pages\Login as BaseLogin;
 use Filament\Forms\Components\TextInput;

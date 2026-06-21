@@ -1,9 +1,9 @@
 <?php
 
-namespace FilamentAdmin\Filament\Resources\Departments\Pages;
+namespace Filamentboot\Filament\Resources\Departments\Pages;
 
 use Filament\Resources\Pages\CreateRecord;
-use FilamentAdmin\Filament\Resources\Departments\DepartmentResource;
+use Filamentboot\Filament\Resources\Departments\DepartmentResource;
 
 /**
  * 创建部门页

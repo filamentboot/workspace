@@ -1,9 +1,9 @@
 <?php
 
-namespace FilamentAdmin\Http\Middleware;
+namespace Filamentboot\Http\Middleware;
 
 use Closure;
-use FilamentAdmin\Settings\SecuritySettings;
+use Filamentboot\Settings\SecuritySettings;
 use Illuminate\Http\Request;
 use Symfony\Component\HttpFoundation\Response;
 

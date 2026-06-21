@@ -1,10 +1,10 @@
 <?php
 
-namespace FilamentAdmin\Services;
+namespace Filamentboot\Services;
 
 use BackedEnum;
 use Carbon\CarbonInterface;
-use FilamentAdmin\Models\AdminUser;
+use Filamentboot\Models\AdminUser;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
 use UnitEnum;

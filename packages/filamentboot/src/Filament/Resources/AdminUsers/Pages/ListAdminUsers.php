@@ -1,13 +1,13 @@
 <?php
 
-namespace FilamentAdmin\Filament\Resources\AdminUsers\Pages;
+namespace Filamentboot\Filament\Resources\AdminUsers\Pages;
 
 use Filament\Actions\CreateAction;
 use Filament\Actions\ExportAction;
 use Filament\Resources\Pages\ListRecords;
-use FilamentAdmin\Filament\Exporters\AdminUserExporter;
-use FilamentAdmin\Filament\Resources\AdminUsers\AdminUserResource;
-use FilamentAdmin\Services\ActivityLogger;
+use Filamentboot\Filament\Exporters\AdminUserExporter;
+use Filamentboot\Filament\Resources\AdminUsers\AdminUserResource;
+use Filamentboot\Services\ActivityLogger;
 
 /**
  * 管理员列表页

@@ -1,12 +1,12 @@
 <?php
 
-namespace FilamentAdmin\Services;
+namespace Filamentboot\Services;
 
 use Filament\Facades\Filament;
 use Filament\Navigation\NavigationGroup;
 use Filament\Navigation\NavigationItem;
-use FilamentAdmin\Models\AdminUser;
-use FilamentAdmin\Models\Menu;
+use Filamentboot\Models\AdminUser;
+use Filamentboot\Models\Menu;
 use Illuminate\Support\Facades\Route;
 
 /**

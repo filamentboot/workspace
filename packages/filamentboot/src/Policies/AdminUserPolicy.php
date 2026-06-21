@@ -1,6 +1,6 @@
 <?php
 
-namespace FilamentAdmin\Policies;
+namespace Filamentboot\Policies;
 
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;

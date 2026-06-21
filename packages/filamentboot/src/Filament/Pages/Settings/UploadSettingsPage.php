@@ -1,13 +1,13 @@
 <?php
 
-namespace FilamentAdmin\Filament\Pages\Settings;
+namespace Filamentboot\Filament\Pages\Settings;
 
 use BackedEnum;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Pages\SettingsPage;
 use Filament\Schemas\Schema;
-use FilamentAdmin\Settings\UploadSettings;
+use Filamentboot\Settings\UploadSettings;
 use UnitEnum;
 
 /**
