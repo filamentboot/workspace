@@ -46,7 +46,7 @@ it('installPlugin 从官方目录条目创建 Plugin 行并推送 ComposerInstal
         [
             'slug'         => 'aliyun-sms',
             'display_name' => '阿里云短信',
-            'package_name' => 'filament-admin/aliyun-sms',
+            'package_name' => 'filamentboot/aliyun-sms',
             'kind'         => 'plugin',
             'source'       => 'official_listed',
             'version'      => '0.1.0',
@@ -56,10 +56,10 @@ it('installPlugin 从官方目录条目创建 Plugin 行并推送 ComposerInstal
     // 通过 Livewire 测试调用 installPlugin
     Livewire::test(MarketplacePage::class)
         ->set('entries', $entries)
-        ->call('installPlugin', 'filament-admin/aliyun-sms');
+        ->call('installPlugin', 'filamentboot/aliyun-sms');
 
     // Plugin 行已创建，属性正确
-    $plugin = Plugin::where('package_name', 'filament-admin/aliyun-sms')->first();
+    $plugin = Plugin::where('package_name', 'filamentboot/aliyun-sms')->first();
     expect($plugin)->not->toBeNull();
     expect($plugin->source)->toBe('official_listed');
     expect($plugin->installed_version)->toBe('0.1.0');
@@ -67,7 +67,7 @@ it('installPlugin 从官方目录条目创建 Plugin 行并推送 ComposerInstal
     // Job 已推送
     Queue::assertPushed(ComposerInstallJob::class, function ($job) use ($plugin) {
         return $job->pluginId === $plugin->id
-            && $job->packageName === 'filament-admin/aliyun-sms';
+            && $job->packageName === 'filamentboot/aliyun-sms';
     });
 });
 
@@ -115,7 +115,7 @@ it('installPlugin 同一包名重复调用是幂等的（firstOrCreate 不重复
         [
             'slug'         => 'aliyun-sms',
             'display_name' => '阿里云短信',
-            'package_name' => 'filament-admin/aliyun-sms',
+            'package_name' => 'filamentboot/aliyun-sms',
             'kind'         => 'plugin',
             'source'       => 'official_listed',
             'version'      => '0.1.0',
@@ -125,9 +125,9 @@ it('installPlugin 同一包名重复调用是幂等的（firstOrCreate 不重复
     $component = Livewire::test(MarketplacePage::class)
         ->set('entries', $entries);
 
-    $component->call('installPlugin', 'filament-admin/aliyun-sms');
-    $component->call('installPlugin', 'filament-admin/aliyun-sms');
+    $component->call('installPlugin', 'filamentboot/aliyun-sms');
+    $component->call('installPlugin', 'filamentboot/aliyun-sms');
 
     // 只有一个 Plugin 行
-    expect(Plugin::where('package_name', 'filament-admin/aliyun-sms')->count())->toBe(1);
+    expect(Plugin::where('package_name', 'filamentboot/aliyun-sms')->count())->toBe(1);
 });
