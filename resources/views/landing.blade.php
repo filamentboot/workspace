@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>FilamentAdmin — Laravel 13 + Filament 5 后台基础平台</title>
+    <title>Filamentboot — Laravel 13 + Filament 5 后台基础平台</title>
     @vite('resources/css/app.css')
 </head>
 <body class="bg-gray-50 text-gray-900 antialiased">
@@ -12,11 +12,11 @@
     <nav class="bg-white shadow-sm border-b border-gray-200">
         <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <span class="text-2xl font-bold text-indigo-600">FilamentAdmin</span>
+                <span class="text-2xl font-bold text-indigo-600">Filamentboot</span>
                 <span class="px-2 py-0.5 text-xs bg-indigo-100 text-indigo-700 rounded-full font-medium">v0.5.0</span>
             </div>
             <div class="flex items-center space-x-4">
-                <a href="https://github.com/laravel-stack/filament-admin" class="text-gray-500 hover:text-gray-700 text-sm">GitHub</a>
+                <a href="https://github.com/filamentboot/filamentboot" class="text-gray-500 hover:text-gray-700 text-sm">GitHub</a>
                 <a href="https://demo.xitongapp.com" target="_blank" rel="noopener" class="px-4 py-2 bg-indigo-600 text-white text-sm rounded-lg hover:bg-indigo-700 transition">查看演示</a>
             </div>
         </div>
@@ -29,7 +29,7 @@
                 Laravel 13 + Filament 5 后台基础平台
             </h1>
             <p class="text-xl text-indigo-100 mb-4 max-w-3xl mx-auto">
-                FilamentAdmin 是对标 FastAdmin / laravel-admin 的 Composer 包，通过
+                Filamentboot 是对标 FastAdmin / laravel-admin 的 Composer 包，通过
                 <code class="bg-indigo-700 px-2 py-0.5 rounded text-white font-mono">composer require</code>
                 即可获得含认证、权限、菜单、操作日志、部门数据权限的完整后台底座。
             </p>
@@ -41,7 +41,7 @@
                    class="px-8 py-3 bg-white text-indigo-600 rounded-lg font-semibold hover:bg-indigo-50 transition text-lg">
                     立即体验演示站
                 </a>
-                <a href="https://packagist.org/packages/laravelstack/filament-admin" target="_blank" rel="noopener"
+                <a href="https://packagist.org/packages/filamentboot/filamentboot" target="_blank" rel="noopener"
                    class="px-8 py-3 border-2 border-white text-white rounded-lg font-semibold hover:bg-white hover:text-indigo-600 transition text-lg">
                     Packagist 主页
                 </a>
@@ -130,7 +130,7 @@
                     <span class="text-gray-400 text-xs font-mono">终端</span>
                     <span class="text-gray-500 text-xs">Shell</span>
                 </div>
-                <pre class="text-green-400 font-mono text-sm overflow-x-auto"><code>composer require laravelstack/filament-admin</code></pre>
+                <pre class="text-green-400 font-mono text-sm overflow-x-auto"><code>composer require filamentboot/filamentboot</code></pre>
             </div>
 
             <div class="bg-gray-900 rounded-xl p-6 text-left shadow-lg mb-8">
@@ -138,15 +138,15 @@
                     <span class="text-gray-400 text-xs font-mono">安装后初始化</span>
                     <span class="text-gray-500 text-xs">Shell</span>
                 </div>
-                <pre class="text-green-400 font-mono text-sm overflow-x-auto"><code>php artisan vendor:publish --tag=filament-admin-config
-php artisan vendor:publish --tag=filament-admin-migrations
+                <pre class="text-green-400 font-mono text-sm overflow-x-auto"><code>php artisan vendor:publish --tag=filamentboot-config
+php artisan vendor:publish --tag=filamentboot-migrations
 php artisan migrate
-php artisan db:seed --class=FilamentAdmin\\Database\\Seeders\\SuperAdminSeeder</code></pre>
+php artisan db:seed --class=Filamentboot\\Database\\Seeders\\SuperAdminSeeder</code></pre>
             </div>
 
             <p class="text-gray-400 text-sm">
                 需要 PHP 8.3+、Laravel 13.x、Filament 5.x。详细安装文档见
-                <a href="https://github.com/laravel-stack/filament-admin/wiki/installation" class="text-indigo-600 hover:underline">安装 Wiki</a>。
+                <a href="https://github.com/filamentboot/workspace/wiki/installation" class="text-indigo-600 hover:underline">安装 Wiki</a>。
             </p>
         </div>
     </section>
@@ -177,11 +177,11 @@ php artisan db:seed --class=FilamentAdmin\\Database\\Seeders\\SuperAdminSeeder</
     <footer class="bg-gray-900 text-gray-400 py-8">
         <div class="max-w-6xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between text-sm">
             <div class="mb-4 md:mb-0">
-                <span class="font-semibold text-white">FilamentAdmin</span> — MIT License
+                <span class="font-semibold text-white">Filamentboot</span> — MIT License
             </div>
             <div class="flex items-center space-x-6">
-                <a href="https://github.com/laravel-stack/filament-admin" class="hover:text-white transition">GitHub</a>
-                <a href="https://packagist.org/packages/laravelstack/filament-admin" class="hover:text-white transition">Packagist</a>
+                <a href="https://github.com/filamentboot/filamentboot" class="hover:text-white transition">GitHub</a>
+                <a href="https://packagist.org/packages/filamentboot/filamentboot" class="hover:text-white transition">Packagist</a>
                 <a href="https://demo.xitongapp.com" class="hover:text-white transition">演示站</a>
                 <a href="mailto:security@xitongapp.com" class="hover:text-white transition">安全报告</a>
             </div>

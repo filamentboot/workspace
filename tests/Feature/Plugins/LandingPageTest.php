@@ -17,13 +17,13 @@ it('GET /marketing 返回 200', function () {
 it('首页包含项目定位关键文案', function () {
     $this->get('/marketing')
         ->assertOk()
-        ->assertSee('FilamentAdmin');
+        ->assertSee('Filamentboot');
 });
 
 it('首页包含安装指引文案', function () {
     $this->get('/marketing')
         ->assertOk()
-        ->assertSee('composer require laravelstack/filament-admin');
+        ->assertSee('composer require filamentboot/filamentboot');
 });
 
 it('首页包含演示站链接', function () {

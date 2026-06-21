@@ -86,7 +86,7 @@ class InstallCommand extends Command
         $this->components->warn('⚠  首次登录后请立即修改默认密码！');
         $this->newLine();
         $this->line('如需安装官网插件，运行：');
-        $this->line('  <fg=cyan>composer require laravelstack/filament-admin-site</>');
+        $this->line('  <fg=cyan>composer require filamentboot/filamentboot-site</>');
         $this->line('  <fg=cyan>php artisan plugin:scan</>');
 
         return self::SUCCESS;

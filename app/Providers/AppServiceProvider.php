@@ -25,8 +25,8 @@ class AppServiceProvider extends ServiceProvider
     /**
      * 启动应用服务
      *
-     * 注意：Observer、Policy、Gate::before 已由 FilamentAdminServiceProvider 注册。
-     * 登录日志监听器（LogAdminLogin）由 FilamentAdminServiceProvider 显式注册。
+     * 注意：Observer、Policy、Gate::before 已由 FilamentbootServiceProvider 注册。
+     * 登录日志监听器（LogAdminLogin）由 FilamentbootServiceProvider 显式注册。
      */
     public function boot(): void
     {
