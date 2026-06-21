@@ -73,9 +73,10 @@ class PluginManager
 
         foreach ($data['packages'] ?? [] as $pkg) {
             /** @var array<string, mixed>|null $meta */
-            $meta = $pkg['extra']['filament-admin'] ?? null;
+            // 优先读 extra.filamentboot（新键），回落 extra.filament-admin（旧键，过渡兼容）
+            $meta = $pkg['extra']['filamentboot'] ?? $pkg['extra']['filament-admin'] ?? null;
 
-            // 是否为 Filament 插件：有 extra.filament-admin 声明，或接口 classmap grep 发现
+            // 是否为 Filament 插件：有 extra.filamentboot/filament-admin 声明，或接口 classmap grep 发现
             $pluginClass = $this->detectPluginClass($pkg);
 
             if ($pluginClass === null && $meta === null) {
@@ -90,7 +91,7 @@ class PluginManager
             $filamentConstraint    = $pkg['require']['filament/filament'] ?? null;
             $compatibilityStatus   = $compat->checkFilamentCompatibility($filamentConstraint);
 
-            // 元数据优先读 extra.filament-admin；无则回落 composer.json 标准字段
+            // 元数据优先读 extra.filamentboot/extra.filament-admin；无则回落 composer.json 标准字段
             Plugin::updateOrCreate(
                 ['package_name' => $packageName],
                 [

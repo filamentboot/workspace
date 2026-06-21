@@ -1,6 +1,6 @@
 <?php
 
-namespace LaravelStack\FilamentAdminOss\Tests\Unit;
+namespace Filamentboot\FilamentbootOss\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 
@@ -27,17 +27,17 @@ class OssPackageMetadataTest extends TestCase
     }
 
     /**
-     * 验证 extra.filament-admin 包含必填字段且 slug 值正确
+     * 验证 extra.filamentboot 包含必填字段且 slug 值正确
      */
     public function test_extra_filament_admin_has_required_fields(): void
     {
-        $meta = $this->composer['extra']['filament-admin'];
+        $meta = $this->composer['extra']['filamentboot'];
 
         self::assertArrayHasKey('slug', $meta);
         self::assertArrayHasKey('name', $meta);
         self::assertArrayHasKey('plugin_class', $meta);
         self::assertArrayHasKey('service_provider', $meta);
-        self::assertSame('filament-admin-oss', $meta['slug']);
+        self::assertSame('filamentboot-oss', $meta['slug']);
     }
 
     /**
@@ -48,7 +48,7 @@ class OssPackageMetadataTest extends TestCase
         $providers = $this->composer['extra']['laravel']['providers'];
 
         self::assertContains(
-            'LaravelStack\\FilamentAdminOss\\OssServiceProvider',
+            'Filamentboot\\FilamentbootOss\\OssServiceProvider',
             $providers,
         );
     }

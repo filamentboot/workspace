@@ -1,8 +1,8 @@
 <?php
 
-namespace LaravelStack\FilamentAdminCos\Tests\Unit;
+namespace Filamentboot\FilamentbootCos\Tests\Unit;
 
-use LaravelStack\FilamentAdminCos\Settings\CosSettings;
+use Filamentboot\FilamentbootCos\Settings\CosSettings;
 use PHPUnit\Framework\TestCase;
 
 /**

@@ -1,10 +1,10 @@
 <?php
 
-namespace LaravelStack\FilamentAdminOss;
+namespace Filamentboot\FilamentbootOss;
 
 use Filament\Contracts\Plugin;
 use Filament\Panel;
-use LaravelStack\FilamentAdminOss\Filament\Pages\OssSettingsPage;
+use Filamentboot\FilamentbootOss\Filament\Pages\OssSettingsPage;
 
 /**
  * 阿里云 OSS 存储 Filament 插件
@@ -24,11 +24,11 @@ class OssPlugin implements Plugin
     }
 
     /**
-     * 插件唯一标识符，与 extra.filament-admin.slug 保持一致
+     * 插件唯一标识符，与 extra.filamentboot.slug 保持一致
      */
     public function getId(): string
     {
-        return 'filament-admin-oss';
+        return 'filamentboot-oss';
     }
 
     /**

@@ -1,12 +1,12 @@
 <?php
 
-namespace LaravelStack\FilamentAdminOss\Filament\Pages;
+namespace Filamentboot\FilamentbootOss\Filament\Pages;
 
 use BackedEnum;
 use Filament\Forms\Components\TextInput;
 use Filament\Pages\SettingsPage;
 use Filament\Schemas\Schema;
-use LaravelStack\FilamentAdminOss\Settings\OssSettings;
+use Filamentboot\FilamentbootOss\Settings\OssSettings;
 use UnitEnum;
 
 /**

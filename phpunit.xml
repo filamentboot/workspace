@@ -18,10 +18,10 @@
             <directory>packages/filamentboot/tests/Feature</directory>
         </testsuite>
         <testsuite name="OssUnit">
-            <directory>packages/filament-admin-oss/tests/Unit</directory>
+            <directory>packages/filamentboot-oss/tests/Unit</directory>
         </testsuite>
         <testsuite name="CosUnit">
-            <directory>packages/filament-admin-cos/tests/Unit</directory>
+            <directory>packages/filamentboot-cos/tests/Unit</directory>
         </testsuite>
     </testsuites>
     <source>

@@ -1,13 +1,13 @@
 <?php
 
-namespace LaravelStack\FilamentAdminOss;
+namespace Filamentboot\FilamentbootOss;
 
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\ServiceProvider;
-use LaravelStack\FilamentAdminOss\Settings\OssSettings;
+use Filamentboot\FilamentbootOss\Settings\OssSettings;
 use League\Flysystem\Filesystem;
 
 /**
@@ -48,7 +48,7 @@ class OssServiceProvider extends ServiceProvider
         try {
             // D-08-10：仅当插件在后台启用时才注入磁盘配置
             $isEnabled = DB::table('plugins')
-                ->where('slug', 'filament-admin-oss')
+                ->where('slug', 'filamentboot-oss')
                 ->where('is_enabled', true)
                 ->exists();
 

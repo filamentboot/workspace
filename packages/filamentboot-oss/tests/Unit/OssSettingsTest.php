@@ -1,8 +1,8 @@
 <?php
 
-namespace LaravelStack\FilamentAdminOss\Tests\Unit;
+namespace Filamentboot\FilamentbootOss\Tests\Unit;
 
-use LaravelStack\FilamentAdminOss\Settings\OssSettings;
+use Filamentboot\FilamentbootOss\Settings\OssSettings;
 use PHPUnit\Framework\TestCase;
 
 /**

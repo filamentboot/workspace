@@ -24,8 +24,8 @@ use Filament\Contracts\Plugin;
 function firstPartyPlugins(): array
 {
     return [
-        ['filament-admin-oss',             'LaravelStack\\FilamentAdminOss\\OssPlugin',                     'packages/filament-admin-oss'],
-        ['filament-admin-cos',             'LaravelStack\\FilamentAdminCos\\CosPlugin',                     'packages/filament-admin-cos'],
+        ['filamentboot-oss',               'Filamentboot\\FilamentbootOss\\OssPlugin',                     'packages/filamentboot-oss'],
+        ['filamentboot-cos',               'Filamentboot\\FilamentbootCos\\CosPlugin',                     'packages/filamentboot-cos'],
         ['filament-admin-rich-editor',     'LaravelStack\\FilamentAdminRichEditor\\RichEditorPlugin',       'packages/filament-admin-rich-editor'],
         ['filament-admin-markdown-editor', 'LaravelStack\\FilamentAdminMarkdownEditor\\MarkdownEditorPlugin', 'packages/filament-admin-markdown-editor'],
         ['filament-admin-wang-editor',     'LaravelStack\\FilamentAdminWangEditor\\WangEditorPlugin',       'packages/filament-admin-wang-editor'],
@@ -34,13 +34,13 @@ function firstPartyPlugins(): array
 }
 
 it('OssPlugin 实现 Filament\\Contracts\\Plugin 接口（MKTPLACE-09）', function () {
-    $class = 'LaravelStack\\FilamentAdminOss\\OssPlugin';
+    $class = 'Filamentboot\\FilamentbootOss\\OssPlugin';
     expect(class_exists($class))->toBeTrue("OssPlugin 类应可被 autoload 到");
     expect(is_a($class, Plugin::class, true))->toBeTrue("OssPlugin 应实现 Filament\\Contracts\\Plugin");
 });
 
 it('CosPlugin 实现 Filament\\Contracts\\Plugin 接口（MKTPLACE-09）', function () {
-    $class = 'LaravelStack\\FilamentAdminCos\\CosPlugin';
+    $class = 'Filamentboot\\FilamentbootCos\\CosPlugin';
     expect(class_exists($class))->toBeTrue("CosPlugin 类应可被 autoload 到");
     expect(is_a($class, Plugin::class, true))->toBeTrue("CosPlugin 应实现 Filament\\Contracts\\Plugin");
 });
@@ -69,24 +69,24 @@ it('SitePlugin 实现 Filament\\Contracts\\Plugin 接口（MKTPLACE-09）', func
     expect(is_a($class, Plugin::class, true))->toBeTrue("SitePlugin 应实现 Filament\\Contracts\\Plugin");
 });
 
-it('filament-admin-oss 的 composer.json 含 post_install 块（MKTPLACE-09）', function () {
+it('filamentboot-oss 的 composer.json 含 post_install 块（MKTPLACE-09）', function () {
     $composerJson = json_decode(
-        file_get_contents(base_path('packages/filament-admin-oss/composer.json')),
+        file_get_contents(base_path('packages/filamentboot-oss/composer.json')),
         true
     );
 
-    expect($composerJson['extra']['filament-admin'])->toHaveKey('post_install');
-    expect($composerJson['extra']['filament-admin']['post_install'])->toHaveKey('publish_tags');
+    expect($composerJson['extra']['filamentboot'])->toHaveKey('post_install');
+    expect($composerJson['extra']['filamentboot']['post_install'])->toHaveKey('publish_tags');
 });
 
-it('filament-admin-cos 的 composer.json 含 post_install 块（MKTPLACE-09）', function () {
+it('filamentboot-cos 的 composer.json 含 post_install 块（MKTPLACE-09）', function () {
     $composerJson = json_decode(
-        file_get_contents(base_path('packages/filament-admin-cos/composer.json')),
+        file_get_contents(base_path('packages/filamentboot-cos/composer.json')),
         true
     );
 
-    expect($composerJson['extra']['filament-admin'])->toHaveKey('post_install');
-    expect($composerJson['extra']['filament-admin']['post_install'])->toHaveKey('publish_tags');
+    expect($composerJson['extra']['filamentboot'])->toHaveKey('post_install');
+    expect($composerJson['extra']['filamentboot']['post_install'])->toHaveKey('publish_tags');
 });
 
 it('filament-admin-site 的 composer.json 含 post_install 含 run_migrations（MKTPLACE-09）', function () {

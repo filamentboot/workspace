@@ -1,12 +1,12 @@
 <?php
 
 use App\Services\PluginManager;
-use LaravelStack\FilamentAdminCos\CosPlugin;
-use LaravelStack\FilamentAdminCos\CosServiceProvider;
-use LaravelStack\FilamentAdminCos\Settings\CosSettings;
-use LaravelStack\FilamentAdminOss\OssPlugin;
-use LaravelStack\FilamentAdminOss\OssServiceProvider;
-use LaravelStack\FilamentAdminOss\Settings\OssSettings;
+use Filamentboot\FilamentbootCos\CosPlugin;
+use Filamentboot\FilamentbootCos\CosServiceProvider;
+use Filamentboot\FilamentbootCos\Settings\CosSettings;
+use Filamentboot\FilamentbootOss\OssPlugin;
+use Filamentboot\FilamentbootOss\OssServiceProvider;
+use Filamentboot\FilamentbootOss\Settings\OssSettings;
 
 /**
  * 云存储插件集成测试（CLOUD-01 / CLOUD-02 集成闭环）
@@ -21,10 +21,10 @@ use LaravelStack\FilamentAdminOss\Settings\OssSettings;
 it('OSS 与 COS 包的 ServiceProvider 和 Plugin 类存在', function () {
     // ServiceProvider 类存在
     expect(class_exists(OssServiceProvider::class))->toBeTrue(
-        '期望 LaravelStack\\FilamentAdminOss\\OssServiceProvider 已加载'
+        '期望 Filamentboot\\FilamentbootOss\\OssServiceProvider 已加载'
     );
     expect(class_exists(CosServiceProvider::class))->toBeTrue(
-        '期望 LaravelStack\\FilamentAdminCos\\CosServiceProvider 已加载'
+        '期望 Filamentboot\\FilamentbootCos\\CosServiceProvider 已加载'
     );
 
     // Plugin 类实现 Filament\Contracts\Plugin 接口
@@ -105,23 +105,23 @@ it('plugin:scan 发现 OSS 与 COS 两个云存储插件', function () {
     /** @var PluginManager $pluginManager */
     $pluginManager = app(PluginManager::class);
 
-    // 执行同步：从 vendor/composer/installed.json 读取 extra.filament-admin 元信息
+    // 执行同步：从 vendor/composer/installed.json 读取 extra.filamentboot 元信息
     $count = $pluginManager->syncFromInstalled();
 
     // 验证同步了至少 2 个插件（OSS + COS）
     expect($count)->toBeGreaterThanOrEqual(2);
 
     // 验证 OSS 插件记录已写入
-    $ossPlugin = \Filamentboot\Models\Plugin::where('package_name', 'laravelstack/filament-admin-oss')->first();
-    expect($ossPlugin)->not->toBeNull('期望 filament-admin-oss 插件记录存在');
-    expect($ossPlugin->slug)->toBe('filament-admin-oss');
+    $ossPlugin = \Filamentboot\Models\Plugin::where('package_name', 'filamentboot/filamentboot-oss')->first();
+    expect($ossPlugin)->not->toBeNull('期望 filamentboot-oss 插件记录存在');
+    expect($ossPlugin->slug)->toBe('filamentboot-oss');
     expect($ossPlugin->plugin_class)->not->toBeEmpty('期望 plugin_class 字段非空');
     expect($ossPlugin->service_provider)->not->toBeEmpty('期望 service_provider 字段非空');
 
     // 验证 COS 插件记录已写入
-    $cosPlugin = \Filamentboot\Models\Plugin::where('package_name', 'laravelstack/filament-admin-cos')->first();
-    expect($cosPlugin)->not->toBeNull('期望 filament-admin-cos 插件记录存在');
-    expect($cosPlugin->slug)->toBe('filament-admin-cos');
+    $cosPlugin = \Filamentboot\Models\Plugin::where('package_name', 'filamentboot/filamentboot-cos')->first();
+    expect($cosPlugin)->not->toBeNull('期望 filamentboot-cos 插件记录存在');
+    expect($cosPlugin->slug)->toBe('filamentboot-cos');
     expect($cosPlugin->plugin_class)->not->toBeEmpty('期望 plugin_class 字段非空');
     expect($cosPlugin->service_provider)->not->toBeEmpty('期望 service_provider 字段非空');
 

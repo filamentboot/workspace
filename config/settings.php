@@ -4,8 +4,8 @@ use Filamentboot\Settings\GeneralSettings;
 use Filamentboot\Settings\LogSettings;
 use Filamentboot\Settings\SecuritySettings;
 use Filamentboot\Settings\UploadSettings;
-use LaravelStack\FilamentAdminCos\Settings\CosSettings;
-use LaravelStack\FilamentAdminOss\Settings\OssSettings;
+use Filamentboot\FilamentbootCos\Settings\CosSettings;
+use Filamentboot\FilamentbootOss\Settings\OssSettings;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelSettings\SettingsCasts\DataCast;
 use Spatie\LaravelSettings\SettingsCasts\DateTimeInterfaceCast;
@@ -40,8 +40,8 @@ return [
      */
     'migrations_paths' => [
         database_path('settings'),
-        base_path('packages/filament-admin-oss/database/settings'),
-        base_path('packages/filament-admin-cos/database/settings'),
+        base_path('packages/filamentboot-oss/database/settings'),
+        base_path('packages/filamentboot-cos/database/settings'),
     ],
 
     /*

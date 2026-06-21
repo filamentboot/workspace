@@ -1,6 +1,6 @@
 <?php
 
-namespace LaravelStack\FilamentAdminOss\Settings;
+namespace Filamentboot\FilamentbootOss\Settings;
 
 use Spatie\LaravelSettings\Settings;
 

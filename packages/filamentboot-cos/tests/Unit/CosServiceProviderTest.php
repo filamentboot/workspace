@@ -1,11 +1,11 @@
 <?php
 
-namespace LaravelStack\FilamentAdminCos\Tests\Unit;
+namespace Filamentboot\FilamentbootCos\Tests\Unit;
 
 use Illuminate\Config\Repository as ConfigRepository;
 use Illuminate\Foundation\Application;
-use LaravelStack\FilamentAdminCos\CosServiceProvider;
-use LaravelStack\FilamentAdminCos\Settings\CosSettings;
+use Filamentboot\FilamentbootCos\CosServiceProvider;
+use Filamentboot\FilamentbootCos\Settings\CosSettings;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 

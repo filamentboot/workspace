@@ -1,10 +1,10 @@
 <?php
 
-namespace LaravelStack\FilamentAdminCos;
+namespace Filamentboot\FilamentbootCos;
 
 use Filament\Contracts\Plugin;
 use Filament\Panel;
-use LaravelStack\FilamentAdminCos\Filament\Pages\CosSettingsPage;
+use Filamentboot\FilamentbootCos\Filament\Pages\CosSettingsPage;
 
 /**
  * 腾讯云 COS 存储插件
@@ -24,11 +24,11 @@ class CosPlugin implements Plugin
     }
 
     /**
-     * 插件唯一标识符（与 extra.filament-admin.slug 一致）
+     * 插件唯一标识符（与 extra.filamentboot.slug 一致）
      */
     public function getId(): string
     {
-        return 'filament-admin-cos';
+        return 'filamentboot-cos';
     }
 
     /**

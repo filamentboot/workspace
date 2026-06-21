@@ -1,6 +1,6 @@
 <?php
 
-namespace LaravelStack\FilamentAdminCos\Tests\Unit;
+namespace Filamentboot\FilamentbootCos\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
 
@@ -26,13 +26,13 @@ class CosPackageMetadataTest extends TestCase
     }
 
     /**
-     * 验证 extra.filament-admin 含 slug/name/plugin_class/service_provider 且 slug 正确
+     * 验证 extra.filamentboot 含 slug/name/plugin_class/service_provider 且 slug 正确
      */
     public function test_extra_filament_admin_has_required_fields(): void
     {
-        $filamentAdmin = $this->composer['extra']['filament-admin'];
+        $filamentAdmin = $this->composer['extra']['filamentboot'];
 
-        self::assertSame('filament-admin-cos', $filamentAdmin['slug']);
+        self::assertSame('filamentboot-cos', $filamentAdmin['slug']);
         self::assertArrayHasKey('name', $filamentAdmin);
         self::assertArrayHasKey('plugin_class', $filamentAdmin);
         self::assertArrayHasKey('service_provider', $filamentAdmin);
@@ -48,7 +48,7 @@ class CosPackageMetadataTest extends TestCase
         $providers = $this->composer['extra']['laravel']['providers'];
 
         self::assertContains(
-            'LaravelStack\\FilamentAdminCos\\CosServiceProvider',
+            'Filamentboot\\FilamentbootCos\\CosServiceProvider',
             $providers
         );
     }

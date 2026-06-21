@@ -1,10 +1,10 @@
 <?php
 
-namespace LaravelStack\FilamentAdminCos;
+namespace Filamentboot\FilamentbootCos;
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
-use LaravelStack\FilamentAdminCos\Settings\CosSettings;
+use Filamentboot\FilamentbootCos\Settings\CosSettings;
 
 /**
  * 腾讯云 COS 插件服务提供者
@@ -38,7 +38,7 @@ class CosServiceProvider extends ServiceProvider
         try {
             // D-08-10：仅当插件在后台启用时才注入磁盘配置
             $isEnabled = DB::table('plugins')
-                ->where('slug', 'filament-admin-cos')
+                ->where('slug', 'filamentboot-cos')
                 ->where('is_enabled', true)
                 ->exists();
 
