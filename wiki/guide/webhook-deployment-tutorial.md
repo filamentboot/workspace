@@ -185,7 +185,7 @@ echo "[rollback] 完成：$(date)"
 ```bash
 # 生成随机 token
 openssl rand -hex 16
-# 记录输出，例如：ea2477cb66ce98e48754deb262ca3393
+# 记录输出的随机 hex 值（32 字节 = 64 字符），此值仅用于本地参考，不提交代码库
 ```
 
 ### 3.2 保存 Token

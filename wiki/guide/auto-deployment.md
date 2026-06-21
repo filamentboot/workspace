@@ -1,4 +1,4 @@
-# FilamentAdmin 自动部署指南
+# Filamentboot 自动部署指南
 
 ## 概述
 
@@ -16,13 +16,13 @@
 |------|------|
 | 服务器 IP | 118.25.27.49 |
 | 操作系统 | Debian 12 |
-| 代码目录 | /data/filament-admin/ |
+| 代码目录 | /data/filamentboot/ |
 | 域名 | www.xitongapp.com |
 | PHP 版本 | 8.4-fpm |
 | Web 服务器 | Nginx 1.22 |
 | 数据库 | MariaDB 10.11 |
 | 缓存 | Redis |
-| 队列 | Supervisor (filament-admin-worker) |
+| 队列 | Supervisor (filamentboot-worker) |
 
 ## 部署流程
 
@@ -31,9 +31,17 @@
 - Gitee 自动发送 Webhook 请求到服务器
 
 ### 2. Webhook 端点
-- **URL**: `https://www.xitongapp.com/deploy-webhook.php?token=ea2477cb66ce98e48754deb262ca3393`
-- **文件**: `/data/filament-admin/public/deploy-webhook.php`
-- **Token**: 存储在 `/data/filament-admin/.webhook_token`
+- **URL**: `https://www.xitongapp.com/deploy-webhook.php?token=<your-token>`
+- **文件**: `/data/filamentboot/public/deploy-webhook.php`
+- **Token**: 存储在服务器 `/data/filamentboot/.webhook_token` 文件中，不提交到代码库
+
+> **安全说明**：Webhook token 仅存储在服务器上，不记录在此文档。若需轮换，请登录服务器执行：
+> ```bash
+> openssl rand -hex 32 > /data/filamentboot/.webhook_token
+> chown www-data:www-data /data/filamentboot/.webhook_token
+> chmod 640 /data/filamentboot/.webhook_token
+> ```
+> 然后登录 Gitee 项目设置 → WebHooks，更新 URL 中的 token 参数。
 
 ### 3. 验证逻辑
 1. Token 验证（URL 参数或 POST 数据）
@@ -56,9 +64,11 @@
 
 ### Webhook 配置
 - Gitee 项目设置 → WebHook → 已配置
-- URL: `https://www.xitongapp.com/deploy-webhook.php?token=ea2477cb66ce98e48754deb262ca3393`
+- URL: `https://www.xitongapp.com/deploy-webhook.php?token=<server-side-token>`
 - 触发事件: Push
 - 状态: 激活
+
+> **重要**：实际 token 值存储在服务器 `/data/filamentboot/.webhook_token`，不在代码库中。
 
 ### 权限配置
 - 代码目录所有者: www-data:www-data
@@ -79,11 +89,13 @@ git push origin main
 
 ### 手动触发部署
 ```bash
+# 从服务器读取 token，然后构造请求
+TOKEN=$(ssh root@118.25.27.49 cat /data/filamentboot/.webhook_token)
 curl -sk -X POST \
   -H "Content-Type: application/json" \
   -H "X-Gitee-Event: Push Hook" \
   -d '{"ref":"refs/heads/main","head_commit":{"id":"manual"}}' \
-  "https://www.xitongapp.com/deploy-webhook.php?token=ea2477cb66ce98e48754deb262ca3393"
+  "https://www.xitongapp.com/deploy-webhook.php?token=${TOKEN}"
 ```
 
 ### 检查部署状态
@@ -92,7 +104,7 @@ curl -sk -X POST \
 ssh -i ~/.ssh/filament_deploy root@118.25.27.49
 
 # 查看最新 commit
-cd /data/filament-admin && git log --oneline -3
+cd /data/filamentboot && git log --oneline -3
 
 # 查看部署日志
 tail -f /var/log/nginx/access.log | grep webhook
@@ -104,7 +116,7 @@ tail -f /var/log/nginx/access.log | grep webhook
 ssh -i ~/.ssh/filament_deploy root@118.25.27.49
 
 # 执行回滚脚本（接受 Tag 或 commit hash）
-cd /data/filament-admin
+cd /data/filamentboot
 bash rollback.sh v1.0.0
 # 或
 bash rollback.sh abc1234
@@ -115,24 +127,24 @@ bash rollback.sh abc1234
 ### 部署失败
 1. 检查 Webhook 响应（Gitee WebHook 页面查看历史记录）
 2. 检查服务器日志：`tail -100 /var/log/nginx/error.log`
-3. 手动执行部署脚本：`cd /data/filament-admin && bash deploy.sh`
+3. 手动执行部署脚本：`cd /data/filamentboot && bash deploy.sh`
 
 ### 维护模式未关闭
 ```bash
 ssh -i ~/.ssh/filament_deploy root@118.25.27.49
-cd /data/filament-admin && php artisan up
+cd /data/filamentboot && php artisan up
 ```
 
 ### 权限问题
 ```bash
 ssh -i ~/.ssh/filament_deploy root@118.25.27.49
-chown -R www-data:www-data /data/filament-admin
-chmod -R 775 /data/filament-admin/storage /data/filament-admin/bootstrap/cache
+chown -R www-data:www-data /data/filamentboot
+chmod -R 775 /data/filamentboot/storage /data/filamentboot/bootstrap/cache
 ```
 
 ## 安全注意事项
 
-1. **Token 安全**: 当前 Token 暴露在 URL 中，建议后续改用 Header 验证
+1. **Token 安全**: Token 仅存储在服务器 `.webhook_token` 文件，不提交代码库；定期使用 `openssl rand -hex 32` 轮换
 2. **SSH 密钥**: www-data 用户拥有 Gitee 仓库访问权限，需定期审计
 3. **sudo 权限**: www-data 仅可执行 supervisorctl，不可执行其他命令
 4. **Webhook 验证**: 仅处理 main/master 分支，其他分支请求被忽略
@@ -142,3 +154,4 @@ chmod -R 775 /data/filament-admin/storage /data/filament-admin/bootstrap/cache
 | 日期 | 更新内容 |
 |------|----------|
 | 2026-06-01 | 初始配置完成，Webhook 自动部署上线 |
+| 2026-06-21 | 移除明文 token（D-18 安全修复），改为服务器侧存储 + 轮换指引 |

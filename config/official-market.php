@@ -1,5 +1,12 @@
 <?php
 
+// TODO: 改名 review — 以下 filament-admin/* 为未注册占位包名，
+// 待用户确认改为 filamentboot/* 或删除后，再更新 package_name / command 字段。
+// 原因：这些包名（filament-admin/aliyun-sms、filament-admin/huawei-cloud-sms 等）
+// 尚未在 Packagist 注册，且改名目标（filamentboot/*）也未注册，
+// 不可盲目自动修改，避免误导下游用户安装不存在的包。
+// 参考：.planning/phases/13-filamentboot/13-RESEARCH.md Open Question 2 / Assumption A7
+
 return [
     'entries' => [
         [
