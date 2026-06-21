@@ -4,9 +4,9 @@ namespace Tests\Feature;
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
-use LaravelStack\FilamentAdminSite\Enums\ContactMessageStatus;
-use LaravelStack\FilamentAdminSite\Models\ContactMessage;
-use LaravelStack\FilamentAdminSite\Models\SiteCase;
+use Filamentboot\FilamentbootSite\Enums\ContactMessageStatus;
+use Filamentboot\FilamentbootSite\Models\ContactMessage;
+use Filamentboot\FilamentbootSite\Models\SiteCase;
 use Tests\TestCase;
 
 /**
@@ -19,7 +19,7 @@ use Tests\TestCase;
  * - test_site_case_resource_registered_and_list_accessible：由 Plan 10-03（Filament Resource）落地转绿
  *
  * @group site
- * @covers \LaravelStack\FilamentAdminSite\Models\SiteCase
+ * @covers \Filamentboot\FilamentbootSite\Models\SiteCase
  */
 class SiteCaseResourceTest extends TestCase
 {
@@ -89,22 +89,22 @@ class SiteCaseResourceTest extends TestCase
     {
         // 直接调用 SitePlugin::register()，验证 SiteCaseResource 被注册到 Panel
         $panel = new \Filament\Panel();
-        \LaravelStack\FilamentAdminSite\SitePlugin::make()->register($panel);
+        \Filamentboot\FilamentbootSite\SitePlugin::make()->register($panel);
 
         // Panel 拥有 site-case 相关资源类
         $resources = $panel->getResources();
         $this->assertContains(
-            \LaravelStack\FilamentAdminSite\Filament\Resources\SiteCaseResource::class,
+            \Filamentboot\FilamentbootSite\Filament\Resources\SiteCaseResource::class,
             $resources,
             'SitePlugin::register() 后 SiteCaseResource 应在 Panel 的 resources 列表中'
         );
 
         // SitePlugin 唯一标识符正确
-        $plugin = \LaravelStack\FilamentAdminSite\SitePlugin::make();
+        $plugin = \Filamentboot\FilamentbootSite\SitePlugin::make();
         $this->assertSame(
-            'filament-admin-site',
+            'filamentboot-site',
             $plugin->getId(),
-            'SitePlugin::getId() 应返回 filament-admin-site'
+            'SitePlugin::getId() 应返回 filamentboot-site'
         );
     }
 }

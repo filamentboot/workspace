@@ -2,10 +2,10 @@
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Route;
-use LaravelStack\FilamentAdminSite\Http\Controllers\SiteFrontController;
-use LaravelStack\FilamentAdminSite\Http\Livewire\CaseFilter;
-use LaravelStack\FilamentAdminSite\Http\Livewire\ContactForm;
-use LaravelStack\FilamentAdminSite\Models\SiteCase;
+use Filamentboot\FilamentbootSite\Http\Controllers\SiteFrontController;
+use Filamentboot\FilamentbootSite\Http\Livewire\CaseFilter;
+use Filamentboot\FilamentbootSite\Http\Livewire\ContactForm;
+use Filamentboot\FilamentbootSite\Models\SiteCase;
 use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
@@ -26,15 +26,15 @@ uses(RefreshDatabase::class);
  * 注册路由与视图命名空间（仅在此测试文件中，模拟插件启用状态）
  */
 beforeEach(function () {
-    // 注册 filament-admin-site 视图命名空间（指向 decoration 主题，同插件启用时行为）
-    $themePath  = base_path('packages/filament-admin-site/resources/views/themes/decoration');
-    $sharedPath = base_path('packages/filament-admin-site/resources/views');
-    view()->addNamespace('filament-admin-site', $themePath);
-    view()->addNamespace('filament-admin-site-shared', $sharedPath);
+    // 注册 filamentboot-site 视图命名空间（指向 decoration 主题，同插件启用时行为）
+    $themePath  = base_path('packages/filamentboot-site/resources/views/themes/decoration');
+    $sharedPath = base_path('packages/filamentboot-site/resources/views');
+    view()->addNamespace('filamentboot-site', $themePath);
+    view()->addNamespace('filamentboot-site-shared', $sharedPath);
 
     // 注册 Livewire 组件（ContactForm/CaseFilter），避免 floating-contact 渲染报错
-    Livewire::component('filament-admin-site::contact-form', ContactForm::class);
-    Livewire::component('filament-admin-site::case-filter', CaseFilter::class);
+    Livewire::component('filamentboot-site::contact-form', ContactForm::class);
+    Livewire::component('filamentboot-site::case-filter', CaseFilter::class);
 
     // 手动注册案例详情路由（模拟 SiteServiceProvider::registerFrontend()）
     // 仅注册 /cases/{slug}，避免与现有路由冲突
@@ -147,7 +147,7 @@ it('详情页 seo-meta 组件渲染 HTML 包含 SEO meta 标签', function () {
     $seoData = $reflection->invoke($controller, $case, null, 'zh');
 
     // 直接渲染 seo-meta.blade.php，传入 seoData（绕开 HTTP 路由，避免 Livewire 依赖）
-    $html = view('filament-admin-site::components.seo-meta', [
+    $html = view('filamentboot-site::components.seo-meta', [
         'seoData'      => $seoData,
         'siteSettings' => null,
     ])->render();

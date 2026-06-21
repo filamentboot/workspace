@@ -3,7 +3,7 @@
 namespace Filamentboot\FilamentbootMarkdownEditor\Forms;
 
 use Filament\Forms\Components\MarkdownEditor;
-use FilamentAdmin\Settings\UploadSettings;
+use Filamentboot\Settings\UploadSettings;
 
 /**
  * 增强版 Markdown 编辑器字段

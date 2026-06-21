@@ -2,7 +2,7 @@
 
 namespace Filamentboot\FilamentbootMarkdownEditor\Tests\Unit;
 
-use FilamentAdmin\Settings\UploadSettings;
+use Filamentboot\Settings\UploadSettings;
 use Filamentboot\FilamentbootMarkdownEditor\Forms\MarkdownEditorField;
 use Filamentboot\FilamentbootMarkdownEditor\MarkdownEditorServiceProvider;
 use Filament\Forms\Components\MarkdownEditor;

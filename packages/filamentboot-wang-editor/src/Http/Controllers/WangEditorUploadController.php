@@ -2,7 +2,7 @@
 
 namespace Filamentboot\FilamentbootWangEditor\Http\Controllers;
 
-use FilamentAdmin\Support\UploadValidator;
+use Filamentboot\Support\UploadValidator;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;

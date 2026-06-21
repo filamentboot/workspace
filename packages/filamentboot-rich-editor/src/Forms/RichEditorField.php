@@ -4,7 +4,7 @@ namespace Filamentboot\FilamentbootRichEditor\Forms;
 
 use Closure;
 use Filament\Forms\Components\RichEditor;
-use FilamentAdmin\Settings\UploadSettings;
+use Filamentboot\Settings\UploadSettings;
 
 /**
  * 增强版富文本编辑器字段

@@ -30,7 +30,7 @@
         "filamentboot/filamentboot-markdown-editor": "@dev",
         "filamentboot/filamentboot-oss": "@dev",
         "filamentboot/filamentboot-rich-editor": "@dev",
-        "laravelstack/filament-admin-site": "@dev",
+        "filamentboot/filamentboot-site": "@dev",
         "filamentboot/filamentboot-wang-editor": "@dev",
         "mews/purifier": "^3.4",
         "filament/filament": "^5.0",
@@ -91,7 +91,7 @@
         },
         {
             "type": "path",
-            "url": "packages/filament-admin-site",
+            "url": "packages/filamentboot-site",
             "options": {
                 "symlink": true
             }
@@ -121,9 +121,9 @@
             "Filamentboot\\FilamentbootMarkdownEditor\\": "packages/filamentboot-markdown-editor/src/",
             "Filamentboot\\FilamentbootOss\\": "packages/filamentboot-oss/src/",
             "Filamentboot\\FilamentbootRichEditor\\": "packages/filamentboot-rich-editor/src/",
-            "LaravelStack\\FilamentAdminSite\\": "packages/filament-admin-site/src/",
-            "LaravelStack\\FilamentAdminSite\\Database\\Factories\\": "packages/filament-admin-site/database/factories/",
-            "LaravelStack\\FilamentAdminSite\\Database\\Seeders\\": "packages/filament-admin-site/database/seeders/",
+            "Filamentboot\\FilamentbootSite\\": "packages/filamentboot-site/src/",
+            "Filamentboot\\FilamentbootSite\\Database\\Factories\\": "packages/filamentboot-site/database/factories/",
+            "Filamentboot\\FilamentbootSite\\Database\\Seeders\\": "packages/filamentboot-site/database/seeders/",
             "Filamentboot\\FilamentbootWangEditor\\": "packages/filamentboot-wang-editor/src/"
         }
     },
@@ -135,6 +135,7 @@
             "Filamentboot\\FilamentbootMarkdownEditor\\Tests\\": "packages/filamentboot-markdown-editor/tests/",
             "Filamentboot\\FilamentbootOss\\Tests\\": "packages/filamentboot-oss/tests/",
             "Filamentboot\\FilamentbootRichEditor\\Tests\\": "packages/filamentboot-rich-editor/tests/",
+            "Filamentboot\\FilamentbootSite\\Tests\\": "packages/filamentboot-site/tests/",
             "Filamentboot\\FilamentbootWangEditor\\Tests\\": "packages/filamentboot-wang-editor/tests/"
         }
     },

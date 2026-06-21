@@ -2,7 +2,7 @@
 
 namespace Filamentboot\FilamentbootWangEditor\Tests\Unit;
 
-use FilamentAdmin\Settings\UploadSettings;
+use Filamentboot\Settings\UploadSettings;
 use Filamentboot\FilamentbootWangEditor\Forms\Components\WangEditorField;
 use Filamentboot\FilamentbootWangEditor\WangEditorServiceProvider;
 use Orchestra\Testbench\TestCase;

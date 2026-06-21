@@ -2,7 +2,7 @@
 
 namespace Filamentboot\FilamentbootRichEditor\Tests\Unit;
 
-use FilamentAdmin\Settings\UploadSettings;
+use Filamentboot\Settings\UploadSettings;
 use Filamentboot\FilamentbootRichEditor\Forms\RichEditorField;
 use Filamentboot\FilamentbootRichEditor\RichEditorServiceProvider;
 use Orchestra\Testbench\TestCase;

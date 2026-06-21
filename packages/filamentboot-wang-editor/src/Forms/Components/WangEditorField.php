@@ -4,7 +4,7 @@ namespace Filamentboot\FilamentbootWangEditor\Forms\Components;
 
 use Closure;
 use Filament\Forms\Components\Field;
-use FilamentAdmin\Settings\UploadSettings;
+use Filamentboot\Settings\UploadSettings;
 
 /**
  * wangEditor 自定义富文本编辑器字段

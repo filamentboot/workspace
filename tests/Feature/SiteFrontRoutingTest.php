@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
-use LaravelStack\FilamentAdminSite\SiteServiceProvider;
+use Filamentboot\FilamentbootSite\SiteServiceProvider;
 
 /**
  * 官网前台路由测试（SiteFrontRoutingTest）
@@ -11,11 +11,11 @@ use LaravelStack\FilamentAdminSite\SiteServiceProvider;
  * 覆盖 SITE-02：前台路由文件结构正确，SiteServiceProvider 路由注册契约可验证。
  *
  * 注意：ServiceProvider::boot() 在应用启动时执行一次，且路由注册在 boot 阶段完成。
- * 由于测试中 filament-admin-site 默认 is_enabled=false，路由不会在 HTTP 层注册。
+ * 由于测试中 filamentboot-site 默认 is_enabled=false，路由不会在 HTTP 层注册。
  * 本测试以白盒方式验证路由文件正确性与 ServiceProvider 条件注册契约。
  *
  * @group site
- * @covers \LaravelStack\FilamentAdminSite\SiteServiceProvider
+ * @covers \Filamentboot\FilamentbootSite\SiteServiceProvider
  */
 
 /**
@@ -25,7 +25,7 @@ use LaravelStack\FilamentAdminSite\SiteServiceProvider;
  * 这是 SiteServiceProvider::registerFrontend() 的可观测契约点——文件本身就是产物。
  */
 it('插件启用时前台路由接管首页', function () {
-    $routeFile = base_path('packages/filament-admin-site/routes/site.php');
+    $routeFile = base_path('packages/filamentboot-site/routes/site.php');
 
     // 路由文件必须存在（registerFrontend 依赖此文件）
     expect(file_exists($routeFile))->toBeTrue('routes/site.php 必须存在');
@@ -42,7 +42,7 @@ it('插件启用时前台路由接管首页', function () {
 
     // SiteServiceProvider 包含 loadRoutesFrom 调用（registerFrontend 的核心动作）
     $spContent = file_get_contents(
-        base_path('packages/filament-admin-site/src/SiteServiceProvider.php')
+        base_path('packages/filamentboot-site/src/SiteServiceProvider.php')
     );
     expect(str_contains($spContent, 'loadRoutesFrom'))->toBeTrue('SiteServiceProvider 应调用 loadRoutesFrom 加载前台路由');
     expect(str_contains($spContent, 'site.php'))->toBeTrue('应加载 routes/site.php');
@@ -51,19 +51,19 @@ it('插件启用时前台路由接管首页', function () {
 /**
  * 插件禁用时 SiteServiceProvider 不注册前台路由（Pitfall 1 验证）
  *
- * 验证策略：在默认测试环境（filament-admin-site is_enabled=false）下，
+ * 验证策略：在默认测试环境（filamentboot-site is_enabled=false）下，
  * Route::has('site.home') 应为 false，证明 ServiceProvider 条件注册生效。
  */
 it('插件禁用时前台路由不被注册', function () {
-    // 获取当前 filament-admin-site 启用状态
+    // 获取当前 filamentboot-site 启用状态
     $isEnabled = DB::table('plugins')
-        ->where('slug', 'filament-admin-site')
+        ->where('slug', 'filamentboot-site')
         ->where('is_enabled', true)
         ->exists();
 
     if ($isEnabled) {
         // 若插件当前为启用，跳过此场景（无法回滚已发生的路由注册）
-        $this->markTestSkipped('filament-admin-site 当前为启用状态，Pitfall 1 禁用场景需手动验证');
+        $this->markTestSkipped('filamentboot-site 当前为启用状态，Pitfall 1 禁用场景需手动验证');
     }
 
     // 插件禁用时，ServiceProvider boot 不调用 registerFrontend
@@ -76,7 +76,7 @@ it('插件禁用时前台路由不被注册', function () {
     // 注意：landing 路由可能没有命名，用 / 路由存在性不方便断言
     // 改为断言 SiteServiceProvider 逻辑中 is_enabled false 时 return（白盒）
     $spContent = file_get_contents(
-        base_path('packages/filament-admin-site/src/SiteServiceProvider.php')
+        base_path('packages/filamentboot-site/src/SiteServiceProvider.php')
     );
     expect($spContent)->toContain('$isEnabled')->toContain('return');
 });

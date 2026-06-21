@@ -2,18 +2,18 @@
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\RateLimiter;
-use LaravelStack\FilamentAdminSite\Enums\ContactMessageStatus;
-use LaravelStack\FilamentAdminSite\Http\Livewire\ContactForm;
-use LaravelStack\FilamentAdminSite\Models\ContactMessage;
+use Filamentboot\FilamentbootSite\Enums\ContactMessageStatus;
+use Filamentboot\FilamentbootSite\Http\Livewire\ContactForm;
+use Filamentboot\FilamentbootSite\Models\ContactMessage;
 use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
-// 注册 filament-admin-site 视图命名空间指向包内视图目录（10-04 测试阶段，10-05 完整主题视图替代）
+// 注册 filamentboot-site 视图命名空间指向包内视图目录（10-04 测试阶段，10-05 完整主题视图替代）
 beforeEach(function () {
-    $viewsPath = base_path('packages/filament-admin-site/resources/views');
+    $viewsPath = base_path('packages/filamentboot-site/resources/views');
     if (is_dir($viewsPath)) {
-        view()->addNamespace('filament-admin-site', $viewsPath);
+        view()->addNamespace('filamentboot-site', $viewsPath);
     }
 });
 
@@ -25,7 +25,7 @@ beforeEach(function () {
  * - 同 IP 超过 3 次提交触发速率限制，不写入新记录（D-10-15 安全，T-10-04-02）
  *
  * @group site
- * @covers \LaravelStack\FilamentAdminSite\Http\Livewire\ContactForm
+ * @covers \Filamentboot\FilamentbootSite\Http\Livewire\ContactForm
  */
 
 /**

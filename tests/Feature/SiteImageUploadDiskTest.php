@@ -1,7 +1,7 @@
 <?php
 
 use Filamentboot\Settings\UploadSettings;
-use LaravelStack\FilamentAdminSite\Filament\Resources\SiteCaseResource;
+use Filamentboot\FilamentbootSite\Filament\Resources\SiteCaseResource;
 
 /**
  * 图片上传磁盘测试（SiteImageUploadDiskTest）

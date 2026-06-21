@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\View;
-use LaravelStack\FilamentAdminSite\SiteServiceProvider;
+use Filamentboot\FilamentbootSite\SiteServiceProvider;
 
 /**
  * 前台主题视图切换测试（SiteThemeViewTest）
@@ -10,7 +10,7 @@ use LaravelStack\FilamentAdminSite\SiteServiceProvider;
  * 可观测信号：SITE-03 主题切换后视图解析路径变更。
  *
  * 测试策略：直接通过反射调用 SiteServiceProvider::registerThemeViews()，
- * 然后通过 View::getFinder()->getHints() 断言 'filament-admin-site' 命名空间
+ * 然后通过 View::getFinder()->getHints() 断言 'filamentboot-site' 命名空间
  * 路径含对应 themes/{theme} 子目录（SITE-03 主题切换可观测）。
  *
  * @group site
@@ -21,7 +21,7 @@ use LaravelStack\FilamentAdminSite\SiteServiceProvider;
  * 切换为 'tech-product' 后解析 themes/tech-product 目录（SITE-03 主题切换可观测）
  */
 it('active_theme 切换后视图解析到对应主题目录', function () {
-    $packageBase = realpath(__DIR__ . '/../../packages/filament-admin-site');
+    $packageBase = realpath(__DIR__ . '/../../packages/filamentboot-site');
 
     /**
      * 测试 decoration 主题路径注册
@@ -33,7 +33,7 @@ it('active_theme 切换后视图解析到对应主题目录', function () {
 
     // 手动调用 loadViewsFrom，注册 decoration 命名空间
     $decorationPath = $packageBase . '/resources/views/themes/decoration';
-    app('view')->addNamespace('filament-admin-site-test-decoration', $decorationPath);
+    app('view')->addNamespace('filamentboot-site-test-decoration', $decorationPath);
 
     // 验证 decoration 路径存在并包含 home.blade.php
     expect(file_exists($decorationPath))->toBeTrue()
@@ -44,7 +44,7 @@ it('active_theme 切换后视图解析到对应主题目录', function () {
      * 测试 tech-product 主题路径注册
      */
     $techProductPath = $packageBase . '/resources/views/themes/tech-product';
-    app('view')->addNamespace('filament-admin-site-test-tech-product', $techProductPath);
+    app('view')->addNamespace('filamentboot-site-test-tech-product', $techProductPath);
 
     // 验证 tech-product 路径存在并包含 home.blade.php
     expect(file_exists($techProductPath))->toBeTrue()

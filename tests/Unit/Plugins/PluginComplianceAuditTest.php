@@ -7,7 +7,7 @@ use Filament\Contracts\Plugin;
  *
  * 覆盖场景：
  * 1. 六个一方插件类均实现 Filament\Contracts\Plugin 接口
- * 2. 每个插件的 composer.json 含 extra.filament-admin.post_install 块（Wave 3 补充后绿）
+ * 2. 每个插件的 composer.json 含 extra.filamentboot.post_install 块（Wave 3 补充后绿）
  *
  * 注意：post_install 块检查在 Wave 0 阶段为 markTestIncomplete（当前均缺失），
  * Wave 3 修复后改为真实断言。
@@ -29,7 +29,7 @@ function firstPartyPlugins(): array
         ['filamentboot-rich-editor',       'Filamentboot\\FilamentbootRichEditor\\RichEditorPlugin',       'packages/filamentboot-rich-editor'],
         ['filamentboot-markdown-editor',   'Filamentboot\\FilamentbootMarkdownEditor\\MarkdownEditorPlugin', 'packages/filamentboot-markdown-editor'],
         ['filamentboot-wang-editor',       'Filamentboot\\FilamentbootWangEditor\\WangEditorPlugin',       'packages/filamentboot-wang-editor'],
-        ['filament-admin-site',            'LaravelStack\\FilamentAdminSite\\SitePlugin',                   'packages/filament-admin-site'],
+        ['filamentboot-site',            'Filamentboot\\FilamentbootSite\\SitePlugin',                   'packages/filamentboot-site'],
     ];
 }
 
@@ -64,7 +64,7 @@ it('WangEditorPlugin 实现 Filament\\Contracts\\Plugin 接口（MKTPLACE-09）'
 });
 
 it('SitePlugin 实现 Filament\\Contracts\\Plugin 接口（MKTPLACE-09）', function () {
-    $class = 'LaravelStack\\FilamentAdminSite\\SitePlugin';
+    $class = 'Filamentboot\\FilamentbootSite\\SitePlugin';
     expect(class_exists($class))->toBeTrue("SitePlugin 类应可被 autoload 到");
     expect(is_a($class, Plugin::class, true))->toBeTrue("SitePlugin 应实现 Filament\\Contracts\\Plugin");
 });
@@ -89,13 +89,13 @@ it('filamentboot-cos 的 composer.json 含 post_install 块（MKTPLACE-09）', f
     expect($composerJson['extra']['filamentboot']['post_install'])->toHaveKey('publish_tags');
 });
 
-it('filament-admin-site 的 composer.json 含 post_install 含 run_migrations（MKTPLACE-09）', function () {
+it('filamentboot-site 的 composer.json 含 post_install 含 run_migrations（MKTPLACE-09）', function () {
     $composerJson = json_decode(
-        file_get_contents(base_path('packages/filament-admin-site/composer.json')),
+        file_get_contents(base_path('packages/filamentboot-site/composer.json')),
         true
     );
 
-    $postInstall = $composerJson['extra']['filament-admin']['post_install'] ?? [];
+    $postInstall = $composerJson['extra']['filamentboot']['post_install'] ?? [];
 
     expect($postInstall)->toHaveKey('publish_tags');
     expect($postInstall)->toHaveKey('run_migrations');
