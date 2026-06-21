@@ -1,11 +1,11 @@
 #!/bin/bash
 set -e
 
-# 使用方式：bash /data/filament-admin/deploy.sh
-# 约定：只在 /data/filament-admin/ 目录下执行，拉取 main 分支最新代码
+# 使用方式：bash /data/filamentboot/deploy.sh
+# 约定：只在 /data/filamentboot/ 目录下执行，拉取 main 分支最新代码
 # 触发方式：push main 经 .workflow/master-pipeline.yml SSH 调起本脚本
 
-cd /data/filament-admin
+cd /data/filamentboot
 
 echo "[deploy] 记录当前 commit（供回滚参考）"
 PREV_COMMIT=$(git rev-parse --short HEAD)
@@ -39,7 +39,7 @@ php artisan route:cache
 php artisan view:cache
 
 echo "[deploy] 重启 Queue Worker"
-supervisorctl restart filament-admin-worker:*
+supervisorctl restart filamentboot-worker:*
 
 echo "[deploy] 关闭维护模式"
 php artisan up
