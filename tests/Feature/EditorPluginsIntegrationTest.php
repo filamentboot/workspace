@@ -5,17 +5,17 @@ use App\Services\PluginManager;
 use Filamentboot\Models\AdminUser;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
-use LaravelStack\FilamentAdminMarkdownEditor\Forms\MarkdownEditorField;
-use LaravelStack\FilamentAdminMarkdownEditor\MarkdownEditorPlugin;
-use LaravelStack\FilamentAdminMarkdownEditor\MarkdownEditorServiceProvider;
-use LaravelStack\FilamentAdminMarkdownEditor\Support\MarkdownRenderer;
-use LaravelStack\FilamentAdminRichEditor\Forms\RichEditorField;
-use LaravelStack\FilamentAdminRichEditor\RichEditorPlugin;
-use LaravelStack\FilamentAdminRichEditor\RichEditorServiceProvider;
-use LaravelStack\FilamentAdminRichEditor\Support\RichEditorPurifier;
-use LaravelStack\FilamentAdminWangEditor\Forms\Components\WangEditorField;
-use LaravelStack\FilamentAdminWangEditor\WangEditorPlugin;
-use LaravelStack\FilamentAdminWangEditor\WangEditorServiceProvider;
+use Filamentboot\FilamentbootMarkdownEditor\Forms\MarkdownEditorField;
+use Filamentboot\FilamentbootMarkdownEditor\MarkdownEditorPlugin;
+use Filamentboot\FilamentbootMarkdownEditor\MarkdownEditorServiceProvider;
+use Filamentboot\FilamentbootMarkdownEditor\Support\MarkdownRenderer;
+use Filamentboot\FilamentbootRichEditor\Forms\RichEditorField;
+use Filamentboot\FilamentbootRichEditor\RichEditorPlugin;
+use Filamentboot\FilamentbootRichEditor\RichEditorServiceProvider;
+use Filamentboot\FilamentbootRichEditor\Support\RichEditorPurifier;
+use Filamentboot\FilamentbootWangEditor\Forms\Components\WangEditorField;
+use Filamentboot\FilamentbootWangEditor\WangEditorPlugin;
+use Filamentboot\FilamentbootWangEditor\WangEditorServiceProvider;
 
 use function Pest\Laravel\actingAs;
 use function Pest\Laravel\post;
@@ -93,21 +93,21 @@ it('plugin:scan 发现 rich-editor、markdown-editor、wang-editor 三个编辑�
     expect($count)->toBeGreaterThanOrEqual(3);
 
     // 验证 rich-editor 插件记录已写入
-    $richPlugin = Plugin::where('package_name', 'laravelstack/filament-admin-rich-editor')->first();
-    expect($richPlugin)->not->toBeNull('期望 filament-admin-rich-editor 插件记录存在');
-    expect($richPlugin->slug)->toBe('filament-admin-rich-editor');
+    $richPlugin = Plugin::where('package_name', 'filamentboot/filamentboot-rich-editor')->first();
+    expect($richPlugin)->not->toBeNull('期望 filamentboot-rich-editor 插件记录存在');
+    expect($richPlugin->slug)->toBe('filamentboot-rich-editor');
     expect($richPlugin->plugin_class)->not->toBeEmpty('期望 plugin_class 字段非空');
 
     // 验证 markdown-editor 插件记录已写入
-    $markdownPlugin = Plugin::where('package_name', 'laravelstack/filament-admin-markdown-editor')->first();
-    expect($markdownPlugin)->not->toBeNull('期望 filament-admin-markdown-editor 插件记录存在');
-    expect($markdownPlugin->slug)->toBe('filament-admin-markdown-editor');
+    $markdownPlugin = Plugin::where('package_name', 'filamentboot/filamentboot-markdown-editor')->first();
+    expect($markdownPlugin)->not->toBeNull('期望 filamentboot-markdown-editor 插件记录存在');
+    expect($markdownPlugin->slug)->toBe('filamentboot-markdown-editor');
     expect($markdownPlugin->plugin_class)->not->toBeEmpty('期望 plugin_class 字段非空');
 
     // 验证 wang-editor 插件记录已写入
-    $wangPlugin = Plugin::where('package_name', 'laravelstack/filament-admin-wang-editor')->first();
-    expect($wangPlugin)->not->toBeNull('期望 filament-admin-wang-editor 插件记录存在');
-    expect($wangPlugin->slug)->toBe('filament-admin-wang-editor');
+    $wangPlugin = Plugin::where('package_name', 'filamentboot/filamentboot-wang-editor')->first();
+    expect($wangPlugin)->not->toBeNull('期望 filamentboot-wang-editor 插件记录存在');
+    expect($wangPlugin->slug)->toBe('filamentboot-wang-editor');
     expect($wangPlugin->plugin_class)->not->toBeEmpty('期望 plugin_class 字段非空');
 });
 
@@ -121,6 +121,6 @@ it('config/purifier.php 已发布且含 richeditor 白名单', function () {
 it('wangEditor 上传路由已注册（路由名称可解析）', function () {
     // 验证路由名称已注册（不依赖 HTTP 请求，避免测试环境 session/Redis 差异）
     // 详细 HTTP 集成测试见 tests/Feature/Editor/WangEditorUploadTest.php
-    expect(route('filament-admin-wang-editor.upload'))->not->toBeEmpty()
-        ->and(route('filament-admin-wang-editor.upload'))->toContain('filament-admin-wang-editor/upload');
+    expect(route('filamentboot-wang-editor.upload'))->not->toBeEmpty()
+        ->and(route('filamentboot-wang-editor.upload'))->toContain('filamentboot-wang-editor/upload');
 });

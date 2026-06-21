@@ -1,0 +1,88 @@
+{
+    "$schema": "https://getcomposer.org/schema.json",
+    "name": "filamentboot/filamentboot-rich-editor",
+    "description": "基于 Filament 5 内置 Tiptap RichEditor 的增强版富文本编辑器插件，含媒体库图片上传、XSS 过滤、磁盘联动。",
+    "type": "library",
+    "license": "MIT",
+    "keywords": ["filament", "laravel", "rich-editor", "tiptap", "filament-plugin", "wysiwyg", "xss"],
+    "homepage": "https://github.com/filamentboot/filamentboot-rich-editor",
+    "authors": [
+        {
+            "name": "johncaptain",
+            "email": "JasonTodd0521@gmail.com",
+            "role": "developer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/filamentboot/filamentboot-rich-editor/issues",
+        "source": "https://github.com/filamentboot/filamentboot-rich-editor",
+        "docs": "https://github.com/filamentboot/workspace/wiki/rich-editor",
+        "wiki": "https://github.com/filamentboot/workspace/wiki"
+    },
+    "require": {
+        "php": "^8.3",
+        "filament/filament": "^5.0",
+        "filamentboot/filamentboot": "^0.5",
+        "mews/purifier": "^3.4"
+    },
+    "require-dev": {
+        "larastan/larastan": "^3.0",
+        "laravel/pint": "^1.27",
+        "orchestra/testbench": "^11.0",
+        "phpunit/phpunit": "^12.5.12"
+    },
+    "autoload": {
+        "psr-4": {
+            "Filamentboot\\FilamentbootRichEditor\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Filamentboot\\FilamentbootRichEditor\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Filamentboot\\FilamentbootRichEditor\\RichEditorServiceProvider"
+            ]
+        },
+        "filamentboot": {
+            "slug": "filamentboot-rich-editor",
+            "name": "富文本编辑器",
+            "type": "package",
+            "source": "official_listed",
+            "plugin_class": "Filamentboot\\FilamentbootRichEditor\\RichEditorPlugin",
+            "service_provider": "Filamentboot\\FilamentbootRichEditor\\RichEditorServiceProvider",
+            "description": "基于 Filament 5 内置 Tiptap RichEditor 的增强版富文本编辑器，含媒体库图片上传、XSS 过滤、磁盘联动。",
+            "requires": ["filamentboot/filamentboot"],
+            "compatibility": {
+                "laravel/framework": "^13.0",
+                "filament/filament": "^5.0"
+            },
+            "post_install": {
+                "publish_tags": ["filamentboot-rich-editor-config"],
+                "run_migrations": false,
+                "seeders": []
+            }
+        },
+        "branch-alias": {
+            "dev-main": "0.5.x-dev"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit -c phpunit.xml.dist",
+        "test-coverage": "vendor/bin/phpunit -c phpunit.xml.dist --coverage-clover=coverage.xml",
+        "phpstan": "vendor/bin/phpstan analyse --memory-limit=2G",
+        "pint": "vendor/bin/pint",
+        "pint:test": "vendor/bin/pint --test"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        },
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

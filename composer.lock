@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "73c1164bcd61cf785dc2aaa8eb07fb75",
+    "content-hash": "549a4c0a5192c08e6b88f49f64e6d89b",
     "packages": [
         {
             "name": "aliyuncs/oss-sdk-php",
@@ -518,23 +518,22 @@
         },
         {
             "name": "brick/math",
-            "version": "0.14.8",
+            "version": "0.17.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/brick/math.git",
-                "reference": "63422359a44b7f06cae63c3b429b59e8efcc0629"
+                "reference": "8189e751995f9e15729c1aa2f89fa8f166ffe818"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/brick/math/zipball/63422359a44b7f06cae63c3b429b59e8efcc0629",
-                "reference": "63422359a44b7f06cae63c3b429b59e8efcc0629",
+                "url": "https://api.github.com/repos/brick/math/zipball/8189e751995f9e15729c1aa2f89fa8f166ffe818",
+                "reference": "8189e751995f9e15729c1aa2f89fa8f166ffe818",
                 "shasum": ""
             },
             "require": {
                 "php": "^8.2"
             },
             "require-dev": {
-                "php-coveralls/php-coveralls": "^2.2",
                 "phpstan/phpstan": "2.1.22",
                 "phpunit/phpunit": "^11.5"
             },
@@ -566,7 +565,7 @@
             ],
             "support": {
                 "issues": "https://github.com/brick/math/issues",
-                "source": "https://github.com/brick/math/tree/0.14.8"
+                "source": "https://github.com/brick/math/tree/0.17.2"
             },
             "funding": [
                 {
@@ -574,7 +573,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-02-10T14:33:43+00:00"
+            "time": "2026-05-25T20:34:43+00:00"
         },
         {
             "name": "carbonphp/carbon-doctrine-types",
@@ -1523,16 +1522,16 @@
         },
         {
             "name": "filament/actions",
-            "version": "v5.6.6",
+            "version": "v5.6.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filamentphp/actions.git",
-                "reference": "eb0f973dd88864c3ea7be5e999bf420ccbd62e14"
+                "reference": "4697f9e6dab1f023b2ea21b0e449c3fd204fb3d9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filamentphp/actions/zipball/eb0f973dd88864c3ea7be5e999bf420ccbd62e14",
-                "reference": "eb0f973dd88864c3ea7be5e999bf420ccbd62e14",
+                "url": "https://api.github.com/repos/filamentphp/actions/zipball/4697f9e6dab1f023b2ea21b0e449c3fd204fb3d9",
+                "reference": "4697f9e6dab1f023b2ea21b0e449c3fd204fb3d9",
                 "shasum": ""
             },
             "require": {
@@ -1567,20 +1566,20 @@
                 "issues": "https://github.com/filamentphp/filament/issues",
                 "source": "https://github.com/filamentphp/filament"
             },
-            "time": "2026-05-27T16:17:39+00:00"
+            "time": "2026-06-08T09:27:06+00:00"
         },
         {
             "name": "filament/filament",
-            "version": "v5.6.6",
+            "version": "v5.6.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filamentphp/panels.git",
-                "reference": "fdb789aaa29ff418e0609927a683b099df2d5f55"
+                "reference": "2b6bfa9888e0bcba8c2a7dfbdfe913cab72cfe6a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filamentphp/panels/zipball/fdb789aaa29ff418e0609927a683b099df2d5f55",
-                "reference": "fdb789aaa29ff418e0609927a683b099df2d5f55",
+                "url": "https://api.github.com/repos/filamentphp/panels/zipball/2b6bfa9888e0bcba8c2a7dfbdfe913cab72cfe6a",
+                "reference": "2b6bfa9888e0bcba8c2a7dfbdfe913cab72cfe6a",
                 "shasum": ""
             },
             "require": {
@@ -1624,20 +1623,20 @@
                 "issues": "https://github.com/filamentphp/filament/issues",
                 "source": "https://github.com/filamentphp/filament"
             },
-            "time": "2026-05-27T16:17:24+00:00"
+            "time": "2026-06-08T09:24:15+00:00"
         },
         {
             "name": "filament/forms",
-            "version": "v5.6.6",
+            "version": "v5.6.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filamentphp/forms.git",
-                "reference": "e4dc9e2add4b563822d1014e35c8e16bf812aa8d"
+                "reference": "f7b5e8701982408f84e1b12fcca75eadad47905b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filamentphp/forms/zipball/e4dc9e2add4b563822d1014e35c8e16bf812aa8d",
-                "reference": "e4dc9e2add4b563822d1014e35c8e16bf812aa8d",
+                "url": "https://api.github.com/repos/filamentphp/forms/zipball/f7b5e8701982408f84e1b12fcca75eadad47905b",
+                "reference": "f7b5e8701982408f84e1b12fcca75eadad47905b",
                 "shasum": ""
             },
             "require": {
@@ -1674,20 +1673,20 @@
                 "issues": "https://github.com/filamentphp/filament/issues",
                 "source": "https://github.com/filamentphp/filament"
             },
-            "time": "2026-05-27T16:11:48+00:00"
+            "time": "2026-06-08T09:27:44+00:00"
         },
         {
             "name": "filament/infolists",
-            "version": "v5.6.6",
+            "version": "v5.6.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filamentphp/infolists.git",
-                "reference": "37a2484d6c65b5908e6549302001161530a88c2c"
+                "reference": "0b87686a37160bf7f8bccae1eedc733bbf928dc9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filamentphp/infolists/zipball/37a2484d6c65b5908e6549302001161530a88c2c",
-                "reference": "37a2484d6c65b5908e6549302001161530a88c2c",
+                "url": "https://api.github.com/repos/filamentphp/infolists/zipball/0b87686a37160bf7f8bccae1eedc733bbf928dc9",
+                "reference": "0b87686a37160bf7f8bccae1eedc733bbf928dc9",
                 "shasum": ""
             },
             "require": {
@@ -1719,20 +1718,20 @@
                 "issues": "https://github.com/filamentphp/filament/issues",
                 "source": "https://github.com/filamentphp/filament"
             },
-            "time": "2026-05-22T07:42:24+00:00"
+            "time": "2026-06-08T09:28:23+00:00"
         },
         {
             "name": "filament/notifications",
-            "version": "v5.6.6",
+            "version": "v5.6.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filamentphp/notifications.git",
-                "reference": "d4d1bef688dd85086229fcad6f1a157d47f6c336"
+                "reference": "28ce63bf4e378a4e38efac7b1f0519a5fed4b352"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filamentphp/notifications/zipball/d4d1bef688dd85086229fcad6f1a157d47f6c336",
-                "reference": "d4d1bef688dd85086229fcad6f1a157d47f6c336",
+                "url": "https://api.github.com/repos/filamentphp/notifications/zipball/28ce63bf4e378a4e38efac7b1f0519a5fed4b352",
+                "reference": "28ce63bf4e378a4e38efac7b1f0519a5fed4b352",
                 "shasum": ""
             },
             "require": {
@@ -1766,11 +1765,11 @@
                 "issues": "https://github.com/filamentphp/filament/issues",
                 "source": "https://github.com/filamentphp/filament"
             },
-            "time": "2026-05-20T17:23:54+00:00"
+            "time": "2026-06-08T09:27:42+00:00"
         },
         {
             "name": "filament/query-builder",
-            "version": "v5.6.6",
+            "version": "v5.6.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filamentphp/query-builder.git",
@@ -1816,16 +1815,16 @@
         },
         {
             "name": "filament/schemas",
-            "version": "v5.6.6",
+            "version": "v5.6.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filamentphp/schemas.git",
-                "reference": "1b23f15af79252591fd72f17ad4bc536cc32d47b"
+                "reference": "c3ecdfe73a215927caaf7b28bc5ae2b3891e805b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filamentphp/schemas/zipball/1b23f15af79252591fd72f17ad4bc536cc32d47b",
-                "reference": "1b23f15af79252591fd72f17ad4bc536cc32d47b",
+                "url": "https://api.github.com/repos/filamentphp/schemas/zipball/c3ecdfe73a215927caaf7b28bc5ae2b3891e805b",
+                "reference": "c3ecdfe73a215927caaf7b28bc5ae2b3891e805b",
                 "shasum": ""
             },
             "require": {
@@ -1857,11 +1856,11 @@
                 "issues": "https://github.com/filamentphp/filament/issues",
                 "source": "https://github.com/filamentphp/filament"
             },
-            "time": "2026-05-27T16:16:01+00:00"
+            "time": "2026-06-08T09:28:03+00:00"
         },
         {
             "name": "filament/spatie-laravel-media-library-plugin",
-            "version": "v5.6.6",
+            "version": "v5.6.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filamentphp/spatie-laravel-media-library-plugin.git",
@@ -1898,7 +1897,7 @@
         },
         {
             "name": "filament/spatie-laravel-settings-plugin",
-            "version": "v5.6.6",
+            "version": "v5.6.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filamentphp/spatie-laravel-settings-plugin.git",
@@ -1942,16 +1941,16 @@
         },
         {
             "name": "filament/support",
-            "version": "v5.6.6",
+            "version": "v5.6.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filamentphp/support.git",
-                "reference": "2d79214157790e89b35a00911a5d7fc5da647b87"
+                "reference": "caa2bf186de5b32a789d3c7167bc63db153386a1"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filamentphp/support/zipball/2d79214157790e89b35a00911a5d7fc5da647b87",
-                "reference": "2d79214157790e89b35a00911a5d7fc5da647b87",
+                "url": "https://api.github.com/repos/filamentphp/support/zipball/caa2bf186de5b32a789d3c7167bc63db153386a1",
+                "reference": "caa2bf186de5b32a789d3c7167bc63db153386a1",
                 "shasum": ""
             },
             "require": {
@@ -1996,20 +1995,20 @@
                 "issues": "https://github.com/filamentphp/filament/issues",
                 "source": "https://github.com/filamentphp/filament"
             },
-            "time": "2026-05-27T16:12:42+00:00"
+            "time": "2026-06-08T09:28:36+00:00"
         },
         {
             "name": "filament/tables",
-            "version": "v5.6.6",
+            "version": "v5.6.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filamentphp/tables.git",
-                "reference": "b67ef735bb000cf9e11bf9f71450e9faef2c5052"
+                "reference": "bb98022d73347eeb090976ae0730147289135ffb"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filamentphp/tables/zipball/b67ef735bb000cf9e11bf9f71450e9faef2c5052",
-                "reference": "b67ef735bb000cf9e11bf9f71450e9faef2c5052",
+                "url": "https://api.github.com/repos/filamentphp/tables/zipball/bb98022d73347eeb090976ae0730147289135ffb",
+                "reference": "bb98022d73347eeb090976ae0730147289135ffb",
                 "shasum": ""
             },
             "require": {
@@ -2042,20 +2041,20 @@
                 "issues": "https://github.com/filamentphp/filament/issues",
                 "source": "https://github.com/filamentphp/filament"
             },
-            "time": "2026-05-27T16:17:31+00:00"
+            "time": "2026-06-08T09:28:26+00:00"
         },
         {
             "name": "filament/widgets",
-            "version": "v5.6.6",
+            "version": "v5.6.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/filamentphp/widgets.git",
-                "reference": "fdec7f94e32b1c43199221363382e47b8a6a9816"
+                "reference": "8c6411e0331aab124ffdf6c49d1161b1ecfbc9bc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/filamentphp/widgets/zipball/fdec7f94e32b1c43199221363382e47b8a6a9816",
-                "reference": "fdec7f94e32b1c43199221363382e47b8a6a9816",
+                "url": "https://api.github.com/repos/filamentphp/widgets/zipball/8c6411e0331aab124ffdf6c49d1161b1ecfbc9bc",
+                "reference": "8c6411e0331aab124ffdf6c49d1161b1ecfbc9bc",
                 "shasum": ""
             },
             "require": {
@@ -2086,7 +2085,7 @@
                 "issues": "https://github.com/filamentphp/filament/issues",
                 "source": "https://github.com/filamentphp/filament"
             },
-            "time": "2026-05-27T16:16:29+00:00"
+            "time": "2026-06-08T09:28:17+00:00"
         },
         {
             "name": "filamentboot/filamentboot",
@@ -2192,6 +2191,577 @@
                 "issues": "https://github.com/filamentboot/filamentboot/issues",
                 "source": "https://github.com/filamentboot/filamentboot",
                 "docs": "https://github.com/filamentboot/workspace/wiki/installation",
+                "wiki": "https://github.com/filamentboot/workspace/wiki"
+            },
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "filamentboot/filamentboot-cos",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "packages/filamentboot-cos",
+                "reference": "178762fa7ef3496f8765ee7e0f71810c4f97c91c"
+            },
+            "require": {
+                "filament/spatie-laravel-settings-plugin": "^5.6",
+                "filamentboot/filamentboot": "^0.5",
+                "overtrue/laravel-filesystem-cos": "^4.0",
+                "php": "^8.3",
+                "spatie/laravel-settings": "^3.9"
+            },
+            "require-dev": {
+                "larastan/larastan": "^3.0",
+                "laravel/pint": "^1.27",
+                "orchestra/testbench": "^10.0",
+                "phpunit/phpunit": "^12.5.12"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Filamentboot\\FilamentbootCos\\CosServiceProvider"
+                    ]
+                },
+                "filamentboot": {
+                    "slug": "filamentboot-cos",
+                    "name": "腾讯云 COS 存储",
+                    "type": "package",
+                    "source": "official_listed",
+                    "plugin_class": "Filamentboot\\FilamentbootCos\\CosPlugin",
+                    "settings_page_slug": "settings/cos",
+                    "service_provider": "Filamentboot\\FilamentbootCos\\CosServiceProvider",
+                    "description": "腾讯云对象存储（COS）驱动插件，支持超管在后台直接配置凭证，无需修改 .env 文件。",
+                    "requires": [
+                        "filamentboot/filamentboot"
+                    ],
+                    "compatibility": {
+                        "laravel/framework": "^13.0",
+                        "filament/filament": "^5.0"
+                    },
+                    "post_install": {
+                        "publish_tags": [
+                            "filamentboot-cos-config"
+                        ],
+                        "run_migrations": false,
+                        "seeders": []
+                    }
+                },
+                "branch-alias": {
+                    "dev-main": "0.5.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Filamentboot\\FilamentbootCos\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Filamentboot\\FilamentbootCos\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "vendor/bin/phpunit -c phpunit.xml.dist"
+                ],
+                "test-coverage": [
+                    "vendor/bin/phpunit -c phpunit.xml.dist --coverage-clover=coverage.xml"
+                ],
+                "phpstan": [
+                    "vendor/bin/phpstan analyse --memory-limit=2G"
+                ],
+                "pint": [
+                    "vendor/bin/pint"
+                ],
+                "pint:test": [
+                    "vendor/bin/pint --test"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "johncaptain",
+                    "email": "JasonTodd0521@gmail.com",
+                    "role": "developer"
+                }
+            ],
+            "description": "腾讯云 COS 存储插件：为 filamentboot/filamentboot 提供 COS 凭证后台配置与 Flysystem 磁盘注入。",
+            "homepage": "https://github.com/filamentboot/filamentboot-cos",
+            "keywords": [
+                "admin-panel",
+                "cloud-storage",
+                "cos",
+                "filament",
+                "filament-plugin",
+                "laravel",
+                "storage",
+                "tencent"
+            ],
+            "support": {
+                "issues": "https://github.com/filamentboot/filamentboot-cos/issues",
+                "source": "https://github.com/filamentboot/filamentboot-cos",
+                "docs": "https://github.com/filamentboot/workspace/wiki/cos-plugin",
+                "wiki": "https://github.com/filamentboot/workspace/wiki"
+            },
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "filamentboot/filamentboot-markdown-editor",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "packages/filamentboot-markdown-editor",
+                "reference": "9fd63b05f8c8f07c2a103bc646e0053e81ec0cf9"
+            },
+            "require": {
+                "filament/filament": "^5.0",
+                "filamentboot/filamentboot": "^0.5",
+                "league/commonmark": "^2.8",
+                "mews/purifier": "^3.4",
+                "php": "^8.3"
+            },
+            "require-dev": {
+                "larastan/larastan": "^3.0",
+                "laravel/pint": "^1.27",
+                "orchestra/testbench": "^11.0",
+                "phpunit/phpunit": "^12.5.12"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Filamentboot\\FilamentbootMarkdownEditor\\MarkdownEditorServiceProvider"
+                    ]
+                },
+                "filamentboot": {
+                    "slug": "filamentboot-markdown-editor",
+                    "name": "Markdown 编辑器",
+                    "type": "package",
+                    "source": "official_listed",
+                    "plugin_class": "Filamentboot\\FilamentbootMarkdownEditor\\MarkdownEditorPlugin",
+                    "service_provider": "Filamentboot\\FilamentbootMarkdownEditor\\MarkdownEditorServiceProvider",
+                    "description": "基于 Filament 5 内置 EasyMDE 的增强 Markdown 编辑器，支持实时分屏预览、代码高亮、图片上传磁盘联动（Cloud 自动路由），展示时经 CommonMark + XSS 过滤安全渲染。",
+                    "requires": [
+                        "filamentboot/filamentboot"
+                    ],
+                    "compatibility": {
+                        "laravel/framework": "^13.0",
+                        "filament/filament": "^5.0"
+                    },
+                    "post_install": {
+                        "publish_tags": [
+                            "filamentboot-markdown-editor-config"
+                        ],
+                        "run_migrations": false,
+                        "seeders": []
+                    }
+                },
+                "branch-alias": {
+                    "dev-main": "0.5.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Filamentboot\\FilamentbootMarkdownEditor\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Filamentboot\\FilamentbootMarkdownEditor\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "vendor/bin/phpunit -c phpunit.xml.dist"
+                ],
+                "test-coverage": [
+                    "vendor/bin/phpunit -c phpunit.xml.dist --coverage-clover=coverage.xml"
+                ],
+                "phpstan": [
+                    "vendor/bin/phpstan analyse --memory-limit=2G"
+                ],
+                "pint": [
+                    "vendor/bin/pint"
+                ],
+                "pint:test": [
+                    "vendor/bin/pint --test"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "johncaptain",
+                    "email": "JasonTodd0521@gmail.com",
+                    "role": "developer"
+                }
+            ],
+            "description": "Markdown 编辑器插件，为 filamentboot/filamentboot 提供基于 EasyMDE 的增强 Markdown 编辑器，含图片上传磁盘联动、分屏预览、代码高亮与 XSS 安全渲染。",
+            "homepage": "https://github.com/filamentboot/filamentboot-markdown-editor",
+            "keywords": [
+                "commonmark",
+                "easymde",
+                "editor",
+                "filament",
+                "filament-plugin",
+                "laravel",
+                "markdown",
+                "xss-filter"
+            ],
+            "support": {
+                "issues": "https://github.com/filamentboot/filamentboot-markdown-editor/issues",
+                "source": "https://github.com/filamentboot/filamentboot-markdown-editor",
+                "docs": "https://github.com/filamentboot/workspace/wiki/markdown-editor",
+                "wiki": "https://github.com/filamentboot/workspace/wiki"
+            },
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "filamentboot/filamentboot-oss",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "packages/filamentboot-oss",
+                "reference": "c2acda1d9490b75181f79b033f4d4fa0a0b8e58a"
+            },
+            "require": {
+                "filament/spatie-laravel-settings-plugin": "^5.6",
+                "filamentboot/filamentboot": "^0.5",
+                "iidestiny/flysystem-oss": "^4.8",
+                "php": "^8.3",
+                "spatie/laravel-settings": "^3.9"
+            },
+            "require-dev": {
+                "larastan/larastan": "^3.0",
+                "laravel/pint": "^1.27",
+                "orchestra/testbench": "^10.0",
+                "phpunit/phpunit": "^12.5.12"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Filamentboot\\FilamentbootOss\\OssServiceProvider"
+                    ]
+                },
+                "filamentboot": {
+                    "slug": "filamentboot-oss",
+                    "name": "阿里云 OSS 存储",
+                    "type": "package",
+                    "source": "official_listed",
+                    "plugin_class": "Filamentboot\\FilamentbootOss\\OssPlugin",
+                    "settings_page_slug": "settings/oss",
+                    "service_provider": "Filamentboot\\FilamentbootOss\\OssServiceProvider",
+                    "description": "阿里云 OSS 对象存储驱动，凭证由超管在后台配置页加密存储，无需修改 .env 文件。",
+                    "requires": [
+                        "filamentboot/filamentboot"
+                    ],
+                    "compatibility": {
+                        "laravel/framework": "^13.0",
+                        "filament/filament": "^5.0"
+                    },
+                    "post_install": {
+                        "publish_tags": [
+                            "filamentboot-oss-config"
+                        ],
+                        "run_migrations": false,
+                        "seeders": []
+                    }
+                },
+                "branch-alias": {
+                    "dev-main": "0.5.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Filamentboot\\FilamentbootOss\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Filamentboot\\FilamentbootOss\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "vendor/bin/phpunit -c phpunit.xml.dist"
+                ],
+                "test-coverage": [
+                    "vendor/bin/phpunit -c phpunit.xml.dist --coverage-clover=coverage.xml"
+                ],
+                "phpstan": [
+                    "vendor/bin/phpstan analyse --memory-limit=2G"
+                ],
+                "pint": [
+                    "vendor/bin/pint"
+                ],
+                "pint:test": [
+                    "vendor/bin/pint --test"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "johncaptain",
+                    "email": "JasonTodd0521@gmail.com",
+                    "role": "developer"
+                }
+            ],
+            "description": "阿里云 OSS 存储插件，为 filamentboot/filamentboot 提供 Flysystem OSS 磁盘驱动与后台凭证配置页。",
+            "homepage": "https://github.com/filamentboot/filamentboot-oss",
+            "keywords": [
+                "aliyun",
+                "cloud-storage",
+                "filament",
+                "filament-plugin",
+                "flysystem",
+                "laravel",
+                "oss",
+                "storage"
+            ],
+            "support": {
+                "issues": "https://github.com/filamentboot/filamentboot-oss/issues",
+                "source": "https://github.com/filamentboot/filamentboot-oss",
+                "docs": "https://github.com/filamentboot/workspace/wiki/oss-plugin",
+                "wiki": "https://github.com/filamentboot/workspace/wiki"
+            },
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "filamentboot/filamentboot-rich-editor",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "packages/filamentboot-rich-editor",
+                "reference": "2e8924026328b23f170b0a89471c3b1885db1709"
+            },
+            "require": {
+                "filament/filament": "^5.0",
+                "filamentboot/filamentboot": "^0.5",
+                "mews/purifier": "^3.4",
+                "php": "^8.3"
+            },
+            "require-dev": {
+                "larastan/larastan": "^3.0",
+                "laravel/pint": "^1.27",
+                "orchestra/testbench": "^11.0",
+                "phpunit/phpunit": "^12.5.12"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Filamentboot\\FilamentbootRichEditor\\RichEditorServiceProvider"
+                    ]
+                },
+                "filamentboot": {
+                    "slug": "filamentboot-rich-editor",
+                    "name": "富文本编辑器",
+                    "type": "package",
+                    "source": "official_listed",
+                    "plugin_class": "Filamentboot\\FilamentbootRichEditor\\RichEditorPlugin",
+                    "service_provider": "Filamentboot\\FilamentbootRichEditor\\RichEditorServiceProvider",
+                    "description": "基于 Filament 5 内置 Tiptap RichEditor 的增强版富文本编辑器，含媒体库图片上传、XSS 过滤、磁盘联动。",
+                    "requires": [
+                        "filamentboot/filamentboot"
+                    ],
+                    "compatibility": {
+                        "laravel/framework": "^13.0",
+                        "filament/filament": "^5.0"
+                    },
+                    "post_install": {
+                        "publish_tags": [
+                            "filamentboot-rich-editor-config"
+                        ],
+                        "run_migrations": false,
+                        "seeders": []
+                    }
+                },
+                "branch-alias": {
+                    "dev-main": "0.5.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Filamentboot\\FilamentbootRichEditor\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Filamentboot\\FilamentbootRichEditor\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "vendor/bin/phpunit -c phpunit.xml.dist"
+                ],
+                "test-coverage": [
+                    "vendor/bin/phpunit -c phpunit.xml.dist --coverage-clover=coverage.xml"
+                ],
+                "phpstan": [
+                    "vendor/bin/phpstan analyse --memory-limit=2G"
+                ],
+                "pint": [
+                    "vendor/bin/pint"
+                ],
+                "pint:test": [
+                    "vendor/bin/pint --test"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "johncaptain",
+                    "email": "JasonTodd0521@gmail.com",
+                    "role": "developer"
+                }
+            ],
+            "description": "基于 Filament 5 内置 Tiptap RichEditor 的增强版富文本编辑器插件，含媒体库图片上传、XSS 过滤、磁盘联动。",
+            "homepage": "https://github.com/filamentboot/filamentboot-rich-editor",
+            "keywords": [
+                "filament",
+                "filament-plugin",
+                "laravel",
+                "rich-editor",
+                "tiptap",
+                "wysiwyg",
+                "xss"
+            ],
+            "support": {
+                "issues": "https://github.com/filamentboot/filamentboot-rich-editor/issues",
+                "source": "https://github.com/filamentboot/filamentboot-rich-editor",
+                "docs": "https://github.com/filamentboot/workspace/wiki/rich-editor",
+                "wiki": "https://github.com/filamentboot/workspace/wiki"
+            },
+            "transport-options": {
+                "symlink": true,
+                "relative": true
+            }
+        },
+        {
+            "name": "filamentboot/filamentboot-wang-editor",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "packages/filamentboot-wang-editor",
+                "reference": "522d2b01785d51b62f423ed3473c375313a600fc"
+            },
+            "require": {
+                "filament/filament": "^5.0",
+                "filamentboot/filamentboot": "*",
+                "php": "^8.3"
+            },
+            "require-dev": {
+                "mockery/mockery": "^1.6",
+                "orchestra/testbench": "^11.0",
+                "phpunit/phpunit": "^12.5.12"
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Filamentboot\\FilamentbootWangEditor\\WangEditorServiceProvider"
+                    ]
+                },
+                "filamentboot": {
+                    "slug": "filamentboot-wang-editor",
+                    "name": "wangEditor 富文本编辑器",
+                    "type": "package",
+                    "source": "official_listed",
+                    "plugin_class": "Filamentboot\\FilamentbootWangEditor\\WangEditorPlugin",
+                    "service_provider": "Filamentboot\\FilamentbootWangEditor\\WangEditorServiceProvider",
+                    "description": "国内生态友好的 wangEditor 富文本编辑器，启用后可一键替换默认 Tiptap，图片上传经 UploadValidator 三重安全校验后落到当前生效磁盘（D-09-03/D-09-04）。",
+                    "requires": [
+                        "filamentboot/filamentboot"
+                    ],
+                    "compatibility": {
+                        "laravel/framework": "^13.0",
+                        "filament/filament": "^5.0"
+                    },
+                    "post_install": {
+                        "publish_tags": [
+                            "filamentboot-wang-editor-config"
+                        ],
+                        "run_migrations": false,
+                        "seeders": []
+                    }
+                },
+                "branch-alias": {
+                    "dev-main": "0.5.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Filamentboot\\FilamentbootWangEditor\\": "src/"
+                }
+            },
+            "autoload-dev": {
+                "psr-4": {
+                    "Filamentboot\\FilamentbootWangEditor\\Tests\\": "tests/"
+                }
+            },
+            "scripts": {
+                "test": [
+                    "vendor/bin/phpunit -c phpunit.xml.dist"
+                ],
+                "test-coverage": [
+                    "vendor/bin/phpunit -c phpunit.xml.dist --coverage-clover=coverage.xml"
+                ],
+                "phpstan": [
+                    "vendor/bin/phpstan analyse --memory-limit=2G"
+                ],
+                "pint": [
+                    "vendor/bin/pint"
+                ],
+                "pint:test": [
+                    "vendor/bin/pint --test"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "johncaptain",
+                    "email": "JasonTodd0521@gmail.com",
+                    "role": "developer"
+                }
+            ],
+            "description": "wangEditor 富文本编辑器插件，为 filamentboot/filamentboot 提供轻量级国内生态友好的 wangEditor，可一键替换默认 Tiptap，图片上传经 UploadValidator 三重安全校验后落到当前生效磁盘。",
+            "homepage": "https://github.com/filamentboot/filamentboot-wang-editor",
+            "keywords": [
+                "filament",
+                "filament-plugin",
+                "laravel",
+                "rich-editor",
+                "wang-editor",
+                "wangeditor",
+                "wysiwyg"
+            ],
+            "support": {
+                "issues": "https://github.com/filamentboot/filamentboot-wang-editor/issues",
+                "source": "https://github.com/filamentboot/filamentboot-wang-editor",
+                "docs": "https://github.com/filamentboot/workspace/wiki/wang-editor",
                 "wiki": "https://github.com/filamentboot/workspace/wiki"
             },
             "transport-options": {
@@ -2334,22 +2904,22 @@
         },
         {
             "name": "guzzlehttp/guzzle",
-            "version": "7.11.0",
+            "version": "7.12.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/guzzle.git",
-                "reference": "c987f8ce84b8434fa430795eca0f3430663da72b"
+                "reference": "d34627490fbc03bf5c5d7cfed81f2faa19519425"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/c987f8ce84b8434fa430795eca0f3430663da72b",
-                "reference": "c987f8ce84b8434fa430795eca0f3430663da72b",
+                "url": "https://api.github.com/repos/guzzle/guzzle/zipball/d34627490fbc03bf5c5d7cfed81f2faa19519425",
+                "reference": "d34627490fbc03bf5c5d7cfed81f2faa19519425",
                 "shasum": ""
             },
             "require": {
                 "ext-json": "*",
                 "guzzlehttp/promises": "^2.5",
-                "guzzlehttp/psr7": "^2.11",
+                "guzzlehttp/psr7": "^2.12.1",
                 "php": "^7.2.5 || ^8.0",
                 "psr/http-client": "^1.0",
                 "symfony/deprecation-contracts": "^2.5 || ^3.0",
@@ -2362,7 +2932,7 @@
                 "bamarni/composer-bin-plugin": "^1.8.2",
                 "ext-curl": "*",
                 "guzzle/client-integration-tests": "3.0.2",
-                "guzzlehttp/test-server": "^0.4",
+                "guzzlehttp/test-server": "^0.5.1",
                 "php-http/message-factory": "^1.1",
                 "phpunit/phpunit": "^8.5.52 || ^9.6.34",
                 "psr/log": "^1.1 || ^2.0 || ^3.0"
@@ -2442,7 +3012,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/guzzle/issues",
-                "source": "https://github.com/guzzle/guzzle/tree/7.11.0"
+                "source": "https://github.com/guzzle/guzzle/tree/7.12.1"
             },
             "funding": [
                 {
@@ -2458,7 +3028,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-06-02T12:40:51+00:00"
+            "time": "2026-06-18T14:12:49+00:00"
         },
         {
             "name": "guzzlehttp/promises",
@@ -2546,16 +3116,16 @@
         },
         {
             "name": "guzzlehttp/psr7",
-            "version": "2.11.0",
+            "version": "2.12.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/psr7.git",
-                "reference": "bbb5e61349fa5cb822b3e87842b951088b76b81f"
+                "reference": "172ef2f4e9824c1e058b7f30be8ae25a02c0f2b7"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/psr7/zipball/bbb5e61349fa5cb822b3e87842b951088b76b81f",
-                "reference": "bbb5e61349fa5cb822b3e87842b951088b76b81f",
+                "url": "https://api.github.com/repos/guzzle/psr7/zipball/172ef2f4e9824c1e058b7f30be8ae25a02c0f2b7",
+                "reference": "172ef2f4e9824c1e058b7f30be8ae25a02c0f2b7",
                 "shasum": ""
             },
             "require": {
@@ -2645,7 +3215,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/psr7/issues",
-                "source": "https://github.com/guzzle/psr7/tree/2.11.0"
+                "source": "https://github.com/guzzle/psr7/tree/2.12.1"
             },
             "funding": [
                 {
@@ -2661,20 +3231,20 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-06-02T12:30:48+00:00"
+            "time": "2026-06-18T09:49:37+00:00"
         },
         {
             "name": "guzzlehttp/uri-template",
-            "version": "v1.0.6",
+            "version": "v1.0.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/guzzle/uri-template.git",
-                "reference": "eef7f87bab6f204eba3c39224d8075c70c637946"
+                "reference": "7fe811c23a9e3cd712b4389eaeb50b5456d8c529"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/guzzle/uri-template/zipball/eef7f87bab6f204eba3c39224d8075c70c637946",
-                "reference": "eef7f87bab6f204eba3c39224d8075c70c637946",
+                "url": "https://api.github.com/repos/guzzle/uri-template/zipball/7fe811c23a9e3cd712b4389eaeb50b5456d8c529",
+                "reference": "7fe811c23a9e3cd712b4389eaeb50b5456d8c529",
                 "shasum": ""
             },
             "require": {
@@ -2731,7 +3301,7 @@
             ],
             "support": {
                 "issues": "https://github.com/guzzle/uri-template/issues",
-                "source": "https://github.com/guzzle/uri-template/tree/v1.0.6"
+                "source": "https://github.com/guzzle/uri-template/tree/v1.0.7"
             },
             "funding": [
                 {
@@ -2747,7 +3317,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-05-23T22:00:21+00:00"
+            "time": "2026-06-12T21:33:43+00:00"
         },
         {
             "name": "iidestiny/flysystem-oss",
@@ -2870,16 +3440,16 @@
         },
         {
             "name": "laravel/framework",
-            "version": "v13.13.0",
+            "version": "v13.16.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/framework.git",
-                "reference": "1daa6d3b4defe46976ccfa4fb0a7ab62717712a2"
+                "reference": "6135650d69bd9442e470bb1b343422081b076f1e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/framework/zipball/1daa6d3b4defe46976ccfa4fb0a7ab62717712a2",
-                "reference": "1daa6d3b4defe46976ccfa4fb0a7ab62717712a2",
+                "url": "https://api.github.com/repos/laravel/framework/zipball/6135650d69bd9442e470bb1b343422081b076f1e",
+                "reference": "6135650d69bd9442e470bb1b343422081b076f1e",
                 "shasum": ""
             },
             "require": {
@@ -3090,7 +3660,7 @@
                 "issues": "https://github.com/laravel/framework/issues",
                 "source": "https://github.com/laravel/framework"
             },
-            "time": "2026-06-02T14:28:17+00:00"
+            "time": "2026-06-16T16:07:50+00:00"
         },
         {
             "name": "laravel/prompts",
@@ -3437,462 +4007,6 @@
             "time": "2026-06-15T09:49:15+00:00"
         },
         {
-            "name": "laravelstack/filament-admin-cos",
-            "version": "dev-main",
-            "dist": {
-                "type": "path",
-                "url": "packages/filament-admin-cos",
-                "reference": "2b1b0cde1a09e849c0a105269819935f03dd79fa"
-            },
-            "require": {
-                "filament/spatie-laravel-settings-plugin": "^5.6",
-                "laravelstack/filament-admin": "^0.5",
-                "overtrue/laravel-filesystem-cos": "^4.0",
-                "php": "^8.3",
-                "spatie/laravel-settings": "^3.9"
-            },
-            "require-dev": {
-                "larastan/larastan": "^3.0",
-                "laravel/pint": "^1.27",
-                "orchestra/testbench": "^10.0",
-                "phpunit/phpunit": "^12.5.12"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "LaravelStack\\FilamentAdminCos\\CosServiceProvider"
-                    ]
-                },
-                "filament-admin": {
-                    "slug": "filament-admin-cos",
-                    "name": "腾讯云 COS 存储",
-                    "type": "package",
-                    "source": "official_listed",
-                    "plugin_class": "LaravelStack\\FilamentAdminCos\\CosPlugin",
-                    "settings_page_slug": "settings/cos",
-                    "service_provider": "LaravelStack\\FilamentAdminCos\\CosServiceProvider",
-                    "description": "腾讯云对象存储（COS）驱动插件，支持超管在后台直接配置凭证，无需修改 .env 文件。",
-                    "requires": [],
-                    "compatibility": {
-                        "laravel/framework": "^13.0",
-                        "filament/filament": "^5.0"
-                    },
-                    "post_install": {
-                        "publish_tags": [
-                            "filament-admin-cos-config"
-                        ],
-                        "run_migrations": false,
-                        "seeders": []
-                    }
-                },
-                "branch-alias": {
-                    "dev-main": "0.5.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "LaravelStack\\FilamentAdminCos\\": "src/"
-                }
-            },
-            "autoload-dev": {
-                "psr-4": {
-                    "LaravelStack\\FilamentAdminCos\\Tests\\": "tests/"
-                }
-            },
-            "scripts": {
-                "test": [
-                    "vendor/bin/phpunit -c phpunit.xml.dist"
-                ],
-                "test-coverage": [
-                    "vendor/bin/phpunit -c phpunit.xml.dist --coverage-clover=coverage.xml"
-                ],
-                "phpstan": [
-                    "vendor/bin/phpstan analyse --memory-limit=2G"
-                ],
-                "pint": [
-                    "vendor/bin/pint"
-                ],
-                "pint:test": [
-                    "vendor/bin/pint --test"
-                ]
-            },
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "johncaptain",
-                    "email": "JasonTodd0521@gmail.com",
-                    "role": "developer"
-                }
-            ],
-            "description": "腾讯云 COS 存储插件：为 laravelstack/filament-admin 提供 COS 凭证后台配置与 Flysystem 磁盘注入。",
-            "homepage": "https://github.com/john-captain/filament-admin",
-            "keywords": [
-                "admin-panel",
-                "cloud-storage",
-                "cos",
-                "filament",
-                "filament-plugin",
-                "laravel",
-                "storage",
-                "tencent"
-            ],
-            "support": {
-                "issues": "https://github.com/john-captain/filament-admin/issues",
-                "source": "https://github.com/john-captain/filament-admin",
-                "docs": "https://github.com/john-captain/filament-admin/blob/main/wiki/cos-plugin.md",
-                "wiki": "https://github.com/john-captain/filament-admin/tree/main/wiki"
-            },
-            "transport-options": {
-                "symlink": true,
-                "relative": true
-            }
-        },
-        {
-            "name": "laravelstack/filament-admin-markdown-editor",
-            "version": "dev-main",
-            "dist": {
-                "type": "path",
-                "url": "packages/filament-admin-markdown-editor",
-                "reference": "978f465e2ef3db0804dc93da9f8c2de42cfd056b"
-            },
-            "require": {
-                "filament/filament": "^5.0",
-                "laravelstack/filament-admin": "^0.5",
-                "league/commonmark": "^2.8",
-                "mews/purifier": "^3.4",
-                "php": "^8.3"
-            },
-            "require-dev": {
-                "larastan/larastan": "^3.0",
-                "laravel/pint": "^1.27",
-                "orchestra/testbench": "^11.0",
-                "phpunit/phpunit": "^12.5.12"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "LaravelStack\\FilamentAdminMarkdownEditor\\MarkdownEditorServiceProvider"
-                    ]
-                },
-                "filament-admin": {
-                    "slug": "filament-admin-markdown-editor",
-                    "name": "Markdown 编辑器",
-                    "type": "package",
-                    "source": "official_listed",
-                    "plugin_class": "LaravelStack\\FilamentAdminMarkdownEditor\\MarkdownEditorPlugin",
-                    "service_provider": "LaravelStack\\FilamentAdminMarkdownEditor\\MarkdownEditorServiceProvider",
-                    "description": "基于 Filament 5 内置 EasyMDE 的增强 Markdown 编辑器，支持实时分屏预览、代码高亮、图片上传磁盘联动（Cloud 自动路由），展示时经 CommonMark + XSS 过滤安全渲染。",
-                    "requires": [
-                        "laravelstack/filament-admin"
-                    ],
-                    "compatibility": {
-                        "laravel/framework": "^13.0",
-                        "filament/filament": "^5.0"
-                    },
-                    "post_install": {
-                        "publish_tags": [
-                            "filament-admin-markdown-editor-config"
-                        ],
-                        "run_migrations": false,
-                        "seeders": []
-                    }
-                },
-                "branch-alias": {
-                    "dev-main": "0.5.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "LaravelStack\\FilamentAdminMarkdownEditor\\": "src/"
-                }
-            },
-            "autoload-dev": {
-                "psr-4": {
-                    "LaravelStack\\FilamentAdminMarkdownEditor\\Tests\\": "tests/"
-                }
-            },
-            "scripts": {
-                "test": [
-                    "vendor/bin/phpunit -c phpunit.xml.dist"
-                ],
-                "test-coverage": [
-                    "vendor/bin/phpunit -c phpunit.xml.dist --coverage-clover=coverage.xml"
-                ],
-                "phpstan": [
-                    "vendor/bin/phpstan analyse --memory-limit=2G"
-                ],
-                "pint": [
-                    "vendor/bin/pint"
-                ],
-                "pint:test": [
-                    "vendor/bin/pint --test"
-                ]
-            },
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "johncaptain",
-                    "email": "JasonTodd0521@gmail.com",
-                    "role": "developer"
-                }
-            ],
-            "description": "Markdown 编辑器插件，为 laravelstack/filament-admin 提供基于 EasyMDE 的增强 Markdown 编辑器，含图片上传磁盘联动、分屏预览、代码高亮与 XSS 安全渲染。",
-            "homepage": "https://github.com/john-captain/filament-admin",
-            "keywords": [
-                "commonmark",
-                "easymde",
-                "editor",
-                "filament",
-                "filament-plugin",
-                "laravel",
-                "markdown",
-                "xss-filter"
-            ],
-            "support": {
-                "issues": "https://github.com/john-captain/filament-admin/issues",
-                "source": "https://github.com/john-captain/filament-admin",
-                "docs": "https://github.com/john-captain/filament-admin/blob/main/wiki/markdown-editor.md",
-                "wiki": "https://github.com/john-captain/filament-admin/tree/main/wiki"
-            },
-            "transport-options": {
-                "symlink": true,
-                "relative": true
-            }
-        },
-        {
-            "name": "laravelstack/filament-admin-oss",
-            "version": "dev-main",
-            "dist": {
-                "type": "path",
-                "url": "packages/filament-admin-oss",
-                "reference": "8e22af030a28f56f994060683cfea7f123bd3bb3"
-            },
-            "require": {
-                "filament/spatie-laravel-settings-plugin": "^5.6",
-                "iidestiny/flysystem-oss": "^4.8",
-                "laravelstack/filament-admin": "^0.5",
-                "php": "^8.3",
-                "spatie/laravel-settings": "^3.9"
-            },
-            "require-dev": {
-                "larastan/larastan": "^3.0",
-                "laravel/pint": "^1.27",
-                "orchestra/testbench": "^10.0",
-                "phpunit/phpunit": "^12.5.12"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "LaravelStack\\FilamentAdminOss\\OssServiceProvider"
-                    ]
-                },
-                "filament-admin": {
-                    "slug": "filament-admin-oss",
-                    "name": "阿里云 OSS 存储",
-                    "type": "package",
-                    "source": "official_listed",
-                    "plugin_class": "LaravelStack\\FilamentAdminOss\\OssPlugin",
-                    "settings_page_slug": "settings/oss",
-                    "service_provider": "LaravelStack\\FilamentAdminOss\\OssServiceProvider",
-                    "description": "阿里云 OSS 对象存储驱动，凭证由超管在后台配置页加密存储，无需修改 .env 文件。",
-                    "requires": [],
-                    "compatibility": {
-                        "laravel/framework": "^13.0",
-                        "filament/filament": "^5.0"
-                    },
-                    "post_install": {
-                        "publish_tags": [
-                            "filament-admin-oss-config"
-                        ],
-                        "run_migrations": false,
-                        "seeders": []
-                    }
-                },
-                "branch-alias": {
-                    "dev-main": "0.5.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "LaravelStack\\FilamentAdminOss\\": "src/"
-                }
-            },
-            "autoload-dev": {
-                "psr-4": {
-                    "LaravelStack\\FilamentAdminOss\\Tests\\": "tests/"
-                }
-            },
-            "scripts": {
-                "test": [
-                    "vendor/bin/phpunit -c phpunit.xml.dist"
-                ],
-                "test-coverage": [
-                    "vendor/bin/phpunit -c phpunit.xml.dist --coverage-clover=coverage.xml"
-                ],
-                "phpstan": [
-                    "vendor/bin/phpstan analyse --memory-limit=2G"
-                ],
-                "pint": [
-                    "vendor/bin/pint"
-                ],
-                "pint:test": [
-                    "vendor/bin/pint --test"
-                ]
-            },
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "johncaptain",
-                    "email": "JasonTodd0521@gmail.com",
-                    "role": "developer"
-                }
-            ],
-            "description": "阿里云 OSS 存储插件，为 laravelstack/filament-admin 提供 Flysystem OSS 磁盘驱动与后台凭证配置页。",
-            "homepage": "https://github.com/john-captain/filament-admin",
-            "keywords": [
-                "aliyun",
-                "cloud-storage",
-                "filament",
-                "filament-plugin",
-                "flysystem",
-                "laravel",
-                "oss",
-                "storage"
-            ],
-            "support": {
-                "issues": "https://github.com/john-captain/filament-admin/issues",
-                "source": "https://github.com/john-captain/filament-admin",
-                "docs": "https://github.com/john-captain/filament-admin/blob/main/wiki/oss.md",
-                "wiki": "https://github.com/john-captain/filament-admin/tree/main/wiki"
-            },
-            "transport-options": {
-                "symlink": true,
-                "relative": true
-            }
-        },
-        {
-            "name": "laravelstack/filament-admin-rich-editor",
-            "version": "dev-main",
-            "dist": {
-                "type": "path",
-                "url": "packages/filament-admin-rich-editor",
-                "reference": "c7b58dd3ffcd0cfb34b84200e5c71b28b8d96d1e"
-            },
-            "require": {
-                "filament/filament": "^5.0",
-                "laravelstack/filament-admin": "^0.5",
-                "mews/purifier": "^3.4",
-                "php": "^8.3"
-            },
-            "require-dev": {
-                "larastan/larastan": "^3.0",
-                "laravel/pint": "^1.27",
-                "orchestra/testbench": "^11.0",
-                "phpunit/phpunit": "^12.5.12"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "LaravelStack\\FilamentAdminRichEditor\\RichEditorServiceProvider"
-                    ]
-                },
-                "filament-admin": {
-                    "slug": "filament-admin-rich-editor",
-                    "name": "富文本编辑器",
-                    "type": "package",
-                    "source": "official_listed",
-                    "plugin_class": "LaravelStack\\FilamentAdminRichEditor\\RichEditorPlugin",
-                    "service_provider": "LaravelStack\\FilamentAdminRichEditor\\RichEditorServiceProvider",
-                    "description": "基于 Filament 5 内置 Tiptap RichEditor 的增强版富文本编辑器，含媒体库图片上传、XSS 过滤、磁盘联动。",
-                    "requires": [
-                        "laravelstack/filament-admin"
-                    ],
-                    "compatibility": {
-                        "laravel/framework": "^13.0",
-                        "filament/filament": "^5.0"
-                    },
-                    "post_install": {
-                        "publish_tags": [
-                            "filament-admin-rich-editor-config"
-                        ],
-                        "run_migrations": false,
-                        "seeders": []
-                    }
-                },
-                "branch-alias": {
-                    "dev-main": "0.5.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "LaravelStack\\FilamentAdminRichEditor\\": "src/"
-                }
-            },
-            "autoload-dev": {
-                "psr-4": {
-                    "LaravelStack\\FilamentAdminRichEditor\\Tests\\": "tests/"
-                }
-            },
-            "scripts": {
-                "test": [
-                    "vendor/bin/phpunit -c phpunit.xml.dist"
-                ],
-                "test-coverage": [
-                    "vendor/bin/phpunit -c phpunit.xml.dist --coverage-clover=coverage.xml"
-                ],
-                "phpstan": [
-                    "vendor/bin/phpstan analyse --memory-limit=2G"
-                ],
-                "pint": [
-                    "vendor/bin/pint"
-                ],
-                "pint:test": [
-                    "vendor/bin/pint --test"
-                ]
-            },
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "johncaptain",
-                    "email": "JasonTodd0521@gmail.com",
-                    "role": "developer"
-                }
-            ],
-            "description": "基于 Filament 5 内置 Tiptap RichEditor 的增强版富文本编辑器插件，含媒体库图片上传、XSS 过滤、磁盘联动。",
-            "homepage": "https://github.com/john-captain/filament-admin",
-            "keywords": [
-                "filament",
-                "filament-plugin",
-                "laravel",
-                "rich-editor",
-                "tiptap",
-                "wysiwyg",
-                "xss"
-            ],
-            "support": {
-                "issues": "https://github.com/john-captain/filament-admin/issues",
-                "source": "https://github.com/john-captain/filament-admin",
-                "docs": "https://github.com/john-captain/filament-admin/blob/main/wiki/rich-editor.md",
-                "wiki": "https://github.com/john-captain/filament-admin/tree/main/wiki"
-            },
-            "transport-options": {
-                "symlink": true,
-                "relative": true
-            }
-        },
-        {
             "name": "laravelstack/filament-admin-site",
             "version": "dev-main",
             "dist": {
@@ -4009,117 +4123,6 @@
                 "source": "https://github.com/johnson9316-bit/filament-admin-site",
                 "docs": "https://github.com/johnson9316-bit/filament-admin-site/blob/main/wiki/site.md",
                 "wiki": "https://github.com/johnson9316-bit/filament-admin-site/tree/main/wiki"
-            },
-            "transport-options": {
-                "symlink": true,
-                "relative": true
-            }
-        },
-        {
-            "name": "laravelstack/filament-admin-wang-editor",
-            "version": "dev-main",
-            "dist": {
-                "type": "path",
-                "url": "packages/filament-admin-wang-editor",
-                "reference": "5821bd8423060fd680dd43d3ea9cfb5ea179f035"
-            },
-            "require": {
-                "filament/filament": "^5.0",
-                "laravelstack/filament-admin": "*",
-                "php": "^8.3"
-            },
-            "require-dev": {
-                "mockery/mockery": "^1.6",
-                "orchestra/testbench": "^11.0",
-                "phpunit/phpunit": "^12.5.12"
-            },
-            "type": "library",
-            "extra": {
-                "laravel": {
-                    "providers": [
-                        "LaravelStack\\FilamentAdminWangEditor\\WangEditorServiceProvider"
-                    ]
-                },
-                "filament-admin": {
-                    "slug": "filament-admin-wang-editor",
-                    "name": "wangEditor 富文本编辑器",
-                    "type": "package",
-                    "source": "official_listed",
-                    "plugin_class": "LaravelStack\\FilamentAdminWangEditor\\WangEditorPlugin",
-                    "service_provider": "LaravelStack\\FilamentAdminWangEditor\\WangEditorServiceProvider",
-                    "description": "国内生态友好的 wangEditor 富文本编辑器，启用后可一键替换默认 Tiptap，图片上传经 UploadValidator 三重安全校验后落到当前生效磁盘（D-09-03/D-09-04）。",
-                    "requires": [
-                        "laravelstack/filament-admin"
-                    ],
-                    "compatibility": {
-                        "laravel/framework": "^13.0",
-                        "filament/filament": "^5.0"
-                    },
-                    "post_install": {
-                        "publish_tags": [
-                            "filament-admin-wang-editor-config"
-                        ],
-                        "run_migrations": false,
-                        "seeders": []
-                    }
-                },
-                "branch-alias": {
-                    "dev-main": "0.5.x-dev"
-                }
-            },
-            "autoload": {
-                "psr-4": {
-                    "LaravelStack\\FilamentAdminWangEditor\\": "src/"
-                }
-            },
-            "autoload-dev": {
-                "psr-4": {
-                    "LaravelStack\\FilamentAdminWangEditor\\Tests\\": "tests/"
-                }
-            },
-            "scripts": {
-                "test": [
-                    "vendor/bin/phpunit -c phpunit.xml.dist"
-                ],
-                "test-coverage": [
-                    "vendor/bin/phpunit -c phpunit.xml.dist --coverage-clover=coverage.xml"
-                ],
-                "phpstan": [
-                    "vendor/bin/phpstan analyse --memory-limit=2G"
-                ],
-                "pint": [
-                    "vendor/bin/pint"
-                ],
-                "pint:test": [
-                    "vendor/bin/pint --test"
-                ]
-            },
-            "license": [
-                "MIT"
-            ],
-            "authors": [
-                {
-                    "name": "johncaptain",
-                    "email": "JasonTodd0521@gmail.com",
-                    "role": "developer"
-                }
-            ],
-            "description": "wangEditor 富文本编辑器插件，为 laravelstack/filament-admin 提供轻量级国内生态友好的 wangEditor，可一键替换默认 Tiptap，图片上传经 UploadValidator 三重安全校验后落到当前生效磁盘。",
-            "homepage": "https://github.com/john-captain/filament-admin",
-            "keywords": [
-                "filament",
-                "filament-plugin",
-                "laravel",
-                "rich-editor",
-                "wang-editor",
-                "wangeditor",
-                "wysiwyg"
-            ],
-            "support": {
-                "issues": "https://github.com/john-captain/filament-admin/issues",
-                "source": "https://github.com/john-captain/filament-admin",
-                "docs": "https://github.com/john-captain/filament-admin/blob/main/wiki/wang-editor.md",
-                "wiki": "https://github.com/john-captain/filament-admin/tree/main/wiki"
             },
             "transport-options": {
                 "symlink": true,
@@ -5264,16 +5267,16 @@
         },
         {
             "name": "nesbot/carbon",
-            "version": "3.11.4",
+            "version": "3.13.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/CarbonPHP/carbon.git",
-                "reference": "e890471a3494740f7d9326d72ce6a8c559ffee60"
+                "reference": "40f6618f052df16b545f626fbf9a878e6497d16a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/CarbonPHP/carbon/zipball/e890471a3494740f7d9326d72ce6a8c559ffee60",
-                "reference": "e890471a3494740f7d9326d72ce6a8c559ffee60",
+                "url": "https://api.github.com/repos/CarbonPHP/carbon/zipball/40f6618f052df16b545f626fbf9a878e6497d16a",
+                "reference": "40f6618f052df16b545f626fbf9a878e6497d16a",
                 "shasum": ""
             },
             "require": {
@@ -5365,7 +5368,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-04-07T09:57:54+00:00"
+            "time": "2026-06-18T13:49:15+00:00"
         },
         {
             "name": "nette/php-generator",
@@ -7208,20 +7211,20 @@
         },
         {
             "name": "ramsey/uuid",
-            "version": "4.9.2",
+            "version": "4.9.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ramsey/uuid.git",
-                "reference": "8429c78ca35a09f27565311b98101e2826affde0"
+                "reference": "1df15849d00943a67d677dc9cfd80795f038c9f8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ramsey/uuid/zipball/8429c78ca35a09f27565311b98101e2826affde0",
-                "reference": "8429c78ca35a09f27565311b98101e2826affde0",
+                "url": "https://api.github.com/repos/ramsey/uuid/zipball/1df15849d00943a67d677dc9cfd80795f038c9f8",
+                "reference": "1df15849d00943a67d677dc9cfd80795f038c9f8",
                 "shasum": ""
             },
             "require": {
-                "brick/math": "^0.8.16 || ^0.9 || ^0.10 || ^0.11 || ^0.12 || ^0.13 || ^0.14",
+                "brick/math": ">=0.8.16 <=0.18",
                 "php": "^8.0",
                 "ramsey/collection": "^1.2 || ^2.0"
             },
@@ -7280,9 +7283,9 @@
             ],
             "support": {
                 "issues": "https://github.com/ramsey/uuid/issues",
-                "source": "https://github.com/ramsey/uuid/tree/4.9.2"
+                "source": "https://github.com/ramsey/uuid/tree/4.9.3"
             },
-            "time": "2025-12-14T04:43:48+00:00"
+            "time": "2026-06-18T03:57:49+00:00"
         },
         {
             "name": "ryangjchandler/blade-capture-directive",
@@ -7513,16 +7516,16 @@
         },
         {
             "name": "spatie/image",
-            "version": "3.9.4",
+            "version": "3.9.5",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/image.git",
-                "reference": "6a322b5e9268e3903d4fb6e1ff08b7dcc3aa9429"
+                "reference": "7ac0b9dab1100ddfc0c98afd12720f5b9fc0cd65"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/image/zipball/6a322b5e9268e3903d4fb6e1ff08b7dcc3aa9429",
-                "reference": "6a322b5e9268e3903d4fb6e1ff08b7dcc3aa9429",
+                "url": "https://api.github.com/repos/spatie/image/zipball/7ac0b9dab1100ddfc0c98afd12720f5b9fc0cd65",
+                "reference": "7ac0b9dab1100ddfc0c98afd12720f5b9fc0cd65",
                 "shasum": ""
             },
             "require": {
@@ -7535,8 +7538,10 @@
                 "symfony/process": "^6.4|^7.0|^8.0"
             },
             "require-dev": {
+                "ext-ffi": "*",
                 "ext-gd": "*",
                 "ext-imagick": "*",
+                "jcupitt/vips": "^2.4",
                 "laravel/sail": "^1.34",
                 "pestphp/pest": "^3.0|^4.0",
                 "phpstan/phpstan": "^1.10.50",
@@ -7570,7 +7575,7 @@
                 "spatie"
             ],
             "support": {
-                "source": "https://github.com/spatie/image/tree/3.9.4"
+                "source": "https://github.com/spatie/image/tree/3.9.5"
             },
             "funding": [
                 {
@@ -7582,7 +7587,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-03-13T14:23:45+00:00"
+            "time": "2026-06-19T07:40:17+00:00"
         },
         {
             "name": "spatie/image-optimizer",
@@ -7962,16 +7967,16 @@
         },
         {
             "name": "spatie/laravel-passkeys",
-            "version": "1.8.0",
+            "version": "1.8.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/spatie/laravel-passkeys.git",
-                "reference": "3677735abd5f772672e4dfc907967165164c15cb"
+                "reference": "a9208c4c8f501c98392fd4db4ca719e30c9c7861"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/spatie/laravel-passkeys/zipball/3677735abd5f772672e4dfc907967165164c15cb",
-                "reference": "3677735abd5f772672e4dfc907967165164c15cb",
+                "url": "https://api.github.com/repos/spatie/laravel-passkeys/zipball/a9208c4c8f501c98392fd4db4ca719e30c9c7861",
+                "reference": "a9208c4c8f501c98392fd4db4ca719e30c9c7861",
                 "shasum": ""
             },
             "require": {
@@ -8028,7 +8033,7 @@
             ],
             "support": {
                 "issues": "https://github.com/spatie/laravel-passkeys/issues",
-                "source": "https://github.com/spatie/laravel-passkeys/tree/1.8.0"
+                "source": "https://github.com/spatie/laravel-passkeys/tree/1.8.1"
             },
             "funding": [
                 {
@@ -8036,7 +8041,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-05-26T13:48:34+00:00"
+            "time": "2026-06-05T16:43:48+00:00"
         },
         {
             "name": "spatie/laravel-permission",
@@ -10056,16 +10061,16 @@
         },
         {
             "name": "symfony/polyfill-mbstring",
-            "version": "v1.38.1",
+            "version": "v1.38.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-mbstring.git",
-                "reference": "14c5439eec4ccff081ac14eca2dc57feb2a66d92"
+                "reference": "d3d318bad5e7a1bfbd026009c8bfb8d8f99ae6b6"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/14c5439eec4ccff081ac14eca2dc57feb2a66d92",
-                "reference": "14c5439eec4ccff081ac14eca2dc57feb2a66d92",
+                "url": "https://api.github.com/repos/symfony/polyfill-mbstring/zipball/d3d318bad5e7a1bfbd026009c8bfb8d8f99ae6b6",
+                "reference": "d3d318bad5e7a1bfbd026009c8bfb8d8f99ae6b6",
                 "shasum": ""
             },
             "require": {
@@ -10117,7 +10122,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.38.1"
+                "source": "https://github.com/symfony/polyfill-mbstring/tree/v1.38.2"
             },
             "funding": [
                 {
@@ -10137,7 +10142,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-05-26T12:51:13+00:00"
+            "time": "2026-05-27T06:59:30+00:00"
         },
         {
             "name": "symfony/polyfill-php80",
@@ -10225,16 +10230,16 @@
         },
         {
             "name": "symfony/polyfill-php83",
-            "version": "v1.38.1",
+            "version": "v1.38.2",
             "source": {
                 "type": "git",
                 "url": "https://github.com/symfony/polyfill-php83.git",
-                "reference": "8339098cae28673c15cce00d80734af0453054e2"
+                "reference": "796a26abb75ce49f3a84433cd81bf1009d73d5f8"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/symfony/polyfill-php83/zipball/8339098cae28673c15cce00d80734af0453054e2",
-                "reference": "8339098cae28673c15cce00d80734af0453054e2",
+                "url": "https://api.github.com/repos/symfony/polyfill-php83/zipball/796a26abb75ce49f3a84433cd81bf1009d73d5f8",
+                "reference": "796a26abb75ce49f3a84433cd81bf1009d73d5f8",
                 "shasum": ""
             },
             "require": {
@@ -10281,7 +10286,7 @@
                 "shim"
             ],
             "support": {
-                "source": "https://github.com/symfony/polyfill-php83/tree/v1.38.1"
+                "source": "https://github.com/symfony/polyfill-php83/tree/v1.38.2"
             },
             "funding": [
                 {
@@ -10301,7 +10306,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-05-26T12:51:13+00:00"
+            "time": "2026-05-27T06:51:48+00:00"
         },
         {
             "name": "symfony/polyfill-php84",
@@ -11767,16 +11772,16 @@
         },
         {
             "name": "ueberdosis/tiptap-php",
-            "version": "2.1.0",
+            "version": "2.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/ueberdosis/tiptap-php.git",
-                "reference": "6ea321fa665080e1a72ac5f52dfab19f6a292e2d"
+                "reference": "74bfb7be1c8c6102b240f3879b7f984a6ab87b97"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/ueberdosis/tiptap-php/zipball/6ea321fa665080e1a72ac5f52dfab19f6a292e2d",
-                "reference": "6ea321fa665080e1a72ac5f52dfab19f6a292e2d",
+                "url": "https://api.github.com/repos/ueberdosis/tiptap-php/zipball/74bfb7be1c8c6102b240f3879b7f984a6ab87b97",
+                "reference": "74bfb7be1c8c6102b240f3879b7f984a6ab87b97",
                 "shasum": ""
             },
             "require": {
@@ -11816,7 +11821,7 @@
             ],
             "support": {
                 "issues": "https://github.com/ueberdosis/tiptap-php/issues",
-                "source": "https://github.com/ueberdosis/tiptap-php/tree/2.1.0"
+                "source": "https://github.com/ueberdosis/tiptap-php/tree/2.1.1"
             },
             "funding": [
                 {
@@ -11832,7 +11837,7 @@
                     "type": "open_collective"
                 }
             ],
-            "time": "2026-01-10T16:40:02+00:00"
+            "time": "2026-06-12T18:19:46+00:00"
         },
         {
             "name": "vlucas/phpdotenv",
@@ -12151,16 +12156,16 @@
         },
         {
             "name": "webmozart/assert",
-            "version": "2.4.0",
+            "version": "2.4.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/webmozarts/assert.git",
-                "reference": "9007ea6f45ecf352a9422b36644e4bfc039b9155"
+                "reference": "2ccb7c2e821038c03a3e6e1700c570c158c55f70"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/webmozarts/assert/zipball/9007ea6f45ecf352a9422b36644e4bfc039b9155",
-                "reference": "9007ea6f45ecf352a9422b36644e4bfc039b9155",
+                "url": "https://api.github.com/repos/webmozarts/assert/zipball/2ccb7c2e821038c03a3e6e1700c570c158c55f70",
+                "reference": "2ccb7c2e821038c03a3e6e1700c570c158c55f70",
                 "shasum": ""
             },
             "require": {
@@ -12211,9 +12216,9 @@
             ],
             "support": {
                 "issues": "https://github.com/webmozarts/assert/issues",
-                "source": "https://github.com/webmozarts/assert/tree/2.4.0"
+                "source": "https://github.com/webmozarts/assert/tree/2.4.1"
             },
-            "time": "2026-05-20T13:07:01+00:00"
+            "time": "2026-06-15T15:31:57+00:00"
         }
     ],
     "packages-dev": [
@@ -12312,28 +12317,29 @@
         },
         {
             "name": "composer/pcre",
-            "version": "3.3.2",
+            "version": "3.4.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/composer/pcre.git",
-                "reference": "b2bed4734f0cc156ee1fe9c0da2550420d99a21e"
+                "reference": "d5a341b3fb61f3001970940afb1d332968a183ed"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/composer/pcre/zipball/b2bed4734f0cc156ee1fe9c0da2550420d99a21e",
-                "reference": "b2bed4734f0cc156ee1fe9c0da2550420d99a21e",
+                "url": "https://api.github.com/repos/composer/pcre/zipball/d5a341b3fb61f3001970940afb1d332968a183ed",
+                "reference": "d5a341b3fb61f3001970940afb1d332968a183ed",
                 "shasum": ""
             },
             "require": {
                 "php": "^7.4 || ^8.0"
             },
             "conflict": {
-                "phpstan/phpstan": "<1.11.10"
+                "phpstan/phpstan": "<2.2.2"
             },
             "require-dev": {
-                "phpstan/phpstan": "^1.12 || ^2",
-                "phpstan/phpstan-strict-rules": "^1 || ^2",
-                "phpunit/phpunit": "^8 || ^9"
+                "phpstan/phpstan": "^2",
+                "phpstan/phpstan-deprecation-rules": "^2",
+                "phpstan/phpstan-strict-rules": "^2",
+                "phpunit/phpunit": "^9"
             },
             "type": "library",
             "extra": {
@@ -12371,7 +12377,7 @@
             ],
             "support": {
                 "issues": "https://github.com/composer/pcre/issues",
-                "source": "https://github.com/composer/pcre/tree/3.3.2"
+                "source": "https://github.com/composer/pcre/tree/3.4.0"
             },
             "funding": [
                 {
@@ -12381,13 +12387,9 @@
                 {
                     "url": "https://github.com/composer",
                     "type": "github"
-                },
-                {
-                    "url": "https://tidelift.com/funding/github/packagist/composer/composer",
-                    "type": "tidelift"
                 }
             ],
-            "time": "2024-11-12T16:29:46+00:00"
+            "time": "2026-06-07T11:47:49+00:00"
         },
         {
             "name": "composer/xdebug-handler",
@@ -12457,16 +12459,16 @@
         },
         {
             "name": "dedoc/scramble",
-            "version": "v0.13.26",
+            "version": "v0.13.28",
             "source": {
                 "type": "git",
                 "url": "https://github.com/dedoc/scramble.git",
-                "reference": "5ca42b5e23b9d5c120607138f790b51e22d8b4a1"
+                "reference": "e50927c732a341bb743671066892eec6bd2e958b"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/dedoc/scramble/zipball/5ca42b5e23b9d5c120607138f790b51e22d8b4a1",
-                "reference": "5ca42b5e23b9d5c120607138f790b51e22d8b4a1",
+                "url": "https://api.github.com/repos/dedoc/scramble/zipball/e50927c732a341bb743671066892eec6bd2e958b",
+                "reference": "e50927c732a341bb743671066892eec6bd2e958b",
                 "shasum": ""
             },
             "require": {
@@ -12525,7 +12527,7 @@
             ],
             "support": {
                 "issues": "https://github.com/dedoc/scramble/issues",
-                "source": "https://github.com/dedoc/scramble/tree/v0.13.26"
+                "source": "https://github.com/dedoc/scramble/tree/v0.13.28"
             },
             "funding": [
                 {
@@ -12533,7 +12535,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-06-02T14:43:17+00:00"
+            "time": "2026-06-14T18:21:12+00:00"
         },
         {
             "name": "fakerphp/faker",
@@ -12884,16 +12886,16 @@
         },
         {
             "name": "knuckleswtf/scribe",
-            "version": "5.10.0",
+            "version": "5.11.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/knuckleswtf/scribe.git",
-                "reference": "d4da86e57e49dac4694b200354cfa962bfae3168"
+                "reference": "71c8c4acac495401ab8af1a68a46f09d45aff426"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/knuckleswtf/scribe/zipball/d4da86e57e49dac4694b200354cfa962bfae3168",
-                "reference": "d4da86e57e49dac4694b200354cfa962bfae3168",
+                "url": "https://api.github.com/repos/knuckleswtf/scribe/zipball/71c8c4acac495401ab8af1a68a46f09d45aff426",
+                "reference": "71c8c4acac495401ab8af1a68a46f09d45aff426",
                 "shasum": ""
             },
             "require": {
@@ -12964,7 +12966,7 @@
             ],
             "support": {
                 "issues": "https://github.com/knuckleswtf/scribe/issues",
-                "source": "https://github.com/knuckleswtf/scribe/tree/5.10.0"
+                "source": "https://github.com/knuckleswtf/scribe/tree/5.11.0"
             },
             "funding": [
                 {
@@ -12972,7 +12974,7 @@
                     "type": "patreon"
                 }
             ],
-            "time": "2026-05-09T21:49:49+00:00"
+            "time": "2026-06-08T15:39:10+00:00"
         },
         {
             "name": "larastan/larastan",
@@ -13208,20 +13210,20 @@
         },
         {
             "name": "laravel/pao",
-            "version": "v1.0.6",
+            "version": "v1.1.1",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/pao.git",
-                "reference": "02f62a64c2b60af44a418ee490fee193590d8269"
+                "reference": "8f6c8094d701a03041c85ba583ca233398c792ec"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/pao/zipball/02f62a64c2b60af44a418ee490fee193590d8269",
-                "reference": "02f62a64c2b60af44a418ee490fee193590d8269",
+                "url": "https://api.github.com/repos/laravel/pao/zipball/8f6c8094d701a03041c85ba583ca233398c792ec",
+                "reference": "8f6c8094d701a03041c85ba583ca233398c792ec",
                 "shasum": ""
             },
             "require": {
-                "laravel/agent-detector": "^2.0.0",
+                "laravel/agent-detector": "^2.0.2",
                 "php": "^8.3"
             },
             "conflict": {
@@ -13234,12 +13236,12 @@
                 "brianium/paratest": "^7.20.0",
                 "laravel/pint": "^1.29.1",
                 "orchestra/testbench": "^10.11.0 || ^11.1.0",
-                "pestphp/pest": "^4.6.3 || ^5.0.0",
+                "pestphp/pest": "^4.7.2 || ^5.0.0",
                 "pestphp/pest-plugin-type-coverage": "^4.0.4 || ^5.0.0",
-                "phpstan/phpstan": "^2.1.51",
-                "rector/rector": "^2.4.2",
+                "phpstan/phpstan": "^2.2.2",
+                "rector/rector": "^2.4.5",
                 "symfony/process": "^7.4.8 || ^8.1.0",
-                "symfony/var-dumper": "^7.4.8 || ^8.0.8"
+                "symfony/var-dumper": "^7.4.8 || ^8.1.0"
             },
             "type": "library",
             "extra": {
@@ -13282,26 +13284,27 @@
                 "pest",
                 "php",
                 "phpunit",
+                "rector",
                 "testing"
             ],
             "support": {
                 "issues": "https://github.com/laravel/pao/issues",
                 "source": "https://github.com/laravel/pao"
             },
-            "time": "2026-04-27T22:37:26+00:00"
+            "time": "2026-06-12T08:00:22+00:00"
         },
         {
             "name": "laravel/pint",
-            "version": "v1.29.1",
+            "version": "v1.29.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/laravel/pint.git",
-                "reference": "0770e9b7fafd50d4586881d456d6eb41c9247a80"
+                "reference": "da1d1111a6aa2e082d2a388b194afe1ba0a05d14"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/laravel/pint/zipball/0770e9b7fafd50d4586881d456d6eb41c9247a80",
-                "reference": "0770e9b7fafd50d4586881d456d6eb41c9247a80",
+                "url": "https://api.github.com/repos/laravel/pint/zipball/da1d1111a6aa2e082d2a388b194afe1ba0a05d14",
+                "reference": "da1d1111a6aa2e082d2a388b194afe1ba0a05d14",
                 "shasum": ""
             },
             "require": {
@@ -13312,14 +13315,14 @@
                 "php": "^8.2.0"
             },
             "require-dev": {
-                "friendsofphp/php-cs-fixer": "^3.95.1",
-                "illuminate/view": "^12.56.0",
-                "larastan/larastan": "^3.9.6",
+                "friendsofphp/php-cs-fixer": "^3.95.8",
+                "illuminate/view": "^12.62.0",
+                "larastan/larastan": "^3.10.0",
                 "laravel-zero/framework": "^12.1.0",
+                "laravel/agent-detector": "^2.0.2",
                 "mockery/mockery": "^1.6.12",
                 "nunomaduro/termwind": "^2.4.0",
-                "pestphp/pest": "^3.8.6",
-                "shipfastlabs/agent-detector": "^1.1.3"
+                "pestphp/pest": "^3.8.6"
             },
             "bin": [
                 "builds/pint"
@@ -13356,7 +13359,7 @@
                 "issues": "https://github.com/laravel/pint/issues",
                 "source": "https://github.com/laravel/pint"
             },
-            "time": "2026-04-20T15:26:14+00:00"
+            "time": "2026-06-16T15:34:04+00:00"
         },
         {
             "name": "mockery/mockery",
@@ -14112,16 +14115,16 @@
         },
         {
             "name": "pestphp/pest",
-            "version": "v4.7.2",
+            "version": "v4.7.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/pestphp/pest.git",
-                "reference": "40b88b62ef8a7c6fcae5fc28f1fa747f601c131b"
+                "reference": "87882a8561bf3ddf230b9a6b764f367f687d5b2f"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/pestphp/pest/zipball/40b88b62ef8a7c6fcae5fc28f1fa747f601c131b",
-                "reference": "40b88b62ef8a7c6fcae5fc28f1fa747f601c131b",
+                "url": "https://api.github.com/repos/pestphp/pest/zipball/87882a8561bf3ddf230b9a6b764f367f687d5b2f",
+                "reference": "87882a8561bf3ddf230b9a6b764f367f687d5b2f",
                 "shasum": ""
             },
             "require": {
@@ -14134,12 +14137,12 @@
                 "pestphp/pest-plugin-mutate": "^4.0.1",
                 "pestphp/pest-plugin-profanity": "^4.2.1",
                 "php": "^8.3.0",
-                "phpunit/phpunit": "^12.5.28",
+                "phpunit/phpunit": "^12.5.29",
                 "symfony/process": "^7.4.13|^8.1.0"
             },
             "conflict": {
                 "filp/whoops": "<2.18.3",
-                "phpunit/phpunit": ">12.5.28",
+                "phpunit/phpunit": ">12.5.29",
                 "sebastian/exporter": "<7.0.0",
                 "webmozart/assert": "<1.11.0"
             },
@@ -14215,7 +14218,7 @@
             ],
             "support": {
                 "issues": "https://github.com/pestphp/pest/issues",
-                "source": "https://github.com/pestphp/pest/tree/v4.7.2"
+                "source": "https://github.com/pestphp/pest/tree/v4.7.3"
             },
             "funding": [
                 {
@@ -14227,7 +14230,7 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-06-01T06:08:59+00:00"
+            "time": "2026-06-12T05:57:27+00:00"
         },
         {
             "name": "pestphp/pest-plugin",
@@ -14695,11 +14698,11 @@
         },
         {
             "name": "phpstan/phpstan",
-            "version": "2.2.1",
+            "version": "2.2.2",
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/dea9c8f2d25cc849391042b71e429c1a4bf82660",
-                "reference": "dea9c8f2d25cc849391042b71e429c1a4bf82660",
+                "url": "https://api.github.com/repos/phpstan/phpstan/zipball/e5cc34d491a90e79c216d824f60fe21fd4d93bd6",
+                "reference": "e5cc34d491a90e79c216d824f60fe21fd4d93bd6",
                 "shasum": ""
             },
             "require": {
@@ -14755,20 +14758,20 @@
                     "type": "github"
                 }
             ],
-            "time": "2026-05-28T14:44:12+00:00"
+            "time": "2026-06-05T09:00:01+00:00"
         },
         {
             "name": "phpunit/php-code-coverage",
-            "version": "12.5.6",
+            "version": "12.5.7",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/php-code-coverage.git",
-                "reference": "876099a072646c7745f673d7aeab5382c4439691"
+                "reference": "186dab580576598076de6818596d12b61801880e"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/876099a072646c7745f673d7aeab5382c4439691",
-                "reference": "876099a072646c7745f673d7aeab5382c4439691",
+                "url": "https://api.github.com/repos/sebastianbergmann/php-code-coverage/zipball/186dab580576598076de6818596d12b61801880e",
+                "reference": "186dab580576598076de6818596d12b61801880e",
                 "shasum": ""
             },
             "require": {
@@ -14779,13 +14782,13 @@
                 "php": ">=8.3",
                 "phpunit/php-text-template": "^5.0",
                 "sebastian/complexity": "^5.0",
-                "sebastian/environment": "^8.0.3",
-                "sebastian/lines-of-code": "^4.0",
+                "sebastian/environment": "^8.1.2",
+                "sebastian/lines-of-code": "^4.0.1",
                 "sebastian/version": "^6.0",
                 "theseer/tokenizer": "^2.0.1"
             },
             "require-dev": {
-                "phpunit/phpunit": "^12.5.1"
+                "phpunit/phpunit": "^12.5.28"
             },
             "suggest": {
                 "ext-pcov": "PHP extension that provides line coverage",
@@ -14823,7 +14826,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/php-code-coverage/issues",
                 "security": "https://github.com/sebastianbergmann/php-code-coverage/security/policy",
-                "source": "https://github.com/sebastianbergmann/php-code-coverage/tree/12.5.6"
+                "source": "https://github.com/sebastianbergmann/php-code-coverage/tree/12.5.7"
             },
             "funding": [
                 {
@@ -14843,7 +14846,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2026-04-15T08:23:17+00:00"
+            "time": "2026-06-01T13:24:19+00:00"
         },
         {
             "name": "phpunit/php-file-iterator",
@@ -15104,16 +15107,16 @@
         },
         {
             "name": "phpunit/phpunit",
-            "version": "12.5.28",
+            "version": "12.5.29",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/phpunit.git",
-                "reference": "5895d05f5bf421ed230fbd76e1277e4b8955def4"
+                "reference": "9aa66a47db3ea70f1a468e66dd969f67e594945a"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/5895d05f5bf421ed230fbd76e1277e4b8955def4",
-                "reference": "5895d05f5bf421ed230fbd76e1277e4b8955def4",
+                "url": "https://api.github.com/repos/sebastianbergmann/phpunit/zipball/9aa66a47db3ea70f1a468e66dd969f67e594945a",
+                "reference": "9aa66a47db3ea70f1a468e66dd969f67e594945a",
                 "shasum": ""
             },
             "require": {
@@ -15127,7 +15130,7 @@
                 "phar-io/manifest": "^2.0.4",
                 "phar-io/version": "^3.2.1",
                 "php": ">=8.3",
-                "phpunit/php-code-coverage": "^12.5.6",
+                "phpunit/php-code-coverage": "^12.5.7",
                 "phpunit/php-file-iterator": "^6.0.1",
                 "phpunit/php-invoker": "^6.0.0",
                 "phpunit/php-text-template": "^5.0.0",
@@ -15137,7 +15140,7 @@
                 "sebastian/diff": "^7.0.0",
                 "sebastian/environment": "^8.1.2",
                 "sebastian/exporter": "^7.0.3",
-                "sebastian/global-state": "^8.0.2",
+                "sebastian/global-state": "^8.0.3",
                 "sebastian/object-enumerator": "^7.0.0",
                 "sebastian/recursion-context": "^7.0.1",
                 "sebastian/type": "^6.0.4",
@@ -15182,7 +15185,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/phpunit/issues",
                 "security": "https://github.com/sebastianbergmann/phpunit/security/policy",
-                "source": "https://github.com/sebastianbergmann/phpunit/tree/12.5.28"
+                "source": "https://github.com/sebastianbergmann/phpunit/tree/12.5.29"
             },
             "funding": [
                 {
@@ -15190,7 +15193,7 @@
                     "type": "other"
                 }
             ],
-            "time": "2026-05-27T14:01:10+00:00"
+            "time": "2026-06-04T06:14:42+00:00"
         },
         {
             "name": "sebastian/cli-parser",
@@ -15646,26 +15649,26 @@
         },
         {
             "name": "sebastian/global-state",
-            "version": "8.0.2",
+            "version": "8.0.3",
             "source": {
                 "type": "git",
                 "url": "https://github.com/sebastianbergmann/global-state.git",
-                "reference": "ef1377171613d09edd25b7816f05be8313f9115d"
+                "reference": "b164d3274d6537ab462591c5755f76a8f5b1aae9"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/sebastianbergmann/global-state/zipball/ef1377171613d09edd25b7816f05be8313f9115d",
-                "reference": "ef1377171613d09edd25b7816f05be8313f9115d",
+                "url": "https://api.github.com/repos/sebastianbergmann/global-state/zipball/b164d3274d6537ab462591c5755f76a8f5b1aae9",
+                "reference": "b164d3274d6537ab462591c5755f76a8f5b1aae9",
                 "shasum": ""
             },
             "require": {
                 "php": ">=8.3",
                 "sebastian/object-reflector": "^5.0",
-                "sebastian/recursion-context": "^7.0"
+                "sebastian/recursion-context": "^7.0.1"
             },
             "require-dev": {
                 "ext-dom": "*",
-                "phpunit/phpunit": "^12.0"
+                "phpunit/phpunit": "^12.5.28"
             },
             "type": "library",
             "extra": {
@@ -15696,7 +15699,7 @@
             "support": {
                 "issues": "https://github.com/sebastianbergmann/global-state/issues",
                 "security": "https://github.com/sebastianbergmann/global-state/security/policy",
-                "source": "https://github.com/sebastianbergmann/global-state/tree/8.0.2"
+                "source": "https://github.com/sebastianbergmann/global-state/tree/8.0.3"
             },
             "funding": [
                 {
@@ -15716,7 +15719,7 @@
                     "type": "tidelift"
                 }
             ],
-            "time": "2025-08-29T11:29:25+00:00"
+            "time": "2026-06-01T15:10:33+00:00"
         },
         {
             "name": "sebastian/lines-of-code",
@@ -16482,12 +16485,12 @@
     "minimum-stability": "stable",
     "stability-flags": {
         "filamentboot/filamentboot": 20,
-        "laravelstack/filament-admin-cos": 20,
-        "laravelstack/filament-admin-markdown-editor": 20,
-        "laravelstack/filament-admin-oss": 20,
-        "laravelstack/filament-admin-rich-editor": 20,
-        "laravelstack/filament-admin-site": 20,
-        "laravelstack/filament-admin-wang-editor": 20
+        "filamentboot/filamentboot-cos": 20,
+        "filamentboot/filamentboot-markdown-editor": 20,
+        "filamentboot/filamentboot-oss": 20,
+        "filamentboot/filamentboot-rich-editor": 20,
+        "filamentboot/filamentboot-wang-editor": 20,
+        "laravelstack/filament-admin-site": 20
     },
     "prefer-stable": true,
     "prefer-lowest": false,

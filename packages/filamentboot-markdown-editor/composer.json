@@ -1,0 +1,89 @@
+{
+    "$schema": "https://getcomposer.org/schema.json",
+    "name": "filamentboot/filamentboot-markdown-editor",
+    "description": "Markdown 编辑器插件，为 filamentboot/filamentboot 提供基于 EasyMDE 的增强 Markdown 编辑器，含图片上传磁盘联动、分屏预览、代码高亮与 XSS 安全渲染。",
+    "type": "library",
+    "license": "MIT",
+    "keywords": ["filament", "laravel", "markdown", "easymde", "editor", "filament-plugin", "commonmark", "xss-filter"],
+    "homepage": "https://github.com/filamentboot/filamentboot-markdown-editor",
+    "authors": [
+        {
+            "name": "johncaptain",
+            "email": "JasonTodd0521@gmail.com",
+            "role": "developer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/filamentboot/filamentboot-markdown-editor/issues",
+        "source": "https://github.com/filamentboot/filamentboot-markdown-editor",
+        "docs": "https://github.com/filamentboot/workspace/wiki/markdown-editor",
+        "wiki": "https://github.com/filamentboot/workspace/wiki"
+    },
+    "require": {
+        "php": "^8.3",
+        "filament/filament": "^5.0",
+        "filamentboot/filamentboot": "^0.5",
+        "league/commonmark": "^2.8",
+        "mews/purifier": "^3.4"
+    },
+    "require-dev": {
+        "larastan/larastan": "^3.0",
+        "laravel/pint": "^1.27",
+        "orchestra/testbench": "^11.0",
+        "phpunit/phpunit": "^12.5.12"
+    },
+    "autoload": {
+        "psr-4": {
+            "Filamentboot\\FilamentbootMarkdownEditor\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Filamentboot\\FilamentbootMarkdownEditor\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Filamentboot\\FilamentbootMarkdownEditor\\MarkdownEditorServiceProvider"
+            ]
+        },
+        "filamentboot": {
+            "slug": "filamentboot-markdown-editor",
+            "name": "Markdown 编辑器",
+            "type": "package",
+            "source": "official_listed",
+            "plugin_class": "Filamentboot\\FilamentbootMarkdownEditor\\MarkdownEditorPlugin",
+            "service_provider": "Filamentboot\\FilamentbootMarkdownEditor\\MarkdownEditorServiceProvider",
+            "description": "基于 Filament 5 内置 EasyMDE 的增强 Markdown 编辑器，支持实时分屏预览、代码高亮、图片上传磁盘联动（Cloud 自动路由），展示时经 CommonMark + XSS 过滤安全渲染。",
+            "requires": ["filamentboot/filamentboot"],
+            "compatibility": {
+                "laravel/framework": "^13.0",
+                "filament/filament": "^5.0"
+            },
+            "post_install": {
+                "publish_tags": ["filamentboot-markdown-editor-config"],
+                "run_migrations": false,
+                "seeders": []
+            }
+        },
+        "branch-alias": {
+            "dev-main": "0.5.x-dev"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit -c phpunit.xml.dist",
+        "test-coverage": "vendor/bin/phpunit -c phpunit.xml.dist --coverage-clover=coverage.xml",
+        "phpstan": "vendor/bin/phpstan analyse --memory-limit=2G",
+        "pint": "vendor/bin/pint",
+        "pint:test": "vendor/bin/pint --test"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        },
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

@@ -10,7 +10,7 @@ use function Pest\Laravel\post;
 /**
  * WangEditor 图片上传 HTTP 集成测试
  *
- * 验证 /filament-admin-wang-editor/upload 路由（D-09-09 / T-09-07）：
+ * 验证 /filamentboot-wang-editor/upload 路由（D-09-09 / T-09-07）：
  * 1. 未认证请求返回非 200（401 或重定向）
  * 2. 合法 JPG 图片上传成功，返回 errno=0 + url
  * 3. 危险扩展名（php）被拒绝，返回 errno=1
@@ -23,7 +23,7 @@ beforeEach(function () {
 it('未认证请求上传图片应被拒绝（不返回 errno=0 成功）', function () {
     $file = UploadedFile::fake()->image('avatar.jpg');
 
-    $response = post('/filament-admin-wang-editor/upload', [
+    $response = post('/filamentboot-wang-editor/upload', [
         'file' => $file,
         'disk' => 'public',
     ]);
@@ -44,7 +44,7 @@ it('合法 JPG 图片上传返回 errno=0 和 url', function () {
 
     $file = UploadedFile::fake()->image('photo.jpg', 100, 100);
 
-    $response = post('/filament-admin-wang-editor/upload', [
+    $response = post('/filamentboot-wang-editor/upload', [
         'file' => $file,
         'disk' => 'public',
     ]);
@@ -63,7 +63,7 @@ it('危险扩展名 .php 文件被拒绝，返回 errno=1', function () {
     // 创建一个伪装成 PHP 脚本的文件
     $file = UploadedFile::fake()->create('shell.php', 10, 'text/plain');
 
-    $response = post('/filament-admin-wang-editor/upload', [
+    $response = post('/filamentboot-wang-editor/upload', [
         'file' => $file,
         'disk' => 'public',
     ]);
@@ -79,7 +79,7 @@ it('无 file 字段时返回 errno=1', function () {
     $user = AdminUser::factory()->create();
     actingAs($user, 'admin');
 
-    $response = post('/filament-admin-wang-editor/upload', [
+    $response = post('/filamentboot-wang-editor/upload', [
         'disk' => 'public',
     ]);
 

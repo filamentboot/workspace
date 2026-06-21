@@ -1,0 +1,86 @@
+{
+    "$schema": "https://getcomposer.org/schema.json",
+    "name": "filamentboot/filamentboot-wang-editor",
+    "description": "wangEditor 富文本编辑器插件，为 filamentboot/filamentboot 提供轻量级国内生态友好的 wangEditor，可一键替换默认 Tiptap，图片上传经 UploadValidator 三重安全校验后落到当前生效磁盘。",
+    "type": "library",
+    "license": "MIT",
+    "keywords": ["filament", "laravel", "wang-editor", "wangeditor", "rich-editor", "filament-plugin", "wysiwyg"],
+    "homepage": "https://github.com/filamentboot/filamentboot-wang-editor",
+    "authors": [
+        {
+            "name": "johncaptain",
+            "email": "JasonTodd0521@gmail.com",
+            "role": "developer"
+        }
+    ],
+    "support": {
+        "issues": "https://github.com/filamentboot/filamentboot-wang-editor/issues",
+        "source": "https://github.com/filamentboot/filamentboot-wang-editor",
+        "docs": "https://github.com/filamentboot/workspace/wiki/wang-editor",
+        "wiki": "https://github.com/filamentboot/workspace/wiki"
+    },
+    "require": {
+        "php": "^8.3",
+        "filament/filament": "^5.0",
+        "filamentboot/filamentboot": "*"
+    },
+    "require-dev": {
+        "mockery/mockery": "^1.6",
+        "orchestra/testbench": "^11.0",
+        "phpunit/phpunit": "^12.5.12"
+    },
+    "autoload": {
+        "psr-4": {
+            "Filamentboot\\FilamentbootWangEditor\\": "src/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Filamentboot\\FilamentbootWangEditor\\Tests\\": "tests/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "Filamentboot\\FilamentbootWangEditor\\WangEditorServiceProvider"
+            ]
+        },
+        "filamentboot": {
+            "slug": "filamentboot-wang-editor",
+            "name": "wangEditor 富文本编辑器",
+            "type": "package",
+            "source": "official_listed",
+            "plugin_class": "Filamentboot\\FilamentbootWangEditor\\WangEditorPlugin",
+            "service_provider": "Filamentboot\\FilamentbootWangEditor\\WangEditorServiceProvider",
+            "description": "国内生态友好的 wangEditor 富文本编辑器，启用后可一键替换默认 Tiptap，图片上传经 UploadValidator 三重安全校验后落到当前生效磁盘（D-09-03/D-09-04）。",
+            "requires": ["filamentboot/filamentboot"],
+            "compatibility": {
+                "laravel/framework": "^13.0",
+                "filament/filament": "^5.0"
+            },
+            "post_install": {
+                "publish_tags": ["filamentboot-wang-editor-config"],
+                "run_migrations": false,
+                "seeders": []
+            }
+        },
+        "branch-alias": {
+            "dev-main": "0.5.x-dev"
+        }
+    },
+    "scripts": {
+        "test": "vendor/bin/phpunit -c phpunit.xml.dist",
+        "test-coverage": "vendor/bin/phpunit -c phpunit.xml.dist --coverage-clover=coverage.xml",
+        "phpstan": "vendor/bin/phpstan analyse --memory-limit=2G",
+        "pint": "vendor/bin/pint",
+        "pint:test": "vendor/bin/pint --test"
+    },
+    "config": {
+        "allow-plugins": {
+            "pestphp/pest-plugin": true
+        },
+        "sort-packages": true
+    },
+    "minimum-stability": "stable",
+    "prefer-stable": true
+}

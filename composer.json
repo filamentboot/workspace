@@ -27,11 +27,11 @@
         "bezhansalleh/filament-shield": "^4.0",
         "filamentboot/filamentboot": "@dev",
         "filamentboot/filamentboot-cos": "@dev",
-        "laravelstack/filament-admin-markdown-editor": "@dev",
+        "filamentboot/filamentboot-markdown-editor": "@dev",
         "filamentboot/filamentboot-oss": "@dev",
-        "laravelstack/filament-admin-rich-editor": "@dev",
+        "filamentboot/filamentboot-rich-editor": "@dev",
         "laravelstack/filament-admin-site": "@dev",
-        "laravelstack/filament-admin-wang-editor": "@dev",
+        "filamentboot/filamentboot-wang-editor": "@dev",
         "mews/purifier": "^3.4",
         "filament/filament": "^5.0",
         "filament/spatie-laravel-media-library-plugin": "^5.6",
@@ -70,21 +70,21 @@
         },
         {
             "type": "path",
-            "url": "packages/filament-admin-rich-editor",
+            "url": "packages/filamentboot-rich-editor",
             "options": {
                 "symlink": true
             }
         },
         {
             "type": "path",
-            "url": "packages/filament-admin-markdown-editor",
+            "url": "packages/filamentboot-markdown-editor",
             "options": {
                 "symlink": true
             }
         },
         {
             "type": "path",
-            "url": "packages/filament-admin-wang-editor",
+            "url": "packages/filamentboot-wang-editor",
             "options": {
                 "symlink": true
             }
@@ -118,13 +118,13 @@
             "Database\\Factories\\": "database/factories/",
             "Database\\Seeders\\": "database/seeders/",
             "Filamentboot\\FilamentbootCos\\": "packages/filamentboot-cos/src/",
-            "LaravelStack\\FilamentAdminMarkdownEditor\\": "packages/filament-admin-markdown-editor/src/",
+            "Filamentboot\\FilamentbootMarkdownEditor\\": "packages/filamentboot-markdown-editor/src/",
             "Filamentboot\\FilamentbootOss\\": "packages/filamentboot-oss/src/",
-            "LaravelStack\\FilamentAdminRichEditor\\": "packages/filament-admin-rich-editor/src/",
+            "Filamentboot\\FilamentbootRichEditor\\": "packages/filamentboot-rich-editor/src/",
             "LaravelStack\\FilamentAdminSite\\": "packages/filament-admin-site/src/",
             "LaravelStack\\FilamentAdminSite\\Database\\Factories\\": "packages/filament-admin-site/database/factories/",
             "LaravelStack\\FilamentAdminSite\\Database\\Seeders\\": "packages/filament-admin-site/database/seeders/",
-            "LaravelStack\\FilamentAdminWangEditor\\": "packages/filament-admin-wang-editor/src/"
+            "Filamentboot\\FilamentbootWangEditor\\": "packages/filamentboot-wang-editor/src/"
         }
     },
     "autoload-dev": {
@@ -132,10 +132,10 @@
             "Tests\\": "tests/",
             "Filamentboot\\Tests\\": "packages/filamentboot/tests/",
             "Filamentboot\\FilamentbootCos\\Tests\\": "packages/filamentboot-cos/tests/",
-            "LaravelStack\\FilamentAdminMarkdownEditor\\Tests\\": "packages/filament-admin-markdown-editor/tests/",
+            "Filamentboot\\FilamentbootMarkdownEditor\\Tests\\": "packages/filamentboot-markdown-editor/tests/",
             "Filamentboot\\FilamentbootOss\\Tests\\": "packages/filamentboot-oss/tests/",
-            "LaravelStack\\FilamentAdminRichEditor\\Tests\\": "packages/filament-admin-rich-editor/tests/",
-            "LaravelStack\\FilamentAdminWangEditor\\Tests\\": "packages/filament-admin-wang-editor/tests/"
+            "Filamentboot\\FilamentbootRichEditor\\Tests\\": "packages/filamentboot-rich-editor/tests/",
+            "Filamentboot\\FilamentbootWangEditor\\Tests\\": "packages/filamentboot-wang-editor/tests/"
         }
     },
     "scripts": {

@@ -26,9 +26,9 @@ function firstPartyPlugins(): array
     return [
         ['filamentboot-oss',               'Filamentboot\\FilamentbootOss\\OssPlugin',                     'packages/filamentboot-oss'],
         ['filamentboot-cos',               'Filamentboot\\FilamentbootCos\\CosPlugin',                     'packages/filamentboot-cos'],
-        ['filament-admin-rich-editor',     'LaravelStack\\FilamentAdminRichEditor\\RichEditorPlugin',       'packages/filament-admin-rich-editor'],
-        ['filament-admin-markdown-editor', 'LaravelStack\\FilamentAdminMarkdownEditor\\MarkdownEditorPlugin', 'packages/filament-admin-markdown-editor'],
-        ['filament-admin-wang-editor',     'LaravelStack\\FilamentAdminWangEditor\\WangEditorPlugin',       'packages/filament-admin-wang-editor'],
+        ['filamentboot-rich-editor',       'Filamentboot\\FilamentbootRichEditor\\RichEditorPlugin',       'packages/filamentboot-rich-editor'],
+        ['filamentboot-markdown-editor',   'Filamentboot\\FilamentbootMarkdownEditor\\MarkdownEditorPlugin', 'packages/filamentboot-markdown-editor'],
+        ['filamentboot-wang-editor',       'Filamentboot\\FilamentbootWangEditor\\WangEditorPlugin',       'packages/filamentboot-wang-editor'],
         ['filament-admin-site',            'LaravelStack\\FilamentAdminSite\\SitePlugin',                   'packages/filament-admin-site'],
     ];
 }
@@ -46,19 +46,19 @@ it('CosPlugin 实现 Filament\\Contracts\\Plugin 接口（MKTPLACE-09）', funct
 });
 
 it('RichEditorPlugin 实现 Filament\\Contracts\\Plugin 接口（MKTPLACE-09）', function () {
-    $class = 'LaravelStack\\FilamentAdminRichEditor\\RichEditorPlugin';
+    $class = 'Filamentboot\\FilamentbootRichEditor\\RichEditorPlugin';
     expect(class_exists($class))->toBeTrue("RichEditorPlugin 类应可被 autoload 到");
     expect(is_a($class, Plugin::class, true))->toBeTrue("RichEditorPlugin 应实现 Filament\\Contracts\\Plugin");
 });
 
 it('MarkdownEditorPlugin 实现 Filament\\Contracts\\Plugin 接口（MKTPLACE-09）', function () {
-    $class = 'LaravelStack\\FilamentAdminMarkdownEditor\\MarkdownEditorPlugin';
+    $class = 'Filamentboot\\FilamentbootMarkdownEditor\\MarkdownEditorPlugin';
     expect(class_exists($class))->toBeTrue("MarkdownEditorPlugin 类应可被 autoload 到");
     expect(is_a($class, Plugin::class, true))->toBeTrue("MarkdownEditorPlugin 应实现 Filament\\Contracts\\Plugin");
 });
 
 it('WangEditorPlugin 实现 Filament\\Contracts\\Plugin 接口（MKTPLACE-09）', function () {
-    $class = 'LaravelStack\\FilamentAdminWangEditor\\WangEditorPlugin';
+    $class = 'Filamentboot\\FilamentbootWangEditor\\WangEditorPlugin';
     expect(class_exists($class))->toBeTrue("WangEditorPlugin 类应可被 autoload 到");
     expect(is_a($class, Plugin::class, true))->toBeTrue("WangEditorPlugin 应实现 Filament\\Contracts\\Plugin");
 });
