@@ -1,6 +1,6 @@
 <?php
 
-use FilamentAdmin\Settings\GeneralSettings;
+use Filamentboot\Settings\GeneralSettings;
 
 it('通用配置可以读写站点名称', function () {
     $settings             = app(GeneralSettings::class);

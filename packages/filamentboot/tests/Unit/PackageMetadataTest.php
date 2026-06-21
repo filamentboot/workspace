@@ -5,7 +5,7 @@ namespace Filamentboot\Tests\Unit;
 use PHPUnit\Framework\TestCase;
 
 /**
- * 锁死 packages/filament-admin/composer.json 的 COMPLY-03 字段。
+ * 锁死 packages/filamentboot/composer.json 的 COMPLY-03 字段。
  *
  * 每个 test_* 方法对应一个 D-12~D-15 子决策的精确字面量断言，
  * 确保后续重构时关键发布规范字段不会意外丢失。
@@ -16,7 +16,7 @@ class PackageMetadataTest extends TestCase
     {
         $composer = json_decode((string) file_get_contents(__DIR__.'/../../composer.json'), true, 512, JSON_THROW_ON_ERROR);
 
-        self::assertSame('laravelstack/filament-admin', $composer['name']);
+        self::assertSame('filamentboot/filamentboot', $composer['name']);
         self::assertSame('library', $composer['type']);
         self::assertArrayHasKey('homepage', $composer);
         self::assertArrayHasKey('support', $composer);
@@ -43,8 +43,8 @@ class PackageMetadataTest extends TestCase
 
         self::assertNotEmpty($composer['support']['docs']);
         self::assertNotEmpty($composer['support']['wiki']);
-        self::assertStringStartsWith('https://github.com/john-captain/filament-admin', $composer['support']['docs']);
-        self::assertStringStartsWith('https://github.com/john-captain/filament-admin', $composer['support']['wiki']);
+        self::assertStringStartsWith('https://github.com/filamentboot/workspace', $composer['support']['docs']);
+        self::assertStringStartsWith('https://github.com/filamentboot/workspace', $composer['support']['wiki']);
     }
 
     /**

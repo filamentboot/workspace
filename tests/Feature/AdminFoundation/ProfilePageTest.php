@@ -1,7 +1,7 @@
 <?php
 
-use FilamentAdmin\Filament\Pages\Profile;
-use FilamentAdmin\Models\AdminUser;
+use Filamentboot\Filament\Pages\Profile;
+use Filamentboot\Models\AdminUser;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
 

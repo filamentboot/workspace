@@ -1,7 +1,7 @@
 <?php
 
-use FilamentAdmin\Database\Seeders\AdminFoundationMenuSeeder;
-use FilamentAdmin\Models\Menu;
+use Filamentboot\Database\Seeders\AdminFoundationMenuSeeder;
+use Filamentboot\Models\Menu;
 
 it('系统配置菜单组存在于数据库', function () {
     $this->seed(AdminFoundationMenuSeeder::class);

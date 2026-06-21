@@ -1,6 +1,6 @@
 <?php
 
-use FilamentAdmin\Models\AdminUser;
+use Filamentboot\Models\AdminUser;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 

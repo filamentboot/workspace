@@ -1,8 +1,8 @@
 <?php
 
-use FilamentAdmin\Models\Plugin;
+use Filamentboot\Models\Plugin;
 use App\Services\PluginManager;
-use FilamentAdmin\Models\AdminUser;
+use Filamentboot\Models\AdminUser;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use LaravelStack\FilamentAdminMarkdownEditor\Forms\MarkdownEditorField;

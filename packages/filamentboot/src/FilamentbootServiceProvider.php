@@ -20,6 +20,7 @@ use Filamentboot\Support\UploadValidator;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -53,6 +54,27 @@ class FilamentbootServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__.'/../config/filamentboot.php', 'filamentboot');
+
+        // Resolve factory class names for Filamentboot models:
+        // Laravel's default resolver guesses Database\Factories\{Model}Factory,
+        // but package factories live under Filamentboot\Database\Factories\.
+        Factory::guessFactoryNamesUsing(function (string $modelName): string {
+            if (str_starts_with($modelName, 'Filamentboot\\')) {
+                $modelShortName = class_basename($modelName);
+
+                return 'Filamentboot\\Database\\Factories\\'.$modelShortName.'Factory';
+            }
+
+            // Fall back to Laravel default for non-package models
+            $modelNamespace = 'App\\Models\\';
+            $factoryNamespace = 'Database\\Factories\\';
+
+            $modelName = str_starts_with($modelName, $modelNamespace)
+                ? str_replace($modelNamespace, '', $modelName)
+                : $modelName;
+
+            return $factoryNamespace.$modelName.'Factory';
+        });
     }
 
     public function boot(): void

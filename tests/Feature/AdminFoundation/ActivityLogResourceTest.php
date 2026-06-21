@@ -1,12 +1,12 @@
 <?php
 
-use FilamentAdmin\Enums\AdminUserStatus;
-use FilamentAdmin\Filament\Resources\AdminUsers\Pages\EditAdminUser;
-use FilamentAdmin\Filament\Resources\Menus\Pages\MenuTree;
-use FilamentAdmin\Models\AdminUser;
-use FilamentAdmin\Models\Department;
-use FilamentAdmin\Models\Menu;
-use FilamentAdmin\Services\ActivityLogger;
+use Filamentboot\Enums\AdminUserStatus;
+use Filamentboot\Filament\Resources\AdminUsers\Pages\EditAdminUser;
+use Filamentboot\Filament\Resources\Menus\Pages\MenuTree;
+use Filamentboot\Models\AdminUser;
+use Filamentboot\Models\Department;
+use Filamentboot\Models\Menu;
+use Filamentboot\Services\ActivityLogger;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
 use Spatie\Activitylog\Models\Activity;
@@ -64,7 +64,7 @@ it('操作日志清理命令删除过期记录', function () {
         'updated_at'   => now(),
     ]);
 
-    $this->artisan('filament-admin:clean-activity-logs', ['--days' => 180])
+    $this->artisan('filamentboot:clean-activity-logs', ['--days' => 180])
         ->assertSuccessful();
 
     expect(Activity::count())->toBe(1);
@@ -72,7 +72,7 @@ it('操作日志清理命令删除过期记录', function () {
 
 it('编辑管理员角色和密码会写入操作日志', function () {
     $superRole = Role::create([
-        'name'       => config('filament-admin.super_admin_role'),
+        'name'       => config('filamentboot.super_admin_role'),
         'guard_name' => 'admin',
     ]);
     $targetRole = Role::create([
@@ -123,7 +123,7 @@ it('编辑管理员角色和密码会写入操作日志', function () {
 
 it('部门创建编辑删除恢复会写入操作日志', function () {
     $superRole = Role::create([
-        'name'       => config('filament-admin.super_admin_role'),
+        'name'       => config('filamentboot.super_admin_role'),
         'guard_name' => 'admin',
     ]);
     $actor = AdminUser::factory()->create();
@@ -155,7 +155,7 @@ it('部门创建编辑删除恢复会写入操作日志', function () {
 
 it('菜单拖拽排序会写入操作日志', function () {
     $superRole = Role::create([
-        'name'       => config('filament-admin.super_admin_role'),
+        'name'       => config('filamentboot.super_admin_role'),
         'guard_name' => 'admin',
     ]);
     $actor = AdminUser::factory()->create();

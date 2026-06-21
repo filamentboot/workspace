@@ -1,6 +1,6 @@
 <?php
 
-use FilamentAdmin\Models\Plugin;
+use Filamentboot\Models\Plugin;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 
@@ -126,7 +126,7 @@ it('重复执行 plugin:scan 后 installed_at 保持首次值（幂等）', func
     // 第一次执行
     $this->artisan('plugin:scan')->assertSuccessful();
 
-    /** @var \FilamentAdmin\Models\Plugin $firstRecord */
+    /** @var \Filamentboot\Models\Plugin $firstRecord */
     $firstRecord = Plugin::where('package_name', 'test/fake-fa-plugin')->first();
     $firstAt     = $firstRecord->installed_at;
 
@@ -136,7 +136,7 @@ it('重复执行 plugin:scan 后 installed_at 保持首次值（幂等）', func
     // 记录数量不变（无重复创建）
     expect(Plugin::where('package_name', 'test/fake-fa-plugin')->count())->toBe(1);
 
-    /** @var \FilamentAdmin\Models\Plugin $secondRecord */
+    /** @var \Filamentboot\Models\Plugin $secondRecord */
     $secondRecord = Plugin::where('package_name', 'test/fake-fa-plugin')->first();
     $secondAt     = $secondRecord->fresh()->installed_at;
 

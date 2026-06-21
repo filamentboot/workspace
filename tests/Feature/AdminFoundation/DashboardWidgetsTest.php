@@ -1,10 +1,10 @@
 <?php
 
-use FilamentAdmin\Filament\Widgets\QuickGuideWidget;
-use FilamentAdmin\Filament\Widgets\SystemStatsWidget;
-use FilamentAdmin\Filament\Widgets\WelcomeWidget;
-use FilamentAdmin\Models\AdminUser;
-use FilamentAdmin\Models\LoginLog;
+use Filamentboot\Filament\Widgets\QuickGuideWidget;
+use Filamentboot\Filament\Widgets\SystemStatsWidget;
+use Filamentboot\Filament\Widgets\WelcomeWidget;
+use Filamentboot\Models\AdminUser;
+use Filamentboot\Models\LoginLog;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
 

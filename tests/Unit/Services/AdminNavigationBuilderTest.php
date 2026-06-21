@@ -1,8 +1,8 @@
 <?php
 
-use FilamentAdmin\Models\AdminUser;
-use FilamentAdmin\Models\Menu;
-use FilamentAdmin\Services\AdminNavigationBuilder;
+use Filamentboot\Models\AdminUser;
+use Filamentboot\Models\Menu;
+use Filamentboot\Services\AdminNavigationBuilder;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;

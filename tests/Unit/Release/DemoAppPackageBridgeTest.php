@@ -13,18 +13,18 @@ class DemoAppPackageBridgeTest extends TestCase
         self::assertSame('project', $composer['type']);
         self::assertArrayHasKey('repositories', $composer);
         self::assertSame('path', $composer['repositories'][0]['type']);
-        self::assertSame('packages/filament-admin', $composer['repositories'][0]['url']);
-        self::assertArrayHasKey('laravelstack/filament-admin', $composer['require']);
-        self::assertArrayNotHasKey('FilamentAdmin\\', $composer['autoload']['psr-4'] ?? []);
+        self::assertSame('packages/filamentboot', $composer['repositories'][0]['url']);
+        self::assertArrayHasKey('filamentboot/filamentboot', $composer['require']);
+        self::assertArrayNotHasKey('Filamentboot\\', $composer['autoload']['psr-4'] ?? []);
     }
 
     public function test_package_directory_exists_with_package_composer_json(): void
     {
-        self::assertFileExists(__DIR__.'/../../../packages/filament-admin/composer.json');
+        self::assertFileExists(__DIR__.'/../../../packages/filamentboot/composer.json');
 
-        $composer = json_decode((string) file_get_contents(__DIR__.'/../../../packages/filament-admin/composer.json'), true, 512, JSON_THROW_ON_ERROR);
+        $composer = json_decode((string) file_get_contents(__DIR__.'/../../../packages/filamentboot/composer.json'), true, 512, JSON_THROW_ON_ERROR);
 
-        self::assertSame('laravelstack/filament-admin', $composer['name']);
+        self::assertSame('filamentboot/filamentboot', $composer['name']);
         self::assertSame('library', $composer['type']);
     }
 

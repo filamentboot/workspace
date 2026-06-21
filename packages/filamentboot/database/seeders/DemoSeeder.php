@@ -1,8 +1,8 @@
 <?php
 
-namespace FilamentAdmin\Database\Seeders;
+namespace Filamentboot\Database\Seeders;
 
-use FilamentAdmin\Models\AdminUser;
+use Filamentboot\Models\AdminUser;
 use Illuminate\Database\Seeder;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -23,7 +23,7 @@ class DemoSeeder extends Seeder
         // 清除 Spatie Permission 缓存，确保角色创建生效
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        $roleName = config('filament-admin.super_admin_role', 'super_admin');
+        $roleName = config('filamentboot.super_admin_role', 'super_admin');
 
         // 取得 super_admin 角色（不新建独立 demo 角色，复用超管展示全貌）
         $role = Role::firstOrCreate([

@@ -1,8 +1,8 @@
 <?php
 
-namespace FilamentAdmin\Database\Seeders;
+namespace Filamentboot\Database\Seeders;
 
-use FilamentAdmin\Models\AdminUser;
+use Filamentboot\Models\AdminUser;
 use Illuminate\Database\Seeder;
 
 /**

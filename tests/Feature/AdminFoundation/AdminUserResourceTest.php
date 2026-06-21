@@ -1,10 +1,10 @@
 <?php
 
-use FilamentAdmin\Database\Seeders\AdminFoundationPermissionSeeder;
-use FilamentAdmin\Enums\AdminUserStatus;
-use FilamentAdmin\Filament\Resources\AdminUsers\AdminUserResource;
-use FilamentAdmin\Filament\Resources\AdminUsers\Pages\EditAdminUser;
-use FilamentAdmin\Models\AdminUser;
+use Filamentboot\Database\Seeders\AdminFoundationPermissionSeeder;
+use Filamentboot\Enums\AdminUserStatus;
+use Filamentboot\Filament\Resources\AdminUsers\AdminUserResource;
+use Filamentboot\Filament\Resources\AdminUsers\Pages\EditAdminUser;
+use Filamentboot\Models\AdminUser;
 use Illuminate\Support\Facades\Hash;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
@@ -17,7 +17,7 @@ beforeEach(function () {
 
 it('超级管理员可以访问管理员列表', function () {
     $role = Role::create([
-        'name'       => config('filament-admin.super_admin_role'),
+        'name'       => config('filamentboot.super_admin_role'),
         'guard_name' => 'admin',
     ]);
     $admin = AdminUser::factory()->create();
@@ -38,7 +38,7 @@ it('管理员禁用后不能访问后台', function () {
 
 it('管理员表单可以分配角色', function () {
     $role = Role::create([
-        'name'       => config('filament-admin.super_admin_role'),
+        'name'       => config('filamentboot.super_admin_role'),
         'guard_name' => 'admin',
     ]);
     $admin = AdminUser::factory()->create();

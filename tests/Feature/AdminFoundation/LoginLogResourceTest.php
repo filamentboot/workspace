@@ -1,15 +1,15 @@
 <?php
 
-use FilamentAdmin\Filament\Resources\LoginLogs\LoginLogResource;
-use FilamentAdmin\Filament\Resources\LoginLogs\Pages\ListLoginLogs;
-use FilamentAdmin\Models\AdminUser;
-use FilamentAdmin\Models\LoginLog;
+use Filamentboot\Filament\Resources\LoginLogs\LoginLogResource;
+use Filamentboot\Filament\Resources\LoginLogs\Pages\ListLoginLogs;
+use Filamentboot\Models\AdminUser;
+use Filamentboot\Models\LoginLog;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
 
 it('超级管理员可以查看登录日志列表', function () {
     $role = Role::create([
-        'name'       => config('filament-admin.super_admin_role'),
+        'name'       => config('filamentboot.super_admin_role'),
         'guard_name' => 'admin',
     ]);
     $admin = AdminUser::factory()->create();
@@ -29,7 +29,7 @@ it('登录日志清理命令删除过期日志', function () {
         'created_at' => now(),
     ]);
 
-    $this->artisan('filament-admin:clean-login-logs', ['--days' => 90])
+    $this->artisan('filamentboot:clean-login-logs', ['--days' => 90])
         ->assertSuccessful();
 
     expect(LoginLog::count())->toBe(1);
@@ -37,7 +37,7 @@ it('登录日志清理命令删除过期日志', function () {
 
 it('登录日志支持按管理员结果IP和时间范围筛选', function () {
     $role = Role::create([
-        'name'       => config('filament-admin.super_admin_role'),
+        'name'       => config('filamentboot.super_admin_role'),
         'guard_name' => 'admin',
     ]);
     $viewer = AdminUser::factory()->create();

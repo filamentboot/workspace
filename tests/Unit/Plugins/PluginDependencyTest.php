@@ -1,6 +1,6 @@
 <?php
 
-use FilamentAdmin\Models\Plugin;
+use Filamentboot\Models\Plugin;
 use App\Services\PluginManager;
 
 /**

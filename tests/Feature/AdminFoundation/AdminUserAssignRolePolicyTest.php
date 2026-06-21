@@ -1,7 +1,7 @@
 <?php
 
-use FilamentAdmin\Database\Seeders\AdminFoundationPermissionSeeder;
-use FilamentAdmin\Models\AdminUser;
+use Filamentboot\Database\Seeders\AdminFoundationPermissionSeeder;
+use Filamentboot\Models\AdminUser;
 use Illuminate\Support\Facades\Gate;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;

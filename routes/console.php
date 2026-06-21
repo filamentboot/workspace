@@ -1,8 +1,8 @@
 <?php
 
-use FilamentAdmin\Commands\CleanActivityLogs;
-use FilamentAdmin\Commands\CleanLoginLogs;
-use FilamentAdmin\Commands\DemoReset;
+use Filamentboot\Commands\CleanActivityLogs;
+use Filamentboot\Commands\CleanLoginLogs;
+use Filamentboot\Commands\DemoReset;
 use Illuminate\Foundation\Inspiring;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;

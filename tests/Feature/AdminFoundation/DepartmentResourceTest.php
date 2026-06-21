@@ -1,14 +1,14 @@
 <?php
 
-use FilamentAdmin\Filament\Resources\Departments\DepartmentResource;
-use FilamentAdmin\Models\AdminUser;
-use FilamentAdmin\Models\Department;
-use FilamentAdmin\Services\DepartmentTree;
+use Filamentboot\Filament\Resources\Departments\DepartmentResource;
+use Filamentboot\Models\AdminUser;
+use Filamentboot\Models\Department;
+use Filamentboot\Services\DepartmentTree;
 use Spatie\Permission\Models\Role;
 
 it('超级管理员可以访问部门管理列表', function () {
     $role = Role::create([
-        'name'       => config('filament-admin.super_admin_role'),
+        'name'       => config('filamentboot.super_admin_role'),
         'guard_name' => 'admin',
     ]);
     $admin = AdminUser::factory()->create();

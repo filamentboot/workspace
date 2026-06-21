@@ -178,6 +178,13 @@
             "Illuminate\\Foundation\\ComposerScripts::prePackageUninstall"
         ]
     },
+    "extra": {
+        "laravel": {
+            "dont-discover": [
+                "laravelstack/filament-admin"
+            ]
+        }
+    },
     "config": {
         "optimize-autoloader": true,
         "preferred-install": "dist",

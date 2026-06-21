@@ -2,7 +2,7 @@
 
 use {{ resourceNamespace }}\{{ resource }};
 use {{ appModelNamespace }}\{{ model }};
-use FilamentAdmin\Models\AdminUser as PackageAdminUser;
+use Filamentboot\Models\AdminUser as PackageAdminUser;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -25,7 +25,7 @@ beforeEach(function () {
 function make{{ model }}SuperAdmin(): PackageAdminUser
 {
     $role  = Role::firstOrCreate(
-        ['name' => config('filament-admin.super_admin_role'), 'guard_name' => 'admin']
+        ['name' => config('filamentboot.super_admin_role'), 'guard_name' => 'admin']
     );
     $admin = PackageAdminUser::factory()->create();
     $admin->assignRole($role);

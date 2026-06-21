@@ -1,8 +1,8 @@
 <?php
 
-use FilamentAdmin\Filament\Resources\Departments\DepartmentResource;
-use FilamentAdmin\Models\AdminUser;
-use FilamentAdmin\Models\Department;
+use Filamentboot\Filament\Resources\Departments\DepartmentResource;
+use Filamentboot\Models\AdminUser;
+use Filamentboot\Models\Department;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -26,7 +26,7 @@ it('超级管理员可以看到所有部门', function () {
 
     // 创建超级管理员
     $superAdminRole = Role::create([
-        'name'       => config('filament-admin.super_admin_role'),
+        'name'       => config('filamentboot.super_admin_role'),
         'guard_name' => 'admin',
     ]);
     $superAdmin = AdminUser::factory()->create();

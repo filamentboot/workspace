@@ -4,7 +4,7 @@
 // 验证 menus.link_type 列可以正确写入与回读，
 // 覆盖 FIX-02：link_type Radio 从 dehydrated(false) 改为正常持久化。
 
-use FilamentAdmin\Models\Menu;
+use Filamentboot\Models\Menu;
 
 it('link_type=url 的菜单可以正确持久化与回读', function () {
     $menu = Menu::create([

@@ -1,6 +1,6 @@
 <?php
 
-use FilamentAdmin\Models\AdminUser;
+use Filamentboot\Models\AdminUser;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -45,7 +45,7 @@ it('不拥有 update_menu 权限的管理员 can 判定为 false', function () {
 it('MenuResource 批量操作定义中包含 update_menu 权限可见性检查', function () {
     expect(
         file_get_contents(
-            base_path('packages/filament-admin/src/Filament/Resources/Menus/MenuResource.php')
+            base_path('packages/filamentboot/src/Filament/Resources/Menus/MenuResource.php')
         )
     )->toContain('update_menu');
 });

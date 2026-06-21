@@ -3,7 +3,7 @@
 namespace Filamentboot\Tests\Feature\Commands;
 
 use Filamentboot\Commands\InstallCommand;
-use Filamentboot\FilamentAdminServiceProvider;
+use Filamentboot\FilamentbootServiceProvider;
 use Illuminate\Contracts\Console\Kernel;
 use Illuminate\Foundation\Application;
 use Orchestra\Testbench\TestCase;
@@ -14,7 +14,7 @@ use Symfony\Component\Console\Command\Command;
  *
  * 验证 `filament-admin:install` 命令的核心行为：
  * - Test 1: 全新安装退出码 0（SUCCESS）
- * - Test 2: 生成的 AdminPanelProvider 含 authGuard('admin') 与 FilamentAdminPlugin::make()
+ * - Test 2: 生成的 AdminPanelProvider 含 authGuard('admin') 与 FilamentbootPlugin::make()
  * - Test 3: Provider 已存在且拒绝覆盖时跳过（内容不变，命令仍 SUCCESS）
  * - Test 4: --force 时强制覆盖已存在文件
  *
@@ -36,7 +36,7 @@ class InstallCommandTest extends TestCase
      */
     protected function getPackageProviders($app): array
     {
-        return [FilamentAdminServiceProvider::class];
+        return [FilamentbootServiceProvider::class];
     }
 
     /**
@@ -144,16 +144,16 @@ class InstallCommandTest extends TestCase
      */
     public function test_install_command_exits_with_success_on_fresh_skeleton(): void
     {
-        $this->artisan('filament-admin:install', ['--force' => true])
+        $this->artisan('filamentboot:install', ['--force' => true])
             ->assertExitCode(Command::SUCCESS);
     }
 
     /**
-     * Test 2: 执行后 AdminPanelProvider.php 文件存在，且含 authGuard('admin') 与 FilamentAdminPlugin::make()
+     * Test 2: 执行后 AdminPanelProvider.php 文件存在，且含 authGuard('admin') 与 FilamentbootPlugin::make()
      */
     public function test_install_generates_provider_with_authguard_and_plugin(): void
     {
-        $this->artisan('filament-admin:install', ['--force' => true])
+        $this->artisan('filamentboot:install', ['--force' => true])
             ->assertExitCode(Command::SUCCESS);
 
         $providerPath = $this->tempBase.'/app/Providers/Filament/AdminPanelProvider.php';
@@ -169,9 +169,9 @@ class InstallCommandTest extends TestCase
         );
 
         $this->assertStringContainsString(
-            'FilamentAdminPlugin::make()',
+            'FilamentbootPlugin::make()',
             $content,
-            '生成的 Provider 必须含 FilamentAdminPlugin::make()'
+            '生成的 Provider 必须含 FilamentbootPlugin::make()'
         );
     }
 
@@ -185,7 +185,7 @@ class InstallCommandTest extends TestCase
         $originalContent = "<?php\n// original-marker-do-not-overwrite\n";
         file_put_contents($providerPath, $originalContent);
 
-        $this->artisan('filament-admin:install')
+        $this->artisan('filamentboot:install')
             ->expectsConfirmation('AdminPanelProvider.php 已存在，是否覆盖？', 'no')
             ->assertExitCode(Command::SUCCESS);
 
@@ -206,7 +206,7 @@ class InstallCommandTest extends TestCase
         $providerPath = $this->tempBase.'/app/Providers/Filament/AdminPanelProvider.php';
         file_put_contents($providerPath, "<?php\n// old-content-should-be-replaced\n");
 
-        $this->artisan('filament-admin:install', ['--force' => true])
+        $this->artisan('filamentboot:install', ['--force' => true])
             ->assertExitCode(Command::SUCCESS);
 
         // 断言文件内容已被覆盖（旧内容消失，新内容含 authGuard）

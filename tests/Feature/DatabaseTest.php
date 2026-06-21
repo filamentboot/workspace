@@ -1,9 +1,9 @@
 <?php
 
-use FilamentAdmin\Database\Seeders\AdminFoundationMenuSeeder;
-use FilamentAdmin\Database\Seeders\AdminFoundationPermissionSeeder;
-use FilamentAdmin\Database\Seeders\SuperAdminSeeder;
-use FilamentAdmin\Models\AdminUser;
+use Filamentboot\Database\Seeders\AdminFoundationMenuSeeder;
+use Filamentboot\Database\Seeders\AdminFoundationPermissionSeeder;
+use Filamentboot\Database\Seeders\SuperAdminSeeder;
+use Filamentboot\Models\AdminUser;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -41,7 +41,7 @@ it('执行核心 Seeder 后超级管理员可以登录后台', function () {
     expect($admin)->not->toBeNull();
 
     // 验证超级管理员角色已分配
-    $superAdminRole = config('filament-admin.super_admin_role', 'super_admin');
+    $superAdminRole = config('filamentboot.super_admin_role', 'super_admin');
     expect($admin->hasRole($superAdminRole, 'admin'))->toBeTrue();
 
     // 验证可以通过 admin guard 认证
@@ -77,7 +77,7 @@ it('执行核心 Seeder 后 super_admin 角色已在 admin guard 下创建', fun
 
     app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-    $roleName = config('filament-admin.super_admin_role', 'super_admin');
+    $roleName = config('filamentboot.super_admin_role', 'super_admin');
     $role     = Role::where('name', $roleName)->where('guard_name', 'admin')->first();
 
     expect($role)->not->toBeNull();

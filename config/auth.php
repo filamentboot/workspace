@@ -1,7 +1,7 @@
 <?php
 
 use App\Models\User;
-use FilamentAdmin\Models\AdminUser;
+use Filamentboot\Models\AdminUser;
 
 return [
 

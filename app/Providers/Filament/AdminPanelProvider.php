@@ -6,7 +6,7 @@ use AlizHarb\ActivityLog\ActivityLogPlugin;
 use App\Filament\Pages\Marketplace\MarketplacePage;
 use App\Filament\Resources\PluginResource;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
-use FilamentAdmin\Models\Plugin;
+use Filamentboot\Models\Plugin;
 use Filament\Facades\Filament;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
@@ -19,12 +19,12 @@ use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
-use FilamentAdmin\Filament\Pages\Auth\Login;
-use FilamentAdmin\Filament\Pages\Profile;
-use FilamentAdmin\FilamentAdminPlugin;
-use FilamentAdmin\Http\Middleware\EnsureTwoFactorEnabled;
-use FilamentAdmin\Models\AdminUser;
-use FilamentAdmin\Services\AdminNavigationBuilder;
+use Filamentboot\Filament\Pages\Auth\Login;
+use Filamentboot\Filament\Pages\Profile;
+use Filamentboot\FilamentbootPlugin;
+use Filamentboot\Http\Middleware\EnsureTwoFactorEnabled;
+use Filamentboot\Models\AdminUser;
+use Filamentboot\Services\AdminNavigationBuilder;
 use Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Http\Middleware\PreventRequestForgery;
@@ -37,7 +37,7 @@ use Stephenjude\FilamentTwoFactorAuthentication\TwoFactorAuthenticationPlugin;
 /**
  * 管理员面板服务提供者
  *
- * 配置 Filament 管理员面板，使用 FilamentAdminPlugin 注册所有 Resources、Pages、Widgets。
+ * 配置 Filament 管理员面板，使用 FilamentbootPlugin 注册所有 Resources、Pages、Widgets。
  */
 class AdminPanelProvider extends PanelProvider
 {
@@ -52,7 +52,7 @@ class AdminPanelProvider extends PanelProvider
             ->authGuard('admin')            // 使用 admin guard
             ->authPasswordBroker('admin_users')
             ->passwordReset()               // 启用密码重置（使用 admin_users broker，框架默认 token/限流/邮件）
-            ->plugin(FilamentAdminPlugin::make())
+            ->plugin(FilamentbootPlugin::make())
             ->plugin(
                 TwoFactorAuthenticationPlugin::make()
                     ->enableTwoFactorAuthentication() // 启用 TOTP 双因素认证（用户可选启用）

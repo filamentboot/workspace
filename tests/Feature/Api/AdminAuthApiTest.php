@@ -1,8 +1,8 @@
 <?php
 
 use App\Enums\ApiErrorCode;
-use FilamentAdmin\Enums\AdminUserStatus;
-use FilamentAdmin\Models\AdminUser;
+use Filamentboot\Enums\AdminUserStatus;
+use Filamentboot\Models\AdminUser;
 use Illuminate\Support\Facades\Hash;
 use Laravel\Sanctum\Sanctum;
 

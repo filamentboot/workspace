@@ -1,7 +1,7 @@
 <?php
 
-use FilamentAdmin\Models\AdminUser;
-use FilamentAdmin\Models\LoginLog;
+use Filamentboot\Models\AdminUser;
+use Filamentboot\Models\LoginLog;
 
 test('login log can be created', function () {
     $user = AdminUser::factory()->create();

@@ -1,9 +1,9 @@
 <?php
 
-namespace FilamentAdmin\Database\Factories;
+namespace Filamentboot\Database\Factories;
 
-use FilamentAdmin\Models\AdminUser;
-use FilamentAdmin\Models\LoginLog;
+use Filamentboot\Models\AdminUser;
+use Filamentboot\Models\LoginLog;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**

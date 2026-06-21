@@ -3,7 +3,7 @@
 namespace App\Services;
 
 use Composer\Semver\Semver;
-use FilamentAdmin\Models\Plugin;
+use Filamentboot\Models\Plugin;
 use Illuminate\Support\Facades\Http;
 
 /**
@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Http;
  *
  * 继承包基础版，追加 validatePackageName 能力（需 HTTP，不入包）。
  */
-class PluginManager extends \FilamentAdmin\Services\PluginManager
+class PluginManager extends \Filamentboot\Services\PluginManager
 {
     /**
      * 校验包名合法性（白名单直通 + Packagist p2 API 404 阻断 + semver 约束校验）

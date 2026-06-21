@@ -1,6 +1,6 @@
 <?php
 
-use FilamentAdmin\Services\EnvironmentChecker;
+use Filamentboot\Services\EnvironmentChecker;
 
 /**
  * EnvironmentChecker 自检测试（MKTPLACE-04 / MKTPLACE-07）

@@ -1,8 +1,8 @@
 <?php
 
-use FilamentAdmin\Filament\Resources\Departments\DepartmentResource;
-use FilamentAdmin\Models\AdminUser;
-use FilamentAdmin\Models\Department;
+use Filamentboot\Filament\Resources\Departments\DepartmentResource;
+use Filamentboot\Models\AdminUser;
+use Filamentboot\Models\Department;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -14,7 +14,7 @@ beforeEach(function () {
 it('部门排序后写入一条 reordered 活动日志', function () {
     // 创建超级管理员作为操作人
     $role = Role::create([
-        'name'       => config('filament-admin.super_admin_role'),
+        'name'       => config('filamentboot.super_admin_role'),
         'guard_name' => 'admin',
     ]);
     $admin = AdminUser::factory()->create();

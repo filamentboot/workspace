@@ -1,8 +1,8 @@
 <?php
 
-use FilamentAdmin\Http\Middleware\EnsureTwoFactorEnabled;
-use FilamentAdmin\Models\AdminUser;
-use FilamentAdmin\Settings\SecuritySettings;
+use Filamentboot\Http\Middleware\EnsureTwoFactorEnabled;
+use Filamentboot\Models\AdminUser;
+use Filamentboot\Settings\SecuritySettings;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
 
@@ -117,7 +117,7 @@ it('force_2fa=true 时超管未开 2FA 也被拦截（不豁免）', function ()
 
     // 创建超管角色并分配
     $role = Role::firstOrCreate([
-        'name'       => config('filament-admin.super_admin_role', 'super_admin'),
+        'name'       => config('filamentboot.super_admin_role', 'super_admin'),
         'guard_name' => 'admin',
     ]);
     $superAdmin = AdminUser::factory()->create();

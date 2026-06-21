@@ -1,6 +1,6 @@
 <?php
 
-use FilamentAdmin\Models\AdminUser;
+use Filamentboot\Models\AdminUser;
 use Illuminate\Support\Facades\Gate;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -73,7 +73,7 @@ it('导出后 after() 回调写入 activity_log 审计记录', function () {
     $logCountBefore = \Spatie\Activitylog\Models\Activity::count();
 
     // 直接调用 ActivityLogger 的 after() 回调逻辑（模拟 ExportAction after 回调）
-    $causer = app(\FilamentAdmin\Services\ActivityLogger::class)->currentCauser();
+    $causer = app(\Filamentboot\Services\ActivityLogger::class)->currentCauser();
     expect($causer)->not()->toBeNull();
 
     activity('admin')

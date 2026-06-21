@@ -2,9 +2,9 @@
 
 use Filament\Navigation\NavigationGroup;
 use Filament\Navigation\NavigationItem;
-use FilamentAdmin\Models\AdminUser;
-use FilamentAdmin\Models\Menu;
-use FilamentAdmin\Services\AdminNavigationBuilder;
+use Filamentboot\Models\AdminUser;
+use Filamentboot\Models\Menu;
+use Filamentboot\Services\AdminNavigationBuilder;
 use Spatie\Permission\PermissionRegistrar;
 
 beforeEach(function () {

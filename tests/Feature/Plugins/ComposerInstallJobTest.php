@@ -1,9 +1,9 @@
 <?php
 
-use FilamentAdmin\Jobs\ComposerInstallJob;
-use FilamentAdmin\Models\Plugin;
-use FilamentAdmin\Services\EnvironmentChecker;
-use FilamentAdmin\Services\PluginManager;
+use Filamentboot\Jobs\ComposerInstallJob;
+use Filamentboot\Models\Plugin;
+use Filamentboot\Services\EnvironmentChecker;
+use Filamentboot\Services\PluginManager;
 use Illuminate\Support\Facades\Queue;
 
 /**

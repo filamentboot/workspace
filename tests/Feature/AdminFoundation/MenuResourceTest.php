@@ -1,7 +1,7 @@
 <?php
 
-use FilamentAdmin\Filament\Resources\Menus\MenuResource;
-use FilamentAdmin\Models\AdminUser;
+use Filamentboot\Filament\Resources\Menus\MenuResource;
+use Filamentboot\Models\AdminUser;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -12,7 +12,7 @@ beforeEach(function () {
 
 it('超级管理员可以访问菜单规则列表', function () {
     $role = Role::create([
-        'name'       => config('filament-admin.super_admin_role'),
+        'name'       => config('filamentboot.super_admin_role'),
         'guard_name' => 'admin',
     ]);
     $admin = AdminUser::factory()->create();

@@ -1,6 +1,6 @@
 <?php
 
-use FilamentAdmin\Models\Plugin;
+use Filamentboot\Models\Plugin;
 use App\Providers\Filament\AdminPanelProvider;
 use Filament\Facades\Filament;
 use Filament\Panel;

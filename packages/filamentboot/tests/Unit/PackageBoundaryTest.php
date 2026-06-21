@@ -10,10 +10,10 @@ class PackageBoundaryTest extends TestCase
     {
         $composer = json_decode((string) file_get_contents(__DIR__.'/../../composer.json'), true, 512, JSON_THROW_ON_ERROR);
 
-        self::assertSame('laravelstack/filament-admin', $composer['name']);
+        self::assertSame('filamentboot/filamentboot', $composer['name']);
         self::assertSame('library', $composer['type']);
         self::assertArrayNotHasKey('repositories', $composer);
-        self::assertArrayNotHasKey('filament-admin/plugin-platform', $composer['require']);
+        self::assertArrayNotHasKey('filamentboot/plugin-platform', $composer['require']);
         self::assertNotSame('The skeleton application for the Laravel framework.', $composer['description']);
         self::assertArrayHasKey('homepage', $composer);
         self::assertArrayHasKey('support', $composer);
@@ -23,7 +23,7 @@ class PackageBoundaryTest extends TestCase
     public function test_runtime_files_do_not_reference_plugin_platform_namespace(): void
     {
         $files = [
-            __DIR__.'/../../src/FilamentAdminServiceProvider.php',
+            __DIR__.'/../../src/FilamentbootServiceProvider.php',
             __DIR__.'/../../src/Services/AdminNavigationBuilder.php',
         ];
 

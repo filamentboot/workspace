@@ -1,7 +1,7 @@
 <?php
 
-use FilamentAdmin\Models\AdminUser;
-use FilamentAdmin\Models\Department;
+use Filamentboot\Models\AdminUser;
+use Filamentboot\Models\Department;
 
 it('部门支持父子级和负责人关系', function () {
     $leader = AdminUser::factory()->create();

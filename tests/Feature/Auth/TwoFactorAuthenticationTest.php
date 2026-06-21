@@ -1,6 +1,6 @@
 <?php
 
-use FilamentAdmin\Models\AdminUser;
+use Filamentboot\Models\AdminUser;
 use Stephenjude\FilamentTwoFactorAuthentication\Actions\DisableTwoFactorAuthentication;
 
 test('admin user can enable 2FA', function () {

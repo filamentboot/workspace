@@ -12,10 +12,10 @@
             <directory>tests/Feature</directory>
         </testsuite>
         <testsuite name="PackageUnit">
-            <directory>packages/filament-admin/tests/Unit</directory>
+            <directory>packages/filamentboot/tests/Unit</directory>
         </testsuite>
         <testsuite name="PackageFeature">
-            <directory>packages/filament-admin/tests/Feature</directory>
+            <directory>packages/filamentboot/tests/Feature</directory>
         </testsuite>
         <testsuite name="OssUnit">
             <directory>packages/filament-admin-oss/tests/Unit</directory>

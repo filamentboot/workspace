@@ -1,9 +1,9 @@
 <?php
 
-namespace FilamentAdmin\Database\Factories;
+namespace Filamentboot\Database\Factories;
 
-use FilamentAdmin\Enums\AdminUserStatus;
-use FilamentAdmin\Models\AdminUser;
+use Filamentboot\Enums\AdminUserStatus;
+use Filamentboot\Models\AdminUser;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 

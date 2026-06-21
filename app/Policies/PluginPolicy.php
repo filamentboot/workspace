@@ -2,7 +2,7 @@
 
 namespace App\Policies;
 
-use FilamentAdmin\Policies\BasePolicy;
+use Filamentboot\Policies\BasePolicy;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Database\Eloquent\Model;
 

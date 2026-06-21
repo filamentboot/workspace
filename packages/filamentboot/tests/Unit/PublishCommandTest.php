@@ -2,7 +2,7 @@
 
 namespace Filamentboot\Tests\Unit;
 
-use Filamentboot\FilamentAdminServiceProvider;
+use Filamentboot\FilamentbootServiceProvider;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\File;
 use Orchestra\Testbench\TestCase;
@@ -38,7 +38,7 @@ class PublishCommandTest extends TestCase
      */
     protected function getPackageProviders($app): array
     {
-        return [FilamentAdminServiceProvider::class];
+        return [FilamentbootServiceProvider::class];
     }
 
     /**
@@ -131,7 +131,7 @@ class PublishCommandTest extends TestCase
      */
     public function test_publish_model_option_generates_model_file_at_default_path(): void
     {
-        $this->artisan('filament-admin:publish', ['--model' => 'Product'])
+        $this->artisan('filamentboot:publish', ['--model' => 'Product'])
             ->assertExitCode(Command::SUCCESS);
 
         $expectedPath = $this->tempBase.'/app/Models/Product.php';
@@ -148,7 +148,7 @@ class PublishCommandTest extends TestCase
      */
     public function test_publish_resource_option_generates_resource_and_pages_files(): void
     {
-        $this->artisan('filament-admin:publish', ['--resource' => 'Product'])
+        $this->artisan('filamentboot:publish', ['--resource' => 'Product'])
             ->assertExitCode(Command::SUCCESS);
 
         $base = $this->tempBase.'/app/Filament/Resources/Products';
@@ -183,7 +183,7 @@ class PublishCommandTest extends TestCase
         file_put_contents($modelPath, '<?php // placeholder content');
 
         // Act & Assert: 命令应跳过并输出 Skipped: 提示
-        $this->artisan('filament-admin:publish', ['--model' => 'Product'])
+        $this->artisan('filamentboot:publish', ['--model' => 'Product'])
             ->expectsOutputToContain('Skipped:')
             ->assertExitCode(Command::SUCCESS);
 
@@ -205,7 +205,7 @@ class PublishCommandTest extends TestCase
         file_put_contents($modelPath, '<?php // placeholder content');
 
         // Act: 带 --force 强制覆盖
-        $this->artisan('filament-admin:publish', [
+        $this->artisan('filamentboot:publish', [
             '--model' => 'Product',
             '--force' => true,
         ])->assertExitCode(Command::SUCCESS);
@@ -222,7 +222,7 @@ class PublishCommandTest extends TestCase
      */
     public function test_publish_path_option_derives_correct_namespace(): void
     {
-        $this->artisan('filament-admin:publish', [
+        $this->artisan('filamentboot:publish', [
             '--resource' => 'Product',
             '--path'     => 'app/Filament/Reseller',
         ])->assertExitCode(Command::SUCCESS);
@@ -243,7 +243,7 @@ class PublishCommandTest extends TestCase
      */
     public function test_publish_all_alone_generates_all_builtin_sets(): void
     {
-        $this->artisan('filament-admin:publish', ['--all' => true])
+        $this->artisan('filamentboot:publish', ['--all' => true])
             ->assertExitCode(Command::SUCCESS);
 
         // 断言 4 个内置 Model 都已生成
@@ -260,7 +260,7 @@ class PublishCommandTest extends TestCase
      */
     public function test_publish_model_with_all_generates_four_artifact_set(): void
     {
-        $this->artisan('filament-admin:publish', [
+        $this->artisan('filamentboot:publish', [
             '--model' => 'Product',
             '--all'   => true,
         ])->assertExitCode(Command::SUCCESS);
@@ -303,7 +303,7 @@ class PublishCommandTest extends TestCase
      */
     public function test_publish_path_rejects_directory_traversal(): void
     {
-        $this->artisan('filament-admin:publish', [
+        $this->artisan('filamentboot:publish', [
             '--resource' => 'Product',
             '--path'     => '../../etc',
         ])
@@ -319,7 +319,7 @@ class PublishCommandTest extends TestCase
      */
     public function test_published_resource_get_pages_references_correct_page_classes(): void
     {
-        $this->artisan('filament-admin:publish', ['--resource' => 'Product'])
+        $this->artisan('filamentboot:publish', ['--resource' => 'Product'])
             ->assertExitCode(0);
 
         $path = base_path('app/Filament/Resources/Products/ProductResource.php');
@@ -344,7 +344,7 @@ class PublishCommandTest extends TestCase
      */
     public function test_published_feature_test_uses_app_namespace(): void
     {
-        $this->artisan('filament-admin:publish', ['--resource' => 'Product', '--all' => true])
+        $this->artisan('filamentboot:publish', ['--resource' => 'Product', '--all' => true])
             ->assertExitCode(0);
 
         $path = base_path('tests/Feature/ProductResourceTest.php');

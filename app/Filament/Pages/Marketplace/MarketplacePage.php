@@ -6,10 +6,10 @@ use App\Services\MarketplaceService;
 use App\Services\PackagistService;
 use BackedEnum;
 use Filament\Pages\Page;
-use FilamentAdmin\Models\Plugin;
-use FilamentAdmin\Services\EnvironmentChecker;
-use FilamentAdmin\Services\PluginCompatibility;
-use FilamentAdmin\Services\PluginManager;
+use Filamentboot\Models\Plugin;
+use Filamentboot\Services\EnvironmentChecker;
+use Filamentboot\Services\PluginCompatibility;
+use Filamentboot\Services\PluginManager;
 use Illuminate\Support\Facades\Artisan;
 use UnitEnum;
 

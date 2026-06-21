@@ -2,7 +2,7 @@
 
 namespace Filamentboot\Tests\Unit;
 
-use Filamentboot\FilamentAdminServiceProvider;
+use Filamentboot\FilamentbootServiceProvider;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\ServiceProvider;
 use Orchestra\Testbench\TestCase;
@@ -10,9 +10,9 @@ use Orchestra\Testbench\TestCase;
 /**
  * ServiceProvider publishes 注册测试
  *
- * 验证 FilamentAdminServiceProvider 注册了 5 个 vendor:publish 标签（COMPLY-01）：
- * filament-admin-config / filament-admin-migrations / filament-admin-views /
- * filament-admin-lang / filament-admin-stubs
+ * 验证 FilamentbootServiceProvider 注册了 5 个 vendor:publish 标签（COMPLY-01）：
+ * filamentboot-config / filamentboot-migrations / filamentboot-views /
+ * filamentboot-lang / filamentboot-stubs
  */
 class ServiceProviderPublishesTest extends TestCase
 {
@@ -24,17 +24,17 @@ class ServiceProviderPublishesTest extends TestCase
      */
     protected function getPackageProviders($app): array
     {
-        return [FilamentAdminServiceProvider::class];
+        return [FilamentbootServiceProvider::class];
     }
 
     /**
-     * 验证 filament-admin-config 发布标签已注册，且源路径与目标路径映射正确
+     * 验证 filamentboot-config 发布标签已注册，且源路径与目标路径映射正确
      */
     public function test_service_provider_registers_filament_admin_config_publish_tag(): void
     {
         $paths = ServiceProvider::pathsToPublish(
-            FilamentAdminServiceProvider::class,
-            'filament-admin-config'
+            FilamentbootServiceProvider::class,
+            'filamentboot-config'
         );
 
         self::assertNotEmpty($paths, '配置 publish tag 未在 ServiceProvider 中注册');
@@ -42,25 +42,25 @@ class ServiceProviderPublishesTest extends TestCase
         $found = false;
 
         foreach ($paths as $source => $target) {
-            if (str_ends_with($source, 'config/filament-admin.php')
-                && $target === config_path('filament-admin.php')) {
+            if (str_ends_with($source, 'config/filamentboot.php')
+                && $target === config_path('filamentboot.php')) {
                 $found = true;
 
                 break;
             }
         }
 
-        self::assertTrue($found, '未找到 config/filament-admin.php → config_path 的映射');
+        self::assertTrue($found, '未找到 config/filamentboot.php → config_path 的映射');
     }
 
     /**
-     * 验证 filament-admin-migrations 发布标签已注册，且源目录与目标目录映射正确
+     * 验证 filamentboot-migrations 发布标签已注册，且源目录与目标目录映射正确
      */
     public function test_service_provider_registers_filament_admin_migrations_publish_tag(): void
     {
         $paths = ServiceProvider::pathsToPublish(
-            FilamentAdminServiceProvider::class,
-            'filament-admin-migrations'
+            FilamentbootServiceProvider::class,
+            'filamentboot-migrations'
         );
 
         self::assertNotEmpty($paths, '迁移 publish tag 未在 ServiceProvider 中注册');
@@ -80,13 +80,13 @@ class ServiceProviderPublishesTest extends TestCase
     }
 
     /**
-     * 验证 filament-admin-views 发布标签已注册，且映射到 resource_path('views/vendor/filament-admin')
+     * 验证 filamentboot-views 发布标签已注册，且映射到 resource_path('views/vendor/filamentboot')
      */
     public function test_service_provider_registers_filament_admin_views_publish_tag(): void
     {
         $paths = ServiceProvider::pathsToPublish(
-            FilamentAdminServiceProvider::class,
-            'filament-admin-views'
+            FilamentbootServiceProvider::class,
+            'filamentboot-views'
         );
 
         self::assertNotEmpty($paths, '视图 publish tag 未在 ServiceProvider 中注册');
@@ -95,24 +95,24 @@ class ServiceProviderPublishesTest extends TestCase
 
         foreach ($paths as $source => $target) {
             if (str_ends_with($source, 'resources/views')
-                && $target === resource_path('views/vendor/filament-admin')) {
+                && $target === resource_path('views/vendor/filamentboot')) {
                 $found = true;
 
                 break;
             }
         }
 
-        self::assertTrue($found, '未找到 resources/views → resource_path(views/vendor/filament-admin) 的映射');
+        self::assertTrue($found, '未找到 resources/views → resource_path(views/vendor/filamentboot) 的映射');
     }
 
     /**
-     * 验证 filament-admin-lang 发布标签已注册，且映射到 langPath('vendor/filament-admin')
+     * 验证 filamentboot-lang 发布标签已注册，且映射到 langPath('vendor/filamentboot')
      */
     public function test_service_provider_registers_filament_admin_lang_publish_tag(): void
     {
         $paths = ServiceProvider::pathsToPublish(
-            FilamentAdminServiceProvider::class,
-            'filament-admin-lang'
+            FilamentbootServiceProvider::class,
+            'filamentboot-lang'
         );
 
         self::assertNotEmpty($paths, '翻译 publish tag 未在 ServiceProvider 中注册');
@@ -130,13 +130,13 @@ class ServiceProviderPublishesTest extends TestCase
     }
 
     /**
-     * 验证 filament-admin-stubs 发布标签已注册，且映射到 base_path('stubs/vendor/filament-admin')
+     * 验证 filamentboot-stubs 发布标签已注册，且映射到 base_path('stubs/vendor/filamentboot')
      */
     public function test_service_provider_registers_filament_admin_stubs_publish_tag(): void
     {
         $paths = ServiceProvider::pathsToPublish(
-            FilamentAdminServiceProvider::class,
-            'filament-admin-stubs'
+            FilamentbootServiceProvider::class,
+            'filamentboot-stubs'
         );
 
         self::assertNotEmpty($paths, 'Stubs publish tag 未在 ServiceProvider 中注册');
@@ -145,13 +145,13 @@ class ServiceProviderPublishesTest extends TestCase
 
         foreach ($paths as $source => $target) {
             if (str_ends_with($source, 'stubs')
-                && $target === base_path('stubs/vendor/filament-admin')) {
+                && $target === base_path('stubs/vendor/filamentboot')) {
                 $found = true;
 
                 break;
             }
         }
 
-        self::assertTrue($found, '未找到 stubs → base_path(stubs/vendor/filament-admin) 的映射');
+        self::assertTrue($found, '未找到 stubs → base_path(stubs/vendor/filamentboot) 的映射');
     }
 }

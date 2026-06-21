@@ -2,11 +2,11 @@
 
 namespace Database\Seeders;
 
-use FilamentAdmin\Database\Seeders\AdminFoundationMenuSeeder;
-use FilamentAdmin\Database\Seeders\AdminFoundationPermissionSeeder;
-use FilamentAdmin\Database\Seeders\AdminUserSeeder;
-use FilamentAdmin\Database\Seeders\DemoSeeder;
-use FilamentAdmin\Database\Seeders\SuperAdminSeeder;
+use Filamentboot\Database\Seeders\AdminFoundationMenuSeeder;
+use Filamentboot\Database\Seeders\AdminFoundationPermissionSeeder;
+use Filamentboot\Database\Seeders\AdminUserSeeder;
+use Filamentboot\Database\Seeders\DemoSeeder;
+use Filamentboot\Database\Seeders\SuperAdminSeeder;
 use Illuminate\Database\Seeder;
 
 /**

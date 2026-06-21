@@ -1,9 +1,9 @@
 <?php
 
-use FilamentAdmin\Settings\GeneralSettings;
-use FilamentAdmin\Settings\LogSettings;
-use FilamentAdmin\Settings\SecuritySettings;
-use FilamentAdmin\Settings\UploadSettings;
+use Filamentboot\Settings\GeneralSettings;
+use Filamentboot\Settings\LogSettings;
+use Filamentboot\Settings\SecuritySettings;
+use Filamentboot\Settings\UploadSettings;
 use LaravelStack\FilamentAdminCos\Settings\CosSettings;
 use LaravelStack\FilamentAdminOss\Settings\OssSettings;
 use Spatie\LaravelData\Data;

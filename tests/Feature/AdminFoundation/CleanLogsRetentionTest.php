@@ -1,8 +1,8 @@
 <?php
 
-use FilamentAdmin\Models\AdminUser;
-use FilamentAdmin\Models\LoginLog;
-use FilamentAdmin\Settings\LogSettings;
+use Filamentboot\Models\AdminUser;
+use Filamentboot\Models\LoginLog;
+use Filamentboot\Settings\LogSettings;
 use Spatie\Activitylog\Models\Activity;
 
 /**
@@ -43,7 +43,7 @@ it('清理操作日志：未传 --days 时从 LogSettings 读保留天数', func
     makeActivity(['created_at' => now()->subDays(10)]);
 
     // 运行命令（不传 --days）
-    $this->artisan('filament-admin:clean-activity-logs')
+    $this->artisan('filamentboot:clean-activity-logs')
         ->assertSuccessful();
 
     // 断言仅删除 35 天前的那条，10 天前的保留
@@ -63,7 +63,7 @@ it('清理操作日志：传 --days=5 时覆盖 Settings 值', function () {
     makeActivity(['created_at' => now()->subDays(10)]);
 
     // 运行命令，传 --days=5
-    $this->artisan('filament-admin:clean-activity-logs', ['--days' => 5])
+    $this->artisan('filamentboot:clean-activity-logs', ['--days' => 5])
         ->assertSuccessful();
 
     // 断言两条都被删
@@ -81,7 +81,7 @@ it('清理操作日志：保留天数为 0 时永久保留不删除', function (
     makeActivity(['created_at' => now()->subDays(9999)]);
 
     // 运行命令（不传 --days）
-    $this->artisan('filament-admin:clean-activity-logs')
+    $this->artisan('filamentboot:clean-activity-logs')
         ->assertSuccessful();
 
     // 断言记录未被删除（永久保留）
@@ -109,7 +109,7 @@ it('清理登录日志：未传 --days 时从 LogSettings 读保留天数', func
     ]);
 
     // 运行命令（不传 --days）
-    $this->artisan('filament-admin:clean-login-logs')
+    $this->artisan('filamentboot:clean-login-logs')
         ->assertSuccessful();
 
     // 断言仅删除 70 天前的那条，30 天前的保留

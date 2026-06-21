@@ -1,6 +1,6 @@
 <?php
 
-use FilamentAdmin\Settings\UploadSettings;
+use Filamentboot\Settings\UploadSettings;
 use LaravelStack\FilamentAdminSite\Filament\Resources\SiteCaseResource;
 
 /**

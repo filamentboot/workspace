@@ -1,8 +1,8 @@
 <?php
 
-use FilamentAdmin\Database\Seeders\DemoSeeder;
-use FilamentAdmin\Database\Seeders\SuperAdminSeeder;
-use FilamentAdmin\Models\AdminUser;
+use Filamentboot\Database\Seeders\DemoSeeder;
+use Filamentboot\Database\Seeders\SuperAdminSeeder;
+use Filamentboot\Models\AdminUser;
 use Illuminate\Support\Facades\Artisan;
 
 /**

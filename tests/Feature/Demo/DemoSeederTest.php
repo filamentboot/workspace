@@ -1,7 +1,7 @@
 <?php
 
-use FilamentAdmin\Database\Seeders\DemoSeeder;
-use FilamentAdmin\Models\AdminUser;
+use Filamentboot\Database\Seeders\DemoSeeder;
+use Filamentboot\Models\AdminUser;
 use Illuminate\Support\Facades\Hash;
 
 /**

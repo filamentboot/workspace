@@ -13,8 +13,8 @@ use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
-use FilamentAdmin\Models\Plugin;
-use FilamentAdmin\Services\PluginManager;
+use Filamentboot\Models\Plugin;
+use Filamentboot\Services\PluginManager;
 use Illuminate\Support\Facades\Route;
 use UnitEnum;
 

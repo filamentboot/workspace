@@ -1,7 +1,7 @@
 <?php
 
 use AlizHarb\ActivityLog\Resources\ActivityLogs\ActivityLogResource;
-use FilamentAdmin\Models\AdminUser;
+use Filamentboot\Models\AdminUser;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;

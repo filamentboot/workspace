@@ -14,7 +14,7 @@
  * RESEARCH Pattern 4：Semver::satisfies 三态逻辑。
  */
 
-use FilamentAdmin\Services\PluginCompatibility;
+use Filamentboot\Services\PluginCompatibility;
 
 it('约束 ^5.0 与当前 Filament v5.x 比对结果为 compatible（MKTPLACE-05）', function () {
     $service = app(PluginCompatibility::class);

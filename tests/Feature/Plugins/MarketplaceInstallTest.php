@@ -1,10 +1,10 @@
 <?php
 
 use App\Filament\Pages\Marketplace\MarketplacePage;
-use FilamentAdmin\Jobs\ComposerInstallJob;
-use FilamentAdmin\Models\AdminUser;
-use FilamentAdmin\Models\Plugin;
-use FilamentAdmin\Services\EnvironmentChecker;
+use Filamentboot\Jobs\ComposerInstallJob;
+use Filamentboot\Models\AdminUser;
+use Filamentboot\Models\Plugin;
+use Filamentboot\Services\EnvironmentChecker;
 use Illuminate\Support\Facades\Queue;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Role;
@@ -33,7 +33,7 @@ beforeEach(function () {
     app()->instance(EnvironmentChecker::class, $checkerMock);
 
     // 创建超级管理员用户（Gate::before 超管放行，绕过具体权限点检查）
-    $superAdminRole = config('filament-admin.super_admin_role', 'super_admin');
+    $superAdminRole = config('filamentboot.super_admin_role', 'super_admin');
     $role           = Role::firstOrCreate(['name' => $superAdminRole, 'guard_name' => 'admin']);
     $admin          = AdminUser::factory()->create();
     $admin->assignRole($role);

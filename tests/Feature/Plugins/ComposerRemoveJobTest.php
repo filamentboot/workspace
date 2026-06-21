@@ -1,8 +1,8 @@
 <?php
 
-use FilamentAdmin\Jobs\ComposerRemoveJob;
-use FilamentAdmin\Models\Plugin;
-use FilamentAdmin\Services\PluginManager;
+use Filamentboot\Jobs\ComposerRemoveJob;
+use Filamentboot\Models\Plugin;
+use Filamentboot\Services\PluginManager;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Queue;
 

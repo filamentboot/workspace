@@ -2,7 +2,7 @@
 
 use App\Enums\ApiErrorCode;
 use App\Exceptions\ApiException;
-use FilamentAdmin\Models\AdminUser;
+use Filamentboot\Models\AdminUser;
 use Illuminate\Support\Facades\Route;
 
 beforeEach(function () {

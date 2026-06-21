@@ -2,7 +2,7 @@
 
 namespace Filamentboot\Tests\Unit;
 
-use Filamentboot\FilamentAdminServiceProvider;
+use Filamentboot\FilamentbootServiceProvider;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\File;
 use Orchestra\Testbench\TestCase;
@@ -35,7 +35,7 @@ class MakeMigrationCommandTest extends TestCase
      */
     protected function getPackageProviders($app): array
     {
-        return [FilamentAdminServiceProvider::class];
+        return [FilamentbootServiceProvider::class];
     }
 
     /**

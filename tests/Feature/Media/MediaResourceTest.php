@@ -1,6 +1,6 @@
 <?php
 
-use FilamentAdmin\Models\AdminUser;
+use Filamentboot\Models\AdminUser;
 use Spatie\Permission\Models\Role;
 
 use function Pest\Laravel\actingAs;

@@ -1,8 +1,8 @@
 <?php
 
-use FilamentAdmin\Listeners\LogAdminLogin;
-use FilamentAdmin\Models\AdminUser;
-use FilamentAdmin\Models\LoginLog;
+use Filamentboot\Listeners\LogAdminLogin;
+use Filamentboot\Models\AdminUser;
+use Filamentboot\Models\LoginLog;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
 
