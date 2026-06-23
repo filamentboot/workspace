@@ -141,7 +141,7 @@ it('medialibrary disk_name 随 UploadSettings.default_disk 切换（D-08-07 端�
     config(['media-library.disk_name' => 'cos']);
     expect(config('media-library.disk_name'))->toBe('cos');
 
-    // 验证 FilamentAdminServiceProvider 注册了 registerUploadGuards
+    // 验证 FilamentbootServiceProvider 注册了 registerUploadGuards
     // 通过反射确认方法存在（确保 boot() 接入点已注册）
     $sp = new \ReflectionClass(\Filamentboot\FilamentbootServiceProvider::class);
     expect($sp->hasMethod('registerUploadGuards'))->toBeTrue('期望 registerUploadGuards() 方法存在');
