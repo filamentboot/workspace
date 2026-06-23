@@ -6,6 +6,7 @@ use App\Filament\Resources\PluginResource;
 use App\Services\PluginManager;
 use Filament\Actions\Action;
 use Filament\Resources\Pages\ViewRecord;
+use Filamentboot\Models\Plugin;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -14,6 +15,8 @@ use Illuminate\Support\Facades\Cache;
  * 方案型插件（kind=solution_plugin）可触发「初始化」操作，
  * wire:poll.2000ms 实时轮询 Cache 进度日志。
  * 初始化失败时显示「重试初始化」按钮（整体幂等重跑）。
+ *
+ * @property-read Plugin $record
  */
 class ViewPlugin extends ViewRecord
 {
@@ -34,7 +37,7 @@ class ViewPlugin extends ViewRecord
      */
     public function refreshInitProgress(): void
     {
-        $cache = Cache::get('plugin.init.' . $this->record->slug);
+        $cache = Cache::get('plugin.init.'.$this->record->slug);
 
         if ($cache) {
             $this->initLogs   = $cache['logs'] ?? [];

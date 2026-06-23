@@ -27,6 +27,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @property string|null $installed_version
  * @property string|null $description
  * @property array<string, mixed>|null $post_install_data extra.filamentboot.post_install 声明块
+ * @property array<string, string>|null $compatibility 包名 → 版本约束映射（plugin:scan 写入）
  * @property string $compatibility_status compatible | incompatible | unknown（由 plugin:scan 写入，CR-04）
  * @property bool $is_enabled
  * @property string $init_status pending | running | done | failed
@@ -71,6 +72,7 @@ class Plugin extends Model
     {
         return [
             'post_install_data' => 'array',
+            'compatibility'     => 'array',
             'is_enabled'        => 'boolean',
             'installed_at'      => 'datetime',
         ];

@@ -19,7 +19,7 @@ class PluginManager extends \Filamentboot\Services\PluginManager
     public function validatePackageName(string $packageName): bool
     {
         // 白名单来源检查（D-06-08 第一层）
-        $entry = collect(config('official-market.entries', []))
+        $entry = collect((array) config('official-market.entries', []))
             ->firstWhere('package_name', $packageName);
 
         if ($entry && in_array($entry['source'], ['official_trusted', 'official_listed'], true)) {
@@ -58,7 +58,7 @@ class PluginManager extends \Filamentboot\Services\PluginManager
 
     private function getCompatibilityConstraint(string $packageName): ?string
     {
-        $entry = collect(config('official-market.entries', []))
+        $entry = collect((array) config('official-market.entries', []))
             ->firstWhere('package_name', $packageName);
 
         if ($entry && isset($entry['version'])) {

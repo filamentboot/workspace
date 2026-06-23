@@ -104,7 +104,7 @@ class MarketplacePage extends Page
         $packagist   = app(PackagistService::class);
         $compat      = app(PluginCompatibility::class);
         $raw         = $packagist->searchFilamentPlugins($this->communityPage);
-        $results     = $raw['results'] ?? [];
+        $results     = $raw['results'];
 
         $this->communityResults = array_map(
             fn (array $item) => $this->mapCommunityResult($item, $packagist, $compat),
