@@ -2,7 +2,7 @@
     "$schema": "https://getcomposer.org/schema.json",
     "name": "filamentboot/preview",
     "type": "project",
-    "description": "Demo application for the FilamentAdmin package.",
+    "description": "Demo application for the Filamentboot package.",
     "keywords": [
         "filament",
         "laravel",

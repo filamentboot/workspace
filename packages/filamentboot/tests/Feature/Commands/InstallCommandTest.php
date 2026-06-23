@@ -239,7 +239,7 @@ class TestableInstallCommand extends InstallCommand
      */
     public function handle(): int
     {
-        $this->components->info('开始安装 FilamentAdmin（测试模式）...');
+        $this->components->info('开始安装 Filamentboot（测试模式）...');
 
         // Step 1: 生成 AdminPanelProvider（核心测试目标）
         if (! $this->generateProvider()) {
@@ -251,7 +251,7 @@ class TestableInstallCommand extends InstallCommand
         // Step 6: 跳过 db:seed
         // Step 7: 输出报告
         $this->newLine();
-        $this->components->success('FilamentAdmin 安装完成（测试模式）！');
+        $this->components->success('Filamentboot 安装完成（测试模式）！');
 
         return self::SUCCESS;
     }

@@ -10,7 +10,7 @@ return new class extends SettingsMigration
     public function up(): void
     {
         // 基础配置
-        $this->migrator->add('general.site_name', 'FilamentAdmin');
+        $this->migrator->add('general.site_name', 'Filamentboot');
         $this->migrator->add('general.admin_title', '系统管理后台');
         $this->migrator->add('general.icp_number', '');
         $this->migrator->add('general.copyright', '');
