@@ -118,7 +118,7 @@ php artisan optimize:clear
 执行 `plugin:scan` 命令让后台识别新安装的插件：
 
 ```bash
-php artisan filamentboot:scan-plugins
+php artisan plugin:scan
 ```
 
 然后登录后台，进入"插件市场 → 已安装" Tab，找到刚安装的插件，点击"启用"。
@@ -296,7 +296,7 @@ Problem 1 - vendor/plugin requires filament/filament ^4.0 but filament/filament[
    若为空，手动执行扫描：
 
    ```bash
-   php artisan filament-admin:scan-plugins
+   php artisan plugin:scan
    ```
 
 5. **查看 init_log：** 在插件管理列表中查看 `init_log` 字段，搜索错误信息：
