@@ -9,7 +9,6 @@ use Illuminate\Support\Facades\Http;
  *
  * 覆盖：fetchIndex 命中缓存不写 plugins 表、HTTP 失败兜底本地 config
  */
-
 it('fetchIndex 命中缓存时不写 plugins 表', function () {
     Cache::flush();
 
@@ -18,7 +17,7 @@ it('fetchIndex 命中缓存时不写 plugins 表', function () {
 
     Http::fake(); // 防止真实 HTTP 调用
 
-    $service = new MarketplaceService();
+    $service = new MarketplaceService;
     $result  = $service->fetchIndex();
 
     // 命中缓存，不触发 HTTP
@@ -41,7 +40,7 @@ it('fetchIndex HTTP 回源时仍不写 plugins 表', function () {
         ], 200),
     ]);
 
-    $service = new MarketplaceService();
+    $service = new MarketplaceService;
     $result  = $service->fetchIndex();
 
     // 返回远程数据
@@ -59,7 +58,7 @@ it('fetchIndex HTTP 失败时返回本地兜底配置', function () {
         '*' => Http::response('Server Error', 500),
     ]);
 
-    $service = new MarketplaceService();
+    $service = new MarketplaceService;
     $result  = $service->fetchIndex();
 
     // 兜底 config('official-market.entries') 有 6 条

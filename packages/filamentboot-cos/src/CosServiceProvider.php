@@ -2,9 +2,9 @@
 
 namespace Filamentboot\FilamentbootCos;
 
+use Filamentboot\FilamentbootCos\Settings\CosSettings;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
-use Filamentboot\FilamentbootCos\Settings\CosSettings;
 
 /**
  * 腾讯云 COS 插件服务提供者

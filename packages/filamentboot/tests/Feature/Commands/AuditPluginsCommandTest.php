@@ -168,9 +168,9 @@ class AuditPluginsCommandTest extends TestCase
 
         if ($includePostInstall) {
             $extraBlock['post_install'] = [
-                'publish_tags'    => [],
-                'run_migrations'  => false,
-                'seeders'         => [],
+                'publish_tags'   => [],
+                'run_migrations' => false,
+                'seeders'        => [],
             ];
         }
 

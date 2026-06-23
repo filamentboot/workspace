@@ -40,11 +40,11 @@ class MarkdownRenderer
      * 不含 script/style/iframe 等危险元素（XSS 缓解）。
      */
     private const HTML_ALLOWED = 'h1,h2,h3,h4,h5,h6,p,br,'
-        . 'strong,b,em,i,u,s,del,'
-        . 'a[href|title],ul,ol,li,'
-        . 'code,pre,blockquote,hr,'
-        . 'table,thead,tbody,tr,th,td,'
-        . 'span,div,img[src|alt|width|height]';
+        .'strong,b,em,i,u,s,del,'
+        .'a[href|title],ul,ol,li,'
+        .'code,pre,blockquote,hr,'
+        .'table,thead,tbody,tr,th,td,'
+        .'span,div,img[src|alt|width|height]';
 
     /**
      * 将 Markdown 文本转换为 XSS 安全的 HTML
@@ -55,7 +55,7 @@ class MarkdownRenderer
      * 3. HTMLPurifier 对 HTML 做最终 XSS 过滤（Markdown 专用白名单）
      *
      * @param  string  $markdown  原始 Markdown 文本
-     * @return string  XSS 过滤后的安全 HTML
+     * @return string XSS 过滤后的安全 HTML
      */
     public function render(string $markdown): string
     {
@@ -65,12 +65,12 @@ class MarkdownRenderer
         ]);
 
         // CommonMark 核心渲染器（段落、标题、列表、行内元素等基础节点）
-        $environment->addExtension(new CommonMarkCoreExtension());
+        $environment->addExtension(new CommonMarkCoreExtension);
         // GFM 扩展：支持表格、任务列表、删除线、自动链接
-        $environment->addExtension(new GithubFlavoredMarkdownExtension());
+        $environment->addExtension(new GithubFlavoredMarkdownExtension);
 
         $converter = new MarkdownConverter($environment);
-        $html = $converter->convert($markdown)->getContent();
+        $html      = $converter->convert($markdown)->getContent();
 
         // HTMLPurifier 最终 XSS 过滤（Markdown 专用白名单）
         // 直接实例化以避免 mews/purifier finalize 后无法运行时扩展白名单的限制

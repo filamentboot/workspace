@@ -91,10 +91,10 @@ class AuditPluginsCommand extends Command
         $hasPostInstall   = isset($extra['post_install']);
 
         $checks = [
-            'implements Filament\\Contracts\\Plugin'   => $implementsPlugin,
-            'composer.json type: library'              => $typeLibrary,
-            'keywords 含 filament'                     => $hasFilamentKw,
-            'extra.laravel.providers 已声明'           => $hasProviders,
+            'implements Filament\\Contracts\\Plugin' => $implementsPlugin,
+            'composer.json type: library'            => $typeLibrary,
+            'keywords 含 filament'                   => $hasFilamentKw,
+            'extra.laravel.providers 已声明'         => $hasProviders,
             'extra.filamentboot.post_install 已声明' => $hasPostInstall,
         ];
 
@@ -154,7 +154,7 @@ class AuditPluginsCommand extends Command
      * 遍历 manifest autoload.psr-4 映射，找到匹配的前缀后按 PSR-4 规则拼接文件路径。
      * 若无匹配前缀则回退到 src/<ClassBasename>.php（宽松回退，覆盖前缀与类名段相同的单层结构）。
      *
-     * @param  string  $dir        包目录绝对路径
+     * @param  string  $dir  包目录绝对路径
      * @param  string  $className  完全限定类名（如 Filamentboot\FilamentbootCos\CosPlugin）
      * @param  array<string, string>  $psr4  manifest autoload.psr-4 映射
      * @return string|null 解析到的文件路径，无法解析时返回 null

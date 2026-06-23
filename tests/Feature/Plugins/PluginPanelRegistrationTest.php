@@ -1,9 +1,10 @@
 <?php
 
-use Filamentboot\Models\Plugin;
 use App\Providers\Filament\AdminPanelProvider;
 use Filament\Facades\Filament;
 use Filament\Panel;
+use Filamentboot\Models\Plugin;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Route;
 use Tests\Stubs\FakeFilamentPlugin;
@@ -17,7 +18,6 @@ use Tests\Stubs\FakeFilamentPlugin;
  * 3. try/catch 分支：plugins 表不存在时 Panel 启动不抛异常（静默跳过）
  * 4. SC-1 修复验证：PluginResource 路由 filament.admin.resources.plugins.index 可达
  */
-
 it('已启用的插件 plugin_class 被接入 AdminPanel', function (): void {
     // 创建一个 is_enabled=true、plugin_class 指向 FakeFilamentPlugin 的 Plugin 记录
     Plugin::factory()->create([
@@ -31,11 +31,11 @@ it('已启用的插件 plugin_class 被接入 AdminPanel', function (): void {
     Cache::forget('plugins.enabled_list');
 
     // 创建一个测试 Panel 并调用 registerEnabledPlugins
-    $panel    = new Panel();
+    $panel    = new Panel;
     $provider = new AdminPanelProvider(app());
 
     // 通过反射调用私有方法（直接测试注册逻辑）
-    $method = new \ReflectionMethod(AdminPanelProvider::class, 'registerEnabledPlugins');
+    $method = new ReflectionMethod(AdminPanelProvider::class, 'registerEnabledPlugins');
     $method->setAccessible(true);
     $method->invoke($provider, $panel);
 
@@ -57,10 +57,10 @@ it('未启用的插件不接入 AdminPanel', function (): void {
 
     Cache::forget('plugins.enabled_list');
 
-    $panel    = new Panel();
+    $panel    = new Panel;
     $provider = new AdminPanelProvider(app());
 
-    $method = new \ReflectionMethod(AdminPanelProvider::class, 'registerEnabledPlugins');
+    $method = new ReflectionMethod(AdminPanelProvider::class, 'registerEnabledPlugins');
     $method->setAccessible(true);
     $method->invoke($provider, $panel);
 
@@ -82,11 +82,11 @@ it('plugins 表不存在时 Panel 启动不抛异常', function (): void {
     // MySQL DDL 语句会自动提交事务，破坏 RefreshDatabase 隔离。
     // 改用 Cache Facade Mock，在 Cache::remember 回调中直接抛出 QueryException，
     // 模拟 plugins 表不存在场景，完全不触碰数据库 Schema。
-    $queryException = new \Illuminate\Database\QueryException(
+    $queryException = new QueryException(
         'sqlite',
-        "select `plugin_class` from `plugins` where `is_enabled` = ?",
+        'select `plugin_class` from `plugins` where `is_enabled` = ?',
         [],
-        new \PDOException("SQLSTATE[HY000]: General error: 1 no such table: plugins")
+        new PDOException('SQLSTATE[HY000]: General error: 1 no such table: plugins')
     );
 
     Cache::shouldReceive('get')
@@ -96,15 +96,15 @@ it('plugins 表不存在时 Panel 启动不抛异常', function (): void {
 
     Cache::shouldReceive('remember')
         ->once()
-        ->with('plugins.enabled_list', 30, Mockery::type(\Closure::class))
+        ->with('plugins.enabled_list', 30, Mockery::type(Closure::class))
         ->andThrow($queryException);
 
-    $panel    = new Panel();
+    $panel    = new Panel;
     $provider = new AdminPanelProvider(app());
 
-    $method = new \ReflectionMethod(AdminPanelProvider::class, 'registerEnabledPlugins');
+    $method = new ReflectionMethod(AdminPanelProvider::class, 'registerEnabledPlugins');
     $method->setAccessible(true);
 
     // 调用不抛异常（静默跳过，try/catch Throwable 分支）
-    expect(fn () => $method->invoke($provider, $panel))->not->toThrow(\Throwable::class);
+    expect(fn () => $method->invoke($provider, $panel))->not->toThrow(Throwable::class);
 });

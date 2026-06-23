@@ -1,6 +1,5 @@
 <?php
 
-use Filamentboot\Database\Seeders\DemoSeeder;
 use Filamentboot\Database\Seeders\SuperAdminSeeder;
 use Filamentboot\Models\AdminUser;
 use Illuminate\Support\Facades\Artisan;
@@ -12,7 +11,6 @@ use Illuminate\Support\Facades\Artisan;
  * 重置行为（--force 执行后 demo 账号存在、roles/permissions/menus 非空、
  * login_logs/activity_log 清空）、以及 cron 配置。
  */
-
 it('非演示环境执行 demo:reset 返回 FAILURE', function () {
     // 确保非演示环境
     config(['app.demo' => false]);

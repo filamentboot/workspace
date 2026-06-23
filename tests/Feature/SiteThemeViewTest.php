@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Support\Facades\View;
 use Filamentboot\FilamentbootSite\SiteServiceProvider;
+use Illuminate\Support\Facades\View;
 
 /**
  * 前台主题视图切换测试（SiteThemeViewTest）
@@ -21,7 +21,7 @@ use Filamentboot\FilamentbootSite\SiteServiceProvider;
  * 切换为 'tech-product' 后解析 themes/tech-product 目录（SITE-03 主题切换可观测）
  */
 it('active_theme 切换后视图解析到对应主题目录', function () {
-    $packageBase = realpath(__DIR__ . '/../../packages/filamentboot-site');
+    $packageBase = realpath(__DIR__.'/../../packages/filamentboot-site');
 
     /**
      * 测试 decoration 主题路径注册
@@ -32,24 +32,24 @@ it('active_theme 切换后视图解析到对应主题目录', function () {
     $provider = new SiteServiceProvider(app());
 
     // 手动调用 loadViewsFrom，注册 decoration 命名空间
-    $decorationPath = $packageBase . '/resources/views/themes/decoration';
+    $decorationPath = $packageBase.'/resources/views/themes/decoration';
     app('view')->addNamespace('filamentboot-site-test-decoration', $decorationPath);
 
     // 验证 decoration 路径存在并包含 home.blade.php
     expect(file_exists($decorationPath))->toBeTrue()
-        ->and(file_exists($decorationPath . '/home.blade.php'))->toBeTrue()
-        ->and(file_exists($decorationPath . '/layouts/base.blade.php'))->toBeTrue();
+        ->and(file_exists($decorationPath.'/home.blade.php'))->toBeTrue()
+        ->and(file_exists($decorationPath.'/layouts/base.blade.php'))->toBeTrue();
 
     /**
      * 测试 tech-product 主题路径注册
      */
-    $techProductPath = $packageBase . '/resources/views/themes/tech-product';
+    $techProductPath = $packageBase.'/resources/views/themes/tech-product';
     app('view')->addNamespace('filamentboot-site-test-tech-product', $techProductPath);
 
     // 验证 tech-product 路径存在并包含 home.blade.php
     expect(file_exists($techProductPath))->toBeTrue()
-        ->and(file_exists($techProductPath . '/home.blade.php'))->toBeTrue()
-        ->and(file_exists($techProductPath . '/layouts/base.blade.php'))->toBeTrue();
+        ->and(file_exists($techProductPath.'/home.blade.php'))->toBeTrue()
+        ->and(file_exists($techProductPath.'/layouts/base.blade.php'))->toBeTrue();
 
     /**
      * 验证 SiteServiceProvider::registerThemeViews() 按 active_theme 指向不同目录
@@ -61,14 +61,14 @@ it('active_theme 切换后视图解析到对应主题目录', function () {
     $allowedThemes = ['decoration', 'tech-product'];
 
     foreach ($allowedThemes as $theme) {
-        $expectedPath = $packageBase . '/resources/views/themes/' . $theme;
+        $expectedPath = $packageBase.'/resources/views/themes/'.$theme;
         // 路径存在，且与 registerThemeViews 的拼接逻辑一致
         expect(file_exists($expectedPath))->toBeTrue(
             "themes/{$theme} 目录不存在，registerThemeViews 无法正确注册命名空间"
         );
 
         // 验证 home.blade.php 存在（SITE-03 主题切换的核心视图）
-        expect(file_exists($expectedPath . '/home.blade.php'))->toBeTrue(
+        expect(file_exists($expectedPath.'/home.blade.php'))->toBeTrue(
             "themes/{$theme}/home.blade.php 不存在，主题切换后视图解析将失败"
         );
     }
@@ -88,10 +88,11 @@ it('active_theme 切换后视图解析到对应主题目录', function () {
     $providerDir  = dirname($providerFile);
 
     foreach ($allowedThemes as $theme) {
-        $calculatedPath = realpath($providerDir . '/../resources/views/themes/' . $theme);
-        $expectedPath   = realpath($packageBase . '/resources/views/themes/' . $theme);
+        $calculatedPath = realpath($providerDir.'/../resources/views/themes/'.$theme);
+        $expectedPath   = realpath($packageBase.'/resources/views/themes/'.$theme);
 
-        expect($calculatedPath)->toBe($expectedPath,
+        expect($calculatedPath)->toBe(
+            $expectedPath,
             "SiteServiceProvider 计算路径 ({$calculatedPath}) 与实际主题目录 ({$expectedPath}) 不一致"
         );
     }

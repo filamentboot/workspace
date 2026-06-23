@@ -2,8 +2,8 @@
 
 namespace Filamentboot\FilamentbootMarkdownEditor;
 
-use Filament\Support\Facades\FilamentAsset;
 use Filament\Support\Assets\Js;
+use Filament\Support\Facades\FilamentAsset;
 use Illuminate\Support\ServiceProvider;
 
 /**

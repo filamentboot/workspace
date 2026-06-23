@@ -2,10 +2,10 @@
 
 namespace Filamentboot\FilamentbootSite;
 
+use Filamentboot\FilamentbootSite\Settings\SiteSettings;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\ServiceProvider;
-use Filamentboot\FilamentbootSite\Settings\SiteSettings;
 use Livewire\Livewire;
 
 /**
@@ -78,7 +78,7 @@ class SiteServiceProvider extends ServiceProvider
      */
     protected function registerFrontend(): void
     {
-        $this->loadRoutesFrom(__DIR__ . '/../routes/site.php');
+        $this->loadRoutesFrom(__DIR__.'/../routes/site.php');
     }
 
     /**
@@ -136,7 +136,7 @@ class SiteServiceProvider extends ServiceProvider
         // 将 'filamentboot-site' 命名空间根指向当前主题目录（优先）
         // 10-05 在 themes/{active_theme}/ 下提供 home.blade.php、cases/index.blade.php 等
         $this->loadViewsFrom(
-            __DIR__ . '/../resources/views/themes/' . $activeTheme,
+            __DIR__.'/../resources/views/themes/'.$activeTheme,
             'filamentboot-site'
         );
 
@@ -144,7 +144,7 @@ class SiteServiceProvider extends ServiceProvider
         // Livewire 组件 render() 调用 view('filamentboot-site::livewire.*')，
         // 主题目录无该路径时 Laravel 视图查找器自动降级到此路径（Livewire v4 view resolution fix）
         $this->loadViewsFrom(
-            __DIR__ . '/../resources/views',
+            __DIR__.'/../resources/views',
             'filamentboot-site'
         );
     }
@@ -159,11 +159,11 @@ class SiteServiceProvider extends ServiceProvider
     {
         if ($this->app->runningInConsole()) {
             // 注册 settings 迁移（Spatie laravel-settings）
-            $this->loadMigrationsFrom(__DIR__ . '/../database/settings');
+            $this->loadMigrationsFrom(__DIR__.'/../database/settings');
 
             // 注册内容迁移（site_cases、site_solutions 等表由 Plan 10-02 创建）
-            $settingsMigrationsPath = __DIR__ . '/../database/settings';
-            $contentMigrationsPath  = __DIR__ . '/../database/migrations';
+            $settingsMigrationsPath = __DIR__.'/../database/settings';
+            $contentMigrationsPath  = __DIR__.'/../database/migrations';
 
             // 发布迁移文件供用户自定义
             $this->publishes([
@@ -179,7 +179,7 @@ class SiteServiceProvider extends ServiceProvider
             }
 
             // 发布主题视图（tag filamentboot-site-views），供用户覆盖定制（D-10-12）
-            $themesViewsPath = __DIR__ . '/../resources/views/themes';
+            $themesViewsPath = __DIR__.'/../resources/views/themes';
             if (is_dir($themesViewsPath)) {
                 $this->publishes([
                     $themesViewsPath => resource_path('views/vendor/filamentboot-site/themes'),
@@ -187,7 +187,7 @@ class SiteServiceProvider extends ServiceProvider
             }
 
             // 发布 CSS/JS 前端资源（tag filamentboot-site-assets，供 10-05/vite）
-            $resourcesCssPath = __DIR__ . '/../resources/css';
+            $resourcesCssPath = __DIR__.'/../resources/css';
             if (is_dir($resourcesCssPath)) {
                 $this->publishes([
                     $resourcesCssPath => resource_path('css/vendor/filamentboot-site'),

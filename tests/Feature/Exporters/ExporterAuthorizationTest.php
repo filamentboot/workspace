@@ -1,7 +1,9 @@
 <?php
 
 use Filamentboot\Models\AdminUser;
+use Filamentboot\Services\ActivityLogger;
 use Illuminate\Support\Facades\Gate;
+use Spatie\Activitylog\Models\Activity;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
 use Spatie\Permission\PermissionRegistrar;
@@ -13,7 +15,6 @@ use Spatie\Permission\PermissionRegistrar;
  * - 无 export_* 权限的用户被 Gate::check 拒绝
  * - 有 export_* 权限的用户导出后 activity_log 写入审计记录
  */
-
 beforeEach(function () {
     app(PermissionRegistrar::class)->forgetCachedPermissions();
 
@@ -70,10 +71,10 @@ it('导出后 after() 回调写入 activity_log 审计记录', function () {
     $user->assignRole($role);
     $this->actingAs($user, 'admin');
 
-    $logCountBefore = \Spatie\Activitylog\Models\Activity::count();
+    $logCountBefore = Activity::count();
 
     // 直接调用 ActivityLogger 的 after() 回调逻辑（模拟 ExportAction after 回调）
-    $causer = app(\Filamentboot\Services\ActivityLogger::class)->currentCauser();
+    $causer = app(ActivityLogger::class)->currentCauser();
     expect($causer)->not()->toBeNull();
 
     activity('admin')
@@ -82,11 +83,11 @@ it('导出后 after() 回调写入 activity_log 审计记录', function () {
         ->event('export')
         ->log('导出管理员用户数据');
 
-    $logCountAfter = \Spatie\Activitylog\Models\Activity::count();
+    $logCountAfter = Activity::count();
     expect($logCountAfter)->toBe($logCountBefore + 1);
 
     // 验证审计记录的 event 和 properties
-    $log = \Spatie\Activitylog\Models\Activity::latest()->first();
+    $log = Activity::latest()->first();
     expect($log->event)->toBe('export');
     expect($log->properties['action'])->toBe('export');
     expect($log->properties['model'])->toBe('AdminUser');

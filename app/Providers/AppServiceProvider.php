@@ -4,8 +4,8 @@ namespace App\Providers;
 
 use App\Enums\ApiErrorCode;
 use App\Policies\PluginPolicy;
-use Filamentboot\Models\Plugin;
 use Dedoc\Scramble\Scramble;
+use Filamentboot\Models\Plugin;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Routing\Route;
 use Illuminate\Support\Facades\Gate;

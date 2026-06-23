@@ -2,6 +2,7 @@
 
 namespace Filamentboot\Commands;
 
+use Filamentboot\Database\Seeders\SuperAdminSeeder;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
@@ -73,7 +74,7 @@ class InstallCommand extends Command
         $this->components->info('✓ 数据库迁移完成');
 
         // Step 5: 创建超级管理员（T-11-02：输出默认密码提示）
-        $this->callSilently('db:seed', ['--class' => \Filamentboot\Database\Seeders\SuperAdminSeeder::class]);
+        $this->callSilently('db:seed', ['--class' => SuperAdminSeeder::class]);
         $this->components->info('✓ 超级管理员已创建：admin@example.com / password');
 
         // Step 7: 输出安装报告
@@ -128,7 +129,7 @@ class InstallCommand extends Command
 PHP;
         $content = str_replace(
             "'web' => [\n            'driver' => 'session',\n            'provider' => 'users',\n        ],\n    ],",
-            "'web' => [\n            'driver' => 'session',\n            'provider' => 'users',\n        ]," . $guardSnippet . "\n    ],",
+            "'web' => [\n            'driver' => 'session',\n            'provider' => 'users',\n        ],".$guardSnippet."\n    ],",
             $content
         );
 
@@ -144,7 +145,7 @@ PHP;
         // 在 providers 数组的末尾 ], 之前插入（找到 users provider 结束处）
         $content = preg_replace(
             "/(\\s+'users'\\s*=>\\s*\\[[^\\]]+\\],\\s*)(\\n\\s+\\/\\/.*?\\n\\s+\\],|\\n\\s+\\],)/s",
-            '$1' . $providerSnippet . '$2',
+            '$1'.$providerSnippet.'$2',
             $content,
             1
         );
@@ -162,7 +163,7 @@ PHP;
 PHP;
         $content = preg_replace(
             "/(\\s+'users'\\s*=>\\s*\\[\\s*'provider'\\s*=>\\s*'users'[^\\]]+\\],\\s*)(\\n\\s+\\],)/s",
-            '$1' . $passwordSnippet . '$2',
+            '$1'.$passwordSnippet.'$2',
             $content,
             1
         );

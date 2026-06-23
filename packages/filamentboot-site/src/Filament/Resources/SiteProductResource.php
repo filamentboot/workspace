@@ -4,7 +4,7 @@ namespace Filamentboot\FilamentbootSite\Filament\Resources;
 
 use BackedEnum;
 use Filament\Actions\DeleteAction;
-use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\EditAction;
 use Filament\Actions\RestoreAction;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
@@ -20,13 +20,13 @@ use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
-use Filamentboot\Settings\UploadSettings;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
 use Filamentboot\FilamentbootSite\Filament\Resources\SiteProductResource\Pages\CreateSiteProduct;
 use Filamentboot\FilamentbootSite\Filament\Resources\SiteProductResource\Pages\EditSiteProduct;
 use Filamentboot\FilamentbootSite\Filament\Resources\SiteProductResource\Pages\ListSiteProducts;
 use Filamentboot\FilamentbootSite\Models\SiteProduct;
+use Filamentboot\Settings\UploadSettings;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 use UnitEnum;
 
 /**
@@ -170,7 +170,7 @@ class SiteProductResource extends Resource
                 TrashedFilter::make(),
             ])
             ->recordActions([
-                \Filament\Actions\EditAction::make(),
+                EditAction::make(),
                 DeleteAction::make(),
                 RestoreAction::make(),
             ])

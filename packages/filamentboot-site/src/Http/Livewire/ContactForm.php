@@ -4,9 +4,9 @@ namespace Filamentboot\FilamentbootSite\Http\Livewire;
 
 use DanHarrin\LivewireRateLimiting\Exceptions\TooManyRequestsException;
 use DanHarrin\LivewireRateLimiting\WithRateLimiting;
-use Illuminate\View\View;
 use Filamentboot\FilamentbootSite\Enums\ContactMessageStatus;
 use Filamentboot\FilamentbootSite\Models\ContactMessage;
+use Illuminate\View\View;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
@@ -28,32 +28,24 @@ class ContactForm extends Component
 
     /**
      * 访客姓名
-     *
-     * @var string
      */
     #[Validate('required|string|max:50')]
     public string $name = '';
 
     /**
      * 联系电话
-     *
-     * @var string
      */
     #[Validate('required|string|max:20')]
     public string $phone = '';
 
     /**
      * 留言内容（选填，与视图 placeholder "选填" 保持一致）
-     *
-     * @var string|null
      */
     #[Validate('nullable|string|max:500')]
     public ?string $message = null;
 
     /**
      * 提交成功标志（切换视图为感谢提示）
-     *
-     * @var bool
      */
     public bool $submitted = false;
 
@@ -64,8 +56,6 @@ class ContactForm extends Component
      * 2. 字段格式校验
      * 3. 写入 site_contact_messages 表
      * 4. 标记提交成功，重置输入字段
-     *
-     * @return void
      */
     public function submit(): void
     {
@@ -103,8 +93,6 @@ class ContactForm extends Component
      * 视图路径：filamentboot-site::livewire.contact-form
      * （由 SiteServiceProvider::registerThemeViews() 注册命名空间后，
      * 10-05 在 resources/views/livewire/ 下提供具体模板）
-     *
-     * @return View
      */
     public function render(): View
     {

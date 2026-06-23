@@ -39,7 +39,6 @@ class WangEditorField extends Field
      * 组件级磁盘配置优先于 UploadSettings 全局配置。
      *
      * @param  string|Closure|null  $disk  磁盘名称，如 'oss'、'cos'、'public'
-     * @return static
      */
     public function disk(string|Closure|null $disk): static
     {
@@ -71,7 +70,7 @@ class WangEditorField extends Field
         // D-09-08：读 UploadSettings，回退 filesystems.default
         try {
             $settings = app(UploadSettings::class);
-            $disk = $settings->default_disk;
+            $disk     = $settings->default_disk;
         } catch (\Throwable) {
             $disk = config('filesystems.default', 'public');
         }

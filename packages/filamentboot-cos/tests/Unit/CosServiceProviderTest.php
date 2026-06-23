@@ -2,10 +2,11 @@
 
 namespace Filamentboot\FilamentbootCos\Tests\Unit;
 
-use Illuminate\Config\Repository as ConfigRepository;
-use Illuminate\Foundation\Application;
 use Filamentboot\FilamentbootCos\CosServiceProvider;
 use Filamentboot\FilamentbootCos\Settings\CosSettings;
+use Illuminate\Config\Repository as ConfigRepository;
+use Illuminate\Foundation\Application;
+use Illuminate\Support\Facades\Facade;
 use PHPUnit\Framework\TestCase;
 use ReflectionClass;
 
@@ -21,7 +22,6 @@ use ReflectionClass;
  */
 class CosServiceProviderTest extends TestCase
 {
-    /** @var Application */
     private Application $app;
 
     protected function setUp(): void
@@ -44,26 +44,24 @@ class CosServiceProviderTest extends TestCase
         Application::setInstance($this->app);
 
         // 清除 Facade 静态缓存，确保 DB facade 使用本测试的 Application
-        \Illuminate\Support\Facades\Facade::clearResolvedInstances();
-        \Illuminate\Support\Facades\Facade::setFacadeApplication($this->app);
+        Facade::clearResolvedInstances();
+        Facade::setFacadeApplication($this->app);
     }
 
     protected function tearDown(): void
     {
         parent::tearDown();
-        \Illuminate\Support\Facades\Facade::clearResolvedInstances();
+        Facade::clearResolvedInstances();
         Application::setInstance(null);
     }
 
     /**
      * 创建 CosSettings stub（绕过 Spatie Settings 的 final __construct 和 DB 依赖）
-     *
-     * @return CosSettings
      */
     private function makeCosSettingsStub(): CosSettings
     {
         /** @var CosSettings $stub */
-        $stub = (new ReflectionClass(CosSettings::class))->newInstanceWithoutConstructor();
+        $stub             = (new ReflectionClass(CosSettings::class))->newInstanceWithoutConstructor();
         $stub->secret_id  = 'test-secret-id';
         $stub->secret_key = 'test-secret-key';
         $stub->app_id     = '1234567890';
@@ -81,7 +79,8 @@ class CosServiceProviderTest extends TestCase
     public function test_cos_disk_config_injected_when_credentials_present(): void
     {
         // Mock DB facade：模拟 DB::table('plugins')->where()->where()->exists() 返回 true
-        $this->app->instance('db', new class {
+        $this->app->instance('db', new class
+        {
             /** @phpstan-ignore-next-line */
             public function table(string $table): static
             {

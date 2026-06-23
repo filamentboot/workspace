@@ -33,7 +33,7 @@ class RichEditorPurifier
     /**
      * 过滤 HTML 中的 XSS 危险内容
      *
-     * @param  string       $html    原始 HTML 内容（来自 Tiptap 编辑器）
+     * @param  string  $html  原始 HTML 内容（来自 Tiptap 编辑器）
      * @param  string|null  $config  purifier 配置 key，null 时使用默认配置；
      *                               可传 'richeditor' 使用允许 style 属性的白名单配置
      * @return string 净化后的 HTML（<script> 等危险标签已移除）

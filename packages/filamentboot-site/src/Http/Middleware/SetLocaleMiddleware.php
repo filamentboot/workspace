@@ -17,9 +17,8 @@ class SetLocaleMiddleware
     /**
      * 处理传入请求
      *
-     * @param Request $request 当前 HTTP 请求
-     * @param Closure(Request): Response $next 下一个中间件
-     * @return Response
+     * @param  Request  $request  当前 HTTP 请求
+     * @param  Closure(Request): Response  $next  下一个中间件
      */
     public function handle(Request $request, Closure $next): Response
     {

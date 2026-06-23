@@ -2,8 +2,6 @@
 
 namespace Filamentboot\FilamentbootSite\Database\Seeders;
 
-use Illuminate\Database\Seeder;
-use Illuminate\Support\Str;
 use Filamentboot\FilamentbootSite\Models\ContactMessage;
 use Filamentboot\FilamentbootSite\Models\SiteCase;
 use Filamentboot\FilamentbootSite\Models\SiteCaseCategory;
@@ -12,6 +10,7 @@ use Filamentboot\FilamentbootSite\Models\SiteProduct;
 use Filamentboot\FilamentbootSite\Models\SiteProductCategory;
 use Filamentboot\FilamentbootSite\Models\SiteSolution;
 use Filamentboot\FilamentbootSite\Models\SiteTag;
+use Illuminate\Database\Seeder;
 
 /**
  * 官网演示内容种子
@@ -198,7 +197,7 @@ class SiteDemoSeeder extends Seeder
             $case = SiteCase::firstOrCreate(['slug' => $data['slug']], $data);
 
             // 封面图：本地图片优先，降级 picsum.photos（D-11-11）
-            $this->addCoverImage($case, 'site/cases/' . $data['slug'] . '.jpg', $index + 1);
+            $this->addCoverImage($case, 'site/cases/'.$data['slug'].'.jpg', $index + 1);
 
             // 关联标签
             $case->tags()->syncWithoutDetaching(
@@ -278,7 +277,7 @@ class SiteDemoSeeder extends Seeder
             $solution = SiteSolution::firstOrCreate(['slug' => $data['slug']], $data);
 
             // 封面图：本地图片优先，降级 picsum.photos（D-11-11）
-            $this->addCoverImage($solution, 'site/solutions/' . $data['slug'] . '.jpg', $index + 1);
+            $this->addCoverImage($solution, 'site/solutions/'.$data['slug'].'.jpg', $index + 1);
 
             $solution->tags()->syncWithoutDetaching(
                 $tags->random(min(2, $tags->count()))->pluck('id')->toArray()
@@ -298,17 +297,17 @@ class SiteDemoSeeder extends Seeder
         ];
 
         foreach ($productsData as $index => $data) {
-            $data['description_zh']  = '晴空妙享旗舰产品，' . $data['title_zh'] . '，专为智能家居场景设计，品质保障，专业安装。';
-            $data['description_en']  = 'QingKong flagship product ' . $data['title_en'] . ', designed for smart home scenarios with professional installation.';
-            $data['seo_title']       = $data['title_zh'] . ' - 晴空妙享智能家居';
-            $data['seo_description'] = $data['title_zh'] . '，晴空妙享官方出品，品质保障，武汉地区专业上门安装。';
-            $data['seo_keywords']    = '智能家居,' . $data['title_zh'] . ',晴空妙享,武汉';
+            $data['description_zh']  = '晴空妙享旗舰产品，'.$data['title_zh'].'，专为智能家居场景设计，品质保障，专业安装。';
+            $data['description_en']  = 'QingKong flagship product '.$data['title_en'].', designed for smart home scenarios with professional installation.';
+            $data['seo_title']       = $data['title_zh'].' - 晴空妙享智能家居';
+            $data['seo_description'] = $data['title_zh'].'，晴空妙享官方出品，品质保障，武汉地区专业上门安装。';
+            $data['seo_keywords']    = '智能家居,'.$data['title_zh'].',晴空妙享,武汉';
             $data['is_published']    = true;
 
             $product = SiteProduct::firstOrCreate(['slug' => $data['slug']], $data);
 
             // 封面图：本地图片优先，降级 picsum.photos（D-11-11）
-            $this->addCoverImage($product, 'site/products/' . $data['slug'] . '.jpg', $index + 1);
+            $this->addCoverImage($product, 'site/products/'.$data['slug'].'.jpg', $index + 1);
         }
 
         // 7. 创建静态页面（3 个：about/contact/services）
@@ -388,10 +387,10 @@ class SiteDemoSeeder extends Seeder
      * 本地图片不存在时降级为 picsum.photos；
      * 任何异常静默处理，不阻断 Seeder 执行（适用离线环境）。
      *
-     * @param  mixed  $model       目标模型（InteractsWithMedia）
-     * @param  string $diskRelPath 相对 public disk 的路径，如 'site/cases/modern-3bed-smart.jpg'
-     * @param  int    $fallbackSeed picsum.photos seed 序号（降级用）
-     * @param  string $collection  媒体集合名称（默认 'cover'）
+     * @param  mixed  $model  目标模型（InteractsWithMedia）
+     * @param  string  $diskRelPath  相对 public disk 的路径，如 'site/cases/modern-3bed-smart.jpg'
+     * @param  int  $fallbackSeed  picsum.photos seed 序号（降级用）
+     * @param  string  $collection  媒体集合名称（默认 'cover'）
      */
     protected function addCoverImage(
         mixed $model,
@@ -406,19 +405,19 @@ class SiteDemoSeeder extends Seeder
 
         try {
             // 优先使用本地图片（生产/晴空独立项目环境）
-            $fullPath = storage_path('app/public/' . $diskRelPath);
+            $fullPath = storage_path('app/public/'.$diskRelPath);
 
             if (file_exists($fullPath)) {
                 // diskRelPath 必须相对 public disk，禁绝对路径（Pitfall 5）
                 $model->addMediaFromDisk($diskRelPath, 'public')
-                      ->toMediaCollection($collection);
+                    ->toMediaCollection($collection);
 
                 return;
             }
 
             // 降级：使用 picsum.photos 占位（开发/演示/离线环境）
             $model->addMediaFromUrl("https://picsum.photos/seed/qkznj{$fallbackSeed}/800/600")
-                  ->toMediaCollection($collection);
+                ->toMediaCollection($collection);
         } catch (\Throwable) {
             // 离线环境或图片不可达时静默跳过，不阻断播种
         }

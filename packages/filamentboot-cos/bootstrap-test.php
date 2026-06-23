@@ -30,7 +30,7 @@ if (! $autoloadLoaded) {
 
 // 注册 COS 包 src/ 的 PSR-4 命名空间
 spl_autoload_register(function (string $class) {
-    $prefix = 'Filamentboot\\FilamentbootCos\\';
+    $prefix  = 'Filamentboot\\FilamentbootCos\\';
     $baseDir = __DIR__.'/src/';
 
     if (! str_starts_with($class, $prefix)) {
@@ -38,7 +38,7 @@ spl_autoload_register(function (string $class) {
     }
 
     $relativeClass = substr($class, strlen($prefix));
-    $file = $baseDir.str_replace('\\', '/', $relativeClass).'.php';
+    $file          = $baseDir.str_replace('\\', '/', $relativeClass).'.php';
 
     if (file_exists($file)) {
         require $file;

@@ -9,7 +9,6 @@
  * - 安装指引（composer require 示例）
  * - 演示站链接
  */
-
 it('GET /marketing 返回 200', function () {
     $this->get('/marketing')->assertOk();
 });

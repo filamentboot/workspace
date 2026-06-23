@@ -2,12 +2,13 @@
 
 namespace Filamentboot\FilamentbootOss;
 
+use Filamentboot\FilamentbootOss\Settings\OssSettings;
+use Iidestiny\Flysystem\Oss\OssAdapter;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Filesystem\FilesystemAdapter;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\ServiceProvider;
-use Filamentboot\FilamentbootOss\Settings\OssSettings;
 use League\Flysystem\Filesystem;
 
 /**
@@ -27,7 +28,7 @@ class OssServiceProvider extends ServiceProvider
     {
         // 注册 'oss' Flysystem 驱动工厂（仅在实际调用 Storage::disk('oss') 时执行闭包）
         Storage::extend('oss', function (Application $app, array $config): FilesystemAdapter {
-            $adapter = new \Iidestiny\Flysystem\Oss\OssAdapter(
+            $adapter = new OssAdapter(
                 $config['access_key'] ?? '',
                 $config['secret_key'] ?? '',
                 $config['endpoint'] ?? '',
@@ -91,7 +92,7 @@ class OssServiceProvider extends ServiceProvider
     protected function registerMigrations(): void
     {
         if ($this->app->runningInConsole()) {
-            $this->loadMigrationsFrom(__DIR__ . '/../database/settings');
+            $this->loadMigrationsFrom(__DIR__.'/../database/settings');
         }
     }
 }

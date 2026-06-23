@@ -1,5 +1,6 @@
 <?php
 
+use Filamentboot\Models\Plugin;
 use Illuminate\Support\Facades\File;
 
 /**
@@ -85,11 +86,11 @@ class NoExtraPlugin implements Plugin
 }
 PHP);
 
-    /** @var \Filamentboot\Models\Plugin|null $plugin */
+    /** @var Plugin|null $plugin */
     // plugin:scan 或 syncFromInstalled 应发现此包并写入 plugins 表
     $this->artisan('plugin:scan')->assertSuccessful();
 
-    expect(\Filamentboot\Models\Plugin::where('package_name', 'community/no-extra-plugin')->exists())->toBeTrue();
+    expect(Plugin::where('package_name', 'community/no-extra-plugin')->exists())->toBeTrue();
 
     // 清理 fixture 文件
     File::deleteDirectory(base_path('vendor/community'));
@@ -103,8 +104,8 @@ it('/tests/ 路径下的类不被混合发现误报为插件（MKTPLACE-01 Pitfa
     $fixture = json_encode([
         'packages' => [
             [
-                'name'    => 'community/test-only-plugin',
-                'version' => '1.0.0',
+                'name'     => 'community/test-only-plugin',
+                'version'  => '1.0.0',
                 'autoload' => [
                     'classmap' => ['tests/'],
                 ],
@@ -135,7 +136,7 @@ PHP);
     $this->artisan('plugin:scan')->assertSuccessful();
 
     // /tests/ 路径下的类不应被写入 plugins 表
-    expect(\Filamentboot\Models\Plugin::where('package_name', 'community/test-only-plugin')->exists())->toBeFalse();
+    expect(Plugin::where('package_name', 'community/test-only-plugin')->exists())->toBeFalse();
 
     // 清理 fixture 文件
     File::deleteDirectory(base_path('vendor/community'));
@@ -164,7 +165,7 @@ it('含 extra.filamentboot.plugin_class 的包优先使用声明值（MKTPLACE-0
     File::put(base_path('vendor/composer/installed.json'), $fixture);
     $this->artisan('plugin:scan')->assertSuccessful();
 
-    $record = \Filamentboot\Models\Plugin::where('package_name', 'first/declared-plugin')->first();
+    $record = Plugin::where('package_name', 'first/declared-plugin')->first();
     expect($record)->not->toBeNull();
     expect($record->plugin_class)->toBe('First\\Declared\\DeclaredPlugin');
 });

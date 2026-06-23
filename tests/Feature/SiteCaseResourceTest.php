@@ -2,11 +2,14 @@
 
 namespace Tests\Feature;
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Schema;
+use Filament\Panel;
 use Filamentboot\FilamentbootSite\Enums\ContactMessageStatus;
+use Filamentboot\FilamentbootSite\Filament\Resources\SiteCaseResource;
 use Filamentboot\FilamentbootSite\Models\ContactMessage;
 use Filamentboot\FilamentbootSite\Models\SiteCase;
+use Filamentboot\FilamentbootSite\SitePlugin;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
 use Tests\TestCase;
 
 /**
@@ -19,6 +22,7 @@ use Tests\TestCase;
  * - test_site_case_resource_registered_and_list_accessible：由 Plan 10-03（Filament Resource）落地转绿
  *
  * @group site
+ *
  * @covers \Filamentboot\FilamentbootSite\Models\SiteCase
  */
 class SiteCaseResourceTest extends TestCase
@@ -88,19 +92,19 @@ class SiteCaseResourceTest extends TestCase
     public function test_site_case_resource_registered_and_list_accessible(): void
     {
         // 直接调用 SitePlugin::register()，验证 SiteCaseResource 被注册到 Panel
-        $panel = new \Filament\Panel();
-        \Filamentboot\FilamentbootSite\SitePlugin::make()->register($panel);
+        $panel = new Panel;
+        SitePlugin::make()->register($panel);
 
         // Panel 拥有 site-case 相关资源类
         $resources = $panel->getResources();
         $this->assertContains(
-            \Filamentboot\FilamentbootSite\Filament\Resources\SiteCaseResource::class,
+            SiteCaseResource::class,
             $resources,
             'SitePlugin::register() 后 SiteCaseResource 应在 Panel 的 resources 列表中'
         );
 
         // SitePlugin 唯一标识符正确
-        $plugin = \Filamentboot\FilamentbootSite\SitePlugin::make();
+        $plugin = SitePlugin::make();
         $this->assertSame(
             'filamentboot-site',
             $plugin->getId(),

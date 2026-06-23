@@ -4,6 +4,7 @@ namespace Filamentboot\FilamentbootRichEditor\Tests\Unit;
 
 use Filamentboot\FilamentbootRichEditor\RichEditorPlugin;
 use Filamentboot\FilamentbootRichEditor\RichEditorServiceProvider;
+use Illuminate\Foundation\Application;
 use Orchestra\Testbench\TestCase;
 
 /**
@@ -18,7 +19,7 @@ class RichEditorPluginTest extends TestCase
     /**
      * 注册包服务提供者
      *
-     * @param  \Illuminate\Foundation\Application  $app
+     * @param  Application  $app
      * @return list<class-string>
      */
     protected function getPackageProviders($app): array

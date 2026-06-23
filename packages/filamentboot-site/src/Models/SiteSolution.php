@@ -2,12 +2,13 @@
 
 namespace Filamentboot\FilamentbootSite\Models;
 
+use Filamentboot\FilamentbootSite\Database\Factories\SiteSolutionFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Filamentboot\FilamentbootSite\Database\Factories\SiteSolutionFactory;
+use Illuminate\Support\Carbon;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -31,10 +32,10 @@ use Spatie\MediaLibrary\InteractsWithMedia;
  * @property string|null $seo_keywords
  * @property bool $is_featured
  * @property int $sort
- * @property \Illuminate\Support\Carbon|null $published_at
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property Carbon|null $published_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
  */
 class SiteSolution extends Model implements HasMedia
 {
@@ -49,8 +50,6 @@ class SiteSolution extends Model implements HasMedia
 
     /**
      * 解析对应的工厂（因命名空间非 Laravel 默认推导路径）
-     *
-     * @return SiteSolutionFactory
      */
     protected static function newFactory(): SiteSolutionFactory
     {
@@ -94,7 +93,7 @@ class SiteSolution extends Model implements HasMedia
     /**
      * 作用域：仅返回已发布内容
      *
-     * @param Builder<SiteSolution> $query
+     * @param  Builder<SiteSolution>  $query
      * @return Builder<SiteSolution>
      */
     public function scopePublished(Builder $query): Builder
@@ -105,7 +104,7 @@ class SiteSolution extends Model implements HasMedia
     /**
      * 作用域：仅返回置顶/精选内容
      *
-     * @param Builder<SiteSolution> $query
+     * @param  Builder<SiteSolution>  $query
      * @return Builder<SiteSolution>
      */
     public function scopeFeatured(Builder $query): Builder

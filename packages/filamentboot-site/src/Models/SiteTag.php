@@ -5,6 +5,7 @@ namespace Filamentboot\FilamentbootSite\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
+use Illuminate\Support\Carbon;
 
 /**
  * 内容标签模型（多态标签，自建实现，不依赖 spatie/laravel-tags）
@@ -15,8 +16,8 @@ use Illuminate\Database\Eloquent\Relations\MorphToMany;
  * @property string $name_zh
  * @property string|null $name_en
  * @property string $slug
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  */
 class SiteTag extends Model
 {

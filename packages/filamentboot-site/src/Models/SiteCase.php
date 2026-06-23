@@ -2,15 +2,16 @@
 
 namespace Filamentboot\FilamentbootSite\Models;
 
+use Filamentboot\FilamentbootSite\Database\Factories\SiteCaseFactory;
+use Filamentboot\FilamentbootSite\Enums\CaseStyle;
+use Filamentboot\FilamentbootSite\Enums\HouseType;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Filamentboot\FilamentbootSite\Database\Factories\SiteCaseFactory;
-use Filamentboot\FilamentbootSite\Enums\CaseStyle;
-use Filamentboot\FilamentbootSite\Enums\HouseType;
+use Illuminate\Support\Carbon;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
 
@@ -40,10 +41,10 @@ use Spatie\MediaLibrary\InteractsWithMedia;
  * @property array<int, mixed>|null $gallery
  * @property bool $is_featured
  * @property int $sort
- * @property \Illuminate\Support\Carbon|null $published_at
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property Carbon|null $published_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
  */
 class SiteCase extends Model implements HasMedia
 {
@@ -58,8 +59,6 @@ class SiteCase extends Model implements HasMedia
 
     /**
      * 解析对应的工厂（因命名空间非 Laravel 默认推导路径）
-     *
-     * @return SiteCaseFactory
      */
     protected static function newFactory(): SiteCaseFactory
     {
@@ -118,7 +117,7 @@ class SiteCase extends Model implements HasMedia
     /**
      * 作用域：仅返回已发布内容（published_at 不为 null 且不晚于当前时间）
      *
-     * @param Builder<SiteCase> $query
+     * @param  Builder<SiteCase>  $query
      * @return Builder<SiteCase>
      */
     public function scopePublished(Builder $query): Builder
@@ -129,7 +128,7 @@ class SiteCase extends Model implements HasMedia
     /**
      * 作用域：仅返回置顶/精选内容
      *
-     * @param Builder<SiteCase> $query
+     * @param  Builder<SiteCase>  $query
      * @return Builder<SiteCase>
      */
     public function scopeFeatured(Builder $query): Builder

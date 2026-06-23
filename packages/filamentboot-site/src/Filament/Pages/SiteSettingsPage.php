@@ -11,9 +11,9 @@ use Filament\Pages\SettingsPage;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
+use Filamentboot\FilamentbootSite\Settings\SiteSettings;
 use Filamentboot\Settings\UploadSettings;
 use Illuminate\Support\Facades\Artisan;
-use Filamentboot\FilamentbootSite\Settings\SiteSettings;
 use UnitEnum;
 
 /**
@@ -118,7 +118,7 @@ class SiteSettingsPage extends SettingsPage
                             Select::make('active_theme')
                                 ->label('前台主题')
                                 ->options([
-                                    'decoration' => '科技装修（深色）',
+                                    'decoration'   => '科技装修（深色）',
                                     'tech-product' => '科技产品（浅色）',
                                 ])
                                 ->required()

@@ -1,10 +1,9 @@
 <?php
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\RateLimiter;
 use Filamentboot\FilamentbootSite\Enums\ContactMessageStatus;
 use Filamentboot\FilamentbootSite\Http\Livewire\ContactForm;
-use Filamentboot\FilamentbootSite\Models\ContactMessage;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\RateLimiter;
 use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
@@ -25,6 +24,7 @@ beforeEach(function () {
  * - 同 IP 超过 3 次提交触发速率限制，不写入新记录（D-10-15 安全，T-10-04-02）
  *
  * @group site
+ *
  * @covers \Filamentboot\FilamentbootSite\Http\Livewire\ContactForm
  */
 
@@ -34,7 +34,7 @@ beforeEach(function () {
 it('询盘表单提交后持久化到数据库且默认状态为未读', function () {
     // 清除该测试的速率限制器（避免测试间干扰）
     RateLimiter::clear(
-        'livewire-rate-limiter:' . sha1(ContactForm::class . '|submit|127.0.0.1')
+        'livewire-rate-limiter:'.sha1(ContactForm::class.'|submit|127.0.0.1')
     );
 
     Livewire::test(ContactForm::class)
@@ -58,7 +58,7 @@ it('询盘表单提交后持久化到数据库且默认状态为未读', functio
  * 询盘表单超过速率限制后拒绝提交，不写入新记录（D-10-15 安全，T-10-04-02）
  */
 it('询盘表单超过速率限制后拒绝提交', function () {
-    $rateLimitKey = 'livewire-rate-limiter:' . sha1(ContactForm::class . '|submit|127.0.0.1');
+    $rateLimitKey = 'livewire-rate-limiter:'.sha1(ContactForm::class.'|submit|127.0.0.1');
 
     // 清除速率限制，确保干净环境
     RateLimiter::clear($rateLimitKey);
@@ -67,7 +67,7 @@ it('询盘表单超过速率限制后拒绝提交', function () {
     for ($i = 1; $i <= 3; $i++) {
         Livewire::test(ContactForm::class)
             ->set('name', "用户{$i}")
-            ->set('phone', '13800138' . str_pad($i, 3, '0', STR_PAD_LEFT))
+            ->set('phone', '13800138'.str_pad($i, 3, '0', STR_PAD_LEFT))
             ->set('message', "留言内容{$i}")
             ->call('submit');
     }

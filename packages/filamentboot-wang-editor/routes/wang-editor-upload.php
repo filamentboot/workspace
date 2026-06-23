@@ -1,7 +1,7 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use Filamentboot\FilamentbootWangEditor\Http\Controllers\WangEditorUploadController;
+use Illuminate\Support\Facades\Route;
 
 /*
  * wangEditor 图片上传路由

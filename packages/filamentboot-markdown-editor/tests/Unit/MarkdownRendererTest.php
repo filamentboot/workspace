@@ -22,7 +22,7 @@ class MarkdownRendererTest extends TestCase
      */
     public function test_render_converts_heading(): void
     {
-        $renderer = new MarkdownRenderer();
+        $renderer = new MarkdownRenderer;
 
         $html = $renderer->render('# Title');
 
@@ -37,7 +37,7 @@ class MarkdownRendererTest extends TestCase
      */
     public function test_render_filters_xss_script_tags(): void
     {
-        $renderer = new MarkdownRenderer();
+        $renderer = new MarkdownRenderer;
 
         $html = $renderer->render('<script>alert(1)</script>');
 
@@ -51,10 +51,10 @@ class MarkdownRendererTest extends TestCase
      */
     public function test_render_preserves_gfm_table(): void
     {
-        $renderer = new MarkdownRenderer();
+        $renderer = new MarkdownRenderer;
 
         $markdown = "| 列A | 列B |\n|-----|-----|\n| 1   | 2   |";
-        $html = $renderer->render($markdown);
+        $html     = $renderer->render($markdown);
 
         self::assertStringContainsString('<table>', $html);
     }

@@ -1,9 +1,12 @@
 <?php
 
 use Filament\Panel;
-use Illuminate\Support\Facades\Artisan;
+use Filamentboot\FilamentbootSite\Filament\Pages\SiteSettingsPage;
+use Filamentboot\FilamentbootSite\Filament\Resources\ContactMessageResource;
+use Filamentboot\FilamentbootSite\Filament\Resources\SiteCaseResource;
 use Filamentboot\FilamentbootSite\SitePlugin;
 use Filamentboot\FilamentbootSite\SiteServiceProvider;
+use Illuminate\Support\Facades\Artisan;
 
 /**
  * 官网插件集成测试（SitePluginIntegrationTest）
@@ -14,6 +17,7 @@ use Filamentboot\FilamentbootSite\SiteServiceProvider;
  * - SitePlugin::register() 注册 SiteSettingsPage 到 Filament Panel
  *
  * @group site
+ *
  * @covers \Filamentboot\FilamentbootSite\SitePlugin
  * @covers \Filamentboot\FilamentbootSite\SiteServiceProvider
  */
@@ -48,17 +52,17 @@ it('plugin:scan 发现官网插件包', function () {
  */
 it('插件启用时 SitePlugin 注册成功', function () {
     // 直接实例化 Panel 并注册 SitePlugin，验证注册契约（与 SiteCaseResourceTest 同一模式）
-    $panel = new Panel();
+    $panel = new Panel;
     SitePlugin::make()->register($panel);
 
     // 断言 SiteSettingsPage 已注册到 panel
     $pages = $panel->getPages();
 
     // 断言 SiteSettingsPage 类名在 pages 数组中（getPages 返回类字符串列表）
-    expect($pages)->toContain(\Filamentboot\FilamentbootSite\Filament\Pages\SiteSettingsPage::class);
+    expect($pages)->toContain(SiteSettingsPage::class);
 
     // 断言五个 Resource 已注册
     $resources = $panel->getResources();
-    expect($resources)->toContain(\Filamentboot\FilamentbootSite\Filament\Resources\SiteCaseResource::class);
-    expect($resources)->toContain(\Filamentboot\FilamentbootSite\Filament\Resources\ContactMessageResource::class);
+    expect($resources)->toContain(SiteCaseResource::class);
+    expect($resources)->toContain(ContactMessageResource::class);
 });

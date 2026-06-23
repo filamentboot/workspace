@@ -35,38 +35,38 @@ function firstPartyPlugins(): array
 
 it('OssPlugin 实现 Filament\\Contracts\\Plugin 接口（MKTPLACE-09）', function () {
     $class = 'Filamentboot\\FilamentbootOss\\OssPlugin';
-    expect(class_exists($class))->toBeTrue("OssPlugin 类应可被 autoload 到");
-    expect(is_a($class, Plugin::class, true))->toBeTrue("OssPlugin 应实现 Filament\\Contracts\\Plugin");
+    expect(class_exists($class))->toBeTrue('OssPlugin 类应可被 autoload 到');
+    expect(is_a($class, Plugin::class, true))->toBeTrue('OssPlugin 应实现 Filament\\Contracts\\Plugin');
 });
 
 it('CosPlugin 实现 Filament\\Contracts\\Plugin 接口（MKTPLACE-09）', function () {
     $class = 'Filamentboot\\FilamentbootCos\\CosPlugin';
-    expect(class_exists($class))->toBeTrue("CosPlugin 类应可被 autoload 到");
-    expect(is_a($class, Plugin::class, true))->toBeTrue("CosPlugin 应实现 Filament\\Contracts\\Plugin");
+    expect(class_exists($class))->toBeTrue('CosPlugin 类应可被 autoload 到');
+    expect(is_a($class, Plugin::class, true))->toBeTrue('CosPlugin 应实现 Filament\\Contracts\\Plugin');
 });
 
 it('RichEditorPlugin 实现 Filament\\Contracts\\Plugin 接口（MKTPLACE-09）', function () {
     $class = 'Filamentboot\\FilamentbootRichEditor\\RichEditorPlugin';
-    expect(class_exists($class))->toBeTrue("RichEditorPlugin 类应可被 autoload 到");
-    expect(is_a($class, Plugin::class, true))->toBeTrue("RichEditorPlugin 应实现 Filament\\Contracts\\Plugin");
+    expect(class_exists($class))->toBeTrue('RichEditorPlugin 类应可被 autoload 到');
+    expect(is_a($class, Plugin::class, true))->toBeTrue('RichEditorPlugin 应实现 Filament\\Contracts\\Plugin');
 });
 
 it('MarkdownEditorPlugin 实现 Filament\\Contracts\\Plugin 接口（MKTPLACE-09）', function () {
     $class = 'Filamentboot\\FilamentbootMarkdownEditor\\MarkdownEditorPlugin';
-    expect(class_exists($class))->toBeTrue("MarkdownEditorPlugin 类应可被 autoload 到");
-    expect(is_a($class, Plugin::class, true))->toBeTrue("MarkdownEditorPlugin 应实现 Filament\\Contracts\\Plugin");
+    expect(class_exists($class))->toBeTrue('MarkdownEditorPlugin 类应可被 autoload 到');
+    expect(is_a($class, Plugin::class, true))->toBeTrue('MarkdownEditorPlugin 应实现 Filament\\Contracts\\Plugin');
 });
 
 it('WangEditorPlugin 实现 Filament\\Contracts\\Plugin 接口（MKTPLACE-09）', function () {
     $class = 'Filamentboot\\FilamentbootWangEditor\\WangEditorPlugin';
-    expect(class_exists($class))->toBeTrue("WangEditorPlugin 类应可被 autoload 到");
-    expect(is_a($class, Plugin::class, true))->toBeTrue("WangEditorPlugin 应实现 Filament\\Contracts\\Plugin");
+    expect(class_exists($class))->toBeTrue('WangEditorPlugin 类应可被 autoload 到');
+    expect(is_a($class, Plugin::class, true))->toBeTrue('WangEditorPlugin 应实现 Filament\\Contracts\\Plugin');
 });
 
 it('SitePlugin 实现 Filament\\Contracts\\Plugin 接口（MKTPLACE-09）', function () {
     $class = 'Filamentboot\\FilamentbootSite\\SitePlugin';
-    expect(class_exists($class))->toBeTrue("SitePlugin 类应可被 autoload 到");
-    expect(is_a($class, Plugin::class, true))->toBeTrue("SitePlugin 应实现 Filament\\Contracts\\Plugin");
+    expect(class_exists($class))->toBeTrue('SitePlugin 类应可被 autoload 到');
+    expect(is_a($class, Plugin::class, true))->toBeTrue('SitePlugin 应实现 Filament\\Contracts\\Plugin');
 });
 
 it('filamentboot-oss 的 composer.json 含 post_install 块（MKTPLACE-09）', function () {

@@ -3,6 +3,7 @@
 namespace Filamentboot\FilamentbootSite\Filament\Resources;
 
 use BackedEnum;
+use Filament\Actions\ViewAction;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
@@ -11,12 +12,11 @@ use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
-use Filament\Actions\ViewAction;
-use Illuminate\Database\Eloquent\Builder;
 use Filamentboot\FilamentbootSite\Enums\ContactMessageStatus;
 use Filamentboot\FilamentbootSite\Filament\Resources\ContactMessageResource\Pages\ListContactMessages;
 use Filamentboot\FilamentbootSite\Filament\Resources\ContactMessageResource\Pages\ViewContactMessage;
 use Filamentboot\FilamentbootSite\Models\ContactMessage;
+use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
 /**
@@ -73,9 +73,6 @@ class ContactMessageResource extends Resource
 
     /**
      * 详情页 Infolist 定义（ViewContactMessage 页面展示询盘完整信息）
-     *
-     * @param Schema $schema
-     * @return Schema
      */
     public static function infolist(Schema $schema): Schema
     {

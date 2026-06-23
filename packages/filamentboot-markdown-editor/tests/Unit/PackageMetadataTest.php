@@ -20,7 +20,7 @@ class PackageMetadataTest extends TestCase
         parent::setUp();
 
         $this->composer = json_decode(
-            (string) file_get_contents(__DIR__ . '/../../composer.json'),
+            (string) file_get_contents(__DIR__.'/../../composer.json'),
             true,
             512,
             JSON_THROW_ON_ERROR,

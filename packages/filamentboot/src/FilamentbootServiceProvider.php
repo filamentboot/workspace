@@ -66,7 +66,7 @@ class FilamentbootServiceProvider extends ServiceProvider
             }
 
             // Fall back to Laravel default for non-package models
-            $modelNamespace = 'App\\Models\\';
+            $modelNamespace   = 'App\\Models\\';
             $factoryNamespace = 'Database\\Factories\\';
 
             $modelName = str_starts_with($modelName, $modelNamespace)

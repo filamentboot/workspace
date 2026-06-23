@@ -95,7 +95,7 @@ function twoPackagesFixture(): string
                 'name'    => 'test/plain-package',
                 'version' => '2.0.0',
                 // 无 extra.filamentboot 声明
-                'extra'   => [
+                'extra' => [
                     'laravel' => [
                         'providers' => ['Test\\PlainServiceProvider'],
                     ],
@@ -126,7 +126,7 @@ it('重复执行 plugin:scan 后 installed_at 保持首次值（幂等）', func
     // 第一次执行
     $this->artisan('plugin:scan')->assertSuccessful();
 
-    /** @var \Filamentboot\Models\Plugin $firstRecord */
+    /** @var Plugin $firstRecord */
     $firstRecord = Plugin::where('package_name', 'test/fake-fa-plugin')->first();
     $firstAt     = $firstRecord->installed_at;
 
@@ -136,7 +136,7 @@ it('重复执行 plugin:scan 后 installed_at 保持首次值（幂等）', func
     // 记录数量不变（无重复创建）
     expect(Plugin::where('package_name', 'test/fake-fa-plugin')->count())->toBe(1);
 
-    /** @var \Filamentboot\Models\Plugin $secondRecord */
+    /** @var Plugin $secondRecord */
     $secondRecord = Plugin::where('package_name', 'test/fake-fa-plugin')->first();
     $secondAt     = $secondRecord->fresh()->installed_at;
 

@@ -1,12 +1,14 @@
 <?php
 
 use App\Services\PluginManager;
+use Filament\Contracts\Plugin;
 use Filamentboot\FilamentbootCos\CosPlugin;
 use Filamentboot\FilamentbootCos\CosServiceProvider;
 use Filamentboot\FilamentbootCos\Settings\CosSettings;
 use Filamentboot\FilamentbootOss\OssPlugin;
 use Filamentboot\FilamentbootOss\OssServiceProvider;
 use Filamentboot\FilamentbootOss\Settings\OssSettings;
+use Filamentboot\FilamentbootServiceProvider;
 
 /**
  * 云存储插件集成测试（CLOUD-01 / CLOUD-02 集成闭环）
@@ -17,7 +19,6 @@ use Filamentboot\FilamentbootOss\Settings\OssSettings;
  * 3. OSS 凭证完整时磁盘配置被注入
  * 4. 无凭证时应用正常启动（不崩溃）
  */
-
 it('OSS 与 COS 包的 ServiceProvider 和 Plugin 类存在', function () {
     // ServiceProvider 类存在
     expect(class_exists(OssServiceProvider::class))->toBeTrue(
@@ -28,8 +29,8 @@ it('OSS 与 COS 包的 ServiceProvider 和 Plugin 类存在', function () {
     );
 
     // Plugin 类实现 Filament\Contracts\Plugin 接口
-    expect(OssPlugin::class)->toImplement(\Filament\Contracts\Plugin::class);
-    expect(CosPlugin::class)->toImplement(\Filament\Contracts\Plugin::class);
+    expect(OssPlugin::class)->toImplement(Plugin::class);
+    expect(CosPlugin::class)->toImplement(Plugin::class);
 });
 
 it('config/settings.php settings 数组已注册 OssSettings 与 CosSettings', function () {
@@ -43,7 +44,7 @@ it('config/settings.php settings 数组已注册 OssSettings 与 CosSettings', f
 it('OSS 凭证完整时 oss 磁盘配置被注入', function () {
     // 直接调用 OssServiceProvider 注入逻辑（模拟 boot 行为）
     // 使用 mock 绕过 settings 表持久化，直接测试注入条件判断
-    $mockSettings = Mockery::mock(OssSettings::class)->makePartial();
+    $mockSettings                    = Mockery::mock(OssSettings::class)->makePartial();
     $mockSettings->access_key_id     = 'test-access-key';
     $mockSettings->access_key_secret = 'test-secret-key';
     $mockSettings->bucket            = 'test-bucket';
@@ -83,14 +84,14 @@ it('无凭证时应用正常启动不抛出异常', function () {
     try {
         $ossProvider = new OssServiceProvider(app());
         $ossBooted   = true;
-    } catch (\Throwable $e) {
+    } catch (Throwable $e) {
         // 不应该抛出异常
     }
 
     try {
         $cosProvider = new CosServiceProvider(app());
         $cosBooted   = true;
-    } catch (\Throwable $e) {
+    } catch (Throwable $e) {
         // 不应该抛出异常
     }
 
@@ -112,14 +113,14 @@ it('plugin:scan 发现 OSS 与 COS 两个云存储插件', function () {
     expect($count)->toBeGreaterThanOrEqual(2);
 
     // 验证 OSS 插件记录已写入
-    $ossPlugin = \Filamentboot\Models\Plugin::where('package_name', 'filamentboot/filamentboot-oss')->first();
+    $ossPlugin = Filamentboot\Models\Plugin::where('package_name', 'filamentboot/filamentboot-oss')->first();
     expect($ossPlugin)->not->toBeNull('期望 filamentboot-oss 插件记录存在');
     expect($ossPlugin->slug)->toBe('filamentboot-oss');
     expect($ossPlugin->plugin_class)->not->toBeEmpty('期望 plugin_class 字段非空');
     expect($ossPlugin->service_provider)->not->toBeEmpty('期望 service_provider 字段非空');
 
     // 验证 COS 插件记录已写入
-    $cosPlugin = \Filamentboot\Models\Plugin::where('package_name', 'filamentboot/filamentboot-cos')->first();
+    $cosPlugin = Filamentboot\Models\Plugin::where('package_name', 'filamentboot/filamentboot-cos')->first();
     expect($cosPlugin)->not->toBeNull('期望 filamentboot-cos 插件记录存在');
     expect($cosPlugin->slug)->toBe('filamentboot-cos');
     expect($cosPlugin->plugin_class)->not->toBeEmpty('期望 plugin_class 字段非空');
@@ -143,6 +144,6 @@ it('medialibrary disk_name 随 UploadSettings.default_disk 切换（D-08-07 端�
 
     // 验证 FilamentbootServiceProvider 注册了 registerUploadGuards
     // 通过反射确认方法存在（确保 boot() 接入点已注册）
-    $sp = new \ReflectionClass(\Filamentboot\FilamentbootServiceProvider::class);
+    $sp = new ReflectionClass(FilamentbootServiceProvider::class);
     expect($sp->hasMethod('registerUploadGuards'))->toBeTrue('期望 registerUploadGuards() 方法存在');
 });

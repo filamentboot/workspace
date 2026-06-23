@@ -1,8 +1,8 @@
 <?php
 
-use Illuminate\Support\Facades\Route;
 use Filamentboot\FilamentbootSite\Http\Controllers\SiteFrontController;
 use Filamentboot\FilamentbootSite\Http\Middleware\SetLocaleMiddleware;
+use Illuminate\Support\Facades\Route;
 
 /*
 |--------------------------------------------------------------------------

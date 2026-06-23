@@ -15,14 +15,13 @@ use Spatie\Permission\Models\Role;
  * 3. 演示账号即使挂 super_admin 角色，写操作仍被拒（演示判定先于超管放行）
  * 4. 非演示 super_admin 用户权限不受演示分支影响
  */
-
 beforeEach(function () {
     $this->seed(DemoSeeder::class);
     $this->seed(SuperAdminSeeder::class);
 });
 
 it('演示账号对 delete ability 被拒绝', function () {
-    $demo = AdminUser::where('email', 'demo@example.com')->first();
+    $demo       = AdminUser::where('email', 'demo@example.com')->first();
     $targetUser = AdminUser::where('email', 'admin@example.com')->first();
 
     expect(Gate::forUser($demo)->denies('delete', $targetUser))->toBeTrue();

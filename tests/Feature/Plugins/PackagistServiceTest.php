@@ -16,7 +16,6 @@ use Illuminate\Support\Facades\Http;
  * 威胁缓解：T-12-00-02 — Http::fake；CI 绝不命中真实 packagist.org。
  * RESEARCH Pattern 3：Packagist 搜索 + p2 端点。
  */
-
 it('searchFilamentPlugins 返回 results 数组（MKTPLACE-08）', function () {
     Cache::flush();
 

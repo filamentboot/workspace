@@ -2,10 +2,11 @@
 
 namespace Filamentboot\FilamentbootMarkdownEditor\Tests\Unit;
 
-use Filamentboot\Settings\UploadSettings;
+use Filament\Forms\Components\MarkdownEditor;
 use Filamentboot\FilamentbootMarkdownEditor\Forms\MarkdownEditorField;
 use Filamentboot\FilamentbootMarkdownEditor\MarkdownEditorServiceProvider;
-use Filament\Forms\Components\MarkdownEditor;
+use Filamentboot\Settings\UploadSettings;
+use Illuminate\Foundation\Application;
 use Orchestra\Testbench\TestCase;
 
 /**
@@ -21,7 +22,7 @@ class MarkdownEditorFieldTest extends TestCase
     /**
      * 注册包服务提供者
      *
-     * @param  \Illuminate\Foundation\Application  $app
+     * @param  Application  $app
      * @return list<class-string>
      */
     protected function getPackageProviders($app): array
@@ -47,14 +48,14 @@ class MarkdownEditorFieldTest extends TestCase
     public function test_disk_reads_upload_settings(): void
     {
         $this->app->bind(UploadSettings::class, function () {
-            $stub = $this->createStub(UploadSettings::class);
+            $stub               = $this->createStub(UploadSettings::class);
             $stub->default_disk = 'cos';
 
             return $stub;
         });
 
         $field = MarkdownEditorField::make('content');
-        $disk = $field->resolveDisk();
+        $disk  = $field->resolveDisk();
 
         self::assertSame('cos', $disk);
     }
@@ -68,14 +69,14 @@ class MarkdownEditorFieldTest extends TestCase
     public function test_disk_local_falls_back_to_public(): void
     {
         $this->app->bind(UploadSettings::class, function () {
-            $stub = $this->createStub(UploadSettings::class);
+            $stub               = $this->createStub(UploadSettings::class);
             $stub->default_disk = 'local';
 
             return $stub;
         });
 
         $field = MarkdownEditorField::make('content');
-        $disk = $field->resolveDisk();
+        $disk  = $field->resolveDisk();
 
         self::assertSame('public', $disk);
     }
@@ -94,7 +95,7 @@ class MarkdownEditorFieldTest extends TestCase
         });
 
         $field = MarkdownEditorField::make('content');
-        $disk = $field->resolveDisk();
+        $disk  = $field->resolveDisk();
 
         // config('filesystems.default') = 'public'（非 local），直接返回
         self::assertSame('public', $disk);

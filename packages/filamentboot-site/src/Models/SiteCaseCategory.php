@@ -2,10 +2,11 @@
 
 namespace Filamentboot\FilamentbootSite\Models;
 
+use Filamentboot\FilamentbootSite\Database\Factories\SiteCaseCategoryFactory;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Filamentboot\FilamentbootSite\Database\Factories\SiteCaseCategoryFactory;
+use Illuminate\Support\Carbon;
 
 /**
  * 装修案例分类模型
@@ -16,8 +17,8 @@ use Filamentboot\FilamentbootSite\Database\Factories\SiteCaseCategoryFactory;
  * @property string $slug
  * @property int|null $parent_id
  * @property int $sort
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  */
 class SiteCaseCategory extends Model
 {
@@ -29,8 +30,6 @@ class SiteCaseCategory extends Model
 
     /**
      * 解析对应的工厂（因命名空间非 Laravel 默认推导路径）
-     *
-     * @return SiteCaseCategoryFactory
      */
     protected static function newFactory(): SiteCaseCategoryFactory
     {

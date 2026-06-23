@@ -26,22 +26,22 @@ class PluginFactory extends Factory
         $name   = $this->faker->slug(1);
 
         return [
-            'package_name'       => $vendor.'/'.$name,
-            'slug'               => $vendor.'-'.$name,
-            'name'               => $this->faker->words(2, true),
-            'kind'               => 'package',
-            'source'             => 'community',
-            'plugin_class'       => null,
-            'settings_page_slug' => null,
-            'service_provider'   => null,
-            'install_constraint' => null,
-            'installed_version'  => '1.0.0',
-            'description'        => $this->faker->sentence(),
+            'package_name'         => $vendor.'/'.$name,
+            'slug'                 => $vendor.'-'.$name,
+            'name'                 => $this->faker->words(2, true),
+            'kind'                 => 'package',
+            'source'               => 'community',
+            'plugin_class'         => null,
+            'settings_page_slug'   => null,
+            'service_provider'     => null,
+            'install_constraint'   => null,
+            'installed_version'    => '1.0.0',
+            'description'          => $this->faker->sentence(),
             'compatibility_status' => 'unknown',
-            'is_enabled'         => false,
-            'init_status'        => 'pending',
-            'init_log'           => null,
-            'installed_at'       => null,
+            'is_enabled'           => false,
+            'init_status'          => 'pending',
+            'init_log'             => null,
+            'installed_at'         => null,
         ];
     }
 }

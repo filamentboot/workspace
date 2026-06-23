@@ -1,7 +1,7 @@
 <?php
 
-use Filamentboot\Models\Plugin;
 use App\Services\PluginManager;
+use Filamentboot\Models\Plugin;
 use Illuminate\Support\Facades\Cache;
 
 /**
@@ -65,7 +65,7 @@ it('初始化失败时 init_log 保留错误信息且 init_status 为 failed', f
     $manager->shouldReceive('runPublish')->once()->andReturnUsing(function () {});
     $manager->shouldReceive('runSeeder')
         ->once()
-        ->andThrow(new \RuntimeException('Seeder 执行失败：App\\Seeders\\NonExistentSeeder 类不存在'));
+        ->andThrow(new RuntimeException('Seeder 执行失败：App\\Seeders\\NonExistentSeeder 类不存在'));
 
     $manager->initialize($plugin);
 

@@ -2,9 +2,9 @@
 
 namespace Filamentboot\FilamentbootSite\Database\Factories;
 
+use Filamentboot\FilamentbootSite\Models\SitePage;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
-use Filamentboot\FilamentbootSite\Models\SitePage;
 
 /**
  * 静态页面工厂
@@ -28,10 +28,10 @@ class SitePageFactory extends Factory
         return [
             'title_zh'        => $titleZh,
             'title_en'        => $this->faker->words(3, true),
-            'slug'            => Str::slug($titleZh) . '-' . $this->faker->unique()->numberBetween(1, 99999),
+            'slug'            => Str::slug($titleZh).'-'.$this->faker->unique()->numberBetween(1, 99999),
             'content_zh'      => $this->faker->paragraphs(3, true),
             'content_en'      => $this->faker->paragraphs(3, true),
-            'seo_title'       => $titleZh . ' - 晴空妙享智能家居',
+            'seo_title'       => $titleZh.' - 晴空妙享智能家居',
             'seo_description' => $this->faker->sentence(),
             'seo_keywords'    => implode(',', $this->faker->words(5)),
             'sort'            => $this->faker->numberBetween(0, 100),

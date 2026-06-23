@@ -2,9 +2,10 @@
 
 namespace Filamentboot\FilamentbootWangEditor\Tests\Unit;
 
-use Filamentboot\Settings\UploadSettings;
 use Filamentboot\FilamentbootWangEditor\Forms\Components\WangEditorField;
 use Filamentboot\FilamentbootWangEditor\WangEditorServiceProvider;
+use Filamentboot\Settings\UploadSettings;
+use Illuminate\Foundation\Application;
 use Orchestra\Testbench\TestCase;
 
 /**
@@ -21,7 +22,7 @@ class WangEditorFieldTest extends TestCase
     /**
      * 注册包服务提供者
      *
-     * @param  \Illuminate\Foundation\Application  $app
+     * @param  Application  $app
      * @return list<class-string>
      */
     protected function getPackageProviders($app): array
@@ -37,7 +38,7 @@ class WangEditorFieldTest extends TestCase
     public function test_disk_override(): void
     {
         $this->app->bind(UploadSettings::class, function () {
-            $stub = $this->createStub(UploadSettings::class);
+            $stub               = $this->createStub(UploadSettings::class);
             $stub->default_disk = 'public';
 
             return $stub;
@@ -57,7 +58,7 @@ class WangEditorFieldTest extends TestCase
     public function test_disk_reads_upload_settings(): void
     {
         $this->app->bind(UploadSettings::class, function () {
-            $stub = $this->createStub(UploadSettings::class);
+            $stub               = $this->createStub(UploadSettings::class);
             $stub->default_disk = 'cos';
 
             return $stub;
@@ -76,7 +77,7 @@ class WangEditorFieldTest extends TestCase
     public function test_disk_local_falls_back_public(): void
     {
         $this->app->bind(UploadSettings::class, function () {
-            $stub = $this->createStub(UploadSettings::class);
+            $stub               = $this->createStub(UploadSettings::class);
             $stub->default_disk = 'local';
 
             return $stub;

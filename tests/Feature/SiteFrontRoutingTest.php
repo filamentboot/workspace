@@ -1,8 +1,8 @@
 <?php
 
+use Filamentboot\FilamentbootSite\SiteServiceProvider;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Route;
-use Filamentboot\FilamentbootSite\SiteServiceProvider;
 
 /**
  * 官网前台路由测试（SiteFrontRoutingTest）
@@ -15,6 +15,7 @@ use Filamentboot\FilamentbootSite\SiteServiceProvider;
  * 本测试以白盒方式验证路由文件正确性与 ServiceProvider 条件注册契约。
  *
  * @group site
+ *
  * @covers \Filamentboot\FilamentbootSite\SiteServiceProvider
  */
 

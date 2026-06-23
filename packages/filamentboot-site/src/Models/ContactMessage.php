@@ -2,9 +2,10 @@
 
 namespace Filamentboot\FilamentbootSite\Models;
 
+use Filamentboot\FilamentbootSite\Enums\ContactMessageStatus;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Filamentboot\FilamentbootSite\Enums\ContactMessageStatus;
+use Illuminate\Support\Carbon;
 
 /**
  * 访客询盘消息模型
@@ -18,8 +19,8 @@ use Filamentboot\FilamentbootSite\Enums\ContactMessageStatus;
  * @property string $message
  * @property ContactMessageStatus $status
  * @property string|null $ip
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
  */
 class ContactMessage extends Model
 {

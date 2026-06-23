@@ -2,13 +2,13 @@
 
 namespace Filamentboot\FilamentbootSite\Http\Controllers;
 
-use Illuminate\Routing\Controller;
-use Illuminate\View\View;
 use Filamentboot\FilamentbootSite\Models\SiteCase;
 use Filamentboot\FilamentbootSite\Models\SitePage;
 use Filamentboot\FilamentbootSite\Models\SiteProduct;
 use Filamentboot\FilamentbootSite\Models\SiteSolution;
 use Filamentboot\FilamentbootSite\Settings\SiteSettings;
+use Illuminate\Routing\Controller;
+use Illuminate\View\View;
 
 /**
  * 官网前台控制器
@@ -27,13 +27,11 @@ class SiteFrontController extends Controller
      * 官网首页
      *
      * 展示精选案例、精选方案、精选产品，并传递全局 SEO 数据。
-     *
-     * @return View
      */
     public function home(): View
     {
-        $settings  = $this->resolveSettings();
-        $locale    = app()->getLocale();
+        $settings          = $this->resolveSettings();
+        $locale            = app()->getLocale();
         $featuredCases     = SiteCase::published()->featured()->latest('published_at')->take(6)->get();
         $featuredSolutions = SiteSolution::published()->featured()->latest('published_at')->take(4)->get();
         $featuredProducts  = SiteProduct::published()->featured()->take(6)->get();
@@ -52,8 +50,6 @@ class SiteFrontController extends Controller
 
     /**
      * 装修案例列表页
-     *
-     * @return View
      */
     public function caseIndex(): View
     {
@@ -68,8 +64,7 @@ class SiteFrontController extends Controller
     /**
      * 装修案例详情页
      *
-     * @param string $slug 案例 slug（参数绑定防注入，T-10-04-03）
-     * @return View
+     * @param  string  $slug  案例 slug（参数绑定防注入，T-10-04-03）
      */
     public function caseShow(string $slug): View
     {
@@ -83,8 +78,6 @@ class SiteFrontController extends Controller
 
     /**
      * 智能方案列表页
-     *
-     * @return View
      */
     public function solutionIndex(): View
     {
@@ -99,8 +92,7 @@ class SiteFrontController extends Controller
     /**
      * 智能方案详情页
      *
-     * @param string $slug 方案 slug（参数绑定防注入，T-10-04-03）
-     * @return View
+     * @param  string  $slug  方案 slug（参数绑定防注入，T-10-04-03）
      */
     public function solutionShow(string $slug): View
     {
@@ -114,8 +106,6 @@ class SiteFrontController extends Controller
 
     /**
      * 智能产品列表页
-     *
-     * @return View
      */
     public function productIndex(): View
     {
@@ -130,8 +120,7 @@ class SiteFrontController extends Controller
     /**
      * 智能产品详情页
      *
-     * @param string $slug 产品 slug（参数绑定防注入，T-10-04-03）
-     * @return View
+     * @param  string  $slug  产品 slug（参数绑定防注入，T-10-04-03）
      */
     public function productShow(string $slug): View
     {
@@ -146,8 +135,7 @@ class SiteFrontController extends Controller
     /**
      * 静态页面（/{slug}，排除 en，Pitfall 4）
      *
-     * @param string $slug 页面 slug（参数绑定防注入，T-10-04-03）
-     * @return View
+     * @param  string  $slug  页面 slug（参数绑定防注入，T-10-04-03）
      */
     public function page(string $slug): View
     {
@@ -165,9 +153,9 @@ class SiteFrontController extends Controller
      * 三层回退：记录 SEO 字段 → 记录标题字段 → SiteSettings 全局默认值 → config('app.name')
      * 按当前语言环境（zh/en）选择对应字段。
      *
-     * @param object $record 内容记录（含 seo_title/seo_description/seo_keywords 字段）
-     * @param object|null $settings SiteSettings 实例（降级时为 null）
-     * @param string $locale 当前语言环境（'zh' 或 'en'）
+     * @param  object  $record  内容记录（含 seo_title/seo_description/seo_keywords 字段）
+     * @param  object|null  $settings  SiteSettings 实例（降级时为 null）
+     * @param  string  $locale  当前语言环境（'zh' 或 'en'）
      * @return array{title: string, description: string, keywords: string, ogTitle: string, ogDescription: string}
      */
     protected function buildSeo(object $record, mixed $settings, string $locale): array
@@ -222,8 +210,8 @@ class SiteFrontController extends Controller
     /**
      * 构建首页 SEO 数据（无具体记录，直接读全局设置）
      *
-     * @param mixed $settings SiteSettings 实例或 null
-     * @param string $locale 当前语言环境
+     * @param  mixed  $settings  SiteSettings 实例或 null
+     * @param  string  $locale  当前语言环境
      * @return array{title: string, description: string, keywords: string, ogTitle: string, ogDescription: string}
      */
     protected function buildHomeSeo(mixed $settings, string $locale): array
@@ -251,10 +239,10 @@ class SiteFrontController extends Controller
     /**
      * 构建列表页 SEO 数据（使用全局默认 + 列表类型名称）
      *
-     * @param string $labelZh 中文列表名称（如 '案例'）
-     * @param string $labelEn 英文列表名称（如 'Cases'）
-     * @param mixed $settings SiteSettings 实例或 null
-     * @param string $locale 当前语言环境
+     * @param  string  $labelZh  中文列表名称（如 '案例'）
+     * @param  string  $labelEn  英文列表名称（如 'Cases'）
+     * @param  mixed  $settings  SiteSettings 实例或 null
+     * @param  string  $locale  当前语言环境
      * @return array{title: string, description: string, keywords: string, ogTitle: string, ogDescription: string}
      */
     protected function buildListSeo(string $labelZh, string $labelEn, mixed $settings, string $locale): array
@@ -267,7 +255,7 @@ class SiteFrontController extends Controller
             ? ($isEn ? ($settings->seo_default_title_en ?: '') : ($settings->seo_default_title_zh ?: ''))
             : '';
 
-        $title = ($globalTitle ?: $appName) ? "{$label} - " . ($globalTitle ?: $appName) : $label;
+        $title = ($globalTitle ?: $appName) ? "{$label} - ".($globalTitle ?: $appName) : $label;
 
         $description = $settings
             ? ($isEn ? ($settings->seo_default_description_en ?: '') : ($settings->seo_default_description_zh ?: ''))
@@ -284,8 +272,6 @@ class SiteFrontController extends Controller
 
     /**
      * 解析 SiteSettings 实例（try/catch 降级防 settings 表未迁移崩溃，Pitfall 2）
-     *
-     * @return SiteSettings|null
      */
     protected function resolveSettings(): ?SiteSettings
     {

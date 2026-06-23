@@ -2,9 +2,10 @@
 
 namespace Filamentboot\FilamentbootRichEditor\Tests\Unit;
 
-use Filamentboot\Settings\UploadSettings;
 use Filamentboot\FilamentbootRichEditor\Forms\RichEditorField;
 use Filamentboot\FilamentbootRichEditor\RichEditorServiceProvider;
+use Filamentboot\Settings\UploadSettings;
+use Illuminate\Foundation\Application;
 use Orchestra\Testbench\TestCase;
 
 /**
@@ -21,7 +22,7 @@ class RichEditorFieldTest extends TestCase
     /**
      * 注册包服务提供者
      *
-     * @param  \Illuminate\Foundation\Application  $app
+     * @param  Application  $app
      * @return list<class-string>
      */
     protected function getPackageProviders($app): array
@@ -38,7 +39,7 @@ class RichEditorFieldTest extends TestCase
     {
         // 绑定 UploadSettings stub，默认磁盘为 'public'
         $this->app->bind(UploadSettings::class, function () {
-            $stub = $this->createStub(UploadSettings::class);
+            $stub               = $this->createStub(UploadSettings::class);
             $stub->default_disk = 'public';
 
             return $stub;
@@ -59,7 +60,7 @@ class RichEditorFieldTest extends TestCase
     {
         // 绑定 UploadSettings stub，默认磁盘为 'cos'
         $this->app->bind(UploadSettings::class, function () {
-            $stub = $this->createStub(UploadSettings::class);
+            $stub               = $this->createStub(UploadSettings::class);
             $stub->default_disk = 'cos';
 
             return $stub;
@@ -79,7 +80,7 @@ class RichEditorFieldTest extends TestCase
     {
         // 绑定 UploadSettings stub，默认磁盘为 'local'
         $this->app->bind(UploadSettings::class, function () {
-            $stub = $this->createStub(UploadSettings::class);
+            $stub               = $this->createStub(UploadSettings::class);
             $stub->default_disk = 'local';
 
             return $stub;

@@ -1,11 +1,11 @@
 <?php
 
-use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Route;
 use Filamentboot\FilamentbootSite\Http\Controllers\SiteFrontController;
 use Filamentboot\FilamentbootSite\Http\Livewire\CaseFilter;
 use Filamentboot\FilamentbootSite\Http\Livewire\ContactForm;
 use Filamentboot\FilamentbootSite\Models\SiteCase;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Route;
 use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
@@ -61,7 +61,7 @@ it('案例详情页输出 SEO meta 标签', function () {
     ]);
 
     // 通过反射实例化 SiteFrontController，直接调用 buildSeo 方法验证数据层契约
-    $controller = new SiteFrontController();
+    $controller = new SiteFrontController;
     $reflection = new ReflectionMethod($controller, 'buildSeo');
     $reflection->setAccessible(true);
     $seoData = $reflection->invoke($controller, $case, null, 'zh');
@@ -90,7 +90,7 @@ it('SEO 回退链无记录 SEO 字段时使用标题回退', function () {
     $case->seo_title       = '';
     $case->seo_description = '';
 
-    $controller = new SiteFrontController();
+    $controller = new SiteFrontController;
     $reflection = new ReflectionMethod($controller, 'buildSeo');
     $reflection->setAccessible(true);
     $seoData = $reflection->invoke($controller, $case, null, 'zh');
@@ -141,7 +141,7 @@ it('详情页 seo-meta 组件渲染 HTML 包含 SEO meta 标签', function () {
     ]);
 
     // 通过 buildSeo 获取 SEO 数据（同控制器行为）
-    $controller = new SiteFrontController();
+    $controller = new SiteFrontController;
     $reflection = new ReflectionMethod($controller, 'buildSeo');
     $reflection->setAccessible(true);
     $seoData = $reflection->invoke($controller, $case, null, 'zh');

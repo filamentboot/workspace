@@ -139,7 +139,7 @@ class UploadValidatorTest extends TestCase
     public function test_passes_valid_file(): void
     {
         // 创建真实的 JPEG 文件内容（SOI marker + minimal bytes）
-        $jpegContent = "\xFF\xD8\xFF\xE0" . str_repeat("\x00", 100);
+        $jpegContent = "\xFF\xD8\xFF\xE0".str_repeat("\x00", 100);
         $tmpPath     = tempnam(sys_get_temp_dir(), 'uv_test_');
         file_put_contents($tmpPath, $jpegContent);
 

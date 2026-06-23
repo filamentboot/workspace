@@ -1,7 +1,7 @@
 <?php
 
-use Filamentboot\Settings\UploadSettings;
 use Filamentboot\FilamentbootSite\Filament\Resources\SiteCaseResource;
+use Filamentboot\Settings\UploadSettings;
 
 /**
  * 图片上传磁盘测试（SiteImageUploadDiskTest）
@@ -28,7 +28,7 @@ it('案例封面图上传使用 UploadSettings 默认磁盘', function () {
     try {
         $uploadSettings = app(UploadSettings::class);
         $expectedDisk   = $uploadSettings->default_disk;
-    } catch (\Throwable) {
+    } catch (Throwable) {
         // settings 表未迁移时降级 'public'
         $expectedDisk = 'public';
     }
@@ -44,7 +44,7 @@ it('案例封面图上传使用 UploadSettings 默认磁盘', function () {
  */
 it('resolveDefaultDisk 降级到 public 磁盘当设置不可用时', function () {
     // Mock UploadSettings 解析抛出异常（模拟 settings 表未迁移）
-    app()->bind(UploadSettings::class, fn () => throw new \RuntimeException('settings table not found'));
+    app()->bind(UploadSettings::class, fn () => throw new RuntimeException('settings table not found'));
 
     $reflection = new ReflectionMethod(SiteCaseResource::class, 'resolveDefaultDisk');
     $reflection->setAccessible(true);

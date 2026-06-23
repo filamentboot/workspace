@@ -10,7 +10,6 @@ use Illuminate\Support\Facades\Hash;
  * 验证演示账号种子：创建可登录的 demo@example.com / demo123
  * 账号，分配 super_admin 角色，且二次运行幂等。
  */
-
 it('DemoSeeder 运行后演示账号存在于数据库', function () {
     $this->seed(DemoSeeder::class);
 

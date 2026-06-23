@@ -1,10 +1,9 @@
 <?php
 
-use Filamentboot\Models\Plugin;
 use App\Services\PluginManager;
-use Filamentboot\Models\AdminUser;
-use Illuminate\Http\UploadedFile;
-use Illuminate\Support\Facades\Storage;
+use Filament\Forms\Components\Field;
+use Filament\Forms\Components\MarkdownEditor;
+use Filament\Forms\Components\RichEditor;
 use Filamentboot\FilamentbootMarkdownEditor\Forms\MarkdownEditorField;
 use Filamentboot\FilamentbootMarkdownEditor\MarkdownEditorPlugin;
 use Filamentboot\FilamentbootMarkdownEditor\MarkdownEditorServiceProvider;
@@ -16,9 +15,7 @@ use Filamentboot\FilamentbootRichEditor\Support\RichEditorPurifier;
 use Filamentboot\FilamentbootWangEditor\Forms\Components\WangEditorField;
 use Filamentboot\FilamentbootWangEditor\WangEditorPlugin;
 use Filamentboot\FilamentbootWangEditor\WangEditorServiceProvider;
-
-use function Pest\Laravel\actingAs;
-use function Pest\Laravel\post;
+use Filamentboot\Models\Plugin;
 
 /**
  * 编辑器插件集成测试（EDITOR-01/02 集成闭环）
@@ -32,7 +29,6 @@ use function Pest\Laravel\post;
  * 6. config/purifier.php 已发布并含 richeditor 白名单
  * 7. wangEditor 上传路由集成后可用（未认证拒绝）
  */
-
 it('三编辑器包的 ServiceProvider 与 Plugin 类存在', function () {
     // ServiceProvider 类存在
     expect(class_exists(RichEditorServiceProvider::class))->toBeTrue(
@@ -46,23 +42,23 @@ it('三编辑器包的 ServiceProvider 与 Plugin 类存在', function () {
     );
 
     // Plugin 类实现 Filament\Contracts\Plugin 接口
-    expect(RichEditorPlugin::class)->toImplement(\Filament\Contracts\Plugin::class);
-    expect(MarkdownEditorPlugin::class)->toImplement(\Filament\Contracts\Plugin::class);
-    expect(WangEditorPlugin::class)->toImplement(\Filament\Contracts\Plugin::class);
+    expect(RichEditorPlugin::class)->toImplement(Filament\Contracts\Plugin::class);
+    expect(MarkdownEditorPlugin::class)->toImplement(Filament\Contracts\Plugin::class);
+    expect(WangEditorPlugin::class)->toImplement(Filament\Contracts\Plugin::class);
 });
 
 it('RichEditorField 与 WangEditorField 可实例化', function () {
     $richField = RichEditorField::make('content');
     $wangField = WangEditorField::make('content');
 
-    expect($richField)->toBeInstanceOf(\Filament\Forms\Components\RichEditor::class);
-    expect($wangField)->toBeInstanceOf(\Filament\Forms\Components\Field::class);
+    expect($richField)->toBeInstanceOf(RichEditor::class);
+    expect($wangField)->toBeInstanceOf(Field::class);
 });
 
 it('MarkdownEditorField 可实例化且继承内置 MarkdownEditor', function () {
     $field = MarkdownEditorField::make('content');
 
-    expect($field)->toBeInstanceOf(\Filament\Forms\Components\MarkdownEditor::class);
+    expect($field)->toBeInstanceOf(MarkdownEditor::class);
 });
 
 it('MarkdownRenderer 渲染 Markdown 并过滤 XSS', function () {

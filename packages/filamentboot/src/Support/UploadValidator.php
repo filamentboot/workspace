@@ -60,7 +60,7 @@ class UploadValidator
      * 按顺序执行：大小校验 → 扩展名黑名单 → 服务端 MIME 校验。
      * 任意一项不通过均抛出 RuntimeException。
      *
-     * @param  UploadedFile  $file      待校验的上传文件
+     * @param  UploadedFile  $file  待校验的上传文件
      * @param  UploadSettings|null  $settings  上传配置（null 时从容器解析）
      *
      * @throws \RuntimeException 文件不安全时
@@ -90,8 +90,8 @@ class UploadValidator
 
         if ($file->getSize() > $limitBytes) {
             throw new \RuntimeException(
-                "文件大小超过限制 {$settings->max_file_size}KB，当前大小：" .
-                round($file->getSize() / 1024, 2) . 'KB'
+                "文件大小超过限制 {$settings->max_file_size}KB，当前大小：".
+                round($file->getSize() / 1024, 2).'KB'
             );
         }
     }

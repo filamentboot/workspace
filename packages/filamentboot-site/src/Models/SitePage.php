@@ -2,11 +2,12 @@
 
 namespace Filamentboot\FilamentbootSite\Models;
 
+use Filamentboot\FilamentbootSite\Database\Factories\SitePageFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Filamentboot\FilamentbootSite\Database\Factories\SitePageFactory;
+use Illuminate\Support\Carbon;
 
 /**
  * 静态页面内容模型
@@ -25,9 +26,9 @@ use Filamentboot\FilamentbootSite\Database\Factories\SitePageFactory;
  * @property string|null $seo_keywords
  * @property int $sort
  * @property bool $is_published
- * @property \Illuminate\Support\Carbon|null $created_at
- * @property \Illuminate\Support\Carbon|null $updated_at
- * @property \Illuminate\Support\Carbon|null $deleted_at
+ * @property Carbon|null $created_at
+ * @property Carbon|null $updated_at
+ * @property Carbon|null $deleted_at
  */
 class SitePage extends Model
 {
@@ -41,8 +42,6 @@ class SitePage extends Model
 
     /**
      * 解析对应的工厂（因命名空间非 Laravel 默认推导路径）
-     *
-     * @return SitePageFactory
      */
     protected static function newFactory(): SitePageFactory
     {
@@ -64,7 +63,7 @@ class SitePage extends Model
     /**
      * 作用域：仅返回已发布页面
      *
-     * @param Builder<SitePage> $query
+     * @param  Builder<SitePage>  $query
      * @return Builder<SitePage>
      */
     public function scopePublished(Builder $query): Builder

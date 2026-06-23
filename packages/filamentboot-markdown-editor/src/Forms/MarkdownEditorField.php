@@ -47,7 +47,7 @@ class MarkdownEditorField extends MarkdownEditor
      *
      * local 磁盘强制映射为 public（Markdown 图片必须可通过 URL 公开访问，Pitfall 5）。
      *
-     * @return string  有效的 Flysystem 磁盘名
+     * @return string 有效的 Flysystem 磁盘名
      */
     public function resolveDisk(): string
     {
@@ -69,7 +69,7 @@ class MarkdownEditorField extends MarkdownEditor
      * 必须在 Alpine init 完成后通过 x-on:init.camel 编程调用。
      *
      * @param  bool  $condition  是否开启分屏预览
-     * @return static  支持链式调用
+     * @return static 支持链式调用
      */
     public function withSideBySide(bool $condition = true): static
     {
@@ -84,7 +84,7 @@ class MarkdownEditorField extends MarkdownEditor
      * EasyMDE 初始化完成后，Alpine 的 x-on:init.camel 事件触发，
      * 调用插件包注册的 enableSideBySide() 方法开启分屏预览。
      *
-     * @return array<string, string>  Alpine 属性键值对
+     * @return array<string, string> Alpine 属性键值对
      */
     public function getExtraAlpineAttributes(): array
     {

@@ -4,8 +4,9 @@ namespace Filamentboot\FilamentbootSite\Filament\Resources;
 
 use BackedEnum;
 use Filament\Actions\DeleteAction;
-use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\EditAction;
 use Filament\Actions\RestoreAction;
+use Filament\Forms\Components\RichEditor as RichEditorField;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -17,13 +18,12 @@ use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Forms\Components\RichEditor as RichEditorField;
 use Filamentboot\FilamentbootSite\Filament\Resources\SitePageResource\Pages\CreateSitePage;
 use Filamentboot\FilamentbootSite\Filament\Resources\SitePageResource\Pages\EditSitePage;
 use Filamentboot\FilamentbootSite\Filament\Resources\SitePageResource\Pages\ListSitePages;
 use Filamentboot\FilamentbootSite\Models\SitePage;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 use UnitEnum;
 
 /**
@@ -124,7 +124,7 @@ class SitePageResource extends Resource
                 TrashedFilter::make(),
             ])
             ->recordActions([
-                \Filament\Actions\EditAction::make(),
+                EditAction::make(),
                 DeleteAction::make(),
                 RestoreAction::make(),
             ])

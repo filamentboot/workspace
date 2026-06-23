@@ -4,9 +4,10 @@ namespace Filamentboot\FilamentbootSite\Filament\Resources;
 
 use BackedEnum;
 use Filament\Actions\DeleteAction;
-use Filament\Actions\ForceDeleteAction;
+use Filament\Actions\EditAction;
 use Filament\Actions\RestoreAction;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\RichEditor as RichEditorField;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
@@ -21,14 +22,13 @@ use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
-use Filamentboot\Settings\UploadSettings;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Forms\Components\RichEditor as RichEditorField;
 use Filamentboot\FilamentbootSite\Filament\Resources\SiteSolutionResource\Pages\CreateSiteSolution;
 use Filamentboot\FilamentbootSite\Filament\Resources\SiteSolutionResource\Pages\EditSiteSolution;
 use Filamentboot\FilamentbootSite\Filament\Resources\SiteSolutionResource\Pages\ListSiteSolutions;
 use Filamentboot\FilamentbootSite\Models\SiteSolution;
+use Filamentboot\Settings\UploadSettings;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 use UnitEnum;
 
 /**
@@ -167,7 +167,7 @@ class SiteSolutionResource extends Resource
                 TrashedFilter::make(),
             ])
             ->recordActions([
-                \Filament\Actions\EditAction::make(),
+                EditAction::make(),
                 DeleteAction::make(),
                 RestoreAction::make(),
             ])

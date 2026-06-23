@@ -4,8 +4,10 @@ namespace Filamentboot\FilamentbootSite\Filament\Resources;
 
 use BackedEnum;
 use Filament\Actions\DeleteAction;
+use Filament\Actions\EditAction;
 use Filament\Actions\RestoreAction;
 use Filament\Forms\Components\DateTimePicker;
+use Filament\Forms\Components\RichEditor as RichEditorField;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
@@ -21,16 +23,15 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
-use Filamentboot\Settings\UploadSettings;
-use Illuminate\Database\Eloquent\Builder;
-use Illuminate\Database\Eloquent\SoftDeletingScope;
-use Filament\Forms\Components\RichEditor as RichEditorField;
 use Filamentboot\FilamentbootSite\Enums\CaseStyle;
 use Filamentboot\FilamentbootSite\Enums\HouseType;
 use Filamentboot\FilamentbootSite\Filament\Resources\SiteCaseResource\Pages\CreateSiteCase;
 use Filamentboot\FilamentbootSite\Filament\Resources\SiteCaseResource\Pages\EditSiteCase;
 use Filamentboot\FilamentbootSite\Filament\Resources\SiteCaseResource\Pages\ListSiteCases;
 use Filamentboot\FilamentbootSite\Models\SiteCase;
+use Filamentboot\Settings\UploadSettings;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\SoftDeletingScope;
 use UnitEnum;
 
 /**
@@ -217,7 +218,7 @@ class SiteCaseResource extends Resource
                     ),
             ])
             ->recordActions([
-                \Filament\Actions\EditAction::make(),
+                EditAction::make(),
                 DeleteAction::make(),
                 RestoreAction::make(),
             ])

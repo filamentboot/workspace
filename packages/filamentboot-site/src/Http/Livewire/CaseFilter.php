@@ -2,10 +2,10 @@
 
 namespace Filamentboot\FilamentbootSite\Http\Livewire;
 
-use Illuminate\View\View;
 use Filamentboot\FilamentbootSite\Enums\CaseStyle;
 use Filamentboot\FilamentbootSite\Enums\HouseType;
 use Filamentboot\FilamentbootSite\Models\SiteCase;
+use Illuminate\View\View;
 use Livewire\Attributes\Url;
 use Livewire\Component;
 use Livewire\WithPagination;
@@ -26,16 +26,12 @@ class CaseFilter extends Component
 
     /**
      * 风格筛选（CaseStyle 枚举值，#[Url] 同步到 URL，T-10-04-06）
-     *
-     * @var string|null
      */
     #[Url]
     public ?string $style = null;
 
     /**
      * 户型筛选（HouseType 枚举值，#[Url] 同步到 URL，T-10-04-06）
-     *
-     * @var string|null
      */
     #[Url]
     public ?string $houseType = null;
@@ -45,8 +41,7 @@ class CaseFilter extends Component
      *
      * 非法枚举值直接重置为 null，防止任意字符串进入 URL 参数与查询（WR-04）。
      *
-     * @param mixed $value 新风格值
-     * @return void
+     * @param  mixed  $value  新风格值
      */
     public function updatingStyle(mixed $value): void
     {
@@ -64,8 +59,7 @@ class CaseFilter extends Component
      *
      * 非法枚举值直接重置为 null，防止任意字符串进入 URL 参数与查询（WR-04）。
      *
-     * @param mixed $value 新户型值
-     * @return void
+     * @param  mixed  $value  新户型值
      */
     public function updatingHouseType(mixed $value): void
     {
@@ -113,8 +107,6 @@ class CaseFilter extends Component
      *
      * 查询已发布案例，按风格和户型条件筛选（Eloquent 参数绑定防注入，T-10-04-06），
      * 非法枚举值查询返回空集，不报错（安全降级）。
-     *
-     * @return View
      */
     public function render(): View
     {

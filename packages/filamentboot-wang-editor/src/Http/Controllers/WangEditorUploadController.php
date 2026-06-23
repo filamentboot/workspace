@@ -23,9 +23,9 @@ class WangEditorUploadController extends Controller
     /**
      * 处理 wangEditor 图片上传请求
      *
-     * @param  Request         $request  HTTP 请求（包含 file 和 disk 字段）
-     * @param  UploadValidator $validator 三重安全校验服务
-     * @return JsonResponse   wangEditor errno 协议格式响应
+     * @param  Request  $request  HTTP 请求（包含 file 和 disk 字段）
+     * @param  UploadValidator  $validator  三重安全校验服务
+     * @return JsonResponse wangEditor errno 协议格式响应
      */
     public function __invoke(Request $request, UploadValidator $validator): JsonResponse
     {

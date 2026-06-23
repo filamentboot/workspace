@@ -25,9 +25,9 @@ enum ContactMessageStatus: string
     public function label(): string
     {
         return match ($this) {
-            self::UNREAD     => '未读',
-            self::CONTACTED  => '已联系',
-            self::CLOSED     => '已关闭',
+            self::UNREAD    => '未读',
+            self::CONTACTED => '已联系',
+            self::CLOSED    => '已关闭',
         };
     }
 }

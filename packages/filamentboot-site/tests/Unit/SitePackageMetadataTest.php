@@ -27,7 +27,7 @@ class SitePackageMetadataTest extends TestCase
         parent::setUp();
 
         $this->composer = json_decode(
-            (string) file_get_contents(__DIR__ . '/../../composer.json'),
+            (string) file_get_contents(__DIR__.'/../../composer.json'),
             true,
             512,
             JSON_THROW_ON_ERROR,
@@ -81,7 +81,7 @@ class SitePackageMetadataTest extends TestCase
     {
         self::assertTrue(class_exists(SitePlugin::class), 'SitePlugin 类应存在');
 
-        $plugin = new SitePlugin();
+        $plugin = new SitePlugin;
         self::assertSame('filamentboot-site', $plugin->getId());
     }
 

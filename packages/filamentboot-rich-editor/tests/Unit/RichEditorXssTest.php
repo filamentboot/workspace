@@ -4,6 +4,7 @@ namespace Filamentboot\FilamentbootRichEditor\Tests\Unit;
 
 use Filamentboot\FilamentbootRichEditor\RichEditorServiceProvider;
 use Filamentboot\FilamentbootRichEditor\Support\RichEditorPurifier;
+use Illuminate\Foundation\Application;
 use Mews\Purifier\PurifierServiceProvider;
 use Orchestra\Testbench\TestCase;
 
@@ -19,7 +20,7 @@ class RichEditorXssTest extends TestCase
     /**
      * 注册包服务提供者（含 mews/purifier）
      *
-     * @param  \Illuminate\Foundation\Application  $app
+     * @param  Application  $app
      * @return list<class-string>
      */
     protected function getPackageProviders($app): array
@@ -33,7 +34,7 @@ class RichEditorXssTest extends TestCase
     /**
      * 配置允许 style 属性的 purifier 白名单（Pitfall 4 修复）
      *
-     * @param  \Illuminate\Foundation\Application  $app
+     * @param  Application  $app
      */
     protected function defineEnvironment($app): void
     {
@@ -67,7 +68,7 @@ class RichEditorXssTest extends TestCase
     public function test_clean_removes_script_tags(): void
     {
         $purifier = app(RichEditorPurifier::class);
-        $result = $purifier->clean('<p>hi<script>alert(1)</script></p>');
+        $result   = $purifier->clean('<p>hi<script>alert(1)</script></p>');
 
         self::assertFalse(
             str_contains($result, '<script>'),
@@ -85,7 +86,7 @@ class RichEditorXssTest extends TestCase
     public function test_clean_preserves_style_attribute(): void
     {
         $purifier = app(RichEditorPurifier::class);
-        $result = $purifier->clean('<p style="color:red">x</p>');
+        $result   = $purifier->clean('<p style="color:red">x</p>');
 
         self::assertStringContainsString(
             'style',

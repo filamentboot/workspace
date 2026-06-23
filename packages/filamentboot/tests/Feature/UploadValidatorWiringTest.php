@@ -5,7 +5,6 @@ use Filamentboot\Support\UploadValidator;
 use Illuminate\Http\UploadedFile;
 use Orchestra\Testbench\TestCase;
 use Spatie\LaravelSettings\LaravelSettingsServiceProvider;
-use Filamentboot\FilamentbootServiceProvider;
 
 /**
  * UploadValidator 接入测试
@@ -47,17 +46,17 @@ class UploadValidatorWiringTest extends TestCase
     public function test_upload_validator_respects_max_file_size_from_settings(): void
     {
         // 使用反射绕过 final __construct 构建 UploadSettings stub
-        $settings = (new \ReflectionClass(UploadSettings::class))->newInstanceWithoutConstructor();
+        $settings                 = (new ReflectionClass(UploadSettings::class))->newInstanceWithoutConstructor();
         $settings->max_file_size  = 1;     // 1 KB
         $settings->allowed_mimes  = 'txt';
         $settings->default_disk   = 'local';
 
-        $validator = new UploadValidator();
+        $validator = new UploadValidator;
 
         // 2048 bytes > 1 KB limit
         $file = UploadedFile::fake()->createWithContent('test.txt', str_repeat('a', 2048));
 
-        $this->expectException(\RuntimeException::class);
+        $this->expectException(RuntimeException::class);
         $this->expectExceptionMessageMatches('/超过|大小|size/i');
 
         // 直接传入 stub，绕过容器解析（UploadSettings 在测试环境无 settings 表）
@@ -69,12 +68,12 @@ class UploadValidatorWiringTest extends TestCase
      */
     public function test_upload_validator_blocks_dangerous_extensions(): void
     {
-        $settings = (new \ReflectionClass(UploadSettings::class))->newInstanceWithoutConstructor();
+        $settings                 = (new ReflectionClass(UploadSettings::class))->newInstanceWithoutConstructor();
         $settings->max_file_size  = 10240;
         $settings->allowed_mimes  = 'jpg,png';  // 合法类型，危险扩展名在黑名单中先被拦截
         $settings->default_disk   = 'local';
 
-        $validator = new UploadValidator();
+        $validator = new UploadValidator;
 
         foreach (['php', 'exe', 'sh'] as $ext) {
             $file = UploadedFile::fake()->createWithContent("malware.{$ext}", '<?php system($_GET["cmd"]);');
@@ -82,7 +81,7 @@ class UploadValidatorWiringTest extends TestCase
             try {
                 $validator->validate($file, $settings);
                 $this->fail("期望 .{$ext} 被拦截");
-            } catch (\RuntimeException $e) {
+            } catch (RuntimeException $e) {
                 $this->assertStringContainsString($ext, $e->getMessage());
             }
         }

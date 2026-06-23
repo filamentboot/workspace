@@ -1,11 +1,11 @@
 <?php
 
+use Filamentboot\FilamentbootCos\Settings\CosSettings;
+use Filamentboot\FilamentbootOss\Settings\OssSettings;
 use Filamentboot\Settings\GeneralSettings;
 use Filamentboot\Settings\LogSettings;
 use Filamentboot\Settings\SecuritySettings;
 use Filamentboot\Settings\UploadSettings;
-use Filamentboot\FilamentbootCos\Settings\CosSettings;
-use Filamentboot\FilamentbootOss\Settings\OssSettings;
 use Spatie\LaravelData\Data;
 use Spatie\LaravelSettings\SettingsCasts\DataCast;
 use Spatie\LaravelSettings\SettingsCasts\DateTimeInterfaceCast;

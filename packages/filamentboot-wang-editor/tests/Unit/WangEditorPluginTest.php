@@ -5,6 +5,7 @@ namespace Filamentboot\FilamentbootWangEditor\Tests\Unit;
 use Filament\Contracts\Plugin;
 use Filamentboot\FilamentbootWangEditor\WangEditorPlugin;
 use Filamentboot\FilamentbootWangEditor\WangEditorServiceProvider;
+use Illuminate\Foundation\Application;
 use Orchestra\Testbench\TestCase;
 
 /**
@@ -20,7 +21,7 @@ class WangEditorPluginTest extends TestCase
     /**
      * 注册包服务提供者
      *
-     * @param  \Illuminate\Foundation\Application  $app
+     * @param  Application  $app
      * @return list<class-string>
      */
     protected function getPackageProviders($app): array
