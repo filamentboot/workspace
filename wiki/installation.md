@@ -9,7 +9,7 @@
 
 ## 1. 演示项目开发
 
-当前仓库根目录是 Laravel 演示项目，主包位于 `packages/filament-admin`。
+当前仓库根目录是 Laravel 演示项目，主包位于 `packages/filamentboot`。
 
 安装依赖并启动：
 
@@ -18,14 +18,14 @@ composer install
 cp .env.example .env
 php artisan key:generate
 php artisan migrate
-php artisan db:seed --class="FilamentAdmin\\Database\\Seeders\\SuperAdminSeeder"
+php artisan db:seed --class="Filamentboot\\Database\\Seeders\\SuperAdminSeeder"
 npm install && npm run build
 ```
 
 演示项目通过本地 `path repository` 自动加载主包：
 
 ```text
-packages/filament-admin
+packages/filamentboot
 ```
 
 访问地址：`http://filamentadmin.local`（需配置本地 hosts/Nginx）
@@ -73,19 +73,19 @@ composer require filamentboot/filamentboot
 **第二步：发布资源文件**
 
 ```bash
-php artisan vendor:publish --tag=filament-admin-config
-php artisan vendor:publish --tag=filament-admin-migrations
-php artisan vendor:publish --tag=filament-admin-views
-php artisan vendor:publish --tag=filament-admin-lang
-php artisan vendor:publish --tag=filament-admin-stubs
+php artisan vendor:publish --tag=filamentboot-config
+php artisan vendor:publish --tag=filamentboot-migrations
+php artisan vendor:publish --tag=filamentboot-views
+php artisan vendor:publish --tag=filamentboot-lang
+php artisan vendor:publish --tag=filamentboot-stubs
 ```
 
 > 说明：
-> - `filament-admin-config` — 发布配置文件 `config/filament-admin.php`
-> - `filament-admin-migrations` — 发布数据库迁移文件
-> - `filament-admin-views` — 发布视图文件到 `resources/views/vendor/filament-admin/`
-> - `filament-admin-lang` — 发布语言文件（en / zh_CN）到 `lang/vendor/filament-admin/`
-> - `filament-admin-stubs` — 发布 Stub 模板到 `stubs/vendor/filament-admin/`
+> - `filamentboot-config` — 发布配置文件 `config/filamentboot.php`
+> - `filamentboot-migrations` — 发布数据库迁移文件
+> - `filamentboot-views` — 发布视图文件到 `resources/views/vendor/filamentboot/`
+> - `filamentboot-lang` — 发布语言文件（en / zh_CN）到 `lang/vendor/filamentboot/`
+> - `filamentboot-stubs` — 发布 Stub 模板到 `stubs/vendor/filamentboot/`
 
 **第三步：执行数据库迁移**
 
@@ -96,7 +96,7 @@ php artisan migrate
 **第四步：创建超级管理员**
 
 ```bash
-php artisan db:seed --class="FilamentAdmin\\Database\\Seeders\\SuperAdminSeeder"
+php artisan db:seed --class="Filamentboot\\Database\\Seeders\\SuperAdminSeeder"
 ```
 
 **第五步：注册 Panel Provider**
@@ -135,14 +135,14 @@ http://你的域名/admin
 
 namespace App\Providers\Filament;
 
-use FilamentAdmin\FilamentAdminPlugin;
+use Filamentboot\FilamentbootPlugin;
 use Filament\Panel;
 use Filament\PanelProvider;
 
 /**
  * 后台 Filament Panel 服务提供者
  *
- * 注册 FilamentAdminPlugin 并配置 admin guard 与路由。
+ * 注册 FilamentbootPlugin 并配置 admin guard 与路由。
  */
 class AdminPanelProvider extends PanelProvider
 {
@@ -154,7 +154,7 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->authGuard('admin')
             ->plugins([
-                FilamentAdminPlugin::make(),
+                FilamentbootPlugin::make(),
             ]);
     }
 }
@@ -173,7 +173,7 @@ return [
 
 ### 配置说明
 
-发布后的配置文件位于 `config/filament-admin.php`，支持以下环境变量覆盖：
+发布后的配置文件位于 `config/filamentboot.php`，支持以下环境变量覆盖：
 
 | 环境变量 | 默认值 | 说明 |
 |---------|------|------|
@@ -199,16 +199,16 @@ v0.5 新增了 5 个 `vendor:publish` tag，升级后需**手动执行**上述�
 
 ## 扩展与自定义
 
-如需自定义内置 Model 或 Resource，可使用 `filament-admin:publish` 命令生成可编辑副本：
+如需自定义内置 Model 或 Resource，可使用 `filamentboot:publish` 命令生成可编辑副本：
 
 ```bash
 # 发布指定 Resource stub
-php artisan filament-admin:publish --resource=AdminUser
+php artisan filamentboot:publish --resource=AdminUser
 
 # 发布全套内置资源（AdminUser / Department / Menu / LoginLog）
-php artisan filament-admin:publish --all
+php artisan filamentboot:publish --all
 ```
 
-Stub 查找顺序：优先读 `stubs/vendor/filament-admin/{Name}.stub`（用户自定义），找不到则 fallback 到包内默认 stub。
+Stub 查找顺序：优先读 `stubs/vendor/filamentboot/{Name}.stub`（用户自定义），找不到则 fallback 到包内默认 stub。
 
-详细命令选项请参阅 [packages/filament-admin/README.md](../packages/filament-admin/README.md)。
+详细命令选项请参阅 [packages/filamentboot/README.md](../packages/filamentboot/README.md)。

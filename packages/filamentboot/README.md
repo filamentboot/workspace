@@ -1,18 +1,18 @@
-# FilamentAdmin
+# Filamentboot
 
 基于 Laravel 13 + Filament 5 的企业级后台基础包。`composer require` 一行命令，即可获得完整的认证、RBAC 权限、菜单管理、部门数据权限、操作日志等后台底座，在上面直接构建业务模块，无需重建基础设施。
 
-![FilamentAdmin 后台首页](art/dashboard.png)
+![Filamentboot 后台首页](art/dashboard.png)
 
 > 🌐 **在线体验**：https://demo.xitongapp.com  ·  演示账号 `demo@example.com` / `demo123`
 > （演示环境每日凌晨 4:00 重置；高危操作已屏蔽）
 
 <!-- 若 Packagist 未发布显示 404，Packagist 发布在 Phase 4 RELEASE-01 完成 -->
-[![最新版本](https://img.shields.io/packagist/v/laravelstack/filament-admin)](https://packagist.org/packages/laravelstack/filament-admin)
-[![总下载量](https://img.shields.io/packagist/dt/laravelstack/filament-admin)](https://packagist.org/packages/laravelstack/filament-admin)
-[![PHP 版本](https://img.shields.io/packagist/php-v/laravelstack/filament-admin)](https://packagist.org/packages/laravelstack/filament-admin)
-[![License](https://img.shields.io/packagist/l/laravelstack/filament-admin)](https://packagist.org/packages/laravelstack/filament-admin)
-[![Tests](https://img.shields.io/github/actions/workflow/status/john-captain/filament-admin/ci.yml?branch=main&label=Tests)](https://github.com/john-captain/filament-admin/actions/workflows/ci.yml)
+[![最新版本](https://img.shields.io/packagist/v/filamentboot/filamentboot)](https://packagist.org/packages/filamentboot/filamentboot)
+[![总下载量](https://img.shields.io/packagist/dt/filamentboot/filamentboot)](https://packagist.org/packages/filamentboot/filamentboot)
+[![PHP 版本](https://img.shields.io/packagist/php-v/filamentboot/filamentboot)](https://packagist.org/packages/filamentboot/filamentboot)
+[![License](https://img.shields.io/packagist/l/filamentboot/filamentboot)](https://packagist.org/packages/filamentboot/filamentboot)
+[![Tests](https://img.shields.io/github/actions/workflow/status/filamentboot/filamentboot/ci.yml?branch=main&label=Tests)](https://github.com/filamentboot/filamentboot/actions/workflows/ci.yml)
 <!-- TODO: RELEASE-05 本期跳过，Codecov 代码覆盖率徽章待将来注册 Codecov 账号后接入，届时替换此注释为真实徽章 -->
 
 ---
@@ -22,26 +22,26 @@
 ### 第一步：安装
 
 ```bash
-composer require laravelstack/filament-admin
+composer require filamentboot/filamentboot
 ```
 
 ### 第二步：发布资源
 
 ```bash
 # 发布配置文件
-php artisan vendor:publish --tag=filament-admin-config
+php artisan vendor:publish --tag=filamentboot-config
 
 # 发布数据库迁移
-php artisan vendor:publish --tag=filament-admin-migrations
+php artisan vendor:publish --tag=filamentboot-migrations
 
 # 发布视图文件（如需自定义界面）
-php artisan vendor:publish --tag=filament-admin-views
+php artisan vendor:publish --tag=filamentboot-views
 
 # 发布多语言文件（如需自定义翻译）
-php artisan vendor:publish --tag=filament-admin-lang
+php artisan vendor:publish --tag=filamentboot-lang
 
 # 发布 Stub 文件（如需自定义生成模板）
-php artisan vendor:publish --tag=filament-admin-stubs
+php artisan vendor:publish --tag=filamentboot-stubs
 ```
 
 ### 第三步：执行迁移与初始化
@@ -51,7 +51,7 @@ php artisan vendor:publish --tag=filament-admin-stubs
 php artisan migrate
 
 # 创建超级管理员账号
-php artisan db:seed --class="FilamentAdmin\\Database\\Seeders\\SuperAdminSeeder"
+php artisan db:seed --class="Filamentboot\\Database\\Seeders\\SuperAdminSeeder"
 ```
 
 > **安全提示：** 默认账号为 `admin@example.com`，密码为 `password`，仅供初始化使用。
@@ -59,10 +59,10 @@ php artisan db:seed --class="FilamentAdmin\\Database\\Seeders\\SuperAdminSeeder"
 
 ### 第四步：注册插件
 
-在 `app/Providers/Filament/AdminPanelProvider.php` 中注册 FilamentAdmin 插件：
+在 `app/Providers/Filament/AdminPanelProvider.php` 中注册 Filamentboot 插件：
 
 ```php
-use FilamentAdmin\FilamentAdminPlugin;
+use Filamentboot\FilamentbootPlugin;
 use Filament\Panel;
 use Filament\PanelProvider;
 
@@ -76,13 +76,13 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->authGuard('admin')
             ->plugins([
-                FilamentAdminPlugin::make(),
+                FilamentbootPlugin::make(),
             ]);
     }
 }
 ```
 
-更多详细安装配置，请参阅 [安装文档](https://github.com/john-captain/filament-admin/blob/main/wiki/installation.md)。
+更多详细安装配置，请参阅 [安装文档](https://github.com/filamentboot/filamentboot/blob/main/wiki/installation.md)。
 
 ### 第五步：访问后台
 
@@ -144,7 +144,7 @@ class AdminPanelProvider extends PanelProvider
 
 ### 系统配置
 
-- 统一配置入口 `config/filament-admin.php`
+- 统一配置入口 `config/filamentboot.php`
 - 支持 `SUPER_ADMIN_ROLE` / `LOG_RETENTION_DAYS` 环境变量覆盖
 
 ---
@@ -157,71 +157,71 @@ class AdminPanelProvider extends PanelProvider
 
 **企业级权限体系开箱即用：** RBAC + 部门数据权限 + 双轨日志（操作审计 + 登录日志）全部内置，无需另行集成；超级管理员角色自动绕过所有权限检查，降低初始配置门槛。
 
-**以包形式发布，可扩展可覆盖：** 通过 `filament-admin:publish` 命令将 Model、Resource、Migration 等以 Stub 形式发布到用户项目，允许完全自定义，同时保持后续升级不冲突。
+**以包形式发布，可扩展可覆盖：** 通过 `filamentboot:publish` 命令将 Model、Resource、Migration 等以 Stub 形式发布到用户项目，允许完全自定义，同时保持后续升级不冲突。
 
 **双轨日志，可追溯：** 操作日志通过 Observer 自动记录所有模型变更，登录日志通过事件监听器自动记录成功/失败登录，均支持按需清理，满足合规要求。
 
 ---
 
-## 扩展发布（filament-admin:publish）
+## 扩展发布（filamentboot:publish）
 
 安装完成后，可使用内置命令将 Model / Resource 等以可自定义形态发布到项目中：
 
 ```bash
 # 发布单个 Model stub
-php artisan filament-admin:publish --model=Product
+php artisan filamentboot:publish --model=Product
 
 # 发布单个 Resource stub
-php artisan filament-admin:publish --resource=Product
+php artisan filamentboot:publish --resource=Product
 
 # 发布全套内置资源（AdminUser/Department/Menu/LoginLog）
-php artisan filament-admin:publish --all
+php artisan filamentboot:publish --all
 
 # 覆盖已存在文件
-php artisan filament-admin:publish --model=Product --force
+php artisan filamentboot:publish --model=Product --force
 ```
 
 ---
 
 ## 更多文档
 
-- [详细安装指南](https://github.com/john-captain/filament-admin/blob/main/wiki/installation.md)
+- [详细安装指南](https://github.com/filamentboot/filamentboot/blob/main/wiki/installation.md)
 - [v0.4 → v0.5 升级指南](UPGRADING.md)
 - [变更记录](CHANGELOG.md)
-- [贡献指南](https://github.com/john-captain/filament-admin/blob/main/CONTRIBUTING.md)
-- [问题反馈](https://github.com/john-captain/filament-admin/issues)
+- [贡献指南](https://github.com/filamentboot/filamentboot/blob/main/CONTRIBUTING.md)
+- [问题反馈](https://github.com/filamentboot/filamentboot/issues)
 
 ---
 
 ## 插件生态
 
-filament-admin 提供开箱即用的插件市场（后台"插件市场"Tab），支持一键安装 Composer 插件、
+filamentboot 提供开箱即用的插件市场（后台"插件市场"Tab），支持一键安装 Composer 插件、
 启用/禁用、自动执行 `post_install` 钩子（发布资源、迁移、种子）。
 
 ### 一方插件（官方出品）
 
 | 插件 | Composer 安装命令 | 功能 |
 |------|------------------|------|
-| 阿里云 OSS 存储 | `composer require laravelstack/filament-admin-oss` | Flysystem OSS 磁盘驱动，后台凭证管理页 |
-| 腾讯云 COS 存储 | `composer require laravelstack/filament-admin-cos` | Flysystem COS 磁盘驱动，后台凭证管理页 |
-| 富文本编辑器 | `composer require laravelstack/filament-admin-rich-editor` | 基于 Quill.js 的富文本编辑器 Field |
-| Markdown 编辑器 | `composer require laravelstack/filament-admin-markdown-editor` | Markdown 编辑器 Field，实时预览 |
-| WangEditor 编辑器 | `composer require laravelstack/filament-admin-wang-editor` | 基于 WangEditor 5 的中文富文本编辑器 Field |
-| 官网插件 | `composer require laravelstack/filament-admin-site` | 企业官网内容管理（页面、文章、联系信息） |
+| 阿里云 OSS 存储 | `composer require filamentboot/filamentboot-oss` | Flysystem OSS 磁盘驱动，后台凭证管理页 |
+| 腾讯云 COS 存储 | `composer require filamentboot/filamentboot-cos` | Flysystem COS 磁盘驱动，后台凭证管理页 |
+| 富文本编辑器 | `composer require filamentboot/filamentboot-rich-editor` | 基于 Quill.js 的富文本编辑器 Field |
+| Markdown 编辑器 | `composer require filamentboot/filamentboot-markdown-editor` | Markdown 编辑器 Field，实时预览 |
+| WangEditor 编辑器 | `composer require filamentboot/filamentboot-wang-editor` | 基于 WangEditor 5 的中文富文本编辑器 Field |
+| 官网插件 | `composer require filamentboot/filamentboot-site` | 企业官网内容管理（页面、文章、联系信息） |
 
 ### 如何开发兼容插件
 
-参阅 [wiki/plugin-development.md](https://github.com/john-captain/filament-admin/blob/main/wiki/plugin-development.md)
-了解从零创建 filament-admin 兼容插件的完整流程：接口实现、`composer.json` 规范字段、
-`extra.filament-admin` 扩展约定、`post_install` 钩子声明，以及提交到官方市场的步骤。
+参阅 [wiki/plugin-development.md](https://github.com/filamentboot/filamentboot/blob/main/wiki/plugin-development.md)
+了解从零创建 filamentboot 兼容插件的完整流程：接口实现、`composer.json` 规范字段、
+`extra.filamentboot` 扩展约定、`post_install` 钩子声明，以及提交到官方市场的步骤。
 
 ### 如何使用与管理插件
 
-参阅 [wiki/plugin-usage.md](https://github.com/john-captain/filament-admin/blob/main/wiki/plugin-usage.md)
+参阅 [wiki/plugin-usage.md](https://github.com/filamentboot/filamentboot/blob/main/wiki/plugin-usage.md)
 了解后台一键安装、手动安装、启用/禁用、插件配置、卸载及常见问题排查。
 
 ---
 
 ## 许可证
 
-MIT License © [FilamentAdmin](https://github.com/john-captain/filament-admin)
+MIT License © [Filamentboot](https://github.com/filamentboot/filamentboot)

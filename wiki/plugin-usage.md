@@ -1,6 +1,6 @@
 # 插件安装与管理指南（plugin-usage.md）
 
-> 面向后台用户。本文说明如何通过 filament-admin 后台插件市场安装插件（一键安装），
+> 面向后台用户。本文说明如何通过 filamentboot 后台插件市场安装插件（一键安装），
 > 以及手动安装、启用/禁用、配置、卸载等全流程操作，并提供常见问题排查步骤。
 
 ---
@@ -78,7 +78,7 @@
 
 点击"我已了解，继续安装"后，流程与官方市场一致。
 
-社区插件未声明 `extra.filament-admin.post_install` 块时，系统执行通用兜底：
+社区插件未声明 `extra.filamentboot.post_install` 块时，系统执行通用兜底：
 `migrate --force` + `composer dump-autoload`（跳过 `vendor:publish`）。
 
 ---
@@ -118,7 +118,7 @@ php artisan optimize:clear
 执行 `plugin:scan` 命令让后台识别新安装的插件：
 
 ```bash
-php artisan filament-admin:scan-plugins
+php artisan filamentboot:scan-plugins
 ```
 
 然后登录后台，进入"插件市场 → 已安装" Tab，找到刚安装的插件，点击"启用"。
@@ -127,11 +127,11 @@ php artisan filament-admin:scan-plugins
 
 ## 3. 启用后如何生效
 
-filament-admin 的插件启停机制基于数据库状态，通过 `AdminPanelProvider` 在每次请求时
+filamentboot 的插件启停机制基于数据库状态，通过 `AdminPanelProvider` 在每次请求时
 动态注册插件（Panel 层启停，D-06-02）：
 
 ```php
-// app/Providers/Filament/AdminPanelProvider.php（自动生成，无需手动修改）
+// app/Providers/Filament/AdminPanelProvider.php（由 filamentboot:install 自动生成，无需手动修改）
 Plugin::where('is_enabled', true)->get()->each(function ($plugin) use ($panel) {
     $pluginClass = $plugin->plugin_class;
     if ($pluginClass && class_exists($pluginClass)) {
@@ -303,11 +303,11 @@ Problem 1 - vendor/plugin requires filament/filament ^4.0 but filament/filament[
 
    ```bash
    php artisan tinker
-   # >>> FilamentAdmin\Models\Plugin::where('slug', 'your-plugin-slug')->first()->init_log;
+   # >>> Filamentboot\Models\Plugin::where('slug', 'your-plugin-slug')->first()->init_log;
    ```
 
 6. **检查 AdminPanelProvider 注册：** 打开 `app/Providers/Filament/AdminPanelProvider.php`，
-   确认存在动态插件注册逻辑（由 filament-admin 自动注入，无需手动添加）。
+   确认存在动态插件注册逻辑（由 filamentboot 自动注入，无需手动添加）。
 
 ---
 
@@ -329,7 +329,7 @@ Problem 1 - vendor/plugin requires filament/filament ^4.0 but filament/filament[
 
    ```bash
    php artisan tinker
-   # >>> FilamentAdmin\Models\Plugin::where('slug', 'your-plugin-slug')->withTrashed()->get();
+   # >>> Filamentboot\Models\Plugin::where('slug', 'your-plugin-slug')->withTrashed()->get();
    ```
 
 4. 若残留软删除记录，手动强制删除后重试安装。
@@ -360,7 +360,7 @@ php artisan queue:listen
 
 ## 相关文档
 
-- [插件开发指南](plugin-development.md) — 如何开发 filament-admin 兼容插件
-- [安装指南](installation.md) — filament-admin 主包安装
+- [插件开发指南](plugin-development.md) — 如何开发 filamentboot 兼容插件
+- [安装指南](installation.md) — filamentboot 主包安装
 - [贡献指南](https://github.com/filamentboot/filamentboot/blob/main/CONTRIBUTING.md)
 - [问题反馈](https://github.com/filamentboot/filamentboot/issues)
