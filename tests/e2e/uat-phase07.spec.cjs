@@ -23,7 +23,7 @@ function artisan(cmd) {
 
 function mysql(sql) {
     return execSync(
-        `mysql -h 127.0.0.1 -P 3380 -u root -p123456 filamentadmin -sN -e "${sql}" 2>/dev/null`,
+        `mysql -h 127.0.0.1 -P 3380 -u root -p123456 filamentboot -sN -e "${sql}" 2>/dev/null`,
         { encoding: 'utf-8' }
     ).trim();
 }

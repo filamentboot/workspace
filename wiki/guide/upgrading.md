@@ -42,7 +42,7 @@ composer update
 - `composer.json` 不再包含 `filament-admin/plugin-platform`
 - `composer.json` 不再包含 `packages/plugin-platform` 的本地仓库定义
 - 主包仓库内不再保留 `packages/plugin-platform/`
-- 主包运行时代码不再引用 `FilamentAdmin\\PluginPlatform`
+- 主包运行时代码不再引用 `Filamentboot\\PluginPlatform`
 - 后台基础能力仍可正常加载
 
 ## 已知限制

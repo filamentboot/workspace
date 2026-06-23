@@ -69,3 +69,6 @@ Thumbs.db
 /tests/Unit/PluginPlatform/
 
 /.planning
+
+# Playwright 测试输出
+/test-results/

@@ -11,7 +11,7 @@ return [
             'version'           => '^4.0',
             'author_name'       => 'Awcodes',
             'summary'           => '面向内容发布与后台录入场景的富文本编辑器插件。',
-            'description'       => '为 FilamentAdmin 提供更完整的正文编辑体验，适合文章、公告、产品详情等内容型表单。',
+            'description'       => '为 Filamentboot 提供更完整的正文编辑体验，适合文章、公告、产品详情等内容型表单。',
             'documentation_url' => 'https://filamentphp.com/plugins/awcodes-tiptap-editor',
             'installation'      => [
                 'instructions' => '安装后在业务表单中接入富文本字段，并按需补充上传与图片处理配置。',

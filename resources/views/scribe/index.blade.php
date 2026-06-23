@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible">
     <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-    <title>FilamentAdmin API 文档</title>
+    <title>Filamentboot API 文档</title>
 
     <link href="https://fonts.googleapis.com/css?family=Open+Sans&display=swap" rel="stylesheet">
 
@@ -26,7 +26,7 @@
             </style>
 
     <script>
-        var tryItOutBaseUrl = "http://filamentadmin.local";
+        var tryItOutBaseUrl = "http://filamentboot.local";
         var useCsrf = Boolean();
         var csrfUrl = "/sanctum/csrf-cookie";
     </script>
@@ -99,9 +99,9 @@
     <div class="dark-box"></div>
     <div class="content">
         <h1 id="introduction">Introduction</h1>
-<p>FilamentAdmin 后台管理 API 接口文档</p>
+<p>Filamentboot 后台管理 API 接口文档</p>
 <aside>
-    <strong>Base URL</strong>: <code>http://filamentadmin.local</code>
+    <strong>Base URL</strong>: <code>http://filamentboot.local</code>
 </aside>
 <pre><code>This documentation aims to provide all the information you need to work with our API.
 
@@ -130,7 +130,7 @@ You can switch the language used with the tabs at the top right (or from the nav
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request POST \
-    "http://filamentadmin.local/api/v1/admin/login" \
+    "http://filamentboot.local/api/v1/admin/login" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json" \
     --data "{
@@ -142,7 +142,7 @@ You can switch the language used with the tabs at the top right (or from the nav
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://filamentadmin.local/api/v1/admin/login"
+    "http://filamentboot.local/api/v1/admin/login"
 );
 
 const headers = {
@@ -304,7 +304,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request GET \
-    --get "http://filamentadmin.local/api/v1/admin/me" \
+    --get "http://filamentboot.local/api/v1/admin/me" \
     --header "Authorization: Bearer {YOUR_ADMIN_TOKEN}" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
@@ -312,7 +312,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://filamentadmin.local/api/v1/admin/me"
+    "http://filamentboot.local/api/v1/admin/me"
 );
 
 const headers = {
@@ -447,7 +447,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="bash-example">
     <pre><code class="language-bash">curl --request DELETE \
-    "http://filamentadmin.local/api/v1/admin/logout" \
+    "http://filamentboot.local/api/v1/admin/logout" \
     --header "Authorization: Bearer {YOUR_ADMIN_TOKEN}" \
     --header "Content-Type: application/json" \
     --header "Accept: application/json"</code></pre></div>
@@ -455,7 +455,7 @@ You can check the Dev Tools console for debugging information.</code></pre>
 
 <div class="javascript-example">
     <pre><code class="language-javascript">const url = new URL(
-    "http://filamentadmin.local/api/v1/admin/logout"
+    "http://filamentboot.local/api/v1/admin/logout"
 );
 
 const headers = {

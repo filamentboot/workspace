@@ -2,7 +2,7 @@
 
 ## v0.5.0 — 2026-06-11
 
-这是 FilamentAdmin v0.5 里程碑正式发布版本，核心使命：让 `composer require laravelstack/filament-admin` 真正可用——资源发布完整、主包 CI 全绿、功能骨架完整可扩展。
+这是 Filamentboot v0.5 里程碑正式发布版本，核心使命：让 `composer require laravelstack/filament-admin` 真正可用——资源发布完整、主包 CI 全绿、功能骨架完整可扩展。
 
 ### 安装
 
@@ -16,7 +16,7 @@ composer require laravelstack/filament-admin
 
 ### Added（新增）
 
-- **包发布合规（5 个 vendor:publish tag）**：`filament-admin-config` / `filament-admin-migrations` / `filament-admin-views` / `filament-admin-lang` / `filament-admin-stubs` 全部注册到 `FilamentAdminServiceProvider`，首次安装后 `php artisan vendor:publish` 可正常使用
+- **包发布合规（5 个 vendor:publish tag）**：`filament-admin-config` / `filament-admin-migrations` / `filament-admin-views` / `filament-admin-lang` / `filament-admin-stubs` 全部注册到 `FilamentbootServiceProvider`，首次安装后 `php artisan vendor:publish` 可正常使用
 - **filament-admin:publish 真实实现**：支持 `--model=AdminUser` / `--resource=AdminUserResource` 单个发布，以及 `--all` 发布全套扩展（Model + Resource + Migration + FeatureTest 四件套），含 `--force` 覆盖、`--only / --except` 过滤、`--path` 自定义输出路径
 - **make:filament-admin-resource 命令**：`php artisan make:filament-admin-resource {name}` 在用户项目生成 Resource + 三个 Pages（List/Create/Edit），委托 `StubGenerator` 服务统一渲染模板
 - **Impersonation（用户模拟登录）**：集成 `stechstudio/filament-impersonate`，管理员列表一键切换身份，顶栏显示中文"结束模拟"横幅，`ImpersonationListener` 自动写入操作日志
@@ -55,6 +55,6 @@ composer require laravelstack/filament-admin
 ## v0.4.0 — 2026-06-03
 
 - 独立包目录骨架初始化（`packages/filament-admin/`）
-- `FilamentAdminServiceProvider` 注册框架（publishes 空壳，v0.5 补全实现）
+- `FilamentbootServiceProvider` 注册框架（publishes 空壳，v0.5 补全实现）
 - `PublishCommand` 命令框架
 - 包级测试框架（Pest 4.x）与代码质量配置（PHPStan / Pint）

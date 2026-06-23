@@ -2,7 +2,7 @@
 
 > 文档版本：2026-06-01
 > 文档状态：**决策已锁定，可进入实施计划阶段**
-> 关联主项目：FilamentAdmin（`xitongapp.com`）
+> 关联主项目：Filamentboot（`xitongapp.com`）
 > 本文档范围：`www.xitongapp.com` 插件商店独立项目（仓库：`filament-admin/store`）的完整需求与交互方案
 
 ---
@@ -38,7 +38,7 @@
 **依赖关系：**
 
 ```
-FilamentAdmin 后台
+Filamentboot 后台
     └── 调用 www.xitongapp.com/api/v1/index.json（获取插件索引）
     └── 调用 www.xitongapp.com/api/v1/license/verify（验证 License）
     └── 调用 www.xitongapp.com（付费插件分发，License 校验通过后下载）
@@ -50,25 +50,25 @@ FilamentAdmin 后台
 
 ### 2.1 这是什么
 
-`www.xitongapp.com` 是 FilamentAdmin 插件生态的商业闭环平台，承载：
+`www.xitongapp.com` 是 Filamentboot 插件生态的商业闭环平台，承载：
 
 - **对用户**：浏览、购买、管理已购插件
 - **对开发者**：提交、上架、管理插件，接收收益
-- **对 FilamentAdmin 实例**：提供机器可读的插件索引 JSON 和 License 校验 API
+- **对 Filamentboot 实例**：提供机器可读的插件索引 JSON 和 License 校验 API
 - **对平台管理员**：插件审核、开发者管理、订单管理、结算管理
 
 ### 2.2 这不是什么
 
-- 不是 FilamentAdmin 主项目的功能模块
+- 不是 Filamentboot 主项目的功能模块
 - 不是主项目的 Filament 后台里的一个 Resource
-- 不处理 FilamentAdmin 本身的安装和部署
-- 第一版不提供插件在线升级（由 FilamentAdmin 主项目的后续版本实现）
+- 不处理 Filamentboot 本身的安装和部署
+- 第一版不提供插件在线升级（由 Filamentboot 主项目的后续版本实现）
 - 不是官方网站的营销页或文档站（官网需求后续独立移出）
 
 ### 2.3 与主项目的关系
 
 ```
-FilamentAdmin（主项目）          www.xitongapp.com（本项目）
+Filamentboot（主项目）          www.xitongapp.com（本项目）
     ├── 内置：插件市场 UI           ├── 插件索引 JSON API
     ├── 内置：License 输入框  <-->  ├── License 校验 API
     └── 内置：安装链路              └── 付费插件分发（集成路由）
@@ -214,12 +214,12 @@ GET https://www.xitongapp.com/api/v1/index.json
 {
   "generated_at": "2026-06-01T00:00:00Z",
   "schema_version": "1",
-  "filamentadmin_compat": "^1.0",
+  "Filamentboot_compat": "^1.0",
   "plugins": [
     {
       "name": "filament-admin/plugin-platform",
       "display_name": "插件市场",
-      "description": "FilamentAdmin 官方插件市场基础包，提供插件发现、状态管理、安装链路能力。",
+      "description": "Filamentboot 官方插件市场基础包，提供插件发现、状态管理、安装链路能力。",
       "type": "plugin",
       "category": "core",
       "source": "official-trusted",
@@ -227,7 +227,7 @@ GET https://www.xitongapp.com/api/v1/index.json
       "versions": [
         {
           "version": "1.0.0",
-          "requires_filamentadmin": "^1.0",
+          "requires_Filamentboot": "^1.0",
           "requires_php": "^8.2",
           "released_at": "2026-06-01"
         }
@@ -237,7 +237,7 @@ GET https://www.xitongapp.com/api/v1/index.json
       "license": "MIT",
       "free": true,
       "author": {
-        "name": "FilamentAdmin",
+        "name": "Filamentboot",
         "url": "https://www.xitongapp.com/developers/filament-admin"
       },
       "homepage": "https://www.xitongapp.com/plugins/plugin-platform",
@@ -322,7 +322,7 @@ Response（失败）:
         └── 显示详细安装说明
     → 进入用户中心「已购插件」
     → 复制 License Key
-    → 进入 FilamentAdmin 后台 → 插件市场
+    → 进入 Filamentboot 后台 → 插件市场
     → 找到对应插件 → 点击「安装」
     → 弹出 License Key 输入框
     → 填入 License Key → 系统校验（调 License API）
@@ -363,10 +363,10 @@ Response（失败）:
         └── 驳回 → 填写原因 → 邮件通知开发者 → 开发者可修改后重新提交
 ```
 
-### 6.3 FilamentAdmin 实例获取插件索引
+### 6.3 Filamentboot 实例获取插件索引
 
 ```
-FilamentAdmin 后台启动
+Filamentboot 后台启动
     → 插件市场 Filament Plugin 初始化
     → 检查本地缓存（app cache，TTL 60 分钟）
         ├── 缓存命中 → 直接使用
@@ -440,7 +440,7 @@ vendor-name/
             "plugin": "Vendor\\PackageName\\Plugin",
             "display_name": "插件中文名",
             "category": "capability",
-            "min_filamentadmin": "1.0.0"
+            "min_Filamentboot": "1.0.0"
         }
     },
     "autoload": {
@@ -458,12 +458,12 @@ vendor-name/
 
 namespace Vendor\PackageName;
 
-use FilamentAdmin\Contracts\FilamentAdminPlugin;
+use Filamentboot\Contracts\FilamentbootPlugin;
 
 /**
- * 插件主入口类，必须实现 FilamentAdminPlugin 接口。
+ * 插件主入口类，必须实现 FilamentbootPlugin 接口。
  */
-class Plugin implements FilamentAdminPlugin
+class Plugin implements FilamentbootPlugin
 {
     /**
      * 返回插件唯一标识符（与 composer.json name 一致）。
@@ -527,7 +527,7 @@ class Plugin implements FilamentAdminPlugin
 
 `filament-admin/demo-plugin` 是一个官方维护的最小可用插件，用途：
 
-1. **测试用**：验证 FilamentAdmin 插件安装链路端到端可用
+1. **测试用**：验证 Filamentboot 插件安装链路端到端可用
 2. **参考用**：新插件开发者的目录结构和代码规范参考
 3. **演示用**：在演示站和文档中展示插件生命周期
 
@@ -576,7 +576,7 @@ filament-admin/demo-plugin/
 ```json
 {
     "name": "filament-admin/demo-plugin",
-    "description": "FilamentAdmin 官方演示插件，用于测试插件安装链路和作为开发参考。",
+    "description": "Filamentboot 官方演示插件，用于测试插件安装链路和作为开发参考。",
     "type": "library",
     "license": "MIT",
     "require": {
@@ -585,13 +585,13 @@ filament-admin/demo-plugin/
     },
     "extra": {
         "laravel": {
-            "providers": ["FilamentAdmin\\DemoPlugin\\DemoPluginServiceProvider"]
+            "providers": ["Filamentboot\\DemoPlugin\\DemoPluginServiceProvider"]
         },
         "filament-admin": {
-            "plugin": "FilamentAdmin\\DemoPlugin\\Plugin",
+            "plugin": "Filamentboot\\DemoPlugin\\Plugin",
             "display_name": "演示插件",
             "category": "demo",
-            "min_filamentadmin": "1.0.0"
+            "min_Filamentboot": "1.0.0"
         }
     }
 }
@@ -626,7 +626,7 @@ filament-admin/demo-plugin/
 **MVP 阶段：直接 zip 下载**
 
 - License 校验通过后，API 返回短期有效的下载 Token（5 分钟）
-- FilamentAdmin 后端使用 Token 下载 zip 包，解压到 `vendor/`，执行 `composer dump-autoload`
+- Filamentboot 后端使用 Token 下载 zip 包，解压到 `vendor/`，执行 `composer dump-autoload`
 - 适用于官方自维护插件（依赖关系简单可控）
 
 **V2 阶段：标准 Composer 私有仓库**

@@ -27,7 +27,7 @@ php artisan key:generate
 编辑 `.env` 文件：
 
 ```env
-APP_NAME=FilamentAdmin
+APP_NAME=Filamentboot
 APP_ENV=production
 APP_DEBUG=false
 

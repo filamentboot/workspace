@@ -46,7 +46,7 @@
 ### Added
 
 - 独立包目录骨架初始化（`packages/filament-admin/`）
-- `FilamentAdminServiceProvider` 注册框架（publishes 空壳，v0.5 补全实现）
+- `FilamentbootServiceProvider` 注册框架（publishes 空壳，v0.5 补全实现）
 - `PublishCommand` 命令框架（v0.5 补全实现）
 - Composer 元数据：`extra.laravel.providers`、`extra.branch-alias`、`support` 字段
 - 包级 `phpunit.xml.dist` 与 Pest 4.x 测试框架配置

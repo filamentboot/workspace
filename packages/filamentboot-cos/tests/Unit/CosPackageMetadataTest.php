@@ -30,14 +30,14 @@ class CosPackageMetadataTest extends TestCase
      */
     public function test_extra_filament_admin_has_required_fields(): void
     {
-        $filamentAdmin = $this->composer['extra']['filamentboot'];
+        $Filamentboot = $this->composer['extra']['filamentboot'];
 
-        self::assertSame('filamentboot-cos', $filamentAdmin['slug']);
-        self::assertArrayHasKey('name', $filamentAdmin);
-        self::assertArrayHasKey('plugin_class', $filamentAdmin);
-        self::assertArrayHasKey('service_provider', $filamentAdmin);
-        self::assertStringContainsString('CosPlugin', $filamentAdmin['plugin_class']);
-        self::assertStringContainsString('CosServiceProvider', $filamentAdmin['service_provider']);
+        self::assertSame('filamentboot-cos', $Filamentboot['slug']);
+        self::assertArrayHasKey('name', $Filamentboot);
+        self::assertArrayHasKey('plugin_class', $Filamentboot);
+        self::assertArrayHasKey('service_provider', $Filamentboot);
+        self::assertStringContainsString('CosPlugin', $Filamentboot['plugin_class']);
+        self::assertStringContainsString('CosServiceProvider', $Filamentboot['service_provider']);
     }
 
     /**

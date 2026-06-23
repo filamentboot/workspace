@@ -3109,7 +3109,7 @@
             "extra": {
                 "laravel": {
                     "providers": [
-                        "FilamentAdmin\\FilamentAdminServiceProvider"
+                        "Filamentboot\\FilamentbootServiceProvider"
                     ]
                 },
                 "branch-alias": {
@@ -3118,9 +3118,9 @@
             },
             "autoload": {
                 "psr-4": {
-                    "FilamentAdmin\\": "src/",
-                    "FilamentAdmin\\Database\\Seeders\\": "database/seeders/",
-                    "FilamentAdmin\\Database\\Factories\\": "database/factories/"
+                    "Filamentboot\\": "src/",
+                    "Filamentboot\\Database\\Seeders\\": "database/seeders/",
+                    "Filamentboot\\Database\\Factories\\": "database/factories/"
                 }
             },
             "notification-url": "https://packagist.org/downloads/",

@@ -1,9 +1,9 @@
 # Introduction
 
-FilamentAdmin 后台管理 API 接口文档
+Filamentboot 后台管理 API 接口文档
 
 <aside>
-    <strong>Base URL</strong>: <code>http://filamentadmin.local</code>
+    <strong>Base URL</strong>: <code>http://filamentboot.local</code>
 </aside>
 
     This documentation aims to provide all the information you need to work with our API.

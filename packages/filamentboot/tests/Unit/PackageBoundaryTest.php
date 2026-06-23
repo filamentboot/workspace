@@ -31,7 +31,7 @@ class PackageBoundaryTest extends TestCase
             $source = file_get_contents($file);
 
             self::assertIsString($source);
-            self::assertStringNotContainsString('FilamentAdmin\\PluginPlatform', $source, $file);
+            self::assertStringNotContainsString('Filamentboot\\PluginPlatform', $source, $file);
             self::assertStringNotContainsString('packages/plugin-platform', $source, $file);
         }
     }

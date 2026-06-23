@@ -2,8 +2,8 @@
 
 ## 包边界
 
-- `FilamentAdmin` 是后台基座基础包
-- `filament-admin/plugin-platform` 是依赖 `FilamentAdmin` 的插件市场基础包
+- `Filamentboot` 是后台基座基础包
+- `filament-admin/plugin-platform` 是依赖 `Filamentboot` 的插件市场基础包
 - 插件市场包负责：
   - 扩展库存管理
   - 官方市场索引缓存

@@ -339,7 +339,7 @@ class PublishCommandTest extends TestCase
      * Test 10（gap-closure 01-07）：验证发布出的 FeatureTest 文件使用用户项目命名空间
      *
      * 回归保护 VERIFICATION.md Gap 2：FeatureTest.stub 曾硬编码包内
-     * 命名空间 FilamentAdmin\Filament\Resources，导致测试文件无法运行。
+     * 命名空间 Filamentboot\Filament\Resources，导致测试文件无法运行。
      * 使用 --resource=Product --all 触发完整四件套（含 FeatureTest 生成）。
      */
     public function test_published_feature_test_uses_app_namespace(): void
@@ -360,7 +360,7 @@ class PublishCommandTest extends TestCase
         // CR-01 修复后，包内 AdminUser 以别名导入，避免与发布的同名 Model 冲突
         self::assertStringContainsString('use Filamentboot\\Models\\AdminUser as PackageAdminUser;', $content);
 
-        self::assertStringNotContainsString('FilamentAdmin\\Filament\\Resources', $content);
-        self::assertStringNotContainsString('FilamentAdmin\\Models\\Product', $content);
+        self::assertStringNotContainsString('Filamentboot\\Filament\\Resources', $content);
+        self::assertStringNotContainsString('Filamentboot\\Models\\Product', $content);
     }
 }

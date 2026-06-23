@@ -19,7 +19,7 @@
 | 应用目录 | `/data/filament-admin/` |
 | 域名 | `https://www.xitongapp.com` |
 | PHP 版本 | 8.4-fpm（`www-data` 用户运行） |
-| 数据库 | MariaDB 10.11，库名 `filamentadmin` |
+| 数据库 | MariaDB 10.11，库名 `Filamentboot` |
 | 缓存/队列 | Redis，DB 0 |
 | Web 服务器 | Nginx 1.22 |
 | SSL 证书 | Let's Encrypt，acme.sh 自动续期 |

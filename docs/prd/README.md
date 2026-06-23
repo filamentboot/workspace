@@ -1,6 +1,6 @@
-# FilamentAdmin PRD 索引
+# Filamentboot PRD 索引
 
-> 文档定位:FilamentAdmin 产品需求文档索引
+> 文档定位:Filamentboot 产品需求文档索引
 > 
 > 更新时间:2026-06-03
 
