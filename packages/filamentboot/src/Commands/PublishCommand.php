@@ -6,7 +6,7 @@ use Filamentboot\Services\StubGenerator;
 use Illuminate\Console\Command;
 
 /**
- * 发布 FilamentAdmin 扩展 stub 命令（COMPLY-02）
+ * 发布 Filamentboot 扩展 stub 命令（COMPLY-02）
  *
  * 用户通过此命令将包内置的 Model/Resource/Migration/FeatureTest
  * stub 渲染后写入用户项目，支持自定义路径、强制覆盖、批量发布等操作。
@@ -42,7 +42,7 @@ class PublishCommand extends Command
      *
      * @var string
      */
-    protected $description = '发布 FilamentAdmin 扩展 stub 到用户项目（支持 --model/--resource/--all/--path 等选项）';
+    protected $description = '发布 Filamentboot 扩展 stub 到用户项目（支持 --model/--resource/--all/--path 等选项）';
 
     /**
      * 内置资源名称列表（D-03 语义 A）
@@ -362,7 +362,7 @@ class PublishCommand extends Command
     }
 
     /**
-     * 在发布完成后输出 FilamentAdminPlugin 绑定示例代码
+     * 在发布完成后输出 FilamentbootPlugin 绑定示例代码
      *
      * @param  string  $modelClass  已发布的 Model 完整类名（不含前导反斜线）
      * @param  string  $resourceClass  已发布的 Resource 完整类名（不含前导反斜线）
@@ -374,7 +374,7 @@ class PublishCommand extends Command
         $this->info('请将以下代码添加到 AdminPanelProvider::panel() 中：');
         $this->newLine();
         $this->line('->plugins([');
-        $this->line('    FilamentAdminPlugin::make()');
+        $this->line('    FilamentbootPlugin::make()');
         $this->line("        ->adminUserModel(\\{$modelClass}::class)");
         $this->line("        ->adminUserResource(\\{$resourceClass}::class),");
         $this->line('])');

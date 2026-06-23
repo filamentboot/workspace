@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\File;
 use Illuminate\Support\ServiceProvider;
 
 /**
- * FilamentAdmin 一键安装命令
+ * Filamentboot 一键安装命令
  *
  * 七步顺序执行安装流程：
  * Step 1: 生成 AdminPanelProvider（幂等检测，D-11-03）
@@ -34,14 +34,14 @@ class InstallCommand extends Command
      *
      * @var string
      */
-    protected $description = '安装 FilamentAdmin：生成 AdminPanelProvider，发布资源，执行迁移，创建超管账号';
+    protected $description = '安装 Filamentboot：生成 AdminPanelProvider，发布资源，执行迁移，创建超管账号';
 
     /**
      * 执行安装流程
      */
     public function handle(): int
     {
-        $this->components->info('开始安装 FilamentAdmin...');
+        $this->components->info('开始安装 Filamentboot...');
 
         // Step 1: 生成 AdminPanelProvider（幂等检测，D-11-03）
         if (! $this->generateProvider()) {
@@ -78,7 +78,7 @@ class InstallCommand extends Command
 
         // Step 7: 输出安装报告
         $this->newLine();
-        $this->components->success('FilamentAdmin 安装完成！');
+        $this->components->success('Filamentboot 安装完成！');
         $this->newLine();
         $this->line('  后台地址：<fg=cyan>/admin</>');
         $this->line('  默认账号：<fg=cyan>admin@example.com</> / <fg=cyan>password</>');

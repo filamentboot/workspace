@@ -6,7 +6,7 @@
  * APP_LOCALE=en 时覆盖插件默认英文，统一展示中文横幅（D-19）：
  * "正在模拟 {username}（结束模拟）"
  *
- * 由 FilamentAdminServiceProvider::registerTranslations() 加载到
+ * 由 FilamentbootServiceProvider::registerTranslations() 加载到
  * filament-impersonate 命名空间。
  */
 return [

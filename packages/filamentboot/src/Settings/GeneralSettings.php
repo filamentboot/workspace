@@ -12,7 +12,7 @@ use Spatie\LaravelSettings\Settings;
 class GeneralSettings extends Settings
 {
     /** 站点名称 */
-    public string $site_name = 'FilamentAdmin';
+    public string $site_name = 'Filamentboot';
 
     /** 后台标题 */
     public string $admin_title = '系统管理后台';

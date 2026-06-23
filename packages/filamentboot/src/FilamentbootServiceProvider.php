@@ -31,7 +31,7 @@ use STS\FilamentImpersonate\Events\EnterImpersonation;
 use STS\FilamentImpersonate\Events\LeaveImpersonation;
 
 /**
- * FilamentAdmin 包服务提供者
+ * Filamentboot 包服务提供者
  *
  * 负责注册迁移、命令、监听器、Observer、Policy 等包级资源。
  */

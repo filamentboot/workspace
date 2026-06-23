@@ -2,7 +2,7 @@
     <x-filament::section heading="快速上手">
         <div class="space-y-3">
             <p class="text-sm text-gray-600 dark:text-gray-400">
-                完成以下步骤，开始使用 FilamentAdmin：
+                完成以下步骤，开始使用 Filamentboot：
             </p>
             <ol class="space-y-2 text-sm">
                 <li class="flex items-center gap-2">
