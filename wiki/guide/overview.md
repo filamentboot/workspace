@@ -1,19 +1,19 @@
-# FilamentAdmin 项目概览
+# Filamentboot 项目概览
 
-> 当前仓库根目录是演示项目，真正的对外 Composer 包位于 `packages/filament-admin`。本文同时说明二者边界。
+> 当前仓库根目录是演示项目，真正的对外 Composer 包位于 `packages/filamentboot`。本文同时说明二者边界。
 
 ## 项目定位
 
-FilamentAdmin 是一个基于 Laravel 13 + Filament 5 的后台基础能力方案，当前分成两层：
+Filamentboot 是一个基于 Laravel 13 + Filament 5 的后台基础能力方案，当前分成两层：
 
 - **演示项目**：当前仓库根目录，用于运行、联调和验收
-- **主包**：`packages/filament-admin`，用于对外发布和 Packagist 安装
+- **主包**：`packages/filamentboot`，用于对外发布和 Packagist 安装
 
 它的目标是让新项目不再重复搭建后台基础设施。当前第一版聚焦“可安装、可登录、可扩展、可开发业务模块”的后台 MVP；插件市场、在线升级和商业化能力属于后续独立版本。
 
 ### 当前发布边界
 
-- 当前公开发布对象是 `packages/filament-admin`
+- 当前公开发布对象是 `packages/filamentboot`
 - 当前推荐安装方式是 `composer require filamentboot/filamentboot`
 - 当前仓库根目录不直接作为包仓库发布
 - 当前主包不包含 `PluginPlatform`
@@ -21,7 +21,7 @@ FilamentAdmin 是一个基于 Laravel 13 + Filament 5 的后台基础能力方�
 
 ### 组合最优的代码基座
 
-FilamentAdmin 不追求重复造轮子，而是把 Laravel / Filament 生态中经过验证的扩展包按“开箱即用”的标准组合起来，并提供清晰的定制层与扩展点说明。
+Filamentboot 不追求重复造轮子，而是把 Laravel / Filament 生态中经过验证的扩展包按”开箱即用”的标准组合起来，并提供清晰的定制层与扩展点说明。
 
 开发者拿到项目后，应该能通过文档快速知道：
 
@@ -75,7 +75,7 @@ FilamentAdmin 不追求重复造轮子，而是把 Laravel / Filament 生态中�
 | 操作日志 | `spatie/laravel-activitylog` + `alizharb/filament-activity-log` | opt-in 模式，默认只记录后台关键操作 | 已集成；当前覆盖管理员、菜单、部门、数据权限等一期核心后台动作 |
 | 媒体库 | `spatie/laravel-medialibrary` + `filament/spatie-laravel-media-library-plugin` | 本地磁盘存储，缩略图自动生成 | 未集成 |
 | 系统配置 | `spatie/laravel-settings` + `filament/spatie-laravel-settings-plugin` | 强类型 PHP Settings 类 + Filament 配置页 + 缓存 | 未集成 |
-| 插件市场 | 后续独立包（规划） | 独立 Composer 扩展包，依赖 `FilamentAdmin`，承载扩展清单、来源标记、市场索引和插件生命周期管理 | 不属于当前主包发布对象 |
+| 插件市场 | 后续独立包（规划） | 独立 Composer 扩展包，依赖 `Filamentboot`，承载扩展清单、来源标记、市场索引和插件生命周期管理 | 不属于当前主包发布对象 |
 | API 认证 | `laravel/sanctum` | Bearer Token + Session 双模式 | 未安装，路由与统一响应规范未实现 |
 | 登录限流 | Filament 5 内置能力 | 每分钟 5 次尝试 | 已通过登录测试覆盖 |
 | 双因素认证 | `stephenjude/filament-two-factor-authentication` | TOTP + Recovery Code，默认关闭，管理员个人启用 | 已接入并有基础测试；完整 UI/恢复码流程需随阶段验收复核 |
@@ -98,7 +98,7 @@ FilamentAdmin 不追求重复造轮子，而是把 Laravel / Filament 生态中�
 
 ### 需求总纲
 
-FilamentAdmin 希望沉淀一套对标 FastAdmin 的 Laravel + Filament 后台基础平台，重点提供后台系统的通用底座、权限体系、插件机制、快速开发规范和基础运维能力。
+Filamentboot 希望沉淀一套对标 FastAdmin 的 Laravel + Filament 后台基础平台，重点提供后台系统的通用底座、权限体系、插件机制、快速开发规范和基础运维能力。
 
 本项目主打开源生态，文档体系必须完备：安装记录、变更记录、定制说明都要清晰可查。核心是消除二次开发者的使用顾虑，让开发者能快速识别项目在 Laravel / Filament 默认行为基础上做了哪些定制。
 

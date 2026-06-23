@@ -2,13 +2,13 @@
 
 ## Project
 
-**FilamentAdmin**
+**Filamentboot**
 
-FilamentAdmin 是对标 FastAdmin / laravel-admin 的 Laravel 13 + Filament 5 后台基础平台，以 Composer 包 `laravelstack/filament-admin` 形态发布。独立开发者、外包公司和企业 IT 通过 `composer require` 即可拿到一套含认证、权限、菜单、操作日志、部门数据权限的后台底座，在上面直接构建业务模块而无需重建基础设施。
+Filamentboot 是对标 FastAdmin / laravel-admin 的 Laravel 13 + Filament 5 后台基础平台，以 Composer 包 `filamentboot/filamentboot` 形态发布。独立开发者、外包公司和企业 IT 通过 `composer require` 即可拿到一套含认证、权限、菜单、操作日志、部门数据权限的后台底座，在上面直接构建业务模块而无需重建基础设施。
 
 直接对标：**`siubie/kaido-kit`** (383★ Filament 3.x starter kit，国外同路线对手)、FastAdmin（ThinkPHP，国内同路线但技术栈老）。
 
-**Core Value:** **别人执行 `composer require laravelstack/filament-admin` 后能开箱运行、能扩展定制、能稳定升级，且包发布形态完全符合 Laravel 开源市场规范。**
+**Core Value:** **别人执行 `composer require filamentboot/filamentboot` 后能开箱运行、能扩展定制、能稳定升级，且包发布形态完全符合 Laravel 开源市场规范。**
 
 如果其他一切都失败，这一句必须为真。当前 v0.4.x 是"装得上但无法 publish 任何资源、PublishCommand 是空壳"——属于"已发包但未对外可用"，**v0.5 的核心使命就是修复这个**。
 
@@ -34,13 +34,13 @@ FilamentAdmin 是对标 FastAdmin / laravel-admin 的 Laravel 13 + Filament 5 �
 ## 概览
 
 - **演示项目（根目录）**：Composer 名 `filament-admin/preview`，类型 `project`，作为本地开发与功能演示的 Laravel 13 应用。
-- **主包（`packages/filament-admin/`）**：Composer 名 `laravelstack/filament-admin`，类型 `library`，是真正发布给下游使用的 Filament 5 + Laravel 13 后台基础包。
+- **主包（`packages/filamentboot/`）**：Composer 名 `filamentboot/filamentboot`，类型 `library`，是真正发布给下游使用的 Filament 5 + Laravel 13 后台基础包。
 
 ## 语言与运行时
 
 | 项 | 版本 / 取值 | 来源 |
 |----|------------|------|
-| PHP | `^8.3` | `composer.json:19`、`packages/filament-admin/composer.json:19` |
+| PHP | `^8.3` | `composer.json:19`、`packages/filamentboot/composer.json:19` |
 | Laravel Framework | `^13.8` | `composer.json:26` |
 | Filament | `^5.0` | `composer.json:23` |
 | Node | 通过 `npm` 运行 Vite，未在 `package.json` 锁定具体版本 | `package.json` |
@@ -93,7 +93,7 @@ FilamentAdmin 是对标 FastAdmin / laravel-admin 的 Laravel 13 + Filament 5 �
 | `knuckleswtf/scribe` | `^5.10` | API 文档生成（产物在 `.scribe/`） |
 | `nunomaduro/collision` | `^8.6` | 美化 CLI 错误输出 |
 
-## 主包的开发依赖（`packages/filament-admin/composer.json`）
+## 主包的开发依赖（`packages/filamentboot/composer.json`）
 
 | 包 | 版本约束 | 用途 |
 |----|---------|------|
@@ -115,7 +115,7 @@ FilamentAdmin 是对标 FastAdmin / laravel-admin 的 Laravel 13 + Filament 5 �
 
 ## Composer 关键配置
 
-- `repositories[0]`：本地路径 `packages/filament-admin`，`symlink: true` — 演示项目即时拿到主包改动。
+- `repositories[0]`：本地路径 `packages/filamentboot`，`symlink: true` — 演示项目即时拿到主包改动。
 - `autoload.psr-4`：`App\\` → `app/`，`Database\\Factories\\` → `database/factories/`，`Database\\Seeders\\` → `database/seeders/`。
 - `autoload-dev.psr-4`：`Tests\\` → `tests/`。
 - `scripts.setup`：拷贝 `.env`、`key:generate`、`migrate --force`、`npm install`、`npm run build`。
@@ -124,14 +124,14 @@ FilamentAdmin 是对标 FastAdmin / laravel-admin 的 Laravel 13 + Filament 5 �
 - `scripts.phpstan` / `scripts.pint` / `scripts.pint:test`：静态分析与格式化。
 - `post-autoload-dump`：执行 `package:discover` 与 `filament:upgrade`。
 - `config.optimize-autoloader: true`、`sort-packages: true`、允许 `pestphp/pest-plugin` 与 `php-http/discovery` 插件。
-- `autoload.psr-4`：`FilamentAdmin\\` → `src/`，工厂与种子置于 `FilamentAdmin\\Database\\Factories\\` / `Seeders\\`（与根项目命名空间互不冲突）。
-- `autoload-dev.psr-4`：`FilamentAdmin\\Tests\\` → `tests/`。
-- `extra.laravel.providers`：`FilamentAdmin\\FilamentAdminServiceProvider`（自动包发现）。
+- `autoload.psr-4`：`Filamentboot\\` → `src/`，工厂与种子置于 `Filamentboot\\Database\\Factories\\` / `Seeders\\`（与根项目命名空间互不冲突）。
+- `autoload-dev.psr-4`：`Filamentboot\\Tests\\` → `tests/`。
+- `extra.laravel.providers`：`Filamentboot\\FilamentbootServiceProvider`（自动包发现）。
 
 ## 关键配置文件清单（`config/`）
 
 - `app.php`、`auth.php`、`session.php`、`cache.php`、`database.php`、`logging.php`、`mail.php`、`queue.php`、`filesystems.php`、`services.php`、`sanctum.php` — Laravel 通用配置。
-- `filament-admin.php` — 主包暴露的核心配置（`super_admin_role`、`log_retention_days`），通过 `SUPER_ADMIN_ROLE`、`LOG_RETENTION_DAYS` 环境变量覆盖。
+- `filamentboot.php` — 主包暴露的核心配置（`super_admin_role`、`log_retention_days`），通过 `SUPER_ADMIN_ROLE`、`LOG_RETENTION_DAYS` 环境变量覆盖。
 - `filament-shield.php` — Shield 权限注册策略。
 - `filament-activity-log.php` — 活动日志展示选项。
 - `permission.php` — Spatie 权限缓存与表名。
@@ -142,7 +142,7 @@ FilamentAdmin 是对标 FastAdmin / laravel-admin 的 Laravel 13 + Filament 5 �
 
 ## 基础设施默认值（`.env.example`）
 
-- `APP_NAME=FilamentAdmin`，`APP_LOCALE=en`，`APP_FALLBACK_LOCALE=en`。
+- `APP_NAME=Filamentboot`，`APP_LOCALE=en`，`APP_FALLBACK_LOCALE=en`。
 - `DB_CONNECTION=mysql`，`DB_HOST=127.0.0.1`，`DB_PORT=3380`，`DB_DATABASE=filamentadmin`。
 - `SESSION_DRIVER=redis`，`SESSION_LIFETIME=120`。
 - `CACHE_STORE=redis`，`QUEUE_CONNECTION=redis`。
@@ -244,8 +244,8 @@ FilamentAdmin 是对标 FastAdmin / laravel-admin 的 Laravel 13 + Filament 5 �
 
 - 活动日志：通过 Spatie Activity Log 包记录模型变更
 - 登录日志：通过事件监听器和观察器自动记录
-- 活动日志观察器：`packages/filament-admin/src/Observers/ActivityLogObserver.php`
-- 登录日志监听器：`packages/filament-admin/src/Listeners/LogAdminLogin.php`
+- 活动日志观察器：`packages/filamentboot/src/Observers/ActivityLogObserver.php`
+- 登录日志监听器：`packages/filamentboot/src/Listeners/LogAdminLogin.php`
 
 ## PHPDoc 和注释
 
@@ -314,7 +314,7 @@ FilamentAdmin 是对标 FastAdmin / laravel-admin 的 Laravel 13 + Filament 5 �
 - `DepartmentTree`：部门树形结构管理
 - `ActivityLogger`：活动日志记录
 - `AdminNavigationBuilder`：后台导航构建
-- 位置：`packages/filament-admin/src/Services/`
+- 位置：`packages/filamentboot/src/Services/`
 
 ## 编码约定示例
 
@@ -332,7 +332,7 @@ FilamentAdmin 是对标 FastAdmin / laravel-admin 的 Laravel 13 + Filament 5 �
 
 ## 系统概览
 
-- **主包**（`packages/filament-admin/`）：发布为 Packagist 包 `laravelstack/filament-admin`，包含所有核心功能
+- **主包**（`packages/filamentboot/`）：发布为 Packagist 包 `filamentboot/filamentboot`，包含所有核心功能
 - **演示项目**（项目根目录）：本地开发和集成测试用，依赖主包的本地副本进行开发
 
 ```text
@@ -395,7 +395,7 @@ FilamentAdmin 是对标 FastAdmin / laravel-admin 的 Laravel 13 + Filament 5 �
 
 ### 第7层：Observer 观察者与事件
 
-- 在 FilamentAdminServiceProvider 注册观察的模型：AdminUser、Department、Menu、Role
+- 在 FilamentbootServiceProvider 注册观察的模型：AdminUser、Department、Menu、Role
 - 监听生命周期事件：created、updating、updated、deleting、deleted、restoring、restored
 - 快照机制：updating 时存储前状态，updated 时计算变更，调用 ActivityLogger 写入日志
 - 忽略字段：password、remember_token、two_factor_secret、two_factor_recovery_codes、created_at、updated_at
@@ -407,10 +407,10 @@ FilamentAdmin 是对标 FastAdmin / laravel-admin 的 Laravel 13 + Filament 5 �
 
 | 表名 | 用途 | 包来源 |
 |------|------|--------|
-| admin_users | 管理员用户 | filament-admin |
-| departments | 部门 | filament-admin |
-| menus | 后台菜单 | filament-admin |
-| login_logs | 登录日志 | filament-admin |
+| admin_users | 管理员用户 | filamentboot |
+| departments | 部门 | filamentboot |
+| menus | 后台菜单 | filamentboot |
+| login_logs | 登录日志 | filamentboot |
 | activity_log | 操作审计日志 | spatie/laravel-activitylog |
 | roles | 角色 | spatie/laravel-permission |
 | permissions | 权限点 | spatie/laravel-permission |
@@ -431,7 +431,7 @@ FilamentAdmin 是对标 FastAdmin / laravel-admin 的 Laravel 13 + Filament 5 �
 
 ### Plugin 扩展机制
 
-- 用户通过 `->plugins([FilamentAdminPlugin::make()])` 注册到 Filament panel
+- 用户通过 `->plugins([FilamentbootPlugin::make()])` 注册到 Filament panel
 - 支持绑定自定义 Model 和 Resource：
 - 注册 Resources、Pages、Widgets 到 Filament panel
 - BasePolicy 自动推导权限点名称：类名去 Policy 后缀 → snake_case
@@ -464,7 +464,7 @@ FilamentAdmin 是对标 FastAdmin / laravel-admin 的 Laravel 13 + Filament 5 �
 
 - 继承 PanelProvider
 - 配置 panel id、path、login page、auth guard、plugins
-- 注册 FilamentAdminPlugin、TwoFactorAuthenticationPlugin、FilamentShieldPlugin、ActivityLogPlugin
+- 注册 FilamentbootPlugin、TwoFactorAuthenticationPlugin、FilamentShieldPlugin、ActivityLogPlugin
 - 自定义导航构建：navigation() 回调调用 AdminNavigationBuilder->build()
 
 ### artisan 命令入口
@@ -472,8 +472,8 @@ FilamentAdmin 是对标 FastAdmin / laravel-admin 的 Laravel 13 + Filament 5 �
 - PublishCommand：生成用户可自定义的 Model、Resource、Page stub 到 app/
 - 支持 `--model=AdminUser` 或 `--resource=AdminUserResource` 单个发布
 - 支持 `--all` 发布所有扩展
-- `php artisan filament-admin:clean-activity-logs {--days=180}` - 清理旧操作日志
-- `php artisan filament-admin:clean-login-logs {--days=90}` - 清理旧登录日志
+- `php artisan filamentboot:clean-activity-logs {--days=180}` - 清理旧操作日志
+- `php artisan filamentboot:clean-login-logs {--days=90}` - 清理旧登录日志
 
 ### 应用启动入口
 
@@ -484,20 +484,20 @@ FilamentAdmin 是对标 FastAdmin / laravel-admin 的 Laravel 13 + Filament 5 �
 
 ## 主包与演示项目边界
 
-### 主包职责（packages/filament-admin/）
+### 主包职责（packages/filamentboot/）
 
 - **Model 定义** - AdminUser、Department、Menu、LoginLog、Role（委托给 Spatie Permission）
 - **Filament Resource** - CRUD 前端界面、表单验证、批量操作
 - **Service 层** - ActivityLogger、AdminNavigationBuilder、DepartmentTree 等业务逻辑
 - **Policy & Observer** - 权限检查、操作审计
 - **迁移与种子** - 数据库表定义、初始数据
-- **配置与翻译** - filament-admin.php、2FA 中文翻译
+- **配置与翻译** - filamentboot.php、2FA 中文翻译
 
 ### 演示项目职责（项目根目录）
 
 - **入口与路由** - routes/web.php（静态页）、routes/api.php（API 端点）
 - **HTTP Controller** - Api\V1\Admin\AuthController、OfficialMarketIndexController
-- **扩展与自定义** - 可通过 `filament-admin:publish` 继承或覆盖主包类
+- **扩展与自定义** - 可通过 `filamentboot:publish` 继承或覆盖主包类
 - **应用配置** - bootstrap/app.php、config/、Filament AdminPanelProvider
 - **演示数据** - 种子、用户、测试用例
 - **本地集成测试** - tests/ 验证主包与演示项目的兼容性

@@ -1,6 +1,6 @@
 # API 认证
 
-FilamentAdmin 管理员 API 使用 Laravel Sanctum Bearer Token 认证。
+Filamentboot 管理员 API 使用 Laravel Sanctum Bearer Token 认证。
 
 ## 获取 Token
 

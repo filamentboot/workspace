@@ -1,9 +1,9 @@
-# FilamentAdmin 文档
+# Filamentboot 文档
 
 > 🌐 **在线体验**：https://demo.xitongapp.com  ·  演示账号 `demo@example.com` / `demo123`
 > （演示环境每日凌晨 4:00 重置；高危操作已屏蔽）
 
-FilamentAdmin 是一个 Laravel 13 + Filament 5 后台基础平台。
+Filamentboot 是一个 Laravel 13 + Filament 5 后台基础平台。
 
 > **当前状态**：Skeleton 开发阶段，代码位于 `app/` 和 `src/`，尚未打包为独立 Library。
 

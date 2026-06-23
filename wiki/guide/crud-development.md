@@ -1,6 +1,6 @@
 # CRUD 开发规范
 
-本文档为 FilamentAdmin 模块开发者提供标准开发流程和检查清单。
+本文档为 Filamentboot 模块开发者提供标准开发流程和检查清单。
 
 ## 开发流程
 
@@ -95,7 +95,7 @@ composer test          # 运行所有测试
 
 ## 插件开发规范
 
-FilamentAdmin 插件通过 Filament 5 Plugin 机制集成（`->plugins([YourPlugin::make()])`）。
+Filamentboot 插件通过 Filament 5 Plugin 机制集成（`->plugins([YourPlugin::make()])`）。
 
 **插件应提供：**
 - `ServiceProvider`：注册路由、迁移、监听器

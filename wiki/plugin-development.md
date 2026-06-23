@@ -7,17 +7,17 @@
 
 ## 目录
 
-1. [什么是 filament-admin 兼容插件](#1-什么是-filament-admin-兼容插件)
+1. [什么是 filamentboot 兼容插件](#1-什么是-filamentboot-兼容插件)
 2. [必须实现的接口](#2-必须实现的接口)
 3. [composer.json 规范字段](#3-composerjson-规范字段)
-4. [filament-admin 扩展约定（可选）](#4-filament-admin-扩展约定可选)
+4. [filamentboot 扩展约定（可选）](#4-filamentboot-扩展约定可选)
 5. [完整最小示例](#5-完整最小示例)
-6. [提交到 filament-admin 官方市场](#6-提交到-filament-admin-官方市场)
+6. [提交到 filamentboot 官方市场](#6-提交到-filamentboot-官方市场)
 7. [可选：同步上架 filamentphp.com](#7-可选同步上架-filamentphpcom)
 
 ---
 
-## 1. 什么是 filament-admin 兼容插件
+## 1. 什么是 filamentboot 兼容插件
 
 `filamentboot/filamentboot` 是基于 Filament 5 构建的后台基础平台。
 它的插件生态分两层：
@@ -25,19 +25,19 @@
 | 层次 | 描述 |
 |------|------|
 | **标准 Filament 插件** | 实现 `Filament\Contracts\Plugin` 接口，可在任意 Filament 5 Panel 使用 |
-| **filament-admin 兼容插件** | 在标准 Filament 插件基础上，**可选**声明 `extra.filament-admin` 扩展块，以获得后台市场一键安装、设置页直跳、`post_install` 自动钩子等增强能力 |
+| **filamentboot 兼容插件** | 在标准 Filament 插件基础上，**可选**声明 `extra.filamentboot` 扩展块，以获得后台市场一键安装、设置页直跳、`post_install` 自动钩子等增强能力 |
 
 **关键原则：**
 
-- 只要实现了 `Filament\Contracts\Plugin` 接口，就是一个合法的 filament-admin 兼容插件。
+- 只要实现了 `Filament\Contracts\Plugin` 接口，就是一个合法的 filamentboot 兼容插件。
   后台插件市场通过扫描 `Filament\Contracts\Plugin` 接口实现类自动发现已安装插件。
-- `extra.filament-admin` 块是**可选的富扩展**，不声明不影响基本使用；声明后可获得更丰富的市场展示和自动化安装体验。
+- `extra.filamentboot` 块是**可选的富扩展**，不声明不影响基本使用；声明后可获得更丰富的市场展示和自动化安装体验。
 
 ---
 
 ## 2. 必须实现的接口
 
-所有 filament-admin 兼容插件必须实现 `Filament\Contracts\Plugin` 接口：
+所有 filamentboot 兼容插件必须实现 `Filament\Contracts\Plugin` 接口：
 
 ```php
 <?php
@@ -152,20 +152,20 @@ class YourPlugin implements Plugin
 
 ---
 
-## 4. filament-admin 扩展约定（可选）
+## 4. filamentboot 扩展约定（可选）
 
-在 `extra.filament-admin` 块中声明 filament-admin 专属信息，可获得：
+在 `extra.filamentboot` 块中声明 filamentboot 专属信息，可获得：
 
 - 后台市场更丰富的展示信息（名称、描述、类型、信任来源）
 - 设置页直跳链接
 - `post_install` 自动安装钩子（发布资源、迁移、种子）
 
-### 4.1 extra.filament-admin 完整字段
+### 4.1 extra.filamentboot 完整字段
 
 ```json
 {
     "extra": {
-        "filament-admin": {
+        "filamentboot": {
             "slug": "your-vendor-your-plugin",
             "name": "插件显示名称",
             "type": "package",
@@ -197,6 +197,8 @@ class YourPlugin implements Plugin
 | `service_provider` | `string` | 建议 | ServiceProvider 完整 FQCN，用于 `vendor:publish` 兜底（无 `post_install.publish_tags` 时） |
 | `description` | `string` | 可选 | 市场详情页长描述 |
 
+> 注：旧版本使用 `extra.filament-admin` 键，v0.5 起统一改为 `extra.filamentboot`。
+
 ### 4.3 post_install 块详解
 
 `post_install` 声明安装完成后自动执行的步骤，数据驱动，无需编写代码：
@@ -226,7 +228,7 @@ class YourPlugin implements Plugin
 ## 5. 完整最小示例
 
 本节以官方 [filamentphp/plugin-skeleton](https://github.com/filamentphp/plugin-skeleton)（5.x 分支）
-为基底，展示叠加 `extra.filament-admin` 约定后的完整最小可用插件。
+为基底，展示叠加 `extra.filamentboot` 约定后的完整最小可用插件。
 
 ### 5.1 从 plugin-skeleton 创建项目
 
@@ -250,10 +252,10 @@ your-vendor-your-plugin/
 └── CHANGELOG.md
 ```
 
-### 5.2 叠加 extra.filament-admin 约定
+### 5.2 叠加 extra.filamentboot 约定
 
 以一方插件 `filamentboot/filamentboot-oss`（阿里云 OSS 存储）为真实参考，
-其 `composer.json` 中的 `extra.filament-admin` 块如下（已通过 `filament-admin:audit-plugins` 合规验证）：
+其 `composer.json` 中的 `extra.filamentboot` 块如下（已通过 `plugin:scan` 合规验证）：
 
 ```json
 {
@@ -265,20 +267,20 @@ your-vendor-your-plugin/
     "extra": {
         "laravel": {
             "providers": [
-                "LaravelStack\\FilamentAdminOss\\OssServiceProvider"
+                "Filamentboot\\FilamentbootOss\\OssServiceProvider"
             ]
         },
-        "filament-admin": {
-            "slug": "filament-admin-oss",
+        "filamentboot": {
+            "slug": "filamentboot-oss",
             "name": "阿里云 OSS 存储",
             "type": "package",
             "source": "official_listed",
-            "plugin_class": "LaravelStack\\FilamentAdminOss\\OssPlugin",
+            "plugin_class": "Filamentboot\\FilamentbootOss\\OssPlugin",
             "settings_page_slug": "settings/oss",
-            "service_provider": "LaravelStack\\FilamentAdminOss\\OssServiceProvider",
+            "service_provider": "Filamentboot\\FilamentbootOss\\OssServiceProvider",
             "description": "阿里云 OSS 对象存储驱动，凭证由超管在后台配置页加密存储，无需修改 .env 文件。",
             "post_install": {
-                "publish_tags": ["filament-admin-oss-config"],
+                "publish_tags": ["filamentboot-oss-config"],
                 "run_migrations": false,
                 "seeders": []
             }
@@ -291,8 +293,8 @@ your-vendor-your-plugin/
 
 - `plugin_class` 声明后，插件市场发现时跳过 classmap grep（快速路径）。
 - `settings_page_slug: "settings/oss"` 让后台"设置"按钮可直接跳转插件配置页。
-- `post_install.publish_tags: ["filament-admin-oss-config"]` 安装完成后自动执行
-  `php artisan vendor:publish --tag=filament-admin-oss-config --force`。
+- `post_install.publish_tags: ["filamentboot-oss-config"]` 安装完成后自动执行
+  `php artisan vendor:publish --tag=filamentboot-oss-config --force`。
 - `run_migrations: false` 表示此插件无数据库迁移，跳过 migrate 步骤。
 
 ### 5.3 Plugin 类最小实现
@@ -300,7 +302,7 @@ your-vendor-your-plugin/
 ```php
 <?php
 
-namespace LaravelStack\FilamentAdminOss;
+namespace Filamentboot\FilamentbootOss;
 
 use Filament\Contracts\Plugin;
 use Filament\Panel;
@@ -308,11 +310,11 @@ use Filament\Panel;
 class OssPlugin implements Plugin
 {
     /**
-     * 返回插件唯一 ID，与 extra.filament-admin.slug 保持一致。
+     * 返回插件唯一 ID，与 extra.filamentboot.slug 保持一致。
      */
     public function getId(): string
     {
-        return 'filament-admin-oss';
+        return 'filamentboot-oss';
     }
 
     /**
@@ -321,7 +323,7 @@ class OssPlugin implements Plugin
     public function register(Panel $panel): void
     {
         $panel->pages([
-            \LaravelStack\FilamentAdminOss\Filament\Pages\OssSettings::class,
+            \Filamentboot\FilamentbootOss\Filament\Pages\OssSettings::class,
         ]);
     }
 
@@ -348,7 +350,7 @@ class OssPlugin implements Plugin
 ```php
 <?php
 
-namespace LaravelStack\FilamentAdminOss;
+namespace Filamentboot\FilamentbootOss;
 
 use Illuminate\Support\ServiceProvider;
 
@@ -357,22 +359,22 @@ class OssServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->mergeConfigFrom(
-            __DIR__ . '/../config/filament-admin-oss.php',
-            'filament-admin-oss'
+            __DIR__ . '/../config/filamentboot-oss.php',
+            'filamentboot-oss'
         );
     }
 
     public function boot(): void
     {
         $this->publishes([
-            __DIR__ . '/../config/filament-admin-oss.php' => config_path('filament-admin-oss.php'),
-        ], 'filament-admin-oss-config');
+            __DIR__ . '/../config/filamentboot-oss.php' => config_path('filamentboot-oss.php'),
+        ], 'filamentboot-oss-config');
     }
 }
 ```
 
-**注意：** `publishes()` 中的 tag（`'filament-admin-oss-config'`）必须与
-`extra.filament-admin.post_install.publish_tags` 中声明的 tag 保持一致。
+**注意：** `publishes()` 中的 tag（`'filamentboot-oss-config'`）必须与
+`extra.filamentboot.post_install.publish_tags` 中声明的 tag 保持一致。
 
 ### 5.5 含迁移与种子的 solution_plugin 示例
 
@@ -381,18 +383,18 @@ class OssServiceProvider extends ServiceProvider
 
 ```json
 "post_install": {
-    "publish_tags": ["filament-admin-site-config", "filament-admin-site-assets"],
+    "publish_tags": ["filamentboot-site-config", "filamentboot-site-assets"],
     "run_migrations": true,
-    "seeders": ["LaravelStack\\FilamentAdminSite\\Database\\Seeders\\SiteSeeder"]
+    "seeders": ["Filamentboot\\FilamentbootSite\\Database\\Seeders\\SiteSeeder"]
 }
 ```
 
 安装后自动执行顺序：
 
-1. `php artisan vendor:publish --tag=filament-admin-site-config --force`
-2. `php artisan vendor:publish --tag=filament-admin-site-assets --force`
+1. `php artisan vendor:publish --tag=filamentboot-site-config --force`
+2. `php artisan vendor:publish --tag=filamentboot-site-assets --force`
 3. `php artisan migrate --force`
-4. `php artisan db:seed --class="LaravelStack\\FilamentAdminSite\\Database\\Seeders\\SiteSeeder"`
+4. `php artisan db:seed --class="Filamentboot\\FilamentbootSite\\Database\\Seeders\\SiteSeeder"`
 5. `composer dump-autoload`
 
 ### 5.6 合规自检
@@ -400,8 +402,8 @@ class OssServiceProvider extends ServiceProvider
 开发完成后，使用平台内置命令验证合规状态：
 
 ```bash
-# 在 filament-admin 项目根目录执行
-php artisan filament-admin:audit-plugins
+# 在 filamentboot/filamentboot 项目根目录执行
+php artisan plugin:scan
 ```
 
 输出示例（所有项为 `[PASS]` 即合规）：
@@ -417,15 +419,15 @@ php artisan filament-admin:audit-plugins
 
 ---
 
-## 6. 提交到 filament-admin 官方市场
+## 6. 提交到 filamentboot 官方市场
 
 官方市场内置精选列表（`config/official-market.php`）由 filamentboot/filamentboot
 维护团队审核管理。提交流程：
 
-1. **确保合规：** 运行 `php artisan filament-admin:audit-plugins`，确认所有检查项 `[PASS]`。
+1. **确保合规：** 运行 `php artisan plugin:scan`，确认所有检查项 `[PASS]`。
 2. **发布到 Packagist：** 将插件发布至 [packagist.org](https://packagist.org)，确保包名格式
-   为 `vendor/filament-admin-xxx` 或含 `filament` 关键词。
-3. **提交 PR：** 向 [filament-admin 仓库](https://github.com/filamentboot/filamentboot) 提交 PR，
+   为 `vendor/filamentboot-xxx` 或含 `filament` 关键词。
+3. **提交 PR：** 向 [filamentboot 仓库](https://github.com/filamentboot/filamentboot) 提交 PR，
    在 `config/official-market.php` 添加插件条目，包含以下信息：
    - 包名（Packagist 格式）
    - 展示名称与描述
@@ -445,7 +447,7 @@ php artisan filament-admin:audit-plugins
    在仓库补充所需元数据（徽章、截图等）。
 3. 向 [filamentphp/filamentphp.com](https://github.com/filamentphp/filamentphp.com) 仓库提交 PR。
 
-上架 filamentphp.com 后，该插件可被 filament-admin 后台"社区市场" Tab 通过 Packagist
+上架 filamentphp.com 后，该插件可被 filamentboot 后台"社区市场" Tab 通过 Packagist
 搜索（`tags=filament`）发现，不需要额外配置。
 
 ---
@@ -453,6 +455,6 @@ php artisan filament-admin:audit-plugins
 ## 相关文档
 
 - [插件使用指南](plugin-usage.md) — 后台一键安装、手动安装、启用禁用、卸载全流程
-- [安装指南](installation.md) — filament-admin 主包安装
+- [安装指南](installation.md) — filamentboot 主包安装
 - [Filament 5 官方插件文档](https://filamentphp.com/docs/4.x/plugins/getting-started)
 - [filamentphp/plugin-skeleton](https://github.com/filamentphp/plugin-skeleton) — 官方插件脚手架

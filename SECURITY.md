@@ -40,4 +40,4 @@
 - spatie/laravel-permission 的漏洞 → 向该包的仓库报告
 - 其他第三方 Composer 依赖的漏洞 → 向各自仓库报告
 
-感谢你帮助保持 FilamentAdmin 的安全！
+感谢你帮助保持 Filamentboot 的安全！

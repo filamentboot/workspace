@@ -1,6 +1,6 @@
 # AGENTS.md — wiki/
 
-`wiki/` 是 FilamentAdmin 的**对外官方文档目录**，面向安装和使用本包的开发者。
+`wiki/` 是 Filamentboot 的**对外官方文档目录**，面向安装和使用本包的开发者。
 
 ## 定位
 
@@ -24,9 +24,9 @@ wiki/
 │   ├── logs.md            # 日志（操作日志、登录日志）
 │   └── plugins.md         # 插件市场使用
 ├── reference/             # 技术参考
-│   ├── plugin-api.md      # FilamentAdminPlugin::make() 完整 API
-│   ├── config.md          # filament-admin.php 配置项说明
-│   ├── artisan.md         # filament-admin:publish 等 Artisan 命令
+│   ├── plugin-api.md      # FilamentbootPlugin::make() 完整 API
+│   ├── config.md          # filamentboot.php 配置项说明
+│   ├── artisan.md         # filamentboot:publish 等 Artisan 命令
 │   └── extending.md       # 继承扩展指南（Model、Resource 发布 stub）
 └── changelog.md           # 版本更新记录
 ```
