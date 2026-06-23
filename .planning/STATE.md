@@ -4,15 +4,15 @@ milestone: v0.5
 milestone_name: milestone
 current_phase: 13
 current_phase_name: filamentboot
-status: executing
-stopped_at: Phase 13 context gathered
-last_updated: "2026-06-21T09:55:44.734Z"
+status: awaiting-user
+stopped_at: Completed 13-05-PLAN.md (Task 3 GATED on Packagist D-25)
+last_updated: "2026-06-21T16:40:52.738Z"
 progress:
   total_phases: 7
-  completed_phases: 4
+  completed_phases: 5
   total_plans: 29
-  completed_plans: 23
-  percent: 57
+  completed_plans: 29
+  percent: 71
 ---
 
 # Project State: FilamentAdmin v0.5
@@ -29,15 +29,15 @@ See: .planning/PROJECT.md (updated 2026-06-12)
 
 **Core value:** 别人执行 `composer require laravelstack/filament-admin` 后能开箱运行、能扩展定制、能稳定升级，且包发布形态符合 Laravel 开源市场规范
 
-**Current focus:** Phase 13 — filamentboot
+**Current focus:** Phase 13 代码层改名+基础设施已完成并验证(350/350)；待用户外部操作(Packagist/仓库/部署/服务器token)及 Make* 命令改名(13-03已推迟)
 
 ---
 
 ## Current Position
 
 Phase: 13 (filamentboot) — EXECUTING
-Plan: 1 of 6
-Status: Executing Phase 13
+Plan: 6 of 6
+Status: awaiting-user
 
 ```
 current_phase:   8
@@ -143,6 +143,9 @@ test_count:         287 / 287 passing（Phase 09 新增 12 tests：8 集成 + 4 
 | Phase 12-filament P06 | 278 | 2 tasks | 3 files |
 | Phase 12-filament P07 | 653 | 3 tasks | 4 files |
 | Phase 12-filament P08 | 20min | 3 tasks | 3 files |
+| Phase 13 P03 | 601 | 3 tasks | 18 files |
+| Phase 13 P04 | 4min | 3 tasks | 7 files |
+| Phase 13 P05 | 6min | 3 tasks | 3 files |
 
 ### Critical Facts
 
@@ -154,7 +157,7 @@ test_count:         287 / 287 passing（Phase 09 新增 12 tests：8 集成 + 4 
 - 新增编辑器包：`packages/filament-admin-rich-editor/`、`packages/filament-admin-markdown-editor/`、`packages/filament-admin-wang-editor/`
 - UploadValidator 三重安全校验（扩展名黑名单 + finfo MIME + 大小），与 UploadSettings 联动
 - config/purifier.php 含 richeditor 白名单段，解决富文本样式丢失（Pitfall 4）
-- 已知旁置 bug：parent_id=0 根菜单通过 Filament 表单保存报 relationship() validation error，推迟 Phase 11 修复
+- ~~已知旁置 bug：parent_id=0 根菜单通过 Filament 表单保存报 relationship() validation error~~ → 2026-06-23 Playwright 走查确认已不复现，根菜单可正常保存（parent=0，Created）
 - 工具链：PHP 8.3+, Laravel 13.x, Filament 5.x
 - CI：包 CI 用 `packages/filament-admin/.github/workflows/ci.yml`，根 CI 用根目录 workflows
 - 默认账号：`admin@example.com / password`（SuperAdminSeeder 创建）
@@ -162,6 +165,12 @@ test_count:         287 / 287 passing（Phase 09 新增 12 tests：8 集成 + 4 
 ### Active Blockers
 
 无
+
+### Quick Tasks Completed
+
+| # | Description | Date | Commit | Directory |
+|---|-------------|------|--------|-----------|
+| 260623-kg4 | 清理 Phase 13 改名残留（功能 bug + 品牌字符串 + 全量当前用户文档 + 功能性 settings 默认值/e2e 失效命名空间）；含 plugin:scan 命令名修正 | 2026-06-23 | c236da9 / d481069 / a04a3c3 / b09272d / 8ad1c28 / fa2060c | [260623-kg4-phase13-rename-cleanup](./quick/260623-kg4-phase13-rename-cleanup/) |
 
 ### Recent Decisions（Phase 08）
 
@@ -175,14 +184,19 @@ test_count:         287 / 287 passing（Phase 09 新增 12 tests：8 集成 + 4 
 
 ## Session Continuity
 
-Last session: 2026-06-21T08:58:03.310Z
-Stopped at: Phase 13 context gathered
-Resume file: .planning/phases/13-filamentboot/13-CONTEXT.md
+Last session: 2026-06-21T11:55:24.346Z
+Stopped at: Completed 13-05-PLAN.md (Task 3 GATED on Packagist D-25)
+Resume file: None
 
 **未解决问题:**
 
 - 登录页截图（art/login.png）待用户后补，README 已留显式 TODO 占位
-- parent_id=0 根菜单表单保存 bug → Phase 21
+
+**已解决（2026-06-23）:**
+
+- `Class "FilamentAdmin\Models\AdminUser" not found`（登录即报错）：Phase 13 改名遗漏运行时状态。修复 = ①迁移数据库多态列旧类名（`model_has_roles.model_type`、`activity_log.causer_type/subject_type`、`media.model_type` 共 184 行 `FilamentAdmin\Models\*` / `App\Models\AdminUser` → `Filamentboot\Models\*`）②`composer dump-autoload -o` 重建 classmap ③`optimize:clear`。仅改数据/vendor，无源码改动。
+- parent_id=0 根菜单表单保存 bug → 经 Playwright 走查确认已不复现，从 Phase 21 待办移除。
+- 全站 Playwright 走查（16 列表/设置页 + 8 create/edit 表单）零异常。
 
 ---
 
@@ -247,3 +261,7 @@ Resume file: .planning/phases/13-filamentboot/13-CONTEXT.md
 - [Phase ?]: DOC-09 uses laravelstack/filament-admin-oss as the worked sample — real post_install block from 12-05 compliance
 - [Phase ?]: README 插件生态 section appended above 许可证, listing 6 first-party plugins + links to plugin-development.md and plugin-usage.md
 - [Phase ?]: 12-08: ->viteTheme() custom theme chosen over blade rewrite — lower regression risk, canonical Filament v5 mechanism
+- [Phase ?]: splitsh-lite v1.0.1 matrix rewrite of release.yml
+- [Phase ?]: Gitee mirroring via GitHub Actions
+- [Phase ?]: SECRETS-CHECKLIST.md produced for user
+- [Phase Phase 13 P05]: D-12: local remotes reconfigured to filamentboot/workspace; D-21/D-25: Task 3 GATED on Packagist

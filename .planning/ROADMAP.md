@@ -222,18 +222,18 @@ Plans:
 9. `www.xitongapp.com` 官网占位页返回 200（修复当前 500，需人工验证，D-03/D-22）
 10. 泄露的 webhook token 已轮换并从代码库清除（D-18）
 
-**Plans**: 6 plans
+**Plans**: 6/6 plans complete
 
 Plans:
 
 **Wave 1 — 全量改名（agent 全自动 + 测试门，D-04）**
 
-- [ ] 13-01-PLAN.md — Wave 0 基线 + 主包改名（composer.json/namespace/类 git mv/config/命令前缀/publish tag）+ PackageMetadataTest（rename-filamentboot）
-- [ ] 13-02-PLAN.md — 6 插件包逐个改名（cos/oss/rich/markdown/wang/site，依赖顺序 + 每包测试门）（rename-filamentboot）  *(wave 1, blocked on 13-01)*
-- [ ] 13-03-PLAN.md — preview app/config/resources + 前端目录 + 品牌名 + GitHub URL + 泄露 token 清除 + 改名收尾门（rename-filamentboot）  *(wave 1, blocked on 13-02)*
+- [x] 13-01-PLAN.md — Wave 0 基线 + 主包改名（composer.json/namespace/类 git mv/config/命令前缀/publish tag）+ PackageMetadataTest（rename-filamentboot）
+- [x] 13-02-PLAN.md — 6 插件包逐个改名（cos/oss/rich/markdown/wang/site，依赖顺序 + 每包测试门）（rename-filamentboot）  *(wave 1, blocked on 13-01)*
+- [x] 13-03-PLAN.md — preview app/config/resources + 前端目录 + 品牌名 + GitHub URL + 泄露 token 清除 + 改名收尾门（rename-filamentboot）  *(wave 1, blocked on 13-02)*
 
 **Wave 2 — 生态基础设施（agent 写代码/脚本 + 手动 checklist，D-01）**
 
-- [ ] 13-04-PLAN.md — release.yml 重写（splitsh-lite 7 包 + Gitee mirror）+ ci.yml/deploy.sh/master-pipeline 路径调整 + SECRETS-CHECKLIST（setup-ecosystem-infrastructure）  *(wave 2, blocked on 13-03)*
-- [ ] 13-05-PLAN.md — INFRA-CHECKLIST 手动操作总线 + 本地 remote 重配 + 服务器迁移脚本 + demo repo scaffold（setup-ecosystem-infrastructure）  *(wave 2, blocked on 13-04)*
-- [ ] 13-06-PLAN.md — filamentboot-www 静态占位页 + SSH rsync 部署 workflow + 上线指引（setup-ecosystem-infrastructure）  *(wave 2, blocked on 13-04)*
+- [x] 13-04-PLAN.md — release.yml 重写（splitsh-lite 7 包 + Gitee mirror）+ ci.yml/deploy.sh/master-pipeline 路径调整 + SECRETS-CHECKLIST（setup-ecosystem-infrastructure）  *(wave 2, blocked on 13-03)*
+- [x] 13-05-PLAN.md — INFRA-CHECKLIST 手动操作总线 + 本地 remote 重配 + 服务器迁移脚本 + demo repo scaffold（setup-ecosystem-infrastructure）  *(wave 2, blocked on 13-04)*
+- [x] 13-06-PLAN.md — filamentboot-www 静态占位页 + SSH rsync 部署 workflow + 上线指引（setup-ecosystem-infrastructure）  *(wave 2, blocked on 13-04)*
