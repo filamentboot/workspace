@@ -121,6 +121,6 @@ class PackagistService
     {
         $mailto = config('mail.from.address', 'admin@example.com');
 
-        return "filamentadmin/1.0 (mailto:{$mailto})";
+        return "filamentboot/1.0 (mailto:{$mailto})";
     }
 }

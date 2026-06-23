@@ -44,7 +44,7 @@ Filamentboot 是对标 FastAdmin / laravel-admin 的 Laravel 13 + Filament 5 后
 | Laravel Framework | `^13.8` | `composer.json:26` |
 | Filament | `^5.0` | `composer.json:23` |
 | Node | 通过 `npm` 运行 Vite，未在 `package.json` 锁定具体版本 | `package.json` |
-| 数据库默认值 | `mysql`，`127.0.0.1:3380`，库名 `filamentadmin` | `.env.example:20-25` |
+| 数据库默认值 | `mysql`，`127.0.0.1:3380`，库名 `filamentboot` | `.env.example:20-25` |
 | 缓存 / 会话 / 队列 | `redis`（`SESSION_DRIVER`、`CACHE_STORE`、`QUEUE_CONNECTION`） | `.env.example:27-37` |
 | Redis 客户端 | `phpredis`，DB index 15，端口 6379 | `.env.example:40-44` |
 
@@ -143,7 +143,7 @@ Filamentboot 是对标 FastAdmin / laravel-admin 的 Laravel 13 + Filament 5 后
 ## 基础设施默认值（`.env.example`）
 
 - `APP_NAME=Filamentboot`，`APP_LOCALE=en`，`APP_FALLBACK_LOCALE=en`。
-- `DB_CONNECTION=mysql`，`DB_HOST=127.0.0.1`，`DB_PORT=3380`，`DB_DATABASE=filamentadmin`。
+- `DB_CONNECTION=mysql`，`DB_HOST=127.0.0.1`，`DB_PORT=3380`，`DB_DATABASE=filamentboot`。
 - `SESSION_DRIVER=redis`，`SESSION_LIFETIME=120`。
 - `CACHE_STORE=redis`，`QUEUE_CONNECTION=redis`。
 - `REDIS_CLIENT=phpredis`，`REDIS_PORT=6379`，`REDIS_DB=15`，`REDIS_PASSWORD=your-redis-password`（占位）。

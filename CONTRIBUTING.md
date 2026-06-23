@@ -36,10 +36,10 @@ composer test
 
 如果你新增了功能，**必须**同步补充对应的测试用例。测试文件放在 `tests/Feature/` 或 `tests/Unit/` 目录下，使用中文描述测试意图。
 
-**测试数据库**：测试使用独立的 `filamentadmin_test` 数据库，请提前创建：
+**测试数据库**：测试使用独立的 `filamentboot_test` 数据库，请提前创建：
 
 ```bash
-mysql -uroot -p -h127.0.0.1 -P3380 -e "CREATE DATABASE filamentadmin_test"
+mysql -uroot -p -h127.0.0.1 -P3380 -e "CREATE DATABASE filamentboot_test"
 ```
 
 ### CI 环境端口差异

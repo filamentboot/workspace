@@ -28,7 +28,7 @@ npm install && npm run build
 packages/filamentboot
 ```
 
-访问地址：`http://filamentadmin.local`（需配置本地 hosts/Nginx）
+访问地址：`http://filamentboot.local`（需配置本地 hosts/Nginx）
 
 ---
 
