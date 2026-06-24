@@ -28,7 +28,21 @@ class Department extends Model
 
     use SoftDeletes;
 
-    protected $guarded = [];
+    /**
+     * 可批量赋值的字段白名单（显式指定，杜绝批量赋值越权写入）
+     *
+     * 排除：id（主键，由自增管理）。
+     *
+     * @var list<string>
+     */
+    protected $fillable = [
+        'parent_id',
+        'name',
+        'code',
+        'leader_admin_user_id',
+        'sort',
+        'is_active',
+    ];
 
     /**
      * 属性类型转换

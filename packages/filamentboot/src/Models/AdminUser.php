@@ -66,8 +66,26 @@ class AdminUser extends Authenticatable implements FilamentUser, HasMedia, HasNa
     /** Spatie Permission guard（必须与 AdminPanelProvider->authGuard 一致） */
     protected string $guard_name = 'admin';
 
-    /** @var list<string> */
-    protected $guarded = [];
+    /**
+     * 可批量赋值的字段白名单（显式指定，杜绝批量赋值越权写入）
+     *
+     * 排除：id、login_failures、last_login_at、last_login_ip、
+     *       remember_token、two_factor_secret、two_factor_recovery_codes、
+     *       two_factor_confirmed_at、email_verified_at（由业务逻辑/监听器/cast 管理）。
+     *
+     * @var list<string>
+     */
+    protected $fillable = [
+        'account',
+        'email',
+        'password',
+        'nickname',
+        'status',
+        'department_id',
+        'avatar',
+        'mobile',
+        'onboarding_completed',
+    ];
 
     /**
      * 隐藏的属性（序列化时不输出）

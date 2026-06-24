@@ -32,7 +32,21 @@ class LoginLog extends Model
      */
     public const UPDATED_AT = null;
 
-    protected $guarded = [];
+    /**
+     * 可批量赋值的字段白名单（显式指定，杜绝批量赋值越权写入）
+     *
+     * 排除：id（主键）、created_at（由框架时间戳管理）。
+     *
+     * @var list<string>
+     */
+    protected $fillable = [
+        'admin_user_id',
+        'username',
+        'status',
+        'ip_address',
+        'user_agent',
+        'failure_reason',
+    ];
 
     /**
      * 属性类型转换

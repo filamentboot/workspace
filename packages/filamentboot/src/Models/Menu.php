@@ -38,7 +38,27 @@ class Menu extends Model
     use ModelTree;
     use SoftDeletes;
 
-    protected $guarded = [];
+    /**
+     * 可批量赋值的字段白名单（显式指定，杜绝批量赋值越权写入）
+     *
+     * 排除：id（主键，由自增管理）。
+     *
+     * @var list<string>
+     */
+    protected $fillable = [
+        'parent_id',
+        'title',
+        'icon',
+        'route_name',
+        'url',
+        'link_type',
+        'permission_name',
+        'sort',
+        'is_active',
+        'target',
+        'source',
+        'type',
+    ];
 
     /**
      * 属性类型转换
