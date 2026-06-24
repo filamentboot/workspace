@@ -194,14 +194,22 @@ class MenuResource extends Resource
                         ->color('success')
                         ->visible(fn (): bool => auth('admin')->user()?->can('update_menu') ?? false)
                         ->requiresConfirmation()
-                        ->action(fn (Collection $records) => $records->each->update(['is_active' => true])),
+                        ->action(function (Collection $records): void {
+                            // 后端二次鉴权：前端 visible() 可被绕过，此处为最终防线（L-02）
+                            abort_unless(auth('admin')->user()?->can('update_menu') ?? false, 403);
+                            $records->each->update(['is_active' => true]);
+                        }),
                     BulkAction::make('disable')
                         ->label('批量禁用')
                         ->icon('heroicon-o-x-circle')
                         ->color('warning')
                         ->visible(fn (): bool => auth('admin')->user()?->can('update_menu') ?? false)
                         ->requiresConfirmation()
-                        ->action(fn (Collection $records) => $records->each->update(['is_active' => false])),
+                        ->action(function (Collection $records): void {
+                            // 后端二次鉴权：前端 visible() 可被绕过，此处为最终防线（L-02）
+                            abort_unless(auth('admin')->user()?->can('update_menu') ?? false, 403);
+                            $records->each->update(['is_active' => false]);
+                        }),
                     DeleteBulkAction::make(),
                 ]),
             ])
