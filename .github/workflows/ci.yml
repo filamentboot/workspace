@@ -57,6 +57,16 @@ jobs:
 
       - run: php artisan key:generate
 
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - run: npm ci
+
+      # 构建前端资源，生成 public/build/manifest.json，
+      # 否则渲染 Filament/Blade 视图的 Feature 测试会抛 ViteManifestNotFoundException
+      - run: npm run build
+
       - run: composer test
 
       - run: composer phpstan
