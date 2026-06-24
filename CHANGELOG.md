@@ -10,6 +10,14 @@
 
 ---
 
+## [0.5.3] - 2026-06-24
+
+### Security
+
+- 发版前安全加固：模型批量赋值白名单（`$guarded=[]`→`$fillable`）、菜单批量操作补后端鉴权、登录失败达阈值自动锁定账号。详见 [packages/filamentboot/CHANGELOG.md](packages/filamentboot/CHANGELOG.md)
+
+---
+
 ## [0.5.0] - 2026-06-11
 
 ### Added

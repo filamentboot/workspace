@@ -7,6 +7,16 @@
 
 ---
 
+## [0.5.3] - 2026-06-24
+
+### Security
+
+- **批量赋值加固**：`AdminUser` / `Menu` / `Department` / `LoginLog` 四个模型由 `$guarded = []` 改为显式 `$fillable` 白名单，杜绝主键、`login_failures`、`last_login_*`、`two_factor_*` 等敏感字段被批量赋值注入
+- **菜单批量操作后端鉴权**：菜单列表的批量启用/停用 BulkAction 在动作执行处补 `abort_unless(auth('admin')->user()?->can('update_menu'), 403)`，防止无权限用户绕过 UI 越权批量修改菜单
+- **登录失败锁定**：新增 `AdminUserStatus::Locked` 状态；登录连续失败累计达 `SecuritySettings::login_throttle_max_attempts`（默认 5）后自动锁定账号，`canAccessPanel()` 拒绝锁定账号登录，缓解暴力破解
+
+---
+
 ## [0.5.0] - 2026-06-11
 
 ### Added
