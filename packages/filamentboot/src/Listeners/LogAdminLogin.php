@@ -2,8 +2,10 @@
 
 namespace Filamentboot\Listeners;
 
+use Filamentboot\Enums\AdminUserStatus;
 use Filamentboot\Models\AdminUser;
 use Filamentboot\Models\LoginLog;
+use Filamentboot\Settings\SecuritySettings;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
 
@@ -91,5 +93,20 @@ class LogAdminLogin
             ->first();
 
         $user?->increment('login_failures');
+
+        // 阈值锁定：累计失败次数达阈值后将账号置为 Locked（L-04）
+        if ($user === null) {
+            return;
+        }
+
+        /** @var SecuritySettings $securitySettings */
+        $securitySettings = app(SecuritySettings::class);
+        $threshold        = $securitySettings->login_throttle_max_attempts;
+
+        // 阈值 0 表示不限制，跳过锁定逻辑
+        if ($threshold > 0 && $user->login_failures >= $threshold) {
+            // 使用 updateQuietly 避免触发 Observer 审计噪声
+            $user->updateQuietly(['status' => AdminUserStatus::Locked]);
+        }
     }
 }
