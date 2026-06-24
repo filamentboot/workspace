@@ -164,21 +164,31 @@ Plans:
 
 ---
 
-### Phase 21: 代码整理收尾
+### Phase 21: 发版前安全加固（原"代码整理收尾"已收窄）✅ 已发布 v0.5.3
 
-**Goal**: 清理累积的技术债、修复已登记 bug、将代码质量提升到发版标准
+> **已完成（2026-06-24）**：3 条安全修复 + 回归测试已落地、CI 修复并全绿、合并 main。随后发布 **v0.5.3**：7 个包（主包 + cos/oss + rich/markdown/wang editor + site）全部上线 GitHub + Packagist，均带 README/LICENSE。旧包 `laravelstack/filament-admin` 已从 Packagist 删除。详见下方 Plans。
+
+**Goal**: 仅修复随包发布、会影响每个下游安装的 3 条安全缺陷，使包可安全发版；其余技术债与质量门禁推迟至 BACKLOG，发版后再逐步处理
+
+> **范围变更（2026-06-24）**：用户决定先发版、bug 之后慢慢改。完整的 6-plan 收尾计划（PHPStan L6、Pint、80% 覆盖率、CI 门禁、性能/索引修复、仓库清理等）已写好并保留在 `.planning/phases/21-code-cleanup/*-PLAN.md`，整体推迟，登记于 `.planning/BACKLOG.md`。本阶段只执行下面 3 条安全子集。
 
 **Depends on**: Phase 1~10 全部完成
-**Requirements**: CLEANUP-01, CLEANUP-02, CLEANUP-03
-**Work estimate**: 约 15-20h
+**Requirements**: CLEANUP-03（安全子集）；CLEANUP-01 / CLEANUP-02 推迟（见 BACKLOG）
+**Work estimate**: 约 2-4h
 
 **Success Criteria**:
 
-1. PHPStan Level 6 零错误
-2. Pint 格式零警告，Feature 层测试覆盖率 ≥ 80%
-3. 所有已登记 bug（CR-01 等，含 parent_id=0 根菜单保存 bug）修复完毕
+1. 四个核心模型（AdminUser / Menu / Department / LoginLog）不再 `$guarded = []`，改 `$fillable` 白名单，主键/状态不可批量注入（L-03）
+2. 菜单批量启停 BulkAction 有后端鉴权，低权限用户绕过 UI 仍被拒绝（L-02）
+3. 登录失败累计达阈值后账号被锁定（`AdminUserStatus::Locked` + 监听阈值），暴破被节流（L-04）
+4. 上述每条均有 Feature 回归测试坐实
 
-**Plans**: TBD（执行前用 gsd-plan-phase 读已登记缺陷账目生成计划）
+**Plans**: 安全子集（执行）；完整 6-plan 已推迟
+
+Plans:
+- [x] 21-SEC — 发版前安全加固：$guarded→$fillable（L-03）+ BulkAction 鉴权（L-02）+ 登录锁定（L-04，含 enum Locked），每条配回归测试 ✅ 提交 ce2bc55/66c7e63/3704c97，已随 v0.5.3 发布
+
+**已推迟（保留计划文件，登记 BACKLOG）**：21-01（主包 L6）、21-02（插件包 L6）、21-04 中的性能/索引项（L-01/05/06/07）、21-05（CI 门禁 + 仓库清理）、21-06（覆盖率）、21-03 中的演示写拦截（L-08，演示站向，非下游风险）
 
 ---
 

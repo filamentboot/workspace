@@ -5,8 +5,8 @@ milestone_name: milestone
 current_phase: 13
 current_phase_name: filamentboot
 status: awaiting-user
-stopped_at: Completed 13-05-PLAN.md (Task 3 GATED on Packagist D-25)
-last_updated: "2026-06-21T16:40:52.738Z"
+stopped_at: v0.5.3 已发布——7 个包（主包+cos/oss+rich/markdown/wang editor+site）全部上线 GitHub+Packagist；Phase 21 仅执行安全子集，其余技术债见 BACKLOG
+last_updated: "2026-06-24T00:00:00.000Z"
 progress:
   total_phases: 7
   completed_phases: 5
@@ -62,11 +62,23 @@ Phase 09 [##########] 100%  编辑器插件（4/4）✓
 Phase 10 [          ]   0%  官网插件（待规划）
 Phase 11 [          ]   0%  调试官网插件（待规划）
 Phase 13 [          ]   0%  改名基础设施（待规划）
-Phase 21 [          ]   0%  代码整理收尾（待规划）
+Phase 21 [##########] 100%  发版前安全加固（收窄）——3 条安全洞修复，随 v0.5.3 发布 ✓
 Phase 22 [          ]   0%  发版与仓库整理（待规划）
 
 Overall  [#######    ]  56%  (9/16 phases)
 ```
+
+---
+
+## v0.5.3 发布记录（2026-06-24）
+
+首次以 `filamentboot/*` 坐标对外发布。**7 个包全部上线 GitHub + Packagist，统一 v0.5.3，均带 README/LICENSE(MIT)：**
+`filamentboot/filamentboot`、`-cos`、`-oss`、`-rich-editor`、`-markdown-editor`、`-wang-editor`、`-site`。
+
+- 含发版前 3 条安全加固（$fillable 白名单 / BulkAction 后端鉴权 / 登录失败锁定）。
+- 旧包 `laravelstack/filament-admin` 已从 Packagist 删除。
+- 因 CI `PACKAGE_GITHUB_TOKEN` 无跨仓库写权限，本次用本地 `git subtree split` 手动发布；**下次发版需先修该 token 或继续手动推**。
+- 待办（非紧急，见 `.planning/BACKLOG.md`）：4 个新包的自动更新 webhook 确认、主包 PHPStan L6 / 80% 覆盖率 / CI 覆盖率门禁、性能(N+1/递归/索引)、`.worktrees/` 清理、3 条安全修复的真实 DB 冒烟验证。
 
 ---
 
@@ -171,6 +183,7 @@ test_count:         287 / 287 passing（Phase 09 新增 12 tests：8 集成 + 4 
 | # | Description | Date | Commit | Directory |
 |---|-------------|------|--------|-----------|
 | 260623-kg4 | 清理 Phase 13 改名残留（功能 bug + 品牌字符串 + 全量当前用户文档 + 功能性 settings 默认值/e2e 失效命名空间）；含 plugin:scan 命令名修正 | 2026-06-23 | c236da9 / d481069 / a04a3c3 / b09272d / 8ad1c28 / fa2060c | [260623-kg4-phase13-rename-cleanup](./quick/260623-kg4-phase13-rename-cleanup/) |
+| 260624-d80 | 发版前安全加固：$guarded→$fillable 白名单（L-03）+ 菜单 BulkAction 后端鉴权（L-02）+ 登录失败达阈值锁定 Locked（L-04）。分支 security-hardening | 2026-06-24 | ce2bc55 / 66c7e63 / 3704c97 / 0eba312 | [260624-d80-guarded-bulkaction](./quick/260624-d80-guarded-bulkaction/) |
 
 ### Recent Decisions（Phase 08）
 
@@ -184,9 +197,9 @@ test_count:         287 / 287 passing（Phase 09 新增 12 tests：8 集成 + 4 
 
 ## Session Continuity
 
-Last session: 2026-06-21T11:55:24.346Z
-Stopped at: Completed 13-05-PLAN.md (Task 3 GATED on Packagist D-25)
-Resume file: None
+Last session: 2026-06-23T10:58:52.351Z
+Stopped at: Phase 21 context gathered
+Resume file: .planning/phases/21-code-cleanup/21-CONTEXT.md
 
 **未解决问题:**
 
