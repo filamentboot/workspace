@@ -2,11 +2,8 @@
 
 use Filamentboot\FilamentbootServiceProvider;
 use Filamentboot\Models\AdminUser;
-use Filamentboot\Models\Menu;
-use Illuminate\Auth\Events\Login;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Gate;
 use Orchestra\Testbench\TestCase;
 use Symfony\Component\HttpKernel\Exception\HttpException;
 
@@ -61,7 +58,7 @@ class MenuBulkActionAuthTest extends TestCase
         $this->assertStringContainsString(
             "abort_unless(auth('admin')->user()?->can('update_menu')",
             $source,
-            "enable/disable action 闭包必须含 abort_unless 后端鉴权（L-02）"
+            'enable/disable action 闭包必须含 abort_unless 后端鉴权（L-02）'
         );
     }
 
@@ -129,7 +126,7 @@ class MenuBulkActionAuthTest extends TestCase
         $this->assertGreaterThanOrEqual(
             2,
             $count,
-            "enable 和 disable action 闭包均需含 abort_unless，共应至少出现 2 次"
+            'enable 和 disable action 闭包均需含 abort_unless，共应至少出现 2 次'
         );
     }
 

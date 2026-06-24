@@ -1,12 +1,12 @@
 <?php
 
+use Filament\Panel;
 use Filamentboot\Enums\AdminUserStatus;
 use Filamentboot\FilamentbootServiceProvider;
 use Filamentboot\Listeners\LogAdminLogin;
 use Filamentboot\Models\AdminUser;
 use Filamentboot\Settings\SecuritySettings;
-use Illuminate\Auth\Events\Failed;
-use Illuminate\Support\Facades\Auth;
+use Mockery\MockInterface;
 use Orchestra\Testbench\TestCase;
 use Spatie\LaravelSettings\LaravelSettingsServiceProvider;
 
@@ -70,7 +70,7 @@ class LoginFailuresLockTest extends TestCase
         $user->status = AdminUserStatus::Locked;
 
         // 构建最小 Panel 对象（canAccessPanel 仅使用 $this->status，不访问 Panel 属性）
-        $panel = Mockery::mock(\Filament\Panel::class)->makePartial();
+        $panel = Mockery::mock(Panel::class)->makePartial();
 
         $this->assertFalse(
             $user->canAccessPanel($panel),
@@ -87,7 +87,7 @@ class LoginFailuresLockTest extends TestCase
         $user         = new AdminUser;
         $user->status = AdminUserStatus::Active;
 
-        $panel = Mockery::mock(\Filament\Panel::class)->makePartial();
+        $panel = Mockery::mock(Panel::class)->makePartial();
 
         $this->assertTrue(
             $user->canAccessPanel($panel),
@@ -114,7 +114,7 @@ class LoginFailuresLockTest extends TestCase
         // 构建一个 login_failures 已达阈值的用户（通过 setAttribute 设置内存属性）
         $lockedStatus = null;
 
-        /** @var AdminUser&\Mockery\MockInterface $user */
+        /** @var AdminUser&MockInterface $user */
         $user = Mockery::mock(AdminUser::class)->makePartial();
         $user->shouldReceive('updateQuietly')
             ->with(Mockery::on(function (array $attrs) use (&$lockedStatus) {
@@ -158,7 +158,7 @@ class LoginFailuresLockTest extends TestCase
 
         $lockedCalled = false;
 
-        /** @var AdminUser&\Mockery\MockInterface $user */
+        /** @var AdminUser&MockInterface $user */
         $user = Mockery::mock(AdminUser::class)->makePartial();
         $user->shouldReceive('getAttribute')->with('login_failures')->andReturn(100);
         $user->shouldReceive('updateQuietly')->andReturnUsing(function () use (&$lockedCalled) {

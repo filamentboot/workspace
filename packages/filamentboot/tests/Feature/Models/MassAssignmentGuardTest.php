@@ -37,15 +37,15 @@ class MassAssignmentGuardTest extends TestCase
     {
         $user = new AdminUser;
         $user->fill([
-            'account'          => 'testuser',
-            'email'            => 'test@example.com',
-            'password'         => 'secret',
-            'nickname'         => '测试用户',
+            'account'  => 'testuser',
+            'email'    => 'test@example.com',
+            'password' => 'secret',
+            'nickname' => '测试用户',
             // 以下为受保护字段，不应被注入
-            'id'               => 999,
-            'login_failures'   => 99,
-            'last_login_ip'    => '1.2.3.4',
-            'last_login_at'    => '2024-01-01 00:00:00',
+            'id'             => 999,
+            'login_failures' => 99,
+            'last_login_ip'  => '1.2.3.4',
+            'last_login_at'  => '2024-01-01 00:00:00',
         ]);
 
         // 正常字段应被填充
@@ -71,7 +71,7 @@ class MassAssignmentGuardTest extends TestCase
             'source' => 'core',
             'type'   => 'menu',
             // 受保护字段
-            'id'     => 888,
+            'id' => 888,
         ]);
 
         // 正常字段应被填充
@@ -88,11 +88,11 @@ class MassAssignmentGuardTest extends TestCase
     {
         $dept = new Department;
         $dept->fill([
-            'name'   => '研发部',
-            'code'   => 'RD',
-            'sort'   => 1,
+            'name' => '研发部',
+            'code' => 'RD',
+            'sort' => 1,
             // 受保护字段
-            'id'     => 777,
+            'id' => 777,
         ]);
 
         // 正常字段应被填充
@@ -113,7 +113,7 @@ class MassAssignmentGuardTest extends TestCase
             'status'     => 'failed',
             'ip_address' => '127.0.0.1',
             // 受保护字段
-            'id'         => 666,
+            'id' => 666,
         ]);
 
         // 正常字段应被填充
