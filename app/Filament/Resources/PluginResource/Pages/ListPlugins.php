@@ -29,6 +29,8 @@ class ListPlugins extends ListRecords
                         ->success()
                         ->send();
                 })
+                // 退出面板级 databaseTransactions()：Artisan::call('plugin:scan') 属外部副作用
+                ->databaseTransaction(false)
                 ->requiresConfirmation()
                 ->authorize('update_plugin'),
         ];

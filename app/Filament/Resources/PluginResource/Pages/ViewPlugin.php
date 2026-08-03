@@ -67,6 +67,9 @@ class ViewPlugin extends ViewRecord
             Action::make('initialize')
                 ->label('初始化')
                 ->action('initialize')
+                // 退出面板级 databaseTransactions()：初始化会跑 migrate / db:seed / vendor:publish，
+                // MySQL 下 DDL 造成隐式提交，会静默破坏外层事务边界
+                ->databaseTransaction(false)
                 ->requiresConfirmation()
                 ->authorize('initialize_plugin')
                 ->visible(fn (): bool => $this->record->kind === 'solution_plugin'),

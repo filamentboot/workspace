@@ -94,6 +94,9 @@ class PluginResource extends Resource
                     ->action(function (Plugin $record): void {
                         app(PluginManager::class)->install($record);
                     })
+                    // 退出面板级 databaseTransactions()：install 会 dispatch ComposerInstallJob，
+                    // 队列 after_commit=false，事务内入队会让 worker 读到未提交数据
+                    ->databaseTransaction(false)
                     ->authorize('install_plugin')
                     ->visible(fn (Plugin $record): bool => $record->init_status !== 'done'
                         && $record->compatibility_status !== 'incompatible'),
@@ -114,6 +117,8 @@ class PluginResource extends Resource
                     ->action(function (Plugin $record, array $data): void {
                         app(PluginManager::class)->uninstall($record, $data['drop_tables'] ?? false);
                     })
+                    // 退出面板级事务：uninstall 会 dispatch ComposerRemoveJob 并可能删表（DDL 隐式提交）
+                    ->databaseTransaction(false)
                     ->authorize('uninstall_plugin')
                     ->visible(fn (Plugin $record): bool => $record->init_status === 'done'),
                 Action::make('settings')
@@ -138,6 +143,8 @@ class PluginResource extends Resource
                             app(PluginManager::class)->enable($record);
                         }
                     })
+                    // 退出面板级事务：启停会调 Artisan optimize:clear 等外部副作用
+                    ->databaseTransaction(false)
                     ->requiresConfirmation()
                     ->authorize('update_plugin'),
             ]);

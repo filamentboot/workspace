@@ -77,6 +77,10 @@ class AdminPanelProvider extends PanelProvider
                     ->autoContextTracking()
             )
             ->brandName('Filamentboot')
+            ->favicon(asset('favicon.svg'))
+            ->brandLogo(asset('brand-logo.svg'))
+            ->darkModeBrandLogo(asset('brand-logo-dark.svg'))
+            ->brandLogoHeight('1.75rem')
             // 国内后台常用配色：Ant 蓝主色 + 成功绿 / 警告橙 / 危险红
             ->colors([
                 'primary' => Color::hex('#1677ff'),
@@ -89,6 +93,12 @@ class AdminPanelProvider extends PanelProvider
             ->defaultThemeMode(ThemeMode::Light) // 默认浅色，保留明暗切换
             ->maxContentWidth(Width::Full)       // 内容区满宽，提高信息密度
             ->sidebarCollapsibleOnDesktop()
+            ->spa()                  // 面板内导航走 wire:navigate，无整页刷新；跨 host 外链由 is_app_url() 自动豁免
+            ->unsavedChangesAlerts() // 表单有未保存改动时离开页面提示
+            ->globalSearchKeyBindings(['command+k', 'ctrl+k'])
+            ->globalSearchFieldKeyBindingSuffix() // 搜索框显示 ⌘K / Ctrl+K 提示
+            // 面板内所有 Action 自动包事务；有外部副作用的 Action 需单独 ->databaseTransaction(false)
+            ->databaseTransactions()
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->navigation(function (AdminNavigationBuilder $builder): NavigationBuilder {
                 $user = Filament::auth()->user();
