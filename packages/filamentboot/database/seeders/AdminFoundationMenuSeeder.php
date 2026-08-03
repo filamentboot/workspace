@@ -246,7 +246,7 @@ class AdminFoundationMenuSeeder extends Seeder
                 'icon'            => 'heroicon-o-cog-6-tooth',
                 'route_name'      => 'filament.admin.pages.settings.general',
                 'url'             => null,
-                'permission_name' => 'view_general_settings',
+                'permission_name' => 'view_general_settings_page',
                 'target'          => 'self',
             ],
             [
@@ -254,7 +254,7 @@ class AdminFoundationMenuSeeder extends Seeder
                 'icon'            => 'heroicon-o-arrow-up-tray',
                 'route_name'      => 'filament.admin.pages.settings.upload',
                 'url'             => null,
-                'permission_name' => 'view_upload_settings',
+                'permission_name' => 'view_upload_settings_page',
                 'target'          => 'self',
             ],
             [
@@ -262,7 +262,7 @@ class AdminFoundationMenuSeeder extends Seeder
                 'icon'            => 'heroicon-o-shield-check',
                 'route_name'      => 'filament.admin.pages.settings.security',
                 'url'             => null,
-                'permission_name' => 'view_security_settings',
+                'permission_name' => 'view_security_settings_page',
                 'target'          => 'self',
             ],
             [
@@ -270,7 +270,7 @@ class AdminFoundationMenuSeeder extends Seeder
                 'icon'            => 'heroicon-o-document-text',
                 'route_name'      => 'filament.admin.pages.settings.log',
                 'url'             => null,
-                'permission_name' => 'view_log_settings',
+                'permission_name' => 'view_log_settings_page',
                 'target'          => 'self',
             ],
         ];

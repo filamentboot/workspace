@@ -75,10 +75,12 @@ class SiteMenuSeeder extends Seeder
      * 官网管理分组下的子菜单定义
      *
      * 顺序与各 Resource / Page 的 $navigationSort 保持一致（设置页在前，询盘在末）。
-     * permission_name 对齐 BasePolicy 推导出的权限点；设置页无 Policy，
-     * 与 OSS / COS 配置页先例一致留空。
      *
-     * @return list<array{title: string, icon: string, route_name: string, permission_name: string|null}>
+     * permission_name 命名来源有两套，不能混用：
+     * - Resource：BasePolicy 由 Policy 类名推导，如 SiteCasePolicy -> view_any_site_case
+     * - Page：Shield 由页面类名推导并带 _page 后缀，如 SiteSettingsPage -> view_site_settings_page
+     *
+     * @return list<array{title: string, icon: string, route_name: string, permission_name: string}>
      */
     private function menus(): array
     {
@@ -87,7 +89,7 @@ class SiteMenuSeeder extends Seeder
                 'title'           => '网站设置',
                 'icon'            => 'heroicon-o-globe-alt',
                 'route_name'      => 'filament.admin.pages.settings.site',
-                'permission_name' => null,
+                'permission_name' => 'view_site_settings_page',
             ],
             [
                 'title'           => '装修案例',
