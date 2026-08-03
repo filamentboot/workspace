@@ -51,8 +51,8 @@ class SitePermissionSeeder extends Seeder
     {
         $resourcePermissions = [];
 
-        // 四类内容资源共享同一套 CRUD 动作（均有软删除）
-        foreach (['site_case', 'site_solution', 'site_product', 'site_page'] as $resource) {
+        // 五类内容资源共享同一套 CRUD 动作（均有软删除）
+        foreach (['site_case', 'site_solution', 'site_product', 'site_page', 'news_article'] as $resource) {
             foreach ([
                 'view_any',
                 'view',
@@ -68,6 +68,13 @@ class SitePermissionSeeder extends Seeder
 
         return [
             ...$resourcePermissions,
+
+            // 资讯分类：无软删除，少 restore / force_delete 两个动作
+            'view_any_news_category',
+            'view_news_category',
+            'create_news_category',
+            'update_news_category',
+            'delete_news_category',
 
             // 询盘：前台写入，后台只读 + 状态流转 + 跟进，无新建
             'view_any_contact_message',

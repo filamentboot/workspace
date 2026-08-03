@@ -6,6 +6,7 @@ use BackedEnum;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\RestoreAction;
+use Filament\Forms\Components\RichEditor as RichEditorField;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
 use Filament\Forms\Components\Textarea;
@@ -32,8 +33,11 @@ use UnitEnum;
 /**
  * 智能产品后台资源
  *
- * 提供产品 CRUD，含内容 Tab（基本信息/内容/SEO）、
- * 分类、标签、is_published 布尔发布、置顶、封面图（UploadSettings 磁盘）。
+ * 提供产品 CRUD，含内容 Tab（基本信息/内容/SEO/图片）、
+ * 分类、标签、is_published 布尔发布、置顶、封面图与图集（UploadSettings 磁盘）。
+ *
+ * 封面图与图集集中在「图片」Tab，与 SiteCaseResource 保持一致：
+ * 图集是多图上传控件，放在字段密集的「基本信息」里会把那一屏撑得很长。
  */
 class SiteProductResource extends Resource
 {
@@ -88,12 +92,6 @@ class SiteProductResource extends Resource
                             ->label('置顶/精选'),
                         Toggle::make('is_published')
                             ->label('已发布'),
-                        SpatieMediaLibraryFileUpload::make('cover_image')
-                            ->label('封面图')
-                            ->collection('cover')
-                            ->disk($defaultDisk)
-                            ->image()
-                            ->imageEditor(),
                     ]),
                     Tab::make('内容')->schema([
                         TextInput::make('title_zh')
@@ -103,6 +101,9 @@ class SiteProductResource extends Resource
                         Textarea::make('description_zh')
                             ->label('描述')
                             ->rows(3),
+                        RichEditorField::make('content_zh')
+                            ->label('详情正文')
+                            ->helperText('产品参数、功能说明写在这里；不再单独维护结构化规格字段'),
                     ]),
                     Tab::make('SEO')->schema([
                         TextInput::make('seo_title')
@@ -115,6 +116,22 @@ class SiteProductResource extends Resource
                         TextInput::make('seo_keywords')
                             ->label('SEO 关键词')
                             ->maxLength(255),
+                    ]),
+                    Tab::make('图片')->schema([
+                        SpatieMediaLibraryFileUpload::make('cover_image')
+                            ->label('封面图')
+                            ->collection('cover')
+                            ->disk($defaultDisk)
+                            ->image()
+                            ->imageEditor(),
+                        SpatieMediaLibraryFileUpload::make('gallery')
+                            ->label('图集')
+                            ->collection('gallery')
+                            ->disk($defaultDisk)
+                            ->multiple()
+                            ->reorderable()
+                            ->image()
+                            ->helperText('详情页主图轮播，可拖拽排序；第一张为轮播默认展示'),
                     ]),
                 ])
                 ->columnSpanFull(),

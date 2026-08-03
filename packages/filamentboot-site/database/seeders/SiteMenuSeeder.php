@@ -45,9 +45,11 @@ class SiteMenuSeeder extends Seeder
                 'url'             => null,
                 'link_type'       => 'route',
                 'permission_name' => null,
-                'sort'            => 40,
-                'is_active'       => true,
-                'target'          => 'self',
+                // 排在仪表盘（5）之后、系统管理（10）之前：内容管理是日常高频入口，
+                // 系统管理 / 系统配置 / 插件市场 沉到下方
+                'sort'      => 8,
+                'is_active' => true,
+                'target'    => 'self',
             ],
         );
 
@@ -108,6 +110,18 @@ class SiteMenuSeeder extends Seeder
                 'icon'            => 'heroicon-o-cpu-chip',
                 'route_name'      => 'filament.admin.resources.site-products.index',
                 'permission_name' => 'view_any_site_product',
+            ],
+            [
+                'title'           => '资讯文章',
+                'icon'            => 'heroicon-o-newspaper',
+                'route_name'      => 'filament.admin.resources.news-articles.index',
+                'permission_name' => 'view_any_news_article',
+            ],
+            [
+                'title'           => '资讯分类',
+                'icon'            => 'heroicon-o-rectangle-stack',
+                'route_name'      => 'filament.admin.resources.news-categories.index',
+                'permission_name' => 'view_any_news_category',
             ],
             [
                 'title'           => '静态页面',

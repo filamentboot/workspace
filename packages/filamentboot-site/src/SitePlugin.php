@@ -11,12 +11,14 @@ use Filamentboot\FilamentbootSite\Filament\Resources\SitePageResource;
 use Filamentboot\FilamentbootSite\Filament\Resources\SiteProductResource;
 use Filamentboot\FilamentbootSite\Filament\Resources\SiteSolutionResource;
 use Filamentboot\FilamentbootSite\Filament\Widgets\UnreadContactMessagesWidget;
+use Filamentboot\FilamentbootSite\Modules\News\Filament\NewsArticleResource;
+use Filamentboot\FilamentbootSite\Modules\News\Filament\NewsCategoryResource;
 
 /**
  * 官网插件 Filament Plugin 类
  *
  * 通过 ->plugins([SitePlugin::make()]) 注册到 Filament Panel，
- * 自动挂载 SiteSettingsPage 及五个内容 Resource 到后台导航（官网管理分组）。
+ * 自动挂载 SiteSettingsPage 及七个内容 Resource 到后台导航（官网管理分组）。
  * 前台路由/视图/Livewire 组件注册由 SiteServiceProvider::boot() 完成。
  */
 class SitePlugin implements Plugin
@@ -45,6 +47,7 @@ class SitePlugin implements Plugin
      * - SiteCaseResource：装修案例 CRUD（SITE-01）
      * - SiteSolutionResource：智能方案 CRUD（SITE-01）
      * - SiteProductResource：智能产品 CRUD（SITE-01）
+     * - NewsArticleResource / NewsCategoryResource：资讯 CRUD
      * - SitePageResource：静态页面 CRUD（SITE-01）
      * - ContactMessageResource：询盘只读 + 状态流转（D-10-15）
      * - UnreadContactMessagesWidget：未读询盘 StatsWidget（D-10-15）
@@ -59,6 +62,8 @@ class SitePlugin implements Plugin
                 SiteCaseResource::class,
                 SiteSolutionResource::class,
                 SiteProductResource::class,
+                NewsArticleResource::class,
+                NewsCategoryResource::class,
                 SitePageResource::class,
                 ContactMessageResource::class,
             ])

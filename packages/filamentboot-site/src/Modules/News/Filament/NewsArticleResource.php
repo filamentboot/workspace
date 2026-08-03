@@ -1,6 +1,6 @@
 <?php
 
-namespace Filamentboot\FilamentbootSite\Filament\Resources;
+namespace Filamentboot\FilamentbootSite\Modules\News\Filament;
 
 use BackedEnum;
 use Filament\Actions\DeleteAction;
@@ -14,7 +14,6 @@ use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
-use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
@@ -24,40 +23,41 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
-use Filamentboot\FilamentbootSite\Enums\CaseStyle;
-use Filamentboot\FilamentbootSite\Enums\HouseType;
-use Filamentboot\FilamentbootSite\Filament\Resources\SiteCaseResource\Pages\CreateSiteCase;
-use Filamentboot\FilamentbootSite\Filament\Resources\SiteCaseResource\Pages\EditSiteCase;
-use Filamentboot\FilamentbootSite\Filament\Resources\SiteCaseResource\Pages\ListSiteCases;
-use Filamentboot\FilamentbootSite\Models\SiteCase;
+use Filamentboot\FilamentbootSite\Modules\News\Filament\NewsArticleResource\Pages\CreateNewsArticle;
+use Filamentboot\FilamentbootSite\Modules\News\Filament\NewsArticleResource\Pages\EditNewsArticle;
+use Filamentboot\FilamentbootSite\Modules\News\Filament\NewsArticleResource\Pages\ListNewsArticles;
+use Filamentboot\FilamentbootSite\Modules\News\Models\NewsArticle;
 use Filamentboot\Settings\UploadSettings;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
 use UnitEnum;
 
 /**
- * 装修案例后台资源
+ * 资讯文章后台资源
  *
- * 提供案例 CRUD，含内容 Tab（基本信息/内容/SEO/图片）、
- * 分类、标签、发布状态、置顶、Phase 9 富文本编辑器与 Spatie 媒体库。
+ * 提供文章 CRUD，含内容 Tab（基本信息/内容/SEO/图片）、
+ * 分类、标签、published_at 定时发布、置顶、封面图（UploadSettings 磁盘）。
+ *
+ * 发布态用 published_at 而非布尔：归档页按年月分组，且留空即草稿、
+ * 填未来时间即定时发布，一个字段覆盖三种状态。
  */
-class SiteCaseResource extends Resource
+class NewsArticleResource extends Resource
 {
-    /** @var class-string<SiteCase> */
-    protected static ?string $model = SiteCase::class;
+    /** @var class-string<NewsArticle> */
+    protected static ?string $model = NewsArticle::class;
 
-    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-home-modern';
+    protected static string|BackedEnum|null $navigationIcon = 'heroicon-o-newspaper';
 
     protected static string|UnitEnum|null $navigationGroup = '官网管理';
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 35;
 
-    protected static ?string $modelLabel = '装修案例';
+    protected static ?string $modelLabel = '资讯文章';
 
-    protected static ?string $pluralModelLabel = '装修案例';
+    protected static ?string $pluralModelLabel = '资讯文章';
 
     /**
-     * 表单定义（内容 Tab + SEO + 图片 + 分类标签 + 发布置顶）
+     * 表单定义（基本信息/内容/SEO/图片四 Tab）
      */
     public static function form(Schema $schema): Schema
     {
@@ -83,69 +83,25 @@ class SiteCaseResource extends Resource
                             ->relationship('tags', 'name_zh')
                             ->multiple()
                             ->preload(),
-                        Select::make('style')
-                            ->label('装修风格')
-                            ->options(
-                                collect(CaseStyle::cases())
-                                    ->mapWithKeys(fn (CaseStyle $s): array => [$s->value => $s->label()])
-                                    ->all()
-                            ),
-                        Select::make('house_type')
-                            ->label('户型')
-                            ->options(
-                                collect(HouseType::cases())
-                                    ->mapWithKeys(fn (HouseType $h): array => [$h->value => $h->label()])
-                                    ->all()
-                            ),
-                        TextInput::make('area')
-                            ->label('面积（㎡）')
-                            ->maxLength(50),
-                        TextInput::make('budget_range')
-                            ->label('预算范围')
-                            ->maxLength(100),
-                        Textarea::make('smart_features')
-                            ->label('智能亮点')
-                            ->rows(3),
                         Toggle::make('is_featured')
                             ->label('置顶/精选'),
                         DateTimePicker::make('published_at')
-                            ->label('发布时间（留空=草稿）'),
+                            ->label('发布时间（留空=草稿）')
+                            ->seconds(false)
+                            ->helperText('填未来时间即定时发布，到点后前台自动可见'),
                     ]),
                     Tab::make('内容')->schema([
                         TextInput::make('title_zh')
                             ->label('标题')
                             ->required()
                             ->maxLength(255),
-                        Textarea::make('description_zh')
-                            ->label('描述')
-                            ->rows(3),
+                        Textarea::make('excerpt_zh')
+                            ->label('摘要')
+                            ->rows(3)
+                            ->maxLength(500)
+                            ->helperText('列表卡片与社交分享用，留空时前台从正文截取'),
                         RichEditorField::make('content_zh')
                             ->label('正文'),
-                        Section::make('业主见证')
-                            ->description('姓名与引言缺一不可，只填其一前台不渲染见证卡片')
-                            ->collapsed()
-                            ->schema([
-                                TextInput::make('customer_name')
-                                    ->label('业主称呼')
-                                    ->placeholder('张先生')
-                                    ->maxLength(50),
-                                TextInput::make('customer_meta')
-                                    ->label('身份备注')
-                                    ->placeholder('万科城市之光 · 入住 8 个月')
-                                    ->maxLength(255),
-                                Textarea::make('customer_quote')
-                                    ->label('业主原话')
-                                    ->rows(4)
-                                    ->maxLength(500),
-                                SpatieMediaLibraryFileUpload::make('customer_avatar')
-                                    ->label('业主头像')
-                                    ->collection('avatar')
-                                    ->disk($defaultDisk)
-                                    ->image()
-                                    ->imageEditor()
-                                    ->avatar()
-                                    ->helperText('留空时前台用称呼首字生成占位圆标'),
-                            ]),
                     ]),
                     Tab::make('SEO')->schema([
                         TextInput::make('seo_title')
@@ -166,12 +122,6 @@ class SiteCaseResource extends Resource
                             ->disk($defaultDisk)
                             ->image()
                             ->imageEditor(),
-                        SpatieMediaLibraryFileUpload::make('gallery')
-                            ->label('图集')
-                            ->collection('gallery')
-                            ->disk($defaultDisk)
-                            ->multiple()
-                            ->image(),
                     ]),
                 ])
                 ->columnSpanFull(),
@@ -188,18 +138,17 @@ class SiteCaseResource extends Resource
                 SpatieMediaLibraryImageColumn::make('cover_image')
                     ->label('封面')
                     ->collection('cover')
-                    ->conversion('thumb')
-                    ->circular(),
+                    ->conversion('thumb'),
                 TextColumn::make('title_zh')
                     ->label('标题')
                     ->searchable()
-                    ->limit(30),
+                    ->limit(40),
                 TextColumn::make('category.name_zh')
                     ->label('分类')
                     ->default('-'),
                 IconColumn::make('publication_status')
                     ->label('状态')
-                    ->getStateUsing(fn (SiteCase $record): bool => $record->published_at !== null && $record->published_at <= now())
+                    ->getStateUsing(fn (NewsArticle $record): bool => $record->published_at !== null && $record->published_at <= now())
                     ->boolean()
                     ->trueColor('success')
                     ->falseColor('gray')
@@ -218,20 +167,10 @@ class SiteCaseResource extends Resource
             ])
             ->filters([
                 TrashedFilter::make(),
-                SelectFilter::make('style')
-                    ->label('风格')
-                    ->options(
-                        collect(CaseStyle::cases())
-                            ->mapWithKeys(fn (CaseStyle $s): array => [$s->value => $s->label()])
-                            ->all()
-                    ),
-                SelectFilter::make('house_type')
-                    ->label('户型')
-                    ->options(
-                        collect(HouseType::cases())
-                            ->mapWithKeys(fn (HouseType $h): array => [$h->value => $h->label()])
-                            ->all()
-                    ),
+                SelectFilter::make('category_id')
+                    ->label('分类')
+                    ->relationship('category', 'name_zh')
+                    ->preload(),
             ])
             ->recordActions([
                 EditAction::make(),
@@ -244,7 +183,7 @@ class SiteCaseResource extends Resource
     /**
      * 覆盖 Eloquent 查询，去除软删除作用域使已删除记录在 TrashedFilter 下可见
      *
-     * @return Builder<SiteCase>
+     * @return Builder<NewsArticle>
      */
     public static function getEloquentQuery(): Builder
     {
@@ -260,14 +199,14 @@ class SiteCaseResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListSiteCases::route('/'),
-            'create' => CreateSiteCase::route('/create'),
-            'edit'   => EditSiteCase::route('/{record}/edit'),
+            'index'  => ListNewsArticles::route('/'),
+            'create' => CreateNewsArticle::route('/create'),
+            'edit'   => EditNewsArticle::route('/{record}/edit'),
         ];
     }
 
     /**
-     * 解析默认上传磁盘（SITE-04 跨切：读 UploadSettings，降级 'public'）
+     * 解析默认上传磁盘（读 UploadSettings，降级 'public'）
      */
     protected static function resolveDefaultDisk(): string
     {
