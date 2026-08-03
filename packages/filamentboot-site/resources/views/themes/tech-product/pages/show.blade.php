@@ -17,7 +17,7 @@
 
         @if($content)
             <div class="prose text-site-primary leading-relaxed" style="word-break: break-word;">
-                {!! app('purifier')->clean($content) !!}
+                {!! \Filamentboot\FilamentbootSite\Support\RichText::purify($content) !!}
             </div>
         @endif
     </div>

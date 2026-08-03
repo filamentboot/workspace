@@ -1,7 +1,7 @@
 {{--
  * 首页（UI-SPEC §Specific Ideas 首页结构）
  *
- * Hero → 服务亮点 3 列 → 精选案例网格 → 精选方案 → 智能产品展示 → 联系 CTA
+ * Hero → 服务亮点 3 列 → 精选案例网格 → 精选方案 → 智能产品展示 → 业主见证 → 联系 CTA
  --}}
 @extends('filamentboot-site::layouts.app')
 
@@ -141,8 +141,106 @@
         </div>
     </section>
 
-    {{-- 联系 CTA（Section 6，UI-SPEC §Component 7） --}}
-    <section class="py-20 bg-site-base" aria-labelledby="contact-cta-heading">
+    {{-- 业主见证（Section 6）
+         摆在 CTA 之前：先看到别人怎么说，再决定要不要留联系方式。
+         无见证时整段不渲染，不留空标题。 --}}
+    @if(isset($testimonials) && $testimonials->isNotEmpty())
+        <section class="py-20 bg-site-base" aria-labelledby="testimonials-heading"
+                 x-data="{ active: 0, total: {{ $testimonials->count() }} }">
+            <div class="max-w-3xl mx-auto px-4 sm:px-6">
+
+                <div class="text-center mb-12">
+                    <h2 id="testimonials-heading"
+                        class="text-site-primary text-3xl font-bold inline-flex items-center gap-3">
+                        <span class="inline-block w-1 h-8 rounded-full" style="background: var(--color-primary);"></span>
+                        业主说
+                    </h2>
+                </div>
+
+                @foreach($testimonials as $index => $testimonial)
+                    @php $tAvatar = $testimonial->customerAvatarUrl(); @endphp
+                    <div x-show="active === {{ $index }}"
+                         @if($index !== 0) style="display: none;" @endif
+                         class="p-8 rounded-2xl bg-site-surface border border-site text-center">
+
+                        <svg class="w-8 h-8 text-site-accent mx-auto mb-6 opacity-60" fill="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M9.983 3v7.391c0 5.704-3.731 9.57-8.983 10.609l-.995-2.151c2.432-.917 3.995-3.638 3.995-5.849h-4v-10h9.983zm14.017 0v7.391c0 5.704-3.748 9.571-9 10.609l-.996-2.151c2.433-.917 3.996-3.638 3.996-5.849h-3.983v-10h9.983z" />
+                        </svg>
+
+                        <blockquote class="text-site-primary text-lg leading-relaxed mb-8">{{ $testimonial->customer_quote }}</blockquote>
+
+                        <div class="flex items-center justify-center gap-3">
+                            @if($tAvatar)
+                                <img src="{{ $tAvatar }}"
+                                     alt="{{ $testimonial->customer_name }}"
+                                     class="w-10 h-10 rounded-full object-cover"
+                                     loading="lazy"
+                                     decoding="async"
+                                     width="40"
+                                     height="40">
+                            @else
+                                <div class="w-10 h-10 rounded-full bg-site-elevated border border-site flex items-center justify-center"
+                                     aria-hidden="true">
+                                    <span class="text-site-accent font-bold">{{ mb_substr($testimonial->customer_name, 0, 1) }}</span>
+                                </div>
+                            @endif
+                            <div class="text-left">
+                                <p class="text-site-primary text-sm font-medium">{{ $testimonial->customer_name }}</p>
+                                @if($testimonial->customer_meta)
+                                    <p class="text-site-secondary text-xs">{{ $testimonial->customer_meta }}</p>
+                                @endif
+                            </div>
+                        </div>
+
+                        <a href="{{ route('site.cases.show', $testimonial->slug) }}"
+                           class="inline-block mt-6 text-site-accent text-sm hover:underline focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:outline-none rounded-sm">
+                            查看这个案例 &rarr;
+                        </a>
+                    </div>
+                @endforeach
+
+                {{-- 单条见证时不渲染切换控件 --}}
+                @if($testimonials->count() > 1)
+                    <div class="flex items-center justify-center gap-4 mt-8">
+                        <button type="button"
+                                class="w-10 h-10 rounded-full bg-site-elevated border border-site text-site-primary flex items-center justify-center
+                                       focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:outline-none"
+                                @click="active = (active - 1 + total) % total"
+                                aria-label="上一条见证">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+                            </svg>
+                        </button>
+
+                        <div class="flex gap-2">
+                            @foreach($testimonials as $index => $testimonial)
+                                <button type="button"
+                                        class="w-2.5 h-2.5 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:outline-none"
+                                        :class="active === {{ $index }} ? 'bg-[--color-primary]' : 'bg-site-elevated'"
+                                        @click="active = {{ $index }}"
+                                        aria-label="查看第 {{ $index + 1 }} 条见证"></button>
+                            @endforeach
+                        </div>
+
+                        <button type="button"
+                                class="w-10 h-10 rounded-full bg-site-elevated border border-site text-site-primary flex items-center justify-center
+                                       focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:outline-none"
+                                @click="active = (active + 1) % total"
+                                aria-label="下一条见证">
+                            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="m8.25 4.5 7.5 7.5-7.5 7.5" />
+                            </svg>
+                        </button>
+                    </div>
+                @endif
+            </div>
+        </section>
+    @endif
+
+    {{-- 联系 CTA（Section 7，UI-SPEC §Component 7）
+         底色由 base 改为 subtle：见证段插在产品段之后占用了 base，
+         两段同色相邻会失去分段感。 --}}
+    <section class="py-20 bg-site-subtle" aria-labelledby="contact-cta-heading">
         <div class="max-w-2xl mx-auto px-4 sm:px-6 text-center">
             <h2 id="contact-cta-heading" class="text-site-primary text-3xl font-bold mb-6">联系我们</h2>
             <p class="text-site-secondary text-lg mb-10">

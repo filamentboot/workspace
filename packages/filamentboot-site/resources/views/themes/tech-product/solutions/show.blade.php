@@ -39,7 +39,7 @@
         {{-- 富文本内容（必须经 purifier 过滤，T-10-05-01 安全硬要求） --}}
         @if($content)
             <div class="prose text-site-primary leading-relaxed" style="word-break: break-word;">
-                {!! app('purifier')->clean($content) !!}
+                {!! \Filamentboot\FilamentbootSite\Support\RichText::purify($content) !!}
             </div>
         @endif
 

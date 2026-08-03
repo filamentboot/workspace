@@ -15,6 +15,7 @@
         ['href' => route('site.cases.index'),     'label' => '装修案例'],
         ['href' => route('site.solutions.index'), 'label' => '智能方案'],
         ['href' => route('site.products.index'),  'label' => '智能产品'],
+        ['href' => route('site.news.index'),      'label' => '资讯中心'],
         ['href' => route('site.page', 'about'),   'label' => '关于我们'],
         ['href' => route('site.page', 'contact'), 'label' => '联系我们'],
     ];
