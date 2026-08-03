@@ -1,0 +1,8 @@
+# 中间产物：候选缩略图、联系表、裁好的成品，都能由 scripts/ 重新生成
+candidates/
+staged/
+candidates*.json
+sheet-*.jpg
+final-*.jpg
+recheck.jpg
+swap.jpg

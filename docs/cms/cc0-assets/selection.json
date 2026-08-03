@@ -1,0 +1,82 @@
+{
+  "cases/modern-3bed-smart": [
+    "pool/interior",
+    14
+  ],
+  "cases/villa-full-smart": [
+    "pool/villa",
+    2
+  ],
+  "cases/old-apt-lighting": [
+    "pool/lighting",
+    10
+  ],
+  "cases/new-home-security": [
+    "pool/door",
+    6
+  ],
+  "cases/duplex-chinese-smart": [
+    "cases/duplex-chinese-smart",
+    5
+  ],
+  "cases/studio-nordic": [
+    "pool/interior",
+    2
+  ],
+  "solutions/full-smart-solution": [
+    "pool/interior",
+    3
+  ],
+  "solutions/smart-lighting-solution": [
+    "pool/lighting",
+    14
+  ],
+  "solutions/home-security-solution": [
+    "fix/security",
+    4
+  ],
+  "solutions/av-entertainment-solution": [
+    "fix/theater",
+    1
+  ],
+  "news/when-to-involve-smart-home-installer": [
+    "pool/construction",
+    1
+  ],
+  "news/camera-storage-options": [
+    "news/camera-storage-options",
+    3
+  ],
+  "news/gateway-single-or-dual-protocol": [
+    "news/gateway-single-or-dual-protocol",
+    2
+  ],
+  "news/no-main-light-illuminance": [
+    "news/no-main-light-illuminance",
+    2
+  ],
+  "news/do-you-need-ethernet": [
+    "pool/tech",
+    7
+  ],
+  "news/curtain-motor-for-wide-windows": [
+    "pool/window",
+    1
+  ],
+  "news/smart-lock-buying-pitfalls": [
+    "pool/door",
+    11
+  ],
+  "news/handover-checklist": [
+    "news/handover-checklist",
+    1
+  ],
+  "news/service-coverage": [
+    "news/service-coverage",
+    5
+  ],
+  "news/h1-selection-review-draft": [
+    "pool/desk",
+    1
+  ]
+}

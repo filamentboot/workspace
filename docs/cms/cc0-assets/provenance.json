@@ -1,0 +1,142 @@
+{
+    "cases/modern-3bed-smart": {
+        "title": "File:Communal Coworking interior (Unsplash).jpg",
+        "license": "CC0",
+        "author": "Dan Gold danielcgold",
+        "page": "https://commons.wikimedia.org/wiki/File:Communal_Coworking_interior_(Unsplash).jpg",
+        "source": "5501x3095"
+    },
+    "cases/villa-full-smart": {
+        "title": "File:White staircase (Unsplash).jpg",
+        "license": "CC0",
+        "author": "Todd Quackenbush toddquackenbush",
+        "page": "https://commons.wikimedia.org/wiki/File:White_staircase_(Unsplash).jpg",
+        "source": "5616x3684"
+    },
+    "cases/old-apt-lighting": {
+        "title": "File:Warm light in the dining room (Unsplash).jpg",
+        "license": "CC0",
+        "author": "eberhard grossgasteiger eberhardgross",
+        "page": "https://commons.wikimedia.org/wiki/File:Warm_light_in_the_dining_room_(Unsplash).jpg",
+        "source": "5596x3800"
+    },
+    "cases/new-home-security": {
+        "title": "File:Lost House (Unsplash).jpg",
+        "license": "CC0",
+        "author": "Peter Boccia peterboccia",
+        "page": "https://commons.wikimedia.org/wiki/File:Lost_House_(Unsplash).jpg",
+        "source": "5184x3456"
+    },
+    "cases/duplex-chinese-smart": {
+        "title": "File:中国人的客厅.jpg",
+        "license": "CC0",
+        "author": "Shihong Zhang",
+        "page": "https://commons.wikimedia.org/wiki/File:%E4%B8%AD%E5%9B%BD%E4%BA%BA%E7%9A%84%E5%AE%A2%E5%8E%85.jpg",
+        "source": "4032x3024"
+    },
+    "cases/studio-nordic": {
+        "title": "File:Cozy interior with a sofa (Unsplash).jpg",
+        "license": "CC0",
+        "author": "Breather breather",
+        "page": "https://commons.wikimedia.org/wiki/File:Cozy_interior_with_a_sofa_(Unsplash).jpg",
+        "source": "7360x4912"
+    },
+    "solutions/full-smart-solution": {
+        "title": "File:Breather Montreal interior (Unsplash).jpg",
+        "license": "CC0",
+        "author": "Breather breather",
+        "page": "https://commons.wikimedia.org/wiki/File:Breather_Montreal_interior_(Unsplash).jpg",
+        "source": "7186x4796"
+    },
+    "solutions/smart-lighting-solution": {
+        "title": "File:Light bulbs and vines (Unsplash).jpg",
+        "license": "CC0",
+        "author": "Patrick Schneider patrick_schneider",
+        "page": "https://commons.wikimedia.org/wiki/File:Light_bulbs_and_vines_(Unsplash).jpg",
+        "source": "5002x3335"
+    },
+    "solutions/home-security-solution": {
+        "title": "File:404 (Unsplash).jpg",
+        "license": "CC0",
+        "author": "Scott Webb scottwebb",
+        "page": "https://commons.wikimedia.org/wiki/File:404_(Unsplash).jpg",
+        "source": "6000x4000"
+    },
+    "solutions/av-entertainment-solution": {
+        "title": "File:Movie theater seats (Unsplash).jpg",
+        "license": "CC0",
+        "author": "Elijah Flores baesik",
+        "page": "https://commons.wikimedia.org/wiki/File:Movie_theater_seats_(Unsplash).jpg",
+        "source": "5184x3456"
+    },
+    "news/when-to-involve-smart-home-installer": {
+        "title": "File:Home Renovations (Unsplash).jpg",
+        "license": "CC0",
+        "author": "Taduuda taduuda",
+        "page": "https://commons.wikimedia.org/wiki/File:Home_Renovations_(Unsplash).jpg",
+        "source": "5472x3648"
+    },
+    "news/camera-storage-options": {
+        "title": "File:Ceiling surveillance camera (Unsplash).jpg",
+        "license": "CC0",
+        "author": "Alex Knight agkdesign",
+        "page": "https://commons.wikimedia.org/wiki/File:Ceiling_surveillance_camera_(Unsplash).jpg",
+        "source": "4896x3264"
+    },
+    "news/gateway-single-or-dual-protocol": {
+        "title": "File:ELECOM WRC-300FEBK WPS WiFi router.jpg",
+        "license": "CC0",
+        "author": "Syced",
+        "page": "https://commons.wikimedia.org/wiki/File:ELECOM_WRC-300FEBK_WPS_WiFi_router.jpg",
+        "source": "4032x3024"
+    },
+    "news/no-main-light-illuminance": {
+        "title": "File:This view shows the interior ceiling of the visitor center (01f00908-155d-451f-67ab-33a3fe2d2c5f).JPG",
+        "license": "Public domain",
+        "author": "National Park Service",
+        "page": "https://commons.wikimedia.org/wiki/File:This_view_shows_the_interior_ceiling_of_the_visitor_center_(01f00908-155d-451f-67ab-33a3fe2d2c5f).JPG",
+        "source": "4504x3048"
+    },
+    "news/do-you-need-ethernet": {
+        "title": "File:Wires and cables (Unsplash).jpg",
+        "license": "CC0",
+        "author": "Randall Bruder randallbruder",
+        "page": "https://commons.wikimedia.org/wiki/File:Wires_and_cables_(Unsplash).jpg",
+        "source": "5184x3456"
+    },
+    "news/curtain-motor-for-wide-windows": {
+        "title": "File:Window frame shadow on a curtain (Unsplash).jpg",
+        "license": "CC0",
+        "author": "Steinar Engeland steinart",
+        "page": "https://commons.wikimedia.org/wiki/File:Window_frame_shadow_on_a_curtain_(Unsplash).jpg",
+        "source": "4857x3137"
+    },
+    "news/smart-lock-buying-pitfalls": {
+        "title": "File:Martins Zemlickis 2014 (Unsplash).jpg",
+        "license": "CC0",
+        "author": "Martins Zemlickis mzemlickis",
+        "page": "https://commons.wikimedia.org/wiki/File:Martins_Zemlickis_2014_(Unsplash).jpg",
+        "source": "4124x2839"
+    },
+    "news/handover-checklist": {
+        "title": "File:USMC-100914-M-0646Q-45.jpg",
+        "license": "Public domain",
+        "author": "",
+        "page": "https://commons.wikimedia.org/wiki/File:USMC-100914-M-0646Q-45.jpg",
+        "source": "5616x3744"
+    },
+    "news/service-coverage": {
+        "title": "File:甘坑客家小镇 1.jpg",
+        "license": "CC0",
+        "author": "Mx. Granger",
+        "page": "https://commons.wikimedia.org/wiki/File:%E7%94%98%E5%9D%91%E5%AE%A2%E5%AE%B6%E5%B0%8F%E9%95%87_1.jpg",
+        "source": "4160x3120"
+    },
+    "news/h1-selection-review-draft": {
+        "title": "File:Stickers on a notebook (Unsplash).jpg",
+        "license": "CC0",
+        "author": "Ian Schneider goian",
+        "page": "https://commons.wikimedia.org/wiki/File:Stickers_on_a_notebook_(Unsplash).jpg",
+        "source": "5939x3965"
+    }
+}
