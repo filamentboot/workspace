@@ -24,10 +24,14 @@ class AdminNavigationBuilder
      * 顶级组处理逻辑：
      * - 有可见子菜单时：渲染为 NavigationGroup + 子项
      * - 无可见子菜单、但自身可解析为可点击项（有 url/route_name 且权限放行）时：
-     *   渲染为顶级可点击 NavigationItem
+     *   包进无标题 NavigationGroup 渲染为顶级可点击项（如仪表盘）
      * - 无可见子菜单且自身无法解析为可点击项时：跳过（不产生空组）
      *
-     * @return array<NavigationGroup|NavigationItem>
+     * 全部元素统一返回 NavigationGroup：NavigationBuilder::groups() 只接受
+     * NavigationGroup，混入 NavigationItem 会在 getNavigation() 里调用不存在的
+     * NavigationItem::getItems() 而抛错。
+     *
+     * @return array<NavigationGroup>
      */
     public function build(?AdminUser $user): array
     {
@@ -62,8 +66,21 @@ class AdminNavigationBuilder
                 ->all();
 
             if ($items !== []) {
-                // 有可见子菜单：渲染为导航分组
-                $result[] = NavigationGroup::make($topMenu->title)->items($items);
+                // 有可见子菜单：渲染为导航分组，分组行挂上菜单自身的图标，
+                // 侧边栏折叠时 Filament 才能用一个图标代表整组并弹出悬浮子菜单
+                $groupIcon = filled($topMenu->icon) ? $topMenu->icon : null;
+
+                if ($groupIcon !== null) {
+                    // Filament 约定分组与子项只能一方带图标，两者都有会直接抛异常
+                    // （折叠态侧边栏下它会静默清掉子项图标，但不能依赖面板一定开启折叠）
+                    foreach ($items as $item) {
+                        $item->icon(null);
+                    }
+                }
+
+                $result[] = NavigationGroup::make($topMenu->title)
+                    ->icon($groupIcon)
+                    ->items($items);
 
                 continue;
             }
@@ -72,8 +89,9 @@ class AdminNavigationBuilder
             $topItem = $this->toNavigationItem($topMenu, $user);
 
             if ($topItem !== null) {
-                // 顶级菜单自身可点击（有 url/route_name 且权限放行）：作为顶级导航项
-                $result[] = $topItem;
+                // 顶级菜单自身可点击（有 url/route_name 且权限放行）：包进无标题分组，
+                // 既保留它在 sort 序列中的位置，又不破坏 groups() 的类型契约
+                $result[] = NavigationGroup::make()->items([$topItem]);
             }
             // 既无子项也无可点击 url：跳过，不产生空组
         }
@@ -184,12 +202,19 @@ class AdminNavigationBuilder
     protected function isItemActive(Menu $menu, string $url): bool
     {
         if (filled($menu->route_name) && Route::has($menu->route_name)) {
-            $parts  = explode('.', $menu->route_name);
-            array_pop($parts);
-            $prefix = implode('.', $parts);
+            // Resource 路由形如 filament.{panel}.resources.{slug}.{action}，
+            // 去掉末段后按 {slug}.* 匹配，使 create / edit / view 等子页面同样高亮父菜单。
+            if (str_contains($menu->route_name, '.resources.')) {
+                $parts = explode('.', $menu->route_name);
+                array_pop($parts);
+                $prefix = implode('.', $parts);
 
-            return request()->routeIs($prefix.'.*')
-                || request()->routeIs($menu->route_name);
+                return request()->routeIs($prefix.'.*');
+            }
+
+            // Page 路由（filament.{panel}.pages.{slug}）本身即完整标识，只能精确匹配：
+            // 若同样去掉末段做前缀匹配，pages.* 会让仪表盘与所有设置页互相串台高亮。
+            return request()->routeIs($menu->route_name);
         }
 
         $path = trim(parse_url($url, PHP_URL_PATH) ?? '', '/');

@@ -12,6 +12,24 @@ class AdminFoundationMenuSeeder extends Seeder
 {
     public function run(): void
     {
+        // 第零步：仪表盘入口（顶层可点击项，无子菜单，由 AdminNavigationBuilder 包成无标题分组）
+        // sort 必须非 0：ModelTree 的 saving 钩子会把 sort=0 视作未排序并改写为同级最大值+1
+        Menu::query()->updateOrCreate(
+            ['title' => '仪表盘', 'source' => 'core', 'type' => 'menu', 'parent_id' => 0],
+            [
+                'icon'            => 'heroicon-o-home',
+                'route_name'      => 'filament.admin.pages.dashboard',
+                'url'             => null,
+                'permission_name' => null,
+                'sort'            => 5,
+                'is_active'       => true,
+                'target'          => 'self',
+                'source'          => 'core',
+                'type'            => 'menu',
+                'parent_id'       => 0,
+            ],
+        );
+
         // 第一步：确保顶层分组"系统管理"存在（parent_id=0，type=menu，无路由）
         $systemGroup = Menu::query()->updateOrCreate(
             ['title' => '系统管理', 'source' => 'core', 'type' => 'menu', 'parent_id' => 0],

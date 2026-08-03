@@ -74,3 +74,82 @@ it('无效路由且没有备用地址的菜单不会出现在导航中', functio
 
     expect($labels)->not->toContain('失效菜单');
 });
+
+it('Page 路由菜单只在自身页面高亮，不会被同级页面串台点亮', function () {
+    $user = AdminUser::factory()->create();
+
+    $group = Menu::factory()->create([
+        'title'      => '系统配置',
+        'parent_id'  => 0,
+        'url'        => null,
+        'route_name' => null,
+        'sort'       => 1,
+    ]);
+
+    // 两个同属 filament.admin.pages.* 前缀的 Page 菜单
+    Menu::factory()->create([
+        'title'           => '基础配置',
+        'parent_id'       => $group->id,
+        'permission_name' => null,
+        'route_name'      => 'filament.admin.pages.settings.general',
+        'url'             => null,
+        'sort'            => 1,
+    ]);
+    Menu::factory()->create([
+        'title'           => '上传配置',
+        'parent_id'       => $group->id,
+        'permission_name' => null,
+        'route_name'      => 'filament.admin.pages.settings.upload',
+        'url'             => null,
+        'sort'            => 2,
+    ]);
+
+    // 把当前请求指向"基础配置"页面
+    $request = Request::create(route('filament.admin.pages.settings.general'));
+    $request->setRouteResolver(fn () => Route::getRoutes()->match($request));
+    app()->instance('request', $request);
+
+    $activeLabels = collect(app(AdminNavigationBuilder::class)->build($user))
+        ->flatMap(fn ($group) => $group->getItems())
+        ->filter(fn ($item) => $item->isActive())
+        ->map(fn ($item) => $item->getLabel())
+        ->values()
+        ->all();
+
+    expect($activeLabels)->toBe(['基础配置']);
+});
+
+it('Resource 路由菜单在自身的 create / edit 子页面同样保持高亮', function () {
+    $user = AdminUser::factory()->create();
+
+    $group = Menu::factory()->create([
+        'title'      => '系统管理',
+        'parent_id'  => 0,
+        'url'        => null,
+        'route_name' => null,
+        'sort'       => 1,
+    ]);
+
+    Menu::factory()->create([
+        'title'           => '管理员管理',
+        'parent_id'       => $group->id,
+        'permission_name' => null,
+        'route_name'      => 'filament.admin.resources.admin-users.index',
+        'url'             => null,
+        'sort'            => 1,
+    ]);
+
+    // 当前请求指向该资源的新建页
+    $request = Request::create(route('filament.admin.resources.admin-users.create'));
+    $request->setRouteResolver(fn () => Route::getRoutes()->match($request));
+    app()->instance('request', $request);
+
+    $activeLabels = collect(app(AdminNavigationBuilder::class)->build($user))
+        ->flatMap(fn ($group) => $group->getItems())
+        ->filter(fn ($item) => $item->isActive())
+        ->map(fn ($item) => $item->getLabel())
+        ->values()
+        ->all();
+
+    expect($activeLabels)->toBe(['管理员管理']);
+});
