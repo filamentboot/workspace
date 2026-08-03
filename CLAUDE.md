@@ -1,5 +1,3 @@
-<!-- GSD:project-start source:PROJECT.md -->
-
 ## Project
 
 **Filamentboot**
@@ -24,10 +22,6 @@ Filamentboot 是对标 FastAdmin / laravel-admin 的 Laravel 13 + Filament 5 后
 - **Security**: 不收集用户数据；安全报告通道 `security@xitongapp.com`（D-W4 待验证邮箱接收）
 - **Default credentials**: SuperAdminSeeder 创建 `admin@example.com / password`，README + wiki 必须明示并提示首次登录改密
 - **Test pyramid**: Unit 20% → Feature 50% → Integration 25% → E2E 5%（来源 PRD 00 第 5.1 表）
-
-<!-- GSD:project-end -->
-
-<!-- GSD:stack-start source:codebase/STACK.md -->
 
 ## Technology Stack
 
@@ -152,10 +146,6 @@ Filamentboot 是对标 FastAdmin / laravel-admin 的 Laravel 13 + Filament 5 后
 - `BCRYPT_ROUNDS=12`、`BROADCAST_CONNECTION=log`。
 
 ## 总结
-
-<!-- GSD:stack-end -->
-
-<!-- GSD:conventions-start source:CONVENTIONS.md -->
 
 ## Conventions
 
@@ -323,10 +313,6 @@ Filamentboot 是对标 FastAdmin / laravel-admin 的 Laravel 13 + Filament 5 后
 ### 服务类定义
 
 ### 控制器方法
-
-<!-- GSD:conventions-end -->
-
-<!-- GSD:architecture-start source:ARCHITECTURE.md -->
 
 ## Architecture
 
@@ -526,34 +512,6 @@ Filamentboot 是对标 FastAdmin / laravel-admin 的 Laravel 13 + Filament 5 后
 - AuthenticationException → `UNAUTHENTICATED`
 - 其他异常 → `SERVER_ERROR`
 
-<!-- GSD:architecture-end -->
-
-<!-- GSD:skills-start source:skills/ -->
-
 ## Project Skills
 
 No project skills found. Add skills to any of: `.claude/skills/`, `.agents/skills/`, `.cursor/skills/`, `.github/skills/`, or `.codex/skills/` with a `SKILL.md` index file.
-<!-- GSD:skills-end -->
-
-<!-- GSD:workflow-start source:GSD defaults -->
-
-## GSD Workflow Enforcement
-
-Before using Edit, Write, or other file-changing tools, start work through a GSD command so planning artifacts and execution context stay in sync.
-
-Use these entry points:
-
-- `/gsd-quick` for small fixes, doc updates, and ad-hoc tasks
-- `/gsd-debug` for investigation and bug fixing
-- `/gsd-execute-phase` for planned phase work
-
-Do not make direct repo edits outside a GSD workflow unless the user explicitly asks to bypass it.
-<!-- GSD:workflow-end -->
-
-<!-- GSD:profile-start -->
-
-## Developer Profile
-
-> Profile not yet configured. Run `/gsd-profile-user` to generate your developer profile.
-> This section is managed by `generate-claude-profile` -- do not edit manually.
-<!-- GSD:profile-end -->
