@@ -2,6 +2,14 @@
 
 namespace Filamentboot\FilamentbootSite;
 
+use Filamentboot\FilamentbootSite\Cms\Blocks\BlockRegistry;
+use Filamentboot\FilamentbootSite\Cms\Blocks\ContactFormBlock;
+use Filamentboot\FilamentbootSite\Cms\Blocks\CtaBlock;
+use Filamentboot\FilamentbootSite\Cms\Blocks\FaqBlock;
+use Filamentboot\FilamentbootSite\Cms\Blocks\FeatureGridBlock;
+use Filamentboot\FilamentbootSite\Cms\Blocks\HeroBlock;
+use Filamentboot\FilamentbootSite\Cms\Blocks\MediaTextBlock;
+use Filamentboot\FilamentbootSite\Cms\Blocks\RichContentBlock;
 use Filamentboot\FilamentbootSite\Settings\SiteSettings;
 use Illuminate\Contracts\View\View as ViewContract;
 use Illuminate\Support\Facades\Cache;
@@ -15,9 +23,10 @@ use Livewire\Livewire;
  *
  * 职责：
  * 1. 合并包配置，暴露 filamentboot-site-config 发布 tag
- * 2. 按 plugins.is_enabled 条件决定是否注册前台路由/视图/Livewire 组件
- * 3. plugins/settings 表未迁移时静默降级，不阻断应用启动（T-10-01-01 防护）
- * 4. 无论是否启用，均注册 settings 迁移供 php artisan migrate 使用
+ * 2. 注册区块注册表单例（#12，无条件注册：后台表单与前台渲染都要用）
+ * 3. 按 plugins.is_enabled 条件决定是否注册前台路由/视图/Livewire 组件
+ * 4. plugins/settings 表未迁移时静默降级，不阻断应用启动（T-10-01-01 防护）
+ * 5. 无论是否启用，均注册 settings 迁移供 php artisan migrate 使用
  *
  * 注意：前台资源（路由/Livewire/主题视图）仅在插件启用时注册。
  * catch 分支已 return，因此 plugins 表未迁移时 registerFrontend 不会被执行（Pitfall 1/2）。
@@ -43,6 +52,36 @@ class SiteServiceProvider extends ServiceProvider
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__.'/../config/filamentboot-site.php', 'filamentboot-site');
+
+        $this->registerBlockRegistry();
+    }
+
+    /**
+     * 注册区块注册表（#12）
+     *
+     * 单例：注册表同时充当安全白名单，全应用必须共用同一份，
+     * 否则「已注册」的判断会随解析位置漂移。
+     *
+     * 内置区块在此一次性注册；宿主可在自己的 ServiceProvider::boot() 里
+     * 用 app(BlockRegistry::class)->register(new MyBlock) 追加自定义区块。
+     */
+    protected function registerBlockRegistry(): void
+    {
+        $this->app->singleton(BlockRegistry::class, function (): BlockRegistry {
+            $registry = new BlockRegistry;
+
+            $registry->registerMany([
+                new HeroBlock,
+                new RichContentBlock,
+                new MediaTextBlock,
+                new FeatureGridBlock,
+                new CtaBlock,
+                new FaqBlock,
+                new ContactFormBlock,
+            ]);
+
+            return $registry;
+        });
     }
 
     /**
