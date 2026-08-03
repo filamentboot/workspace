@@ -1,7 +1,7 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
     "name": "filamentboot/filamentboot-site",
-    "description": "面向中小企业的前台官网管理插件，提供案例/方案/产品/页面/询盘五类内容管理，中文单语言，支持主题切换。",
+    "description": "面向中小企业的前台官网管理插件，提供案例/方案/产品/资讯/页面/询盘六类内容管理，中文单语言，支持主题切换。",
     "type": "library",
     "license": "MIT",
     "keywords": ["filament", "laravel", "website", "cms", "official-site", "filament-plugin"],
@@ -61,7 +61,7 @@
             "plugin_class": "Filamentboot\\FilamentbootSite\\SitePlugin",
             "settings_page_slug": "settings/site",
             "service_provider": "Filamentboot\\FilamentbootSite\\SiteServiceProvider",
-            "description": "面向中小企业的前台官网管理插件（案例/方案/产品/页面/询盘五类内容，中文单语言，主题可切换）",
+            "description": "面向中小企业的前台官网管理插件（案例/方案/产品/资讯/页面/询盘六类内容，中文单语言，主题可切换）",
             "requires": ["filamentboot/filamentboot"],
             "compatibility": {
                 "laravel/framework": "^13.0",
@@ -73,7 +73,8 @@
                 "seeders": [
                     "Filamentboot\\FilamentbootSite\\Database\\Seeders\\SitePermissionSeeder",
                     "Filamentboot\\FilamentbootSite\\Database\\Seeders\\SiteMenuSeeder",
-                    "Filamentboot\\FilamentbootSite\\Database\\Seeders\\SiteDemoSeeder"
+                    "Filamentboot\\FilamentbootSite\\Database\\Seeders\\SiteDemoSeeder",
+                    "Filamentboot\\FilamentbootSite\\Database\\Seeders\\SiteNewsSeeder"
                 ]
             }
         },

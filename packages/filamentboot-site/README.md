@@ -1,10 +1,10 @@
 # filamentboot-site — 前台官网管理插件
 
-面向中小企业的前台官网管理插件，提供案例/方案/产品/页面/询盘五类内容管理，中文单语言，支持主题切换。
+面向中小企业的前台官网管理插件，提供案例/方案/产品/资讯/页面/询盘六类内容管理，中文单语言，支持主题切换。
 
 ## 简介
 
-本包为 Filamentboot 后台增加完整的企业官网内容管理能力。注册 `SitePlugin` 后，后台将出现「官网管理」分组，包含装修案例（`SiteCaseResource`）、智能方案（`SiteSolutionResource`）、智能产品（`SiteProductResource`）、静态页面（`SitePageResource`）、询盘管理（`ContactMessageResource`）五个 Resource，以及询盘与站点健康统计小部件（`UnreadContactMessagesWidget`）。前台路由、Livewire 组件（`CaseFilter`、`ContactForm`）和视图由 `SiteServiceProvider` 自动注册。官网设置（公司信息、联系方式、SEO 默认值、主题等）通过后台「网站设置」页（`SiteSettingsPage`）管理。
+本包为 Filamentboot 后台增加完整的企业官网内容管理能力。注册 `SitePlugin` 后，后台将出现「官网管理」分组，包含装修案例（`SiteCaseResource`）、智能方案（`SiteSolutionResource`）、智能产品（`SiteProductResource`）、资讯文章（`NewsArticleResource`）、资讯分类（`NewsCategoryResource`）、静态页面（`SitePageResource`）、询盘管理（`ContactMessageResource`）七个 Resource，以及询盘与站点健康统计小部件（`UnreadContactMessagesWidget`）。前台路由、Livewire 组件（`CaseFilter`、`ContactForm`）和视图由 `SiteServiceProvider` 自动注册。官网设置（公司信息、联系方式、SEO 默认值、主题等）通过后台「网站设置」页（`SiteSettingsPage`）管理。
 
 > **语言范围**：当前版本只维护中文内容流。数据库中的 `*_en` 列为早期双语实现的遗留字段，后台表单与前台渲染均已移除英文入口。
 
@@ -18,6 +18,20 @@
 - `filament/spatie-laravel-settings-plugin ^5.6`（设置页表单集成）
 - `filament/spatie-laravel-media-library-plugin ^5.6`（媒体文件上传）
 - `mews/purifier ^3.4`（HTML XSS 过滤）
+
+### 富文本过滤
+
+前台正文一律经 `Support\RichText::purify()` 输出，白名单写在包内、与后台 RichEditor
+的默认工具栏对齐（标题、引用、代码块、表格、上下标、删除线都放行，脚本与事件属性剥离）。
+不读宿主 `config/purifier.php` 的 `default` 画像——那份白名单只有十来个标签，
+拿它过滤编辑器产出的正文会把版式静默吃掉。
+
+想自己定过滤策略：在 `config/purifier.php` 加一段画像，再把画像名填到
+`filamentboot-site.purifier_profile`（或 `.env` 的 `SITE_PURIFIER_PROFILE`），包内白名单即让位。
+
+正文样式由各主题的 `.prose` 提供（`resources/css/themes/{theme}.css`）。
+项目未装 `@tailwindcss/typography`，两套主题各写各的一份——自定义主题时别漏，
+漏了正文会退回 Tailwind preflight 后的裸样式：标题与正文等大、列表没符号、段落无间距。
 
 ## 安装
 
@@ -41,8 +55,18 @@ php artisan migrate
 运行初始化种子数据（可选）：
 
 ```bash
+# 案例 / 方案 / 产品 / 静态页面 / 示例询盘
 php artisan db:seed --class="Filamentboot\FilamentbootSite\Database\Seeders\SiteDemoSeeder"
+
+# 资讯分类与文章
+php artisan db:seed --class="Filamentboot\FilamentbootSite\Database\Seeders\SiteNewsSeeder"
 ```
+
+两个种子可反复执行，按 slug 增量补种：已有记录一概不动（后台改过的文案不会被覆盖），
+缺的补上，升级后新增的演示内容直接跑一遍就能拿到。软删除过的记录不复活。
+
+封面图每次都会重试挂载，所以图片是后补的也没关系——放进
+`storage/app/public/site/{cases,solutions,news,products}/{slug}.jpg` 再跑一遍即可。
 
 ## 使用
 
@@ -70,8 +94,10 @@ public function panel(Panel $panel): Panel
 | 网站设置页 | `SiteSettingsPage` | 公司信息、联系方式、SEO 默认值、主题 |
 | 装修案例 | `SiteCaseResource` | 含分类、标签、封面图、图集 |
 | 智能方案 | `SiteSolutionResource` | 解决方案内容管理 |
-| 智能产品 | `SiteProductResource` | 含分类、品牌、价格 |
-| 静态页面 | `SitePageResource` | 关于我们、联系我们等 |
+| 智能产品 | `SiteProductResource` | 含分类、品牌、价格、图集、富文本详情 |
+| 资讯文章 | `NewsArticleResource` | 含分类、标签、封面图，`published_at` 控制发布与定时 |
+| 资讯分类 | `NewsCategoryResource` | 扁平分类，前台列表页筛选用 |
+| 静态页面 | `SitePageResource` | 关于我们、联系我们、常见问题等 |
 | 询盘管理 | `ContactMessageResource` | 只读 + 状态流转 |
 | 官网概览 | `UnreadContactMessagesWidget` | 未读询盘数 + 发布前健康检查 |
 
