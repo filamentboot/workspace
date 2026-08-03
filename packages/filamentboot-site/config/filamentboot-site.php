@@ -120,6 +120,7 @@ return [
             'product-detail'  => '产品详情页',
             'solution-detail' => '方案详情页',
             'case-detail'     => '案例详情页',
+            'news-detail'     => '资讯详情页',
         ],
     ],
 
@@ -170,4 +171,19 @@ return [
         */
         'sitemap_limit' => env('SITE_SITEMAP_LIMIT', 2000),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | 前台富文本过滤画像
+    |--------------------------------------------------------------------------
+    |
+    | 留空则用包自带的白名单（Support\RichText::defaultProfile()），它与后台
+    | RichEditor 的默认工具栏对齐，不依赖宿主的 config/purifier.php 内容。
+    |
+    | 想自己定过滤策略时，在 config/purifier.php 的 settings 下加一段画像，
+    | 再把画像名填到这里，包内白名单即让位。注意画像是整体替换而非合并，
+    | 填了之后标签能不能活下来完全由那一段决定。
+    |
+    */
+    'purifier_profile' => env('SITE_PURIFIER_PROFILE'),
 ];

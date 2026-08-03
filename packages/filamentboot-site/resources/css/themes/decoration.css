@@ -101,6 +101,164 @@
     }
 }
 
+/**
+ * .prose — 富文本正文排版（decoration 主题）
+ *
+ * 为什么必须手写：本项目没装 @tailwindcss/typography，而 Tailwind 的 preflight
+ * 把 h1~h6 的字号字重清成 inherit、ul/ol 的 list-style 清成 none、通配选择器
+ * 又把所有元素的 margin 清成 0。于是编辑在后台排好的正文，到前台是一坨等大、
+ * 无间距、无项目符号的文字——各详情页视图上那个 class="prose" 此前无人定义。
+ *
+ * 覆盖范围与 Support\RichText 的白名单对齐：白名单放行什么，这里就得有样式，
+ * 否则等于换一种方式丢版式（标签活着但看不出层级）。
+ *
+ * 与 tech-product 主题各自独立一份：两套主题要能单独删除，不共用样式文件。
+ */
+@layer components {
+    .prose {
+        line-height: 1.8;
+    }
+
+    /* 首尾元素不额外顶开容器，交给外层 spacing 决定 */
+    .prose > :first-child { margin-top: 0; }
+    .prose > :last-child  { margin-bottom: 0; }
+
+    .prose p {
+        margin-block: 1em;
+    }
+
+    /* 标题：字号自己给回来，preflight 已清成 inherit */
+    .prose h1,
+    .prose h2,
+    .prose h3,
+    .prose h4,
+    .prose h5,
+    .prose h6 {
+        color: var(--color-text-primary);
+        font-weight: 700;
+        line-height: 1.35;
+        margin-top: 2em;
+        margin-bottom: 0.8em;
+    }
+    .prose h1 { font-size: 1.75em; }
+    .prose h2 { font-size: 1.45em; }
+    .prose h3 { font-size: 1.2em; }
+    .prose h4,
+    .prose h5,
+    .prose h6 { font-size: 1.05em; }
+
+    /* h2 加一道品牌色左标，深色底上层级更容易扫出来 */
+    .prose h2 {
+        border-left: 3px solid var(--color-primary);
+        padding-left: 0.6em;
+    }
+
+    /* 列表：符号与缩进都要显式给回 */
+    .prose ul,
+    .prose ol {
+        margin-block: 1em;
+        padding-left: 1.6em;
+    }
+    .prose ul { list-style: disc; }
+    .prose ol { list-style: decimal; }
+    .prose ul ul { list-style: circle; }
+    .prose li { margin-block: 0.4em; }
+    /* 编辑器把列表项内容包在 <p> 里，这层 p 不该再撑出段间距 */
+    .prose li > p { margin-block: 0; }
+
+    .prose a {
+        color: var(--color-text-accent);
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+    .prose a:hover { color: var(--color-primary-dim); }
+
+    .prose strong,
+    .prose b { color: var(--color-text-primary); font-weight: 700; }
+    .prose em,
+    .prose i { font-style: italic; }
+    .prose s,
+    .prose del { text-decoration: line-through; opacity: 0.7; }
+
+    /* 上下标：preflight 不管这两个，但字号需要压下去才不撑行高 */
+    .prose sub,
+    .prose sup { font-size: 0.75em; line-height: 0; position: relative; }
+    .prose sup { top: -0.5em; }
+    .prose sub { bottom: -0.25em; }
+
+    .prose blockquote {
+        margin-block: 1.5em;
+        padding: 0.8em 1.2em;
+        border-left: 3px solid var(--color-primary);
+        background-color: var(--color-bg-elevated);
+        border-radius: 0 6px 6px 0;
+        color: var(--color-text-secondary);
+    }
+    .prose blockquote > :first-child { margin-top: 0; }
+    .prose blockquote > :last-child  { margin-bottom: 0; }
+
+    .prose code {
+        font-family: var(--font-mono);
+        font-size: 0.9em;
+        padding: 0.15em 0.4em;
+        border-radius: 4px;
+        background-color: var(--color-bg-elevated);
+        color: var(--color-text-accent);
+    }
+    .prose pre {
+        margin-block: 1.5em;
+        padding: 1em 1.2em;
+        border-radius: 8px;
+        border: 1px solid var(--color-border);
+        background-color: var(--color-bg-subtle);
+        /* 长命令不撑破布局，横向自己滚 */
+        overflow-x: auto;
+    }
+    .prose pre code {
+        padding: 0;
+        background: none;
+        color: var(--color-text-primary);
+    }
+
+    /* 表格：宽表在自己的容器里横滚，页面本身不出现横向滚动条 */
+    .prose table {
+        margin-block: 1.5em;
+        width: 100%;
+        border-collapse: collapse;
+        display: block;
+        overflow-x: auto;
+        font-size: 0.95em;
+    }
+    .prose th,
+    .prose td {
+        border: 1px solid var(--color-border);
+        padding: 0.6em 0.9em;
+        text-align: left;
+        vertical-align: top;
+    }
+    .prose th {
+        background-color: var(--color-bg-elevated);
+        color: var(--color-text-primary);
+        font-weight: 700;
+        white-space: nowrap;
+    }
+    .prose th > p,
+    .prose td > p { margin-block: 0; }
+
+    .prose img {
+        margin-block: 1.5em;
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+    }
+
+    .prose hr {
+        margin-block: 2em;
+        border: 0;
+        border-top: 1px solid var(--color-border);
+    }
+}
+
 @media (prefers-reduced-motion: no-preference) {
     /* 导航链接 hover 下划线动画 */
     .nav-link-animated {
