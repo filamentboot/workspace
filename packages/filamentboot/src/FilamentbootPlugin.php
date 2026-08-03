@@ -4,6 +4,7 @@ namespace Filamentboot;
 
 use Filament\Contracts\Plugin;
 use Filament\Panel;
+use Filamentboot\AvatarProviders\InitialsAvatarProvider;
 use Filamentboot\Filament\Pages\Settings\GeneralSettingsPage;
 use Filamentboot\Filament\Pages\Settings\LogSettingsPage;
 use Filamentboot\Filament\Pages\Settings\SecuritySettingsPage;
@@ -92,6 +93,10 @@ class FilamentbootPlugin implements Plugin
             RecentActivityWidget::class,
             QuickGuideWidget::class,
         ]);
+
+        // 用本地首字头像替换官方默认的 UiAvatarsProvider（后者每次渲染都请求 ui-avatars.com）。
+        // 用户如需自定义，在 ->plugin() 之后再调一次 ->defaultAvatarProvider() 即可覆盖。
+        $panel->defaultAvatarProvider(InitialsAvatarProvider::class);
     }
 
     public function boot(Panel $panel): void

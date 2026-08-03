@@ -3,6 +3,7 @@
 namespace Filamentboot\Models;
 
 use Filament\Models\Contracts\FilamentUser;
+use Filament\Models\Contracts\HasAvatar;
 use Filament\Models\Contracts\HasName;
 use Filament\Panel;
 use Filamentboot\Database\Factories\AdminUserFactory;
@@ -47,7 +48,7 @@ use Stephenjude\FilamentTwoFactorAuthentication\TwoFactorAuthenticatable;
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
  */
-class AdminUser extends Authenticatable implements FilamentUser, HasMedia, HasName
+class AdminUser extends Authenticatable implements FilamentUser, HasAvatar, HasMedia, HasName
 {
     use HasApiTokens;
 
@@ -124,6 +125,18 @@ class AdminUser extends Authenticatable implements FilamentUser, HasMedia, HasNa
     public function getFilamentName(): string
     {
         return $this->nickname ?? $this->account ?? '';
+    }
+
+    /**
+     * 返回 Filament 界面显示的头像 URL
+     *
+     * 优先使用 avatar 媒体集合中的图片；无媒体时回退到 avatar 列（下游可自行写入路径）；
+     * 两者都为空时返回 null，由面板的 defaultAvatarProvider 生成兜底头像。
+     */
+    public function getFilamentAvatarUrl(): ?string
+    {
+        // getFirstMediaUrl() 无媒体时返回空字符串而非 null，需归一化以符合契约
+        return $this->getFirstMediaUrl('avatar') ?: ($this->avatar ?: null);
     }
 
     /**
