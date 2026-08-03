@@ -1,9 +1,10 @@
 <?php
 
-namespace Filamentboot\FilamentbootSite\Models;
+namespace Filamentboot\FilamentbootSite\Modules\News\Models;
 
 use Filamentboot\FilamentbootSite\Concerns\HasCoverImage;
-use Filamentboot\FilamentbootSite\Database\Factories\SiteProductFactory;
+use Filamentboot\FilamentbootSite\Database\Factories\NewsArticleFactory;
+use Filamentboot\FilamentbootSite\Models\SiteTag;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -16,42 +17,48 @@ use Spatie\MediaLibrary\InteractsWithMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 /**
- * 智能产品内容模型
+ * 资讯文章模型
  *
- * 支持软删除、媒体库（cover/gallery）、is_published 发布布尔 scope、置顶 scope，
+ * 支持软删除、媒体库（cover）、发布 scope、置顶 scope，
  * 关联分类（BelongsTo）与多态标签（MorphToMany）。
- * 产品无 published_at，使用布尔 is_published（RESEARCH Pattern 2）。
+ *
+ * 发布态用 published_at 而非 is_published 布尔（与 SiteCase 一致）：
+ * 归档页要按年月分组，布尔字段撑不起来。
+ *
+ * 放在 Modules/News/ 而非 Models/：目录解耦阶段的目标结构就是按模块分目录，
+ * 新模块直接建在目标位置，省掉日后搬迁。
  *
  * @property int $id
  * @property string $title_zh
  * @property string|null $title_en
  * @property string $slug
- * @property string|null $description_zh
- * @property string|null $description_en
+ * @property string|null $excerpt_zh
+ * @property string|null $excerpt_en
  * @property string|null $content_zh
  * @property string|null $content_en
- * @property float|null $price
- * @property string|null $brand
  * @property int|null $category_id
  * @property string|null $seo_title
  * @property string|null $seo_description
  * @property string|null $seo_keywords
  * @property bool $is_featured
  * @property int $sort
- * @property bool $is_published
+ * @property Carbon|null $published_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
  */
-class SiteProduct extends Model implements HasMedia
+class NewsArticle extends Model implements HasMedia
 {
     use HasCoverImage;
 
-    /** @use HasFactory<SiteProductFactory> */
+    /** @use HasFactory<NewsArticleFactory> */
     use HasFactory;
 
     use InteractsWithMedia;
     use SoftDeletes;
+
+    /** @var string */
+    protected $table = 'site_news_articles';
 
     /** @var list<string> */
     protected $guarded = [];
@@ -59,9 +66,9 @@ class SiteProduct extends Model implements HasMedia
     /**
      * 解析对应的工厂（因命名空间非 Laravel 默认推导路径）
      */
-    protected static function newFactory(): SiteProductFactory
+    protected static function newFactory(): NewsArticleFactory
     {
-        return SiteProductFactory::new();
+        return NewsArticleFactory::new();
     }
 
     /**
@@ -72,27 +79,20 @@ class SiteProduct extends Model implements HasMedia
     protected function casts(): array
     {
         return [
+            'published_at' => 'datetime',
             'is_featured'  => 'boolean',
-            'is_published' => 'boolean',
-            'price'        => 'decimal:2',
         ];
     }
 
     /**
      * 注册媒体库集合
      *
-     * cover：单文件封面图；gallery：多文件图集（详情页主图轮播）。
-     *
-     * gallery 的读取与转换由 HasCoverImage 统一提供（galleryUrls()，
-     * 且 thumb/card 两档转换已 performOnCollections('cover','gallery')），
-     * 此处只需注册集合本身。
+     * cover：单文件封面图。正文内嵌图走富文本编辑器自己的上传通道。
      */
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('cover')
             ->singleFile();
-
-        $this->addMediaCollection('gallery');
     }
 
     /**
@@ -108,15 +108,15 @@ class SiteProduct extends Model implements HasMedia
     /**
      * 所属分类
      *
-     * @return BelongsTo<SiteProductCategory, $this>
+     * @return BelongsTo<NewsCategory, $this>
      */
     public function category(): BelongsTo
     {
-        return $this->belongsTo(SiteProductCategory::class, 'category_id');
+        return $this->belongsTo(NewsCategory::class, 'category_id');
     }
 
     /**
-     * 关联标签（多态正向关系）
+     * 关联标签（多态正向关系，与案例/方案/产品共用 site_taggables）
      *
      * @return MorphToMany<SiteTag, $this>
      */
@@ -126,21 +126,21 @@ class SiteProduct extends Model implements HasMedia
     }
 
     /**
-     * 作用域：仅返回已发布产品（is_published = true）
+     * 作用域：仅返回已发布文章（published_at 不为 null 且不晚于当前时间）
      *
-     * @param  Builder<SiteProduct>  $query
-     * @return Builder<SiteProduct>
+     * @param  Builder<NewsArticle>  $query
+     * @return Builder<NewsArticle>
      */
     public function scopePublished(Builder $query): Builder
     {
-        return $query->where('is_published', true);
+        return $query->whereNotNull('published_at')->where('published_at', '<=', now());
     }
 
     /**
-     * 作用域：仅返回置顶/精选产品
+     * 作用域：仅返回置顶/精选文章
      *
-     * @param  Builder<SiteProduct>  $query
-     * @return Builder<SiteProduct>
+     * @param  Builder<NewsArticle>  $query
+     * @return Builder<NewsArticle>
      */
     public function scopeFeatured(Builder $query): Builder
     {

@@ -20,8 +20,11 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 /**
  * 装修案例内容模型
  *
- * 支持软删除、媒体库（cover/gallery）、发布 scope、置顶 scope，
+ * 支持软删除、媒体库（cover/gallery/avatar）、发布 scope、置顶 scope，
  * 关联分类（BelongsTo）与多态标签（MorphToMany）。
+ *
+ * 业主见证（customer_* 三字段 + avatar）挂在案例上而非独立 Testimonial 模型：
+ * 见证天然依附于具体项目，脱离项目背景的孤立引言可信度反而更低。
  *
  * @property int $id
  * @property string $title_zh
@@ -36,6 +39,9 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property string|null $description_en
  * @property string|null $content_zh
  * @property string|null $content_en
+ * @property string|null $customer_name
+ * @property string|null $customer_quote
+ * @property string|null $customer_meta
  * @property string|null $seo_title
  * @property string|null $seo_description
  * @property string|null $seo_keywords
@@ -88,7 +94,7 @@ class SiteCase extends Model implements HasMedia
     /**
      * 注册媒体库集合
      *
-     * cover：单文件封面图；gallery：多文件图集。
+     * cover：单文件封面图；gallery：多文件图集；avatar：业主见证头像（单文件）。
      */
     public function registerMediaCollections(): void
     {
@@ -96,6 +102,29 @@ class SiteCase extends Model implements HasMedia
             ->singleFile();
 
         $this->addMediaCollection('gallery');
+
+        $this->addMediaCollection('avatar')
+            ->singleFile();
+    }
+
+    /**
+     * 业主头像 URL
+     *
+     * 见证卡片用，无头像时返回 null 由视图渲染文字首字占位。
+     */
+    public function customerAvatarUrl(): ?string
+    {
+        return $this->getFirstMedia('avatar')?->getUrl();
+    }
+
+    /**
+     * 是否配置了完整的业主见证（姓名 + 引言缺一不可）
+     *
+     * 视图据此决定是否渲染「业主说」卡片，避免出现只有头像没有内容的空壳。
+     */
+    public function hasCustomerTestimonial(): bool
+    {
+        return filled($this->customer_name) && filled($this->customer_quote);
     }
 
     /**
