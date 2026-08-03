@@ -42,6 +42,12 @@ php artisan vendor:publish --tag=filamentboot-lang
 
 # 发布 Stub 文件（如需自定义生成模板）
 php artisan vendor:publish --tag=filamentboot-stubs
+
+# 发布 favicon 与品牌 Logo 到 public/（filamentboot:install 已自动复制，此处用于强制重置）
+php artisan vendor:publish --tag=filamentboot-brand
+
+# 发布后台观感覆盖样式（仅在需要二次定制时用，发布后须自行接管加载或设 FILAMENTBOOT_THEME=false）
+php artisan vendor:publish --tag=filamentboot-theme
 ```
 
 ### 第三步：执行迁移与初始化
@@ -92,6 +98,21 @@ class AdminPanelProvider extends PanelProvider
 - **密码：** `password`
 
 > **再次提示：** 首次登录后请立即前往个人资料页修改默认密码。
+
+### 第六步：生产环境优化
+
+上线前在服务器上执行：
+
+```bash
+php artisan storage:link          # 媒体库走 public 磁盘，缺软链会导致头像等附件 404
+php artisan optimize              # 已含 filament:optimize（组件缓存 + Blade 图标缓存）
+```
+
+若部署脚本里用的是分列的 `config:cache` / `route:cache` / `view:cache` 而非 `php artisan optimize`，
+需额外补一条 `php artisan filament:optimize`。
+
+> Filament 组件缓存会固化 Resource / Page 清单。**启用或停用插件后**需执行
+> `php artisan filament:optimize-clear`（或 `php artisan optimize:clear`）重建，否则新插件界面不会出现。
 
 ---
 

@@ -55,10 +55,12 @@
 3. Git pull 最新代码
 4. Composer install（生产依赖）
 5. PHP artisan migrate --force
-6. PHP artisan config:cache / route:cache / view:cache
-7. 修复目录权限（storage、bootstrap/cache）
-8. 重启 Queue Worker
-9. 关闭维护模式
+6. PHP artisan storage:link（确保媒体库 public 磁盘可访问）
+7. PHP artisan config:cache / route:cache / view:cache
+8. PHP artisan filament:optimize（缓存 Filament 组件与 Blade 图标）
+9. 修复目录权限（storage、bootstrap/cache）
+10. 重启 Queue Worker
+11. 关闭维护模式
 
 ## 配置文件
 

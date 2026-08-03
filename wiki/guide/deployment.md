@@ -52,10 +52,19 @@ push to main
 3. `git pull origin main`（拉取最新代码）
 4. `composer2 install --no-dev`（安装依赖，忽略缺失的 intl 扩展）
 5. `php artisan migrate --force`（执行数据库迁移）
-6. `chown/chmod storage bootstrap/cache`（修复 www-data 写权限）
-7. `php artisan config:cache && route:cache && view:cache`（刷新缓存）
-8. `supervisorctl restart filament-admin-worker`（重启队列进程）
-9. `php artisan up`（关闭维护模式）
+6. `php artisan storage:link`（确保 public/storage 软链存在，媒体库走 public 磁盘）
+7. `chown/chmod storage bootstrap/cache`（修复 www-data 写权限）
+8. `php artisan config:cache && route:cache && view:cache`（刷新缓存）
+9. `php artisan filament:optimize`（缓存 Filament 组件与 Blade 图标）
+10. `supervisorctl restart filament-admin-worker`（重启队列进程）
+11. `php artisan up`（关闭维护模式）
+
+> `php artisan filament:optimize` = `filament:cache-components` + `icons:cache`。
+> 若改用 `php artisan optimize`（Laravel 全量），Filament 已通过 `optimizes()` 钩子自动带上这一条，无需重复调用；
+> 本脚本用的是分列 cache 命令，所以必须显式写出来。
+>
+> **注意**：组件缓存会固化 Resource / Page 清单。启用或停用插件后需执行
+> `php artisan filament:optimize-clear`（或 `php artisan optimize:clear`）重建，否则新插件的界面不会出现。
 
 ### Gitee Go 配置
 
@@ -106,12 +115,15 @@ COMPOSER_ALLOW_SUPERUSER=1 composer2 install \
 
 php artisan migrate --force
 
+php artisan storage:link
+
 chown -R www-data:www-data storage bootstrap/cache
 chmod -R 775 storage bootstrap/cache
 
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
+php artisan filament:optimize
 
 supervisorctl restart filament-admin-worker
 

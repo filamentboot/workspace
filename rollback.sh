@@ -30,6 +30,8 @@ echo "[rollback] 刷新缓存"
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
+# 回滚同样要重建 Filament 组件与图标缓存，否则沿用的是回滚前版本的组件清单
+php artisan filament:optimize
 
 echo "[rollback] 重启 Queue Worker"
 supervisorctl restart filament-admin-worker

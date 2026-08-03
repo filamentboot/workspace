@@ -29,6 +29,9 @@ npm run build
 echo "[deploy] 执行数据库迁移"
 php artisan migrate --force
 
+echo "[deploy] 确保 public/storage 软链存在（媒体库走 public 磁盘，缺链会导致头像等 404）"
+php artisan storage:link
+
 echo "[deploy] 修复目录权限"
 chown -R www-data:www-data storage bootstrap/cache
 chmod -R 775 storage bootstrap/cache
@@ -37,6 +40,9 @@ echo "[deploy] 刷新缓存"
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
+# Filament 组件与 Blade 图标缓存。本脚本用的是分列 cache 命令而非 php artisan optimize，
+# 后者才会经 Filament 的 optimizes() 钩子自动带上这一条，所以必须显式调用。
+php artisan filament:optimize
 
 echo "[deploy] 重启 Queue Worker"
 supervisorctl restart filamentboot-worker:*

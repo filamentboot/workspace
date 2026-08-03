@@ -78,6 +78,7 @@ php artisan vendor:publish --tag=filamentboot-migrations
 php artisan vendor:publish --tag=filamentboot-views
 php artisan vendor:publish --tag=filamentboot-lang
 php artisan vendor:publish --tag=filamentboot-stubs
+php artisan vendor:publish --tag=filamentboot-brand
 ```
 
 > 说明：
@@ -86,6 +87,8 @@ php artisan vendor:publish --tag=filamentboot-stubs
 > - `filamentboot-views` — 发布视图文件到 `resources/views/vendor/filamentboot/`
 > - `filamentboot-lang` — 发布语言文件（en / zh_CN）到 `lang/vendor/filamentboot/`
 > - `filamentboot-stubs` — 发布 Stub 模板到 `stubs/vendor/filamentboot/`
+> - `filamentboot-brand` — 发布 favicon 与品牌 Logo 到 `public/`（`filamentboot:install` 已自动复制，此 tag 用于强制覆盖重置）
+> - `filamentboot-theme` — 发布后台观感覆盖样式到 `resources/css/`（仅在需要二次定制时用；发布后须自行接管加载，或设 `FILAMENTBOOT_THEME=false` 关闭包内注入以免重复）
 
 **第三步：执行数据库迁移**
 
@@ -189,11 +192,29 @@ LOG_RETENTION_DAYS=90
 
 ---
 
+### 生产环境优化
+
+上线前在服务器上执行：
+
+```bash
+php artisan storage:link          # 媒体库走 public 磁盘，缺软链会导致头像等附件 404
+php artisan optimize              # 已含 filament:optimize（组件缓存 + Blade 图标缓存）
+```
+
+`php artisan optimize` 会经 Filament 的 `optimizes()` 钩子自动带上 `filament:optimize`
+（即 `filament:cache-components` + `icons:cache`）。若部署脚本用的是分列的
+`config:cache` / `route:cache` / `view:cache`，则需额外补一条 `php artisan filament:optimize`。
+
+> 组件缓存会固化 Resource / Page 清单。**启用或停用插件后**需执行
+> `php artisan filament:optimize-clear`（或 `php artisan optimize:clear`）重建，否则新插件界面不会出现。
+
+---
+
 ### 升级指南
 
 从 v0.4.x 升级到 v0.5.x，请参阅 [UPGRADING.md](../UPGRADING.md)。
 
-v0.5 新增了 5 个 `vendor:publish` tag，升级后需**手动执行**上述第二步的 5 条发布命令以获取新版配置与模板。
+v0.5 共提供 7 个 `vendor:publish` tag，升级后需**手动执行**上述第二步的发布命令以获取新版配置与模板。
 
 ---
 

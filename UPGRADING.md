@@ -128,6 +128,7 @@ php artisan migrate
 # 4. 清除缓存
 php artisan config:clear
 php artisan cache:clear
+php artisan filament:optimize-clear   # 清除 Filament 组件与 Blade 图标缓存
 ```
 
 ---

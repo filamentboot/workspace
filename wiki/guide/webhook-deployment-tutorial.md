@@ -112,6 +112,7 @@ echo "[deploy] 刷新缓存"
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
+php artisan filament:optimize
 
 echo "[deploy] 重启 Queue Worker"
 sudo supervisorctl restart your-worker-name:*
@@ -168,6 +169,7 @@ echo "[rollback] 刷新缓存"
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
+php artisan filament:optimize
 
 echo "[rollback] 重启 Queue Worker"
 sudo supervisorctl restart your-worker-name:*
@@ -348,6 +350,7 @@ chmod -R 775 storage bootstrap/cache
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
+php artisan filament:optimize
 ```
 
 ## 常见问题

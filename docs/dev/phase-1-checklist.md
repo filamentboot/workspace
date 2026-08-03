@@ -67,7 +67,12 @@ php artisan tinker
 php artisan config:cache
 php artisan route:cache
 php artisan view:cache
+php artisan filament:optimize   # = filament:cache-components + icons:cache
 ```
+
+> 用 `php artisan optimize`（Laravel 全量）时不必再单独调 `filament:optimize` —— Filament 已通过
+> `optimizes()` 钩子挂进去。上面是分列命令，所以要显式写。
+> 组件缓存会固化 Resource / Page 清单，启停插件后需 `php artisan filament:optimize-clear` 重建。
 
 ### 6. 文件权限
 
