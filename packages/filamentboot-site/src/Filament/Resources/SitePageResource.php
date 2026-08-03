@@ -6,18 +6,21 @@ use BackedEnum;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\RestoreAction;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\RichEditor as RichEditorField;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
-use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
-use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Filamentboot\FilamentbootSite\Enums\PageStatus;
 use Filamentboot\FilamentbootSite\Filament\Resources\SitePageResource\Pages\CreateSitePage;
 use Filamentboot\FilamentbootSite\Filament\Resources\SitePageResource\Pages\EditSitePage;
 use Filamentboot\FilamentbootSite\Filament\Resources\SitePageResource\Pages\ListSitePages;
@@ -27,11 +30,17 @@ use Illuminate\Database\Eloquent\SoftDeletingScope;
 use UnitEnum;
 
 /**
- * 静态页面后台资源
+ * CMS 页面后台资源
  *
- * 提供静态页面 CRUD，含内容 Tab（内容/SEO）、
- * slug、is_published 布尔发布、Phase 9 富文本编辑器。
- * 静态页无封面图（D-10-16 简化）。
+ * 提供页面 CRUD，含内容 Tab（内容/SEO）、slug、Phase 9 富文本编辑器。
+ * 页面无封面图（D-10-16 简化），社交分享图走 seo_og_image 字段。
+ *
+ * 发布控制已从 is_published 布尔开关换成 PageStatus 状态机（#11）：
+ * 前台可见性由 SitePage::scopePublished() 判定 status + published_at，
+ * 表单必须跟着改，否则「点了发布前台看不到」。
+ *
+ * 完整的状态流转 Action（编辑者只能提交审核、发布者才能发布）与按状态分 Tab
+ * 属于 #14，本资源当前只提供状态下拉与定时发布时间。
  */
 class SitePageResource extends Resource
 {
@@ -63,8 +72,19 @@ class SitePageResource extends Resource
                             ->unique(ignoreRecord: true)
                             ->rules(['alpha_dash'])
                             ->maxLength(255),
-                        Toggle::make('is_published')
-                            ->label('已发布'),
+                        Select::make('status')
+                            ->label('发布状态')
+                            ->options(PageStatus::options())
+                            ->default(PageStatus::DRAFT->value)
+                            ->required()
+                            ->native(false)
+                            ->live()
+                            ->helperText('选「定时发布」并填写下方发布时间，到点后前台自动可见，无需队列或定时任务'),
+                        DateTimePicker::make('published_at')
+                            ->label('发布时间')
+                            ->seconds(false)
+                            ->helperText('留空表示立即生效。「定时发布」状态下必须填写未来时间。')
+                            ->required(fn (Get $get): bool => $get('status') === PageStatus::SCHEDULED->value),
                         TextInput::make('title_zh')
                             ->label('标题')
                             ->required()
@@ -83,6 +103,11 @@ class SitePageResource extends Resource
                         TextInput::make('seo_keywords')
                             ->label('SEO 关键词')
                             ->maxLength(255),
+                        TextInput::make('seo_og_image')
+                            ->label('社交分享图 URL')
+                            ->url()
+                            ->maxLength(1024)
+                            ->helperText('留空时回退到站点设置里的默认 Open Graph 图'),
                     ]),
                 ])
                 ->columnSpanFull(),
@@ -103,17 +128,29 @@ class SitePageResource extends Resource
                 TextColumn::make('slug')
                     ->label('Slug')
                     ->searchable(),
-                IconColumn::make('is_published')
-                    ->label('已发布')
-                    ->boolean()
-                    ->trueColor('success')
-                    ->falseColor('gray'),
+                TextColumn::make('status')
+                    ->label('状态')
+                    ->badge()
+                    ->formatStateUsing(fn (mixed $state): string => $state instanceof PageStatus
+                        ? $state->label()
+                        : (string) (PageStatus::tryFrom((string) $state)?->label() ?? $state))
+                    ->color(fn (mixed $state): string => $state instanceof PageStatus
+                        ? $state->color()
+                        : (PageStatus::tryFrom((string) $state)?->color() ?? 'gray')),
+                TextColumn::make('published_at')
+                    ->label('发布时间')
+                    ->dateTime('Y-m-d H:i')
+                    ->placeholder('-')
+                    ->sortable(),
                 TextColumn::make('updated_at')
                     ->label('更新时间')
                     ->dateTime('Y-m-d H:i')
                     ->sortable(),
             ])
             ->filters([
+                SelectFilter::make('status')
+                    ->label('状态')
+                    ->options(PageStatus::options()),
                 TrashedFilter::make(),
             ])
             ->recordActions([

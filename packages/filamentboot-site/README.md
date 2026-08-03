@@ -32,7 +32,7 @@ php artisan vendor:publish --tag=filamentboot-site-config
 php artisan vendor:publish --tag=filamentboot-site-assets
 ```
 
-执行数据库迁移（9 张内容表）：
+执行数据库迁移（14 张内容表）：
 
 ```bash
 php artisan migrate

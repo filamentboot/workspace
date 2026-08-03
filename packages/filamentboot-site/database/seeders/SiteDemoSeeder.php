@@ -2,6 +2,7 @@
 
 namespace Filamentboot\FilamentbootSite\Database\Seeders;
 
+use Filamentboot\FilamentbootSite\Enums\PageStatus;
 use Filamentboot\FilamentbootSite\Models\ContactMessage;
 use Filamentboot\FilamentbootSite\Models\SiteCase;
 use Filamentboot\FilamentbootSite\Models\SiteCaseCategory;
@@ -323,7 +324,8 @@ class SiteDemoSeeder extends Seeder
                 'seo_description' => '湖北晴空妙享科技有限公司，武汉智能家居专业服务商，专注方案设计与落地，免费上门量房咨询。',
                 'seo_keywords'    => '晴空妙享,湖北智能家居,武汉智能家居,关于我们',
                 'sort'            => 1,
-                'is_published'    => true,
+                'status'          => PageStatus::PUBLISHED,
+                'published_at'    => now(),
             ],
             [
                 'title_zh'        => '联系我们',
@@ -335,7 +337,8 @@ class SiteDemoSeeder extends Seeder
                 'seo_description' => '联系晴空妙享，预约免费上门量房和智能家居方案设计咨询，027-88888888，武汉专业智能家居服务。',
                 'seo_keywords'    => '联系我们,预约咨询,智能家居设计,027-88888888,武汉',
                 'sort'            => 2,
-                'is_published'    => true,
+                'status'          => PageStatus::PUBLISHED,
+                'published_at'    => now(),
             ],
             [
                 'title_zh'        => '我们的服务',
@@ -347,7 +350,8 @@ class SiteDemoSeeder extends Seeder
                 'seo_description' => '晴空妙享一站式智能家居服务：方案设计、产品选购、专业施工、售后维保，武汉地区免费上门咨询。',
                 'seo_keywords'    => '智能家居服务,方案设计,施工安装,售后,武汉',
                 'sort'            => 3,
-                'is_published'    => true,
+                'status'          => PageStatus::PUBLISHED,
+                'published_at'    => now(),
             ],
         ];
 
