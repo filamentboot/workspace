@@ -6,8 +6,14 @@ use Filamentboot\FilamentbootSite\Models\SiteCase;
 use Filamentboot\FilamentbootSite\Models\SitePage;
 use Filamentboot\FilamentbootSite\Models\SiteProduct;
 use Filamentboot\FilamentbootSite\Models\SiteSolution;
+use Filamentboot\FilamentbootSite\Modules\News\Models\NewsArticle;
+use Filamentboot\FilamentbootSite\Modules\News\Models\NewsCategory;
 use Filamentboot\FilamentbootSite\Settings\SiteSettings;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 /**
@@ -28,7 +34,10 @@ class SiteFrontController extends Controller
     /**
      * 官网首页
      *
-     * 展示精选案例、精选方案、精选产品，并传递全局 SEO 数据。
+     * 展示精选案例、精选方案、精选产品、业主见证，并传递全局 SEO 数据。
+     *
+     * 见证不取 featured 案例：置顶与否是编辑对案例本身的排期判断，
+     * 跟这条案例有没有配业主原话是两回事，用 featured 过滤会让大量见证白填。
      */
     public function home(): View
     {
@@ -36,12 +45,22 @@ class SiteFrontController extends Controller
         $featuredSolutions = SiteSolution::published()->featured()->latest('published_at')->take(4)->get();
         $featuredProducts  = SiteProduct::published()->featured()->take(6)->get();
 
+        $testimonials = SiteCase::published()
+            ->whereNotNull('customer_name')
+            ->where('customer_name', '!=', '')
+            ->whereNotNull('customer_quote')
+            ->where('customer_quote', '!=', '')
+            ->latest('published_at')
+            ->take(6)
+            ->get();
+
         $seoData = $this->buildHomeSeo();
 
         return view('filamentboot-site::home', compact(
             'featuredCases',
             'featuredSolutions',
             'featuredProducts',
+            'testimonials',
             'seoData'
         ));
     }
@@ -64,8 +83,9 @@ class SiteFrontController extends Controller
      */
     public function caseShow(string $slug): View
     {
-        $record  = SiteCase::published()->where('slug', $slug)->firstOrFail();
-        $seoData = $this->buildSeo($record);
+        $record            = SiteCase::published()->where('slug', $slug)->firstOrFail();
+        $seoData           = $this->buildSeo($record);
+        $seoData['jsonLd'] = $this->articleSchema($seoData, $record->published_at, $record->updated_at);
 
         return view('filamentboot-site::cases.show', compact('record', 'seoData'));
     }
@@ -112,10 +132,120 @@ class SiteFrontController extends Controller
      */
     public function productShow(string $slug): View
     {
-        $record  = SiteProduct::published()->where('slug', $slug)->firstOrFail();
-        $seoData = $this->buildSeo($record);
+        $record            = SiteProduct::published()->where('slug', $slug)->firstOrFail();
+        $seoData           = $this->buildSeo($record);
+        $seoData['jsonLd'] = $this->productSchema($seoData, $record);
 
         return view('filamentboot-site::products.show', compact('record', 'seoData'));
+    }
+
+    /**
+     * 资讯列表页
+     *
+     * 分类筛选走查询参数而非 Livewire：阶段 4 要把公开页做成整页缓存，
+     * 每个筛选组合各自是一个可缓存的静态 URL，比动态组件更划算。
+     */
+    public function newsIndex(Request $request): View
+    {
+        $categories = NewsCategory::query()
+            ->withCount(['articles' => fn (Builder $query): Builder => $query->published()])
+            ->orderBy('sort')
+            ->get();
+
+        // 用全量分类做查找：0 篇文章的分类前台不出筛选按钮，但直链进来仍应正确显示标题
+        $activeSlug     = (string) $request->query('category', '');
+        $activeCategory = $activeSlug !== '' ? $categories->firstWhere('slug', $activeSlug) : null;
+
+        $records = NewsArticle::published()
+            ->when(
+                $activeCategory !== null,
+                fn (Builder $query): Builder => $query->where('category_id', $activeCategory?->id)
+            )
+            ->with('category')
+            ->latest('published_at')
+            ->paginate(12)
+            ->withQueryString();
+
+        $archiveMonths = $this->newsArchiveMonths();
+        $seoData       = $this->buildListSeo(($activeCategory?->name_zh ?? '') ?: '智能家居资讯');
+
+        return view('filamentboot-site::news.index', compact(
+            'records',
+            'categories',
+            'activeCategory',
+            'archiveMonths',
+            'seoData'
+        ));
+    }
+
+    /**
+     * 资讯详情页
+     *
+     * @param  string  $slug  文章 slug（参数绑定防注入，T-10-04-03）
+     */
+    public function newsShow(string $slug): View
+    {
+        $record = NewsArticle::published()->with(['category', 'tags'])->where('slug', $slug)->firstOrFail();
+
+        // 未归类的文章取全站最新几篇兜底，好过详情页底部空一块
+        $related = NewsArticle::published()
+            ->whereKeyNot($record->getKey())
+            ->when(
+                $record->category_id !== null,
+                fn (Builder $query): Builder => $query->where('category_id', $record->category_id)
+            )
+            ->with('category')
+            ->latest('published_at')
+            ->take(3)
+            ->get();
+
+        $seoData           = $this->buildSeo($record);
+        $seoData['jsonLd'] = $this->articleSchema($seoData, $record->published_at, $record->updated_at);
+
+        return view('filamentboot-site::news.show', compact('record', 'related', 'seoData'));
+    }
+
+    /**
+     * 资讯归档页（按年月）
+     *
+     * 年月格式已由路由 where 约束（4 位年 + 01-12 月），此处只做区间换算。
+     *
+     * @param  string  $year  四位年份
+     * @param  string  $month  两位月份
+     */
+    public function newsArchive(string $year, string $month): View
+    {
+        $start = Carbon::createFromDate((int) $year, (int) $month, 1)->startOfMonth();
+        $end   = $start->copy()->endOfMonth();
+
+        $records = NewsArticle::published()
+            ->whereBetween('published_at', [$start, $end])
+            ->with('category')
+            ->latest('published_at')
+            ->paginate(12);
+
+        $archiveMonths = $this->newsArchiveMonths();
+        $seoData       = $this->buildListSeo($start->format('Y 年 n 月').'资讯归档');
+
+        return view('filamentboot-site::news.archive', compact('records', 'archiveMonths', 'start', 'seoData'));
+    }
+
+    /**
+     * 归档月份及各月文章数（键为 Y-m，按时间倒序）
+     *
+     * 在 PHP 里分组而非交给数据库的日期函数：MySQL 的 DATE_FORMAT 与 SQLite 的
+     * strftime 语法不同，宿主换驱动就会炸。取最近 500 篇封顶，够撑十几年的更新量。
+     *
+     * @return Collection<string, int>
+     */
+    protected function newsArchiveMonths(): Collection
+    {
+        return NewsArticle::published()
+            ->latest('published_at')
+            ->limit(500)
+            ->get(['id', 'published_at'])
+            ->groupBy(fn (NewsArticle $article): string => $article->published_at?->format('Y-m') ?? '')
+            ->map(fn (Collection $group): int => $group->count());
     }
 
     /**
@@ -144,7 +274,13 @@ class SiteFrontController extends Controller
     {
         // 使用 isset() 检查 Eloquent 动态属性（property_exists 对 __get 魔术属性无效）
         $titleFallback = isset($record->title_zh) ? ($record->title_zh ?: '') : '';
-        $descFallback  = isset($record->description_zh) ? ($record->description_zh ?: '') : '';
+
+        // 案例/方案/产品用 description_zh 承载简介，资讯用 excerpt_zh
+        $descFallback = isset($record->description_zh) ? ($record->description_zh ?: '') : '';
+
+        if ($descFallback === '') {
+            $descFallback = isset($record->excerpt_zh) ? ($record->excerpt_zh ?: '') : '';
+        }
 
         $title = ($record->seo_title ?: '')
             ?: $titleFallback
@@ -213,6 +349,94 @@ class SiteFrontController extends Controller
             'ogImage'       => $this->defaultOgImage(),
             'ogType'        => 'website',
         ];
+    }
+
+    /**
+     * Article 结构化数据（资讯文章与装修案例共用）
+     *
+     * 案例也用 Article 而非 CreativeWork：案例本质是配图长文，
+     * Article 是搜索引擎支持最完整的类型，能拿到发布时间与作者展示。
+     *
+     * @param  array{title: string, description: string, ogImage: string|null, ...}  $seo  已构建的 SEO 数据，避免重复跑一遍回退链
+     * @param  Carbon|null  $publishedAt  发布时间
+     * @param  Carbon|null  $updatedAt  最后修改时间
+     * @return array<string, mixed>
+     */
+    protected function articleSchema(array $seo, ?Carbon $publishedAt, ?Carbon $updatedAt): array
+    {
+        $organization = $this->organizationNode();
+
+        return array_filter([
+            '@context'         => 'https://schema.org',
+            '@type'            => 'Article',
+            'headline'         => $seo['title'],
+            'description'      => $seo['description'],
+            'image'            => $seo['ogImage'] !== null ? [$seo['ogImage']] : null,
+            'datePublished'    => $publishedAt?->toAtomString(),
+            'dateModified'     => $updatedAt?->toAtomString(),
+            'mainEntityOfPage' => [
+                '@type' => 'WebPage',
+                '@id'   => url()->current(),
+            ],
+            'author'    => $organization,
+            'publisher' => $organization,
+        ], static fn (mixed $value): bool => $value !== null);
+    }
+
+    /**
+     * Product 结构化数据
+     *
+     * 无价格时不输出 offers：Google 会因缺 offers 降级为普通 Product（仅告警），
+     * 但填一个假价格属于结构化数据造假，风险大得多。
+     *
+     * @param  array{title: string, description: string, ogImage: string|null, ...}  $seo  已构建的 SEO 数据
+     * @return array<string, mixed>
+     */
+    protected function productSchema(array $seo, SiteProduct $record): array
+    {
+        // 图集与封面合并去重，Product 的 image 支持多图
+        $images = $record->galleryUrls('og');
+
+        if ($seo['ogImage'] !== null) {
+            array_unshift($images, $seo['ogImage']);
+        }
+
+        $images = array_values(array_unique($images));
+
+        $offers = $record->price !== null ? [
+            '@type'         => 'Offer',
+            'price'         => number_format((float) $record->price, 2, '.', ''),
+            'priceCurrency' => 'CNY',
+            'availability'  => 'https://schema.org/InStock',
+            'url'           => url()->current(),
+        ] : null;
+
+        return array_filter([
+            '@context'    => 'https://schema.org',
+            '@type'       => 'Product',
+            'name'        => $seo['title'],
+            'description' => $seo['description'],
+            'image'       => $images !== [] ? $images : null,
+            'brand'       => ($record->brand ?? '') !== '' ? ['@type' => 'Brand', 'name' => $record->brand] : null,
+            'offers'      => $offers,
+        ], static fn (mixed $value): bool => $value !== null);
+    }
+
+    /**
+     * 发布方 / 作者节点（取站点设置的公司名与 Logo）
+     *
+     * @return array<string, mixed>
+     */
+    protected function organizationNode(): array
+    {
+        $settings = $this->resolveSettings();
+        $logo     = $settings?->logo;
+
+        return array_filter([
+            '@type' => 'Organization',
+            'name'  => $this->defaultTitle(),
+            'logo'  => ($logo !== null && $logo !== '') ? $logo : null,
+        ], static fn (mixed $value): bool => $value !== null);
     }
 
     /**

@@ -84,6 +84,14 @@ $applyMode(Route::middleware(['web', CaptureVisitorAttribution::class])->control
         Route::get('/products', 'productIndex')->name('site.products.index');
         Route::get('/products/{slug}', 'productShow')->name('site.products.show');
 
+        // 资讯：归档先于详情注册。两者段数不同本不会冲突，但保持「越具体越靠前」，
+        // 日后若把归档改成 /news/{year}/{month} 也不必回头调顺序。
+        Route::get('/news', 'newsIndex')->name('site.news.index');
+        Route::get('/news/archive/{year}/{month}', 'newsArchive')
+            ->name('site.news.archive')
+            ->where(['year' => '[0-9]{4}', 'month' => '0[1-9]|1[0-2]']);
+        Route::get('/news/{slug}', 'newsShow')->name('site.news.show');
+
         // 静态页面（必须最后注册，slug 已排除保留路径，T-10-04-03 参数绑定防注入）
         Route::get('/{slug}', 'page')
             ->name('site.page')

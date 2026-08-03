@@ -1,6 +1,7 @@
 <?php
 
 use Filamentboot\FilamentbootSite\Models\SiteCase;
+use Filamentboot\FilamentbootSite\Models\SiteProduct;
 use Filamentboot\FilamentbootSite\Settings\SiteSettings;
 use Filamentboot\FilamentbootSite\SiteServiceProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -222,6 +223,128 @@ it('无查询串时 canonical 不带问号', function () {
     preg_match('/<link rel="canonical" href="([^"]*)"/', $html, $matches);
 
     expect($matches[1] ?? '')->not->toContain('?');
+});
+
+/**
+ * 从 HTML 中取出 JSON-LD 并解码
+ *
+ * @return array<string, mixed>|null
+ */
+function extractJsonLd(string $html): ?array
+{
+    if (preg_match('#<script type="application/ld\+json">(.*?)</script>#s', $html, $matches) !== 1) {
+        return null;
+    }
+
+    /** @var array<string, mixed>|null $decoded */
+    $decoded = json_decode($matches[1], true);
+
+    return $decoded;
+}
+
+/**
+ * 案例详情页输出 Article 结构化数据
+ */
+it('案例详情页输出 Article JSON-LD', function () {
+    SiteCase::factory()->create([
+        'title_zh'     => '光谷保利时区全屋智能',
+        'slug'         => 'json-ld-case',
+        'seo_title'    => '光谷全屋智能改造实录',
+        'published_at' => now()->subDay(),
+    ]);
+
+    $schema = extractJsonLd((string) $this->get('/cases/json-ld-case')->assertOk()->getContent());
+
+    expect($schema)->not->toBeNull()
+        ->and($schema['@context'])->toBe('https://schema.org')
+        ->and($schema['@type'])->toBe('Article')
+        ->and($schema['headline'])->toBe('光谷全屋智能改造实录')
+        ->and($schema['datePublished'])->not->toBeEmpty()
+        ->and($schema['mainEntityOfPage']['@id'])->toContain('/cases/json-ld-case');
+});
+
+/**
+ * 产品详情页输出 Product 结构化数据（含 offers 与 brand）
+ */
+it('产品详情页输出 Product JSON-LD', function () {
+    SiteProduct::factory()->create([
+        'title_zh'     => '双模网关',
+        'slug'         => 'json-ld-product',
+        'seo_title'    => '',
+        'brand'        => '晴空妙享',
+        'price'        => 899.00,
+        'is_published' => true,
+    ]);
+
+    $schema = extractJsonLd((string) $this->get('/products/json-ld-product')->assertOk()->getContent());
+
+    expect($schema)->not->toBeNull()
+        ->and($schema['@type'])->toBe('Product')
+        ->and($schema['name'])->toBe('双模网关')
+        ->and($schema['brand']['name'])->toBe('晴空妙享')
+        ->and($schema['offers']['price'])->toBe('899.00')
+        ->and($schema['offers']['priceCurrency'])->toBe('CNY');
+});
+
+/**
+ * 无价格产品不输出 offers
+ *
+ * 缺 offers 只会让 Google 降级为普通 Product（告警），
+ * 而填一个假价格属于结构化数据造假，风险大得多。
+ */
+it('无价格产品不输出 offers 节点', function () {
+    SiteProduct::factory()->create([
+        'title_zh'     => '定制中控屏',
+        'slug'         => 'json-ld-no-price',
+        'price'        => null,
+        'is_published' => true,
+    ]);
+
+    $schema = extractJsonLd((string) $this->get('/products/json-ld-no-price')->assertOk()->getContent());
+
+    expect($schema)->not->toBeNull()
+        ->and($schema['@type'])->toBe('Product')
+        ->and($schema)->not->toHaveKey('offers');
+});
+
+/**
+ * 列表页与首页不输出 JSON-LD
+ *
+ * 结构化数据只在有具体实体的详情页才有意义。
+ */
+it('列表页不输出 JSON-LD', function () {
+    foreach (['/', '/cases', '/products'] as $path) {
+        $html = (string) $this->get($path)->assertOk()->getContent();
+
+        expect($html)->not->toContain('application/ld+json');
+    }
+});
+
+/**
+ * 正文含 </script> 字面量时不会提前闭合 script 标签
+ *
+ * JSON_HEX_TAG 保证 < > 被转义，否则后续正文会被浏览器当 HTML 执行。
+ */
+it('JSON-LD 转义尖括号防止提前闭合', function () {
+    SiteCase::factory()->create([
+        'slug'            => 'json-ld-xss',
+        'seo_title'       => '标题里有 </script><img src=x onerror=alert(1)>',
+        'seo_description' => '描述正常',
+        'published_at'    => now()->subDay(),
+    ]);
+
+    $html = (string) $this->get('/cases/json-ld-xss')->assertOk()->getContent();
+
+    preg_match('#<script type="application/ld\+json">(.*?)</script>#s', $html, $matches);
+    $jsonLd = $matches[1] ?? '';
+
+    // 转义后仍是合法 JSON-LD：解出来的标题一字不少，但 HTML 层看不到尖括号
+    expect($jsonLd)->not->toBe('')
+        // 尖括号一个不剩，浏览器不可能在这里提前结束 script
+        ->and($jsonLd)->not->toContain('<')
+        ->and($jsonLd)->not->toContain('>')
+        // 但语义无损：解出来的标题一字不少
+        ->and(json_decode($jsonLd, true)['headline'] ?? '')->toContain('</script>');
 });
 
 /**

@@ -6,6 +6,7 @@ use Filamentboot\FilamentbootSite\Models\SiteCase;
 use Filamentboot\FilamentbootSite\Models\SitePage;
 use Filamentboot\FilamentbootSite\Models\SiteProduct;
 use Filamentboot\FilamentbootSite\Models\SiteSolution;
+use Filamentboot\FilamentbootSite\Modules\News\Models\NewsArticle;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Carbon;
@@ -57,6 +58,12 @@ class SitemapController extends Controller
                 'changefreq' => 'weekly',
                 'priority'   => '0.8',
             ],
+            [
+                'loc'        => route('site.news.index'),
+                'lastmod'    => null,
+                'changefreq' => 'daily',
+                'priority'   => '0.8',
+            ],
         ];
 
         foreach (SiteCase::published()->latest('published_at')->limit($limit)->get() as $record) {
@@ -65,6 +72,11 @@ class SitemapController extends Controller
 
         foreach (SiteSolution::published()->latest('published_at')->limit($limit)->get() as $record) {
             $urls[] = $this->entry(route('site.solutions.show', $record->slug), $record->updated_at, '0.7');
+        }
+
+        // 归档页不入站点地图：内容与列表页重复，只作站内浏览入口
+        foreach (NewsArticle::published()->latest('published_at')->limit($limit)->get() as $record) {
+            $urls[] = $this->entry(route('site.news.show', $record->slug), $record->updated_at, '0.7');
         }
 
         foreach (SiteProduct::published()->limit($limit)->get() as $record) {

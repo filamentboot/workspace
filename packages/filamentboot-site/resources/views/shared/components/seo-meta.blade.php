@@ -13,6 +13,7 @@
  * 期望变量：
  *   $seoData['title'] / ['description'] / ['keywords']
  *   $seoData['ogTitle'] / ['ogDescription'] / ['ogImage'] / ['ogType']
+ *   $seoData['jsonLd'] — 可选，结构化数据数组（详情页才有，列表页不输出）
  *   $siteSettings — SiteSettings 实例（可为 null）
  --}}
 @php
@@ -67,3 +68,11 @@
 
 {{-- Canonical URL（防重复内容） --}}
 <link rel="canonical" href="{{ $canonical }}">
+
+{{-- 结构化数据（详情页由控制器构建：资讯与案例为 Article，产品为 Product）
+
+     JSON_HEX_TAG 不可省：内容里出现 </script> 字面量时，不转义 < > 会提前闭合
+     script 标签，把后续正文当 HTML 执行。转义后仍是合法 JSON-LD，解析不受影响。 --}}
+@if(! empty($seoData['jsonLd']))
+<script type="application/ld+json">{!! json_encode($seoData['jsonLd'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) !!}</script>
+@endif
