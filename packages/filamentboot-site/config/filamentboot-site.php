@@ -113,6 +113,34 @@ return [
         ),
 
         /*
+        |----------------------------------------------------------------------
+        | canonical 需剥离的查询参数
+        |----------------------------------------------------------------------
+        |
+        | canonical 必须保留 page 等真正区分内容的参数，只剥掉广告与统计平台
+        | 附加的追踪参数。此前 canonical 直接取 url()->current()（不含查询串），
+        | /solutions?page=2 的 canonical 指向 /solutions，等于告诉搜索引擎
+        | 列表页第 2 页往后都是第 1 页的副本，深层内容不会被索引。
+        |
+        | 宿主接入其它投放渠道时在此追加对应参数名即可。
+        |
+        */
+        'canonical_ignored_params' => [
+            'utm_source',
+            'utm_medium',
+            'utm_campaign',
+            'utm_term',
+            'utm_content',
+            'gclid',
+            'fbclid',
+            'msclkid',
+            'yclid',
+            'bd_vid',
+            '_bd_vid',
+            'spm',
+        ],
+
+        /*
         | 站点地图单次输出的每类内容上限，防止内容量大时超时。
         */
         'sitemap_limit' => env('SITE_SITEMAP_LIMIT', 2000),

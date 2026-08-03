@@ -181,6 +181,50 @@ it('前台不输出外部占位图服务地址', function () {
 });
 
 /**
+ * 分页页面的 canonical 自指，保留 page 参数
+ *
+ * 此前 canonical 取 url()->current()（不含查询串），/solutions?page=2 的 canonical
+ * 指向 /solutions，等于声明列表页第 2 页往后都是第 1 页的副本，深层内容不被索引。
+ */
+it('分页列表页 canonical 保留 page 参数', function () {
+    $html = (string) $this->get('/solutions?page=2')->assertOk()->getContent();
+
+    preg_match('/<link rel="canonical" href="([^"]*)"/', $html, $matches);
+
+    expect($matches[1] ?? '')->toContain('page=2');
+});
+
+/**
+ * canonical 剥离广告与统计平台的追踪参数
+ *
+ * 追踪参数不改变页面内容，留在 canonical 里会让同一页面产生无数个「不同」URL。
+ */
+it('canonical 剥离追踪参数但保留分页参数', function () {
+    $html = (string) $this->get('/solutions?utm_source=wechat&utm_medium=cpc&gclid=abc&page=3')
+        ->assertOk()
+        ->getContent();
+
+    preg_match('/<link rel="canonical" href="([^"]*)"/', $html, $matches);
+    $canonical = $matches[1] ?? '';
+
+    expect($canonical)->toContain('page=3')
+        ->and($canonical)->not->toContain('utm_source')
+        ->and($canonical)->not->toContain('utm_medium')
+        ->and($canonical)->not->toContain('gclid');
+});
+
+/**
+ * 无查询串时 canonical 不追加空的问号
+ */
+it('无查询串时 canonical 不带问号', function () {
+    $html = (string) $this->get('/solutions')->assertOk()->getContent();
+
+    preg_match('/<link rel="canonical" href="([^"]*)"/', $html, $matches);
+
+    expect($matches[1] ?? '')->not->toContain('?');
+});
+
+/**
  * 未发布内容不泄露（T-10-04-04 安全验证）
  */
 it('未发布案例不被前台展示', function () {

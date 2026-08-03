@@ -33,8 +33,18 @@
         ? $seoTitle . ' — ' . $siteName
         : $seoTitle;
 
-    // canonical 去掉查询串，避免分页/追踪参数产生重复内容
-    $canonical = url()->current();
+    // canonical 保留 page 等区分内容的参数，只剥广告/统计追踪参数。
+    // 直接用 url()->current() 会丢掉整个查询串，使 /solutions?page=2 的 canonical
+    // 指向 /solutions，搜索引擎据此判定列表页深层全是首页副本，不再索引。
+    // 参数按键排序，保证同一组参数不同顺序产生同一个 canonical。
+    $canonicalQuery = array_diff_key(
+        request()->query(),
+        array_flip((array) config('filamentboot-site.seo.canonical_ignored_params', []))
+    );
+    ksort($canonicalQuery);
+
+    $canonical = url()->current()
+        . ($canonicalQuery === [] ? '' : '?' . http_build_query($canonicalQuery));
 @endphp
 
 <title>{{ $fullTitle }}</title>
