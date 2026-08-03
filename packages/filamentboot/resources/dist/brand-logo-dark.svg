@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 206 40" width="206" height="40" role="img" aria-label="Filamentboot">
+    <rect x="0" y="4" width="32" height="32" rx="7" fill="#1677ff"/>
+    <g fill="#ffffff">
+        <rect x="10" y="11" width="4.5" height="18" rx="1"/>
+        <rect x="10" y="11" width="13" height="4.5" rx="1"/>
+        <rect x="10" y="18" width="10" height="4.25" rx="1"/>
+    </g>
+    <text x="42" y="21" fill="#f9fafb" font-size="20" font-weight="600"
+          font-family="system-ui,-apple-system,&quot;Segoe UI&quot;,&quot;PingFang SC&quot;,&quot;Microsoft YaHei&quot;,Arial,sans-serif"
+          textLength="160" lengthAdjust="spacingAndGlyphs" dominant-baseline="central">Filamentboot</text>
+</svg>

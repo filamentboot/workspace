@@ -17,6 +17,8 @@ use Symfony\Component\Console\Command\Command;
  * - Test 2: 生成的 AdminPanelProvider 含 authGuard('admin') 与 FilamentbootPlugin::make()
  * - Test 3: Provider 已存在且拒绝覆盖时跳过（内容不变，命令仍 SUCCESS）
  * - Test 4: --force 时强制覆盖已存在文件
+ * - Test 5: 品牌资源被复制到 public/
+ * - Test 6: 品牌资源已存在时不被覆盖
  *
  * 测试通过使用测试专用子类跳过 migrate/seed 步骤（避免 Testbench 环境
  * 中迁移类名冲突），专注于 Provider 文件生成的核心行为验证。
@@ -66,6 +68,7 @@ class InstallCommandTest extends TestCase
             'app/Providers/Filament',
             'config',
             'database/migrations',
+            'public',
             'resources/views',
             'lang',
             'tests',
@@ -224,6 +227,40 @@ class InstallCommandTest extends TestCase
             '--force 后新内容应含 authGuard(\'admin\')'
         );
     }
+
+    /**
+     * Test 5: 品牌资源（favicon 与两个 Logo）被复制到 public/
+     */
+    public function test_install_copies_brand_assets_to_public(): void
+    {
+        $this->artisan('filamentboot:install', ['--force' => true])
+            ->assertExitCode(Command::SUCCESS);
+
+        foreach (['favicon.svg', 'brand-logo.svg', 'brand-logo-dark.svg'] as $asset) {
+            $this->assertFileExists(
+                $this->tempBase.'/public/'.$asset,
+                "品牌资源 {$asset} 应被复制到 public/"
+            );
+        }
+    }
+
+    /**
+     * Test 6: public/ 下已有同名文件时不被覆盖（保护下游自有品牌资源）
+     */
+    public function test_install_does_not_overwrite_existing_brand_assets(): void
+    {
+        $target = $this->tempBase.'/public/favicon.svg';
+        file_put_contents($target, '<svg><!-- 下游自有品牌 --></svg>');
+
+        $this->artisan('filamentboot:install', ['--force' => true])
+            ->assertExitCode(Command::SUCCESS);
+
+        $this->assertStringContainsString(
+            '下游自有品牌',
+            file_get_contents($target),
+            '已存在的品牌资源不应被覆盖'
+        );
+    }
 }
 
 /**
@@ -246,10 +283,14 @@ class TestableInstallCommand extends InstallCommand
             return self::FAILURE;
         }
 
-        // Step 2-4: 跳过 vendor:publish（测试环境）
-        // Step 5: 跳过 migrate（避免 Testbench 迁移冲突）
-        // Step 6: 跳过 db:seed
-        // Step 7: 输出报告
+        // Step 3-4: 跳过 vendor:publish（测试环境）
+
+        // Step 5: 复制品牌资源（纯文件操作，无需数据库，保留以覆盖该行为）
+        $this->publishBrandAssets();
+
+        // Step 6: 跳过 migrate（避免 Testbench 迁移冲突）
+        // Step 7: 跳过 db:seed
+        // Step 8: 输出报告
         $this->newLine();
         $this->components->success('Filamentboot 安装完成（测试模式）！');
 

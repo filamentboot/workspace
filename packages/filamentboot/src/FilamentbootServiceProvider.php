@@ -291,11 +291,11 @@ class FilamentbootServiceProvider extends ServiceProvider
     }
 
     /**
-     * 注册可发布资源出口（vendor:publish 6 个 tag）
+     * 注册可发布资源出口（vendor:publish 7 个 tag）
      *
-     * 支持 filamentboot-config / filamentboot-migrations /
-     * filamentboot-views / filamentboot-lang / filamentboot-stubs / filamentboot-theme
-     * 六个标签，让用户通过 `php artisan vendor:publish --tag=filamentboot-*` 将资源复制到项目。
+     * 支持 filamentboot-config / filamentboot-migrations / filamentboot-views /
+     * filamentboot-lang / filamentboot-stubs / filamentboot-theme / filamentboot-brand
+     * 七个标签，让用户通过 `php artisan vendor:publish --tag=filamentboot-*` 将资源复制到项目。
      */
     protected function registerPublishes(): void
     {
@@ -337,6 +337,14 @@ class FilamentbootServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../resources/dist/filamentboot-theme.css' => resource_path('css/filamentboot-theme.css'),
         ], 'filamentboot-theme');
+
+        // brand tag — 站点图标与品牌 Logo，供 Panel 的 favicon() / brandLogo() 引用。
+        // 属占位标识，下游直接替换 public/ 下的同名文件即可换成自家品牌。
+        $this->publishes([
+            __DIR__.'/../resources/dist/favicon.svg'         => public_path('favicon.svg'),
+            __DIR__.'/../resources/dist/brand-logo.svg'      => public_path('brand-logo.svg'),
+            __DIR__.'/../resources/dist/brand-logo-dark.svg' => public_path('brand-logo-dark.svg'),
+        ], 'filamentboot-brand');
     }
 
     /**

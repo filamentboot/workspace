@@ -10,16 +10,17 @@ use Illuminate\Support\ServiceProvider;
 /**
  * Filamentboot 一键安装命令
  *
- * 七步顺序执行安装流程：
+ * 八步顺序执行安装流程：
  * Step 1: 生成 AdminPanelProvider（幂等检测，D-11-03）
  * Step 2: 注入 admin guard 到 config/auth.php（幂等：已存在时跳过）
  * Step 3: vendor:publish filamentboot-config
  * Step 4: vendor:publish filamentboot-lang
- * Step 5: migrate（迁移由 FilamentbootServiceProvider::loadMigrationsFrom 自动加载，
+ * Step 5: 复制品牌资源到 public/（幂等：已存在时不覆盖）
+ * Step 6: migrate（迁移由 FilamentbootServiceProvider::loadMigrationsFrom 自动加载，
  *           不 publish migrations，避免与 loadMigrationsFrom 同名类冲突；
  *           需要自定义迁移的用户可手动运行 vendor:publish --tag=filamentboot-migrations）
- * Step 6: db:seed SuperAdminSeeder
- * Step 7: 输出安装报告（T-11-02 缓解：提示修改默认密码）
+ * Step 7: db:seed SuperAdminSeeder
+ * Step 8: 输出安装报告（T-11-02 缓解：提示修改默认密码）
  */
 class InstallCommand extends Command
 {
@@ -56,11 +57,14 @@ class InstallCommand extends Command
         $this->callSilently('vendor:publish', ['--tag' => 'filamentboot-config', '--ansi' => false]);
         $this->components->info('✓ 配置文件已发布到 config/filament-admin.php');
 
-        // Step 3: vendor:publish lang
+        // Step 4: vendor:publish lang
         $this->callSilently('vendor:publish', ['--tag' => 'filamentboot-lang', '--ansi' => false]);
         $this->components->info('✓ 语言文件已发布到 lang/vendor/filament-admin/');
 
-        // Step 4: migrate（迁移由 FilamentbootServiceProvider::loadMigrationsFrom 自动加载，
+        // Step 5: 复制品牌资源（favicon 与 Logo，供 Panel 的 favicon()/brandLogo() 引用）
+        $this->publishBrandAssets();
+
+        // Step 6: migrate（迁移由 FilamentbootServiceProvider::loadMigrationsFrom 自动加载，
         //   不再 publish migrations，避免与 auto-load 产生同名类冲突。
         //   若需自定义迁移，可手动运行 vendor:publish --tag=filamentboot-migrations）
         $this->components->info('正在执行数据库迁移...');
@@ -73,11 +77,11 @@ class InstallCommand extends Command
 
         $this->components->info('✓ 数据库迁移完成');
 
-        // Step 5: 创建超级管理员（T-11-02：输出默认密码提示）
+        // Step 7: 创建超级管理员（T-11-02：输出默认密码提示）
         $this->callSilently('db:seed', ['--class' => SuperAdminSeeder::class]);
         $this->components->info('✓ 超级管理员已创建：admin@example.com / password');
 
-        // Step 7: 输出安装报告
+        // Step 8: 输出安装报告
         $this->newLine();
         $this->components->success('Filamentboot 安装完成！');
         $this->newLine();
@@ -91,6 +95,38 @@ class InstallCommand extends Command
         $this->line('  <fg=cyan>php artisan plugin:scan</>');
 
         return self::SUCCESS;
+    }
+
+    /**
+     * 复制品牌资源（favicon 与 Logo）到 public/
+     *
+     * 幂等且不具破坏性：目标文件已存在时一律跳过，不覆盖下游自有品牌资源。
+     * 三个文件对应 AdminPanelProvider 中的 favicon() / brandLogo() / darkModeBrandLogo()。
+     */
+    protected function publishBrandAssets(): void
+    {
+        $assets = ['favicon.svg', 'brand-logo.svg', 'brand-logo-dark.svg'];
+        $copied = [];
+
+        foreach ($assets as $asset) {
+            $target = public_path($asset);
+
+            if (file_exists($target)) {
+                continue;
+            }
+
+            File::copy(__DIR__.'/../../resources/dist/'.$asset, $target);
+            $copied[] = $asset;
+        }
+
+        if ($copied === []) {
+            $this->components->info('✓ 品牌资源已存在，跳过复制');
+
+            return;
+        }
+
+        $this->components->info('✓ 品牌资源已复制到 public/：'.implode('、', $copied));
+        $this->line('  替换这些文件即可换成自家品牌标识');
     }
 
     /**

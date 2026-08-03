@@ -10,9 +10,9 @@ use Orchestra\Testbench\TestCase;
 /**
  * ServiceProvider publishes 注册测试
  *
- * 验证 FilamentbootServiceProvider 注册了 5 个 vendor:publish 标签（COMPLY-01）：
+ * 验证 FilamentbootServiceProvider 注册了 7 个 vendor:publish 标签（COMPLY-01）：
  * filamentboot-config / filamentboot-migrations / filamentboot-views /
- * filamentboot-lang / filamentboot-stubs
+ * filamentboot-lang / filamentboot-stubs / filamentboot-theme / filamentboot-brand
  */
 class ServiceProviderPublishesTest extends TestCase
 {
@@ -153,5 +153,63 @@ class ServiceProviderPublishesTest extends TestCase
         }
 
         self::assertTrue($found, '未找到 stubs → base_path(stubs/vendor/filamentboot) 的映射');
+    }
+
+    /**
+     * 验证 filamentboot-theme 发布标签已注册，且映射到 resource_path('css/filamentboot-theme.css')
+     */
+    public function test_service_provider_registers_filament_admin_theme_publish_tag(): void
+    {
+        $paths = ServiceProvider::pathsToPublish(
+            FilamentbootServiceProvider::class,
+            'filamentboot-theme'
+        );
+
+        self::assertNotEmpty($paths, '主题 publish tag 未在 ServiceProvider 中注册');
+
+        $found = false;
+
+        foreach ($paths as $source => $target) {
+            if (str_ends_with($source, 'resources/dist/filamentboot-theme.css')
+                && $target === resource_path('css/filamentboot-theme.css')) {
+                $found = true;
+
+                break;
+            }
+        }
+
+        self::assertTrue($found, '未找到 filamentboot-theme.css → resource_path(css/...) 的映射');
+    }
+
+    /**
+     * 验证 filamentboot-brand 发布标签已注册，三个品牌资源均映射到 public_path
+     */
+    public function test_service_provider_registers_filament_admin_brand_publish_tag(): void
+    {
+        $paths = ServiceProvider::pathsToPublish(
+            FilamentbootServiceProvider::class,
+            'filamentboot-brand'
+        );
+
+        self::assertNotEmpty($paths, '品牌资源 publish tag 未在 ServiceProvider 中注册');
+
+        foreach (['favicon.svg', 'brand-logo.svg', 'brand-logo-dark.svg'] as $asset) {
+            $found = false;
+
+            foreach ($paths as $source => $target) {
+                if (str_ends_with($source, 'resources/dist/'.$asset)
+                    && $target === public_path($asset)) {
+                    $found = true;
+
+                    break;
+                }
+            }
+
+            self::assertTrue($found, "未找到 {$asset} → public_path 的映射");
+            self::assertFileExists(
+                __DIR__.'/../../resources/dist/'.$asset,
+                "品牌资源文件 {$asset} 不存在，publish 会失败"
+            );
+        }
     }
 }
