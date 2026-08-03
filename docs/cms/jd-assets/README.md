@@ -27,7 +27,15 @@
 
 - 品牌方给渠道商的官方素材包（无平台水印，是最正的路子）
 - 自己拍的实景与产品图
-- 案例场景图用 CC0 图库（Unsplash / Pexels）
+- 案例场景图用 CC0 图库
+
+> **案例 / 方案 / 资讯的封面图已经解决**（2026-08-03）：走 `../cc0-assets/`，
+> 从 Wikimedia Commons 的 Unsplash CC0 导入池取了 20 张上站。
+> Unsplash / Pexels 官方 API 要 Key、`source.unsplash.com` 已关停、
+> Openverse 被 Cloudflare 拦截，三条路都不通，详见那份 README。
+>
+> **产品封面仍然空缺**，且不该用 CC0 图凑：产品图要与型号对得上，
+> 图库里没有对应 SKU 的白底图，硬凑等于挂着别人的产品当自己的。这一项还是等品牌方素材包。
 
 `contact-sheet.html`（浏览器直接开，无需服务器）按 SKU 分组纵览 249 张图，
 每张标注 `m03 1200x1200`（组别+序号+尺寸），可以用它对着挑「要拍成什么样」。
