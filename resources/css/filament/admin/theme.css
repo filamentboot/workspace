@@ -16,6 +16,10 @@
  * NOTE: This is Tailwind v4 CSS-first — no tailwind.config.js is used or needed.
  * The imported vendor/filament theme uses `@import 'tailwindcss' source(none)`, which
  * disables automatic source scanning. The @source directives below are authoritative.
+ *
+ * 观感覆盖（圆角、表格密度、边框、留白）统一由主包
+ * packages/filamentboot/resources/dist/filamentboot-theme.css 提供，
+ * 经 FilamentAsset 注入，本文件不再重复定义，避免两处规则漂移。
  */
 
 /* Import Filament v5 theme preset — provides base panel styles + Tailwind v4 layer */
@@ -35,10 +39,12 @@
 @source '../../../../storage/framework/views/*.php';
 
 /* ------------------------------------------------------------------ */
-/* @theme — match app.css font so panel typography is consistent       */
+/* @theme — 中文系统字体栈，与主包 filamentboot-theme.css 保持一致       */
+/* 不依赖外网字体服务（Google Fonts / Bunny Fonts）                      */
 /* ------------------------------------------------------------------ */
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji',
-        'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC',
+        'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif,
+        'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol';
 }

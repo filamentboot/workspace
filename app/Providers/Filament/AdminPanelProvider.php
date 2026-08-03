@@ -6,7 +6,9 @@ use AlizHarb\ActivityLog\ActivityLogPlugin;
 use App\Filament\Pages\Marketplace\MarketplacePage;
 use App\Filament\Resources\PluginResource;
 use BezhanSalleh\FilamentShield\FilamentShieldPlugin;
+use Filament\Enums\ThemeMode;
 use Filament\Facades\Filament;
+use Filament\FontProviders\LocalFontProvider;
 use Filament\Http\Middleware\Authenticate;
 use Filament\Http\Middleware\AuthenticateSession;
 use Filament\Http\Middleware\DisableBladeIconComponents;
@@ -16,6 +18,7 @@ use Filament\Pages\Dashboard;
 use Filament\Panel;
 use Filament\PanelProvider;
 use Filament\Support\Colors\Color;
+use Filament\Support\Enums\Width;
 use Filament\Widgets\AccountWidget;
 use Filament\Widgets\FilamentInfoWidget;
 use Filamentboot\Filament\Pages\Auth\Login;
@@ -73,9 +76,19 @@ class AdminPanelProvider extends PanelProvider
                     ->dashboard(false)
                     ->autoContextTracking()
             )
+            ->brandName('Filamentboot')
+            // 国内后台常用配色：Ant 蓝主色 + 成功绿 / 警告橙 / 危险红
             ->colors([
-                'primary' => Color::Amber,
+                'primary' => Color::hex('#1677ff'),
+                'success' => Color::hex('#52c41a'),
+                'warning' => Color::hex('#faad14'),
+                'danger'  => Color::hex('#ff4d4f'),
             ])
+            // 走中文系统字体栈，不请求任何外网字体服务
+            ->font('system-ui', provider: LocalFontProvider::class)
+            ->defaultThemeMode(ThemeMode::Light) // 默认浅色，保留明暗切换
+            ->maxContentWidth(Width::Full)       // 内容区满宽，提高信息密度
+            ->sidebarCollapsibleOnDesktop()
             ->viteTheme('resources/css/filament/admin/theme.css')
             ->navigation(function (AdminNavigationBuilder $builder): NavigationBuilder {
                 $user = Filament::auth()->user();

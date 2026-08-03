@@ -1,0 +1,122 @@
+/**
+ * Filamentboot Admin Theme — 后台观感国产化覆盖层
+ *
+ * 目标：对标若依 / Element Admin / Ant Design Pro 的国内后台观感——
+ * 高信息密度、小圆角、边框明显、中文系统字体。
+ *
+ * 加载方式：由 FilamentbootServiceProvider 通过 FilamentAsset::register() 注入，
+ * 经 `php artisan filament:assets` 拷贝到 public/css/filamentboot/。
+ * 下游无需改 vite.config.js、无需 npm run build；文件缺失时仅 404 不会白屏。
+ *
+ * 级联说明：Filament 的编译产物全部位于 @layer components / @layer utilities 中，
+ * 本文件刻意不带 layer——按 CSS 级联规则无层样式恒胜有层样式，
+ * 因此无需任何 !important 即可覆盖，也不与 Filament 升级产生耦合。
+ *
+ * 关闭方式：.env 设置 FILAMENTBOOT_THEME=false
+ *
+ * 注意：本文件不含侧边栏配色规则，侧栏深浅完全交由 Filament 明暗主题切换控制。
+ */
+
+/* ------------------------------------------------------------------ */
+/* 圆角：4-6px（Filament 出厂 8-12px 偏大）                             */
+/* Filament 全量样式仅用到 rounded-md/lg/xl/full 四档，改 token 即全站生效 */
+/* rounded-full（头像、Badge 胶囊）不动                                  */
+/* ------------------------------------------------------------------ */
+
+:root {
+    --radius-sm: 3px;
+    --radius-md: 4px;
+    --radius-lg: 4px;
+    --radius-xl: 6px;
+    --radius-2xl: 8px;
+    --radius-3xl: 10px;
+}
+
+/* ------------------------------------------------------------------ */
+/* 字体：中文系统字体栈，不依赖任何外网字体服务                          */
+/* 配合 Panel 的 ->font('system-ui', provider: LocalFontProvider::class) */
+/* ------------------------------------------------------------------ */
+
+:root {
+    --default-font-family:
+        system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
+        'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif, 'Apple Color Emoji',
+        'Segoe UI Emoji', 'Segoe UI Symbol';
+}
+
+html.fi {
+    font-family: var(--default-font-family);
+}
+
+/* ------------------------------------------------------------------ */
+/* 表格密度：行高从 py-4 (16px) 压到 8px，一屏多显示约 30% 行数           */
+/* ------------------------------------------------------------------ */
+
+.fi-ta-header-cell {
+    padding-block: 0.5rem;
+}
+
+.fi-ta-text:not(.fi-inline) {
+    padding-block: 0.5rem;
+}
+
+.fi-ta-cell:has(.fi-ta-actions),
+.fi-ta-cell:has(.fi-ta-record-checkbox),
+.fi-ta-cell.fi-ta-selection-cell {
+    padding-block: 0.5rem;
+}
+
+/* 表头浅灰底，与数据行拉开层次（国内后台惯例） */
+.fi-ta-table > thead {
+    background-color: var(--gray-50);
+}
+
+.dark .fi-ta-table > thead {
+    background-color: rgb(255 255 255 / 0.03);
+}
+
+/* ------------------------------------------------------------------ */
+/* 边框：Filament 用 ring-gray-950/5 描边几乎不可见，改 1px 实线          */
+/* ------------------------------------------------------------------ */
+
+.fi-ta-ctn,
+.fi-section:not(.fi-section-not-contained) {
+    box-shadow: none;
+    border: 1px solid var(--gray-200);
+}
+
+.dark .fi-ta-ctn,
+.dark .fi-section:not(.fi-section-not-contained) {
+    border-color: rgb(255 255 255 / 0.1);
+}
+
+/* 顶栏白底 + 底部分割线 */
+.fi-topbar {
+    box-shadow: none;
+    border-bottom: 1px solid var(--gray-200);
+}
+
+.dark .fi-topbar {
+    border-bottom-color: rgb(255 255 255 / 0.1);
+}
+
+/* ------------------------------------------------------------------ */
+/* 页面留白压缩                                                         */
+/* ------------------------------------------------------------------ */
+
+.fi-page-header-main-ctn {
+    padding-block: 1.25rem;
+}
+
+.fi-page-content {
+    row-gap: 1rem;
+}
+
+.fi-main {
+    padding-inline: 1rem;
+}
+
+/* 仅调内边距，不改任何侧栏配色 */
+.fi-sidebar-nav {
+    padding: 1rem 0.75rem;
+}

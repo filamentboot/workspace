@@ -3,7 +3,9 @@
 namespace Filamentboot;
 
 use Filament\Forms\Components\FileUpload;
+use Filament\Support\Assets\Css;
 use Filament\Support\Exceptions\Halt;
+use Filament\Support\Facades\FilamentAsset;
 use Filamentboot\Models\AdminUser;
 use Filamentboot\Models\Department;
 use Filamentboot\Models\LoginLog;
@@ -86,8 +88,34 @@ class FilamentbootServiceProvider extends ServiceProvider
         $this->registerObservers();
         $this->registerPolicies();
         $this->registerListeners();
+        $this->registerThemeAsset();
         $this->registerPublishes();
         $this->registerUploadGuards();
+    }
+
+    /**
+     * 注册后台观感覆盖样式
+     *
+     * 通过 Filament 官方资产机制注入纯 CSS（无需 vite 构建），
+     * `php artisan filament:assets` 会将其拷贝到 public/css/filamentboot/。
+     * 文件缺失时静默跳过，避免包级单元测试环境报错。
+     */
+    protected function registerThemeAsset(): void
+    {
+        if (! config('filamentboot.theme.enabled', true)) {
+            return;
+        }
+
+        $path = __DIR__.'/../resources/dist/filamentboot-theme.css';
+
+        if (! file_exists($path)) {
+            return;
+        }
+
+        FilamentAsset::register(
+            [Css::make('filamentboot-theme', $path)],
+            package: 'filamentboot/filamentboot',
+        );
     }
 
     /**
@@ -263,11 +291,11 @@ class FilamentbootServiceProvider extends ServiceProvider
     }
 
     /**
-     * 注册可发布资源出口（vendor:publish 5 个 tag）
+     * 注册可发布资源出口（vendor:publish 6 个 tag）
      *
      * 支持 filamentboot-config / filamentboot-migrations /
-     * filamentboot-views / filamentboot-lang / filamentboot-stubs
-     * 五个标签，让用户通过 `php artisan vendor:publish --tag=filamentboot-*` 将资源复制到项目。
+     * filamentboot-views / filamentboot-lang / filamentboot-stubs / filamentboot-theme
+     * 六个标签，让用户通过 `php artisan vendor:publish --tag=filamentboot-*` 将资源复制到项目。
      */
     protected function registerPublishes(): void
     {
@@ -303,6 +331,12 @@ class FilamentbootServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__.'/../stubs' => base_path('stubs/vendor/filamentboot'),
         ], 'filamentboot-stubs');
+
+        // theme tag — 发布观感覆盖样式供二次定制（发布后需自行接管加载，
+        // 或设 FILAMENTBOOT_THEME=false 关闭包内注入以免重复）
+        $this->publishes([
+            __DIR__.'/../resources/dist/filamentboot-theme.css' => resource_path('css/filamentboot-theme.css'),
+        ], 'filamentboot-theme');
     }
 
     /**
