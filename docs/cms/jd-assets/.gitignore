@@ -1,0 +1,8 @@
+# 抓取的原始图片（约 48MB，249 张）不入库
+#
+# 这批图是交给 UI 逐张修图的中间素材（去京东角标、去店铺自制版式），
+# 修完的成品才进 storage/app/public/site/ 并由 SiteDemoSeeder 灌入 Media Library。
+# 中间素材进 git 会永久撑大仓库历史，且成品出来后它们就没用了。
+#
+# 需要重新生成：见同目录 README.md
+images/
