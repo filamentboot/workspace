@@ -15,18 +15,26 @@ use Filament\Schemas\Components\Tabs\Tab;
 use Filament\Schemas\Schema;
 use Filamentboot\FilamentbootSite\Services\SiteHealthCheck;
 use Filamentboot\FilamentbootSite\Settings\SiteSettings;
+use Filamentboot\Services\ActivityLogger;
 use Filamentboot\Settings\UploadSettings;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Auth;
+use ReflectionClass;
+use ReflectionNamedType;
 use UnitEnum;
 
 /**
  * 官网设置页面
  *
- * 管理公司基本信息、SEO 默认值、主题切换及媒体上传（D-10-14）。
+ * 管理公司基本信息、SEO 默认值、主题切换及媒体上传（D-10-14），
+ * 另含线索通知邮箱（A2）与统计代码注入（A3）。
  * CMS v1 为中文单语言，表单不再提供英文字段（数据库列保留兼容既有数据）。
  *
  * 保存后执行 view:clear 确保主题切换立即生效（RESEARCH Pitfall 3）。
  * 上传字段使用 UploadSettings.default_disk 磁盘（SITE-04 跨切）。
+ *
+ * 自定义前台代码块（head_scripts / body_end_scripts）是本页唯一的高风险字段：
+ * 原样执行、不过滤，因此额外用 manage_site_settings 权限门住并记操作日志。
  */
 class SiteSettingsPage extends SettingsPage
 {
@@ -121,6 +129,14 @@ class SiteSettingsPage extends SettingsPage
                                         ->disk($defaultDisk)
                                         ->helperText('上传微信公众号或企业微信二维码图片'),
                                 ]),
+                            Section::make('线索通知')
+                                ->description('新询盘到达时立即发邮件提醒。营销站的线索响应速度直接决定转化率，留空则只能靠人主动登后台刷新。')
+                                ->schema([
+                                    TextInput::make('notify_emails')
+                                        ->label('新询盘通知邮箱')
+                                        ->maxLength(500)
+                                        ->helperText('多个邮箱用英文逗号分隔，留空关闭通知。通知走队列异步发送，发送失败不会影响访客提交。'),
+                                ]),
                         ]),
                     Tab::make('SEO 默认值')
                         ->schema([
@@ -160,12 +176,125 @@ class SiteSettingsPage extends SettingsPage
                                         ->helperText('建议使用 SVG 或 PNG 格式，透明背景'),
                                 ]),
                         ]),
+                    Tab::make('统计与代码')
+                        ->schema([
+                            Section::make('网站统计')
+                                ->description('填 ID 即可，代码由系统按固定模板生成，无需手写脚本。')
+                                ->schema([
+                                    TextInput::make('baidu_tongji_id')
+                                        ->label('百度统计 ID')
+                                        ->maxLength(64)
+                                        ->helperText('百度统计代码 hm.js?后面那串十六进制字符，填错格式不会输出统计代码'),
+                                    TextInput::make('ga_measurement_id')
+                                        ->label('Google Analytics 衡量 ID')
+                                        ->maxLength(32)
+                                        ->helperText('形如 G-XXXXXXXXXX'),
+                                ]),
+                            Section::make('自定义代码')
+                                ->description('用于挂接上面没有覆盖的第三方脚本（在线客服、其它统计平台等）。')
+                                ->schema([
+                                    Textarea::make('head_scripts')
+                                        ->label('<head> 内代码')
+                                        ->rows(6)
+                                        ->maxLength(20000)
+                                        ->disabled(fn (): bool => ! $this->canManageScripts())
+                                        ->helperText($this->scriptFieldHelperText()),
+                                    Textarea::make('body_end_scripts')
+                                        ->label('</body> 前代码')
+                                        ->rows(6)
+                                        ->maxLength(20000)
+                                        ->disabled(fn (): bool => ! $this->canManageScripts())
+                                        ->helperText($this->scriptFieldHelperText()),
+                                ]),
+                        ]),
                 ]),
         ]);
     }
 
     /**
-     * 保存后清除视图缓存并复检发布前必填项（RESEARCH Pitfall 3）
+     * 当前用户是否可修改自定义代码块
+     *
+     * 自定义代码块原样输出到前台且不过 purifier，等于开放任意 JS 执行能力，
+     * 因此单独用 manage_site_settings 权限点门住，不与查看设置页的权限混用。
+     * 超管由主包 Gate::before() 放行。
+     */
+    protected function canManageScripts(): bool
+    {
+        return (bool) Auth::user()?->can('manage_site_settings');
+    }
+
+    /**
+     * 自定义代码字段的风险提示
+     */
+    protected function scriptFieldHelperText(): string
+    {
+        if (! $this->canManageScripts()) {
+            return '此处代码会原样在前台执行，需 manage_site_settings 权限才能修改。当前账号只能查看。';
+        }
+
+        return '⚠️ 此处代码会原样输出到前台并执行，不做任何过滤。请只粘贴来源可信的脚本，变更会记入操作日志。';
+    }
+
+    /**
+     * 保存前把留空字段的 null 归一回空字符串
+     *
+     * Filament 会把空文本框的状态归一为 null，而 SiteSettings 的多数属性声明为
+     * 非空 string（phone、address_zh、icp_number、privacy_url、seo_* 等）。
+     * 两者相遇时 Spatie 的 Settings::fill() 直接抛
+     * 「Cannot assign null to property ... of type string」——
+     * 也就是说只要有任一可选文本字段留空，保存设置页就 500。
+     *
+     * 用反射按属性声明类型判断，新增字段自动受同一规则保护，
+     * 不需要每加一个字段就来这里补一次名单。
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    protected function mutateFormDataBeforeSave(array $data): array
+    {
+        $reflection = new ReflectionClass(static::getSettings());
+
+        foreach ($data as $key => $value) {
+            if ($value !== null || ! $reflection->hasProperty($key)) {
+                continue;
+            }
+
+            $type = $reflection->getProperty($key)->getType();
+
+            if ($type instanceof ReflectionNamedType
+                && ! $type->allowsNull()
+                && $type->getName() === 'string'
+            ) {
+                $data[$key] = '';
+            }
+        }
+
+        return $data;
+    }
+
+    /**
+     * 保存前记下自定义代码块的原值，供 afterSave 比对审计
+     *
+     * 必须在 SettingsPage::save() 的 $settings->fill() 之前抓：Spatie 的
+     * Settings 是容器单例，fill() 之后再读就已经是新值了。
+     *
+     * @var array<string, string>
+     */
+    protected array $scriptSnapshot = [];
+
+    /**
+     * 保存前快照高风险字段
+     */
+    protected function beforeSave(): void
+    {
+        $this->scriptSnapshot = rescue(fn (): array => [
+            'head_scripts'     => app(SiteSettings::class)->head_scripts,
+            'body_end_scripts' => app(SiteSettings::class)->body_end_scripts,
+        ], [], report: false);
+    }
+
+    /**
+     * 保存后清除视图缓存、审计自定义代码变更并复检发布前必填项（RESEARCH Pitfall 3）
      *
      * 主题切换后需清除视图缓存，确保新主题立即生效。
      */
@@ -173,7 +302,53 @@ class SiteSettingsPage extends SettingsPage
     {
         Artisan::call('view:clear');
 
+        $this->logScriptChanges();
+
         $this->notifyMissingSettings();
+    }
+
+    /**
+     * 把自定义代码块的变更写入操作日志
+     *
+     * 该字段能在前台执行任意 JS，权限之外必须留下「谁在什么时候改成了什么」的痕迹。
+     */
+    protected function logScriptChanges(): void
+    {
+        if ($this->scriptSnapshot === []) {
+            return;
+        }
+
+        $settings = rescue(fn (): SiteSettings => app(SiteSettings::class), null, report: false);
+
+        if ($settings === null) {
+            return;
+        }
+
+        $changed = [];
+
+        foreach (['head_scripts', 'body_end_scripts'] as $field) {
+            $old = $this->scriptSnapshot[$field] ?? '';
+            $new = (string) $settings->{$field};
+
+            if ($old !== $new) {
+                $changed[$field] = [
+                    'old' => mb_substr($old, 0, 500),
+                    'new' => mb_substr($new, 0, 500),
+                ];
+            }
+        }
+
+        if ($changed === []) {
+            return;
+        }
+
+        $causer = app(ActivityLogger::class)->currentCauser();
+
+        activity('admin')
+            ->causedBy($causer)
+            ->withProperties(['action' => 'update', 'model' => 'SiteSettings', 'changed' => $changed])
+            ->event('update')
+            ->log('修改官网自定义前台代码');
     }
 
     /**

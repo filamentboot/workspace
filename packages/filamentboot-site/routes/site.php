@@ -2,6 +2,7 @@
 
 use Filamentboot\FilamentbootSite\Http\Controllers\SiteFrontController;
 use Filamentboot\FilamentbootSite\Http\Controllers\SitemapController;
+use Filamentboot\FilamentbootSite\Http\Middleware\CaptureVisitorAttribution;
 use Illuminate\Routing\RouteRegistrar;
 use Illuminate\Support\Facades\Route;
 
@@ -65,7 +66,8 @@ $applyMode(Route::middleware('web')->controller(SitemapController::class))
         Route::get('/robots.txt', 'robots')->name('site.robots');
     });
 
-$applyMode(Route::middleware('web')->controller(SiteFrontController::class))
+// 内容页额外挂首触归因中间件：sitemap/robots 不需要，也不应为爬虫开 session
+$applyMode(Route::middleware(['web', CaptureVisitorAttribution::class])->controller(SiteFrontController::class))
     ->group(function () use ($slugPattern): void {
         // 首页
         Route::get('/', 'home')->name('site.home');

@@ -4,8 +4,13 @@
  * 三字段（姓名/电话/留言）+ wire:loading 提交中状态 + $submitted 成功态
  * + 速率限制错误红字（UI-SPEC §Livewire Interaction States）。
  * 由 ContactForm Livewire 组件渲染（10-04 落地组件逻辑）。
+ *
+ * 根元素的 x-effect 把全局 store 里的转化入口标识同步进组件（A1）：
+ * $wire.set 第三参数 false 表示只改客户端、不发网络请求，值随下一次
+ * submit 一并提交，避免每次点开面板都多打一个来回。
+ * $store.contactPanel 用可选链取值——表单若脱离悬浮面板单独渲染，该 store 不存在。
  --}}
-<div>
+<div x-data x-effect="$wire.set('source', $store.contactPanel?.source ?? '', false)">
     @if($submitted)
         {{-- 成功状态：check-circle + 感谢文案 --}}
         <div class="flex flex-col items-center justify-center py-12 text-center">

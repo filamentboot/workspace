@@ -89,6 +89,45 @@ class SiteSettings extends Settings
     public ?string $og_default_image = null;
 
     /**
+     * 新询盘通知收件人（A2）
+     *
+     * 多个地址用英文逗号分隔，留空即关闭通知。营销站线索响应速度是转化的
+     * 头号变量，不配置就只能靠人主动登后台刷新。
+     */
+    public string $notify_emails = '';
+
+    /**
+     * 百度统计站点 ID（A3）
+     *
+     * 只填 ID，脚本由固定模板生成，不给填写方写 JS 的机会。
+     */
+    public string $baidu_tongji_id = '';
+
+    /**
+     * Google Analytics 4 衡量 ID（A3）
+     *
+     * 形如 G-XXXXXXXXXX，脚本由固定模板生成。
+     */
+    public string $ga_measurement_id = '';
+
+    /**
+     * 自定义 <head> 代码块（A3）
+     *
+     * ⚠️ 原样输出到前台且**不过 purifier**（过滤会破坏脚本），等于开放前台
+     * 任意 JS 执行能力。仅 manage_site_settings 权限可修改，变更写操作日志。
+     * 这是有意开放的例外：由受信管理员配置且有权限与审计兜底，
+     * 与「富文本一律走白名单过滤」面向内容编辑的场景不同。
+     */
+    public string $head_scripts = '';
+
+    /**
+     * 自定义 </body> 前代码块（A3）
+     *
+     * 风险与约束同 head_scripts。
+     */
+    public string $body_end_scripts = '';
+
+    /**
      * Settings 分组名
      */
     public static function group(): string

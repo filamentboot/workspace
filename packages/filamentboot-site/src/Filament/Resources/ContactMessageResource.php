@@ -4,9 +4,11 @@ namespace Filamentboot\FilamentbootSite\Filament\Resources;
 
 use BackedEnum;
 use Filament\Actions\ViewAction;
+use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Grid;
+use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\TextColumn;
@@ -16,6 +18,7 @@ use Filamentboot\FilamentbootSite\Enums\ContactMessageStatus;
 use Filamentboot\FilamentbootSite\Filament\Resources\ContactMessageResource\Pages\ListContactMessages;
 use Filamentboot\FilamentbootSite\Filament\Resources\ContactMessageResource\Pages\ViewContactMessage;
 use Filamentboot\FilamentbootSite\Models\ContactMessage;
+use Filamentboot\Models\AdminUser;
 use Illuminate\Database\Eloquent\Builder;
 use UnitEnum;
 
@@ -25,6 +28,9 @@ use UnitEnum;
  * 前台访客通过 Livewire 询盘表单直接写 DB，后台不允许新建（canCreate=false）。
  * 列表内联 SelectColumn 支持状态流转 unread→contacted→closed（D-10-15）。
  * 导航 Badge 显示未读询盘数，保护 PII（T-10-03-04）需授权角色。
+ *
+ * 列表与详情展示 A1 的来源与渠道归因（source / landing_url / referer / utm_*），
+ * 来源中文名取 config('filamentboot-site.contact.sources')，未登记时回落原始 key。
  */
 class ContactMessageResource extends Resource
 {
@@ -94,10 +100,61 @@ class ContactMessageResource extends Resource
                             : (string) $state
                     ),
                 TextEntry::make('ip')->label('IP 地址')->placeholder('-'),
+                TextEntry::make('assignee.nickname')
+                    ->label('跟进人')
+                    ->placeholder('未分配'),
+                TextEntry::make('created_at')
+                    ->label('提交时间')
+                    ->dateTime('Y-m-d H:i:s'),
             ]),
-            TextEntry::make('created_at')
-                ->label('提交时间')
-                ->dateTime('Y-m-d H:i:s'),
+
+            // 跟进时间线（A4）：谁在什么时候做了什么，避免多人重复联系或集体漏掉
+            Section::make('跟进记录')
+                ->description('通过页面右上角「添加跟进备注」记录联系进展。')
+                ->schema([
+                    RepeatableEntry::make('notes')
+                        ->hiddenLabel()
+                        ->placeholder('暂无跟进记录')
+                        ->schema([
+                            TextEntry::make('created_at')
+                                ->label('时间')
+                                ->dateTime('Y-m-d H:i'),
+                            TextEntry::make('author.nickname')
+                                ->label('记录人')
+                                ->placeholder('已删除用户'),
+                            TextEntry::make('body')
+                                ->label('内容')
+                                ->columnSpanFull(),
+                        ])
+                        ->columns(2),
+                ]),
+
+            // 来源与渠道归因（A1）：判断线索从哪个页面、哪个按钮、哪个投放渠道来
+            Section::make('来源与渠道')
+                ->description('由访客首次落地时采集，用于判断投放效果与转化入口质量。')
+                ->schema([
+                    Grid::make(2)->schema([
+                        TextEntry::make('source')
+                            ->label('转化入口')
+                            ->placeholder('-')
+                            ->formatStateUsing(
+                                fn (mixed $state, ContactMessage $record): string => $record->sourceLabel() ?? '-'
+                            ),
+                        TextEntry::make('utm_source')->label('渠道来源')->placeholder('-'),
+                        TextEntry::make('utm_medium')->label('渠道媒介')->placeholder('-'),
+                        TextEntry::make('utm_campaign')->label('推广活动')->placeholder('-'),
+                        TextEntry::make('utm_term')->label('关键词')->placeholder('-'),
+                        TextEntry::make('utm_content')->label('创意标识')->placeholder('-'),
+                    ]),
+                    TextEntry::make('landing_url')
+                        ->label('首次落地页')
+                        ->placeholder('-')
+                        ->columnSpanFull(),
+                    TextEntry::make('referer')
+                        ->label('来源页')
+                        ->placeholder('-')
+                        ->columnSpanFull(),
+                ]),
         ]);
     }
 
@@ -118,6 +175,17 @@ class ContactMessageResource extends Resource
                     ->label('留言')
                     ->limit(50)
                     ->placeholder('-'),
+                TextColumn::make('source')
+                    ->label('来源')
+                    ->badge()
+                    ->placeholder('-')
+                    ->formatStateUsing(
+                        fn (mixed $state, ContactMessage $record): string => $record->sourceLabel() ?? '-'
+                    ),
+                TextColumn::make('utm_source')
+                    ->label('渠道')
+                    ->placeholder('-')
+                    ->toggleable(isToggledHiddenByDefault: true),
                 SelectColumn::make('status')
                     ->label('状态')
                     ->options(
@@ -125,6 +193,14 @@ class ContactMessageResource extends Resource
                             ->mapWithKeys(fn (ContactMessageStatus $s): array => [$s->value => $s->label()])
                             ->all()
                     ),
+                SelectColumn::make('assigned_to')
+                    ->label('跟进人')
+                    ->options(fn (): array => AdminUser::query()
+                        ->orderBy('id')
+                        ->pluck('nickname', 'id')
+                        ->all())
+                    ->searchable()
+                    ->placeholder('未分配'),
                 TextColumn::make('ip')
                     ->label('IP')
                     ->placeholder('-'),
@@ -141,6 +217,14 @@ class ContactMessageResource extends Resource
                             ->mapWithKeys(fn (ContactMessageStatus $s): array => [$s->value => $s->label()])
                             ->all()
                     ),
+                SelectFilter::make('source')
+                    ->label('来源')
+                    ->options(fn (): array => ContactMessage::sourceFilterOptions()),
+                SelectFilter::make('assigned_to')
+                    ->label('跟进人')
+                    ->relationship('assignee', 'nickname')
+                    ->searchable()
+                    ->preload(),
             ])
             ->recordActions([
                 ViewAction::make(),

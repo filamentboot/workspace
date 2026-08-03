@@ -71,6 +71,7 @@
                 "publish_tags": ["filamentboot-site-config", "filamentboot-site-assets"],
                 "run_migrations": true,
                 "seeders": [
+                    "Filamentboot\\FilamentbootSite\\Database\\Seeders\\SitePermissionSeeder",
                     "Filamentboot\\FilamentbootSite\\Database\\Seeders\\SiteMenuSeeder",
                     "Filamentboot\\FilamentbootSite\\Database\\Seeders\\SiteDemoSeeder"
                 ]

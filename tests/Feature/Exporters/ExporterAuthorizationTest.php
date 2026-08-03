@@ -19,7 +19,7 @@ beforeEach(function () {
     app(PermissionRegistrar::class)->forgetCachedPermissions();
 
     // 创建导出权限点
-    foreach (['export_admin_user', 'export_department', 'export_login_log'] as $permission) {
+    foreach (['export_admin_user', 'export_department', 'export_login_log', 'export_contact_message'] as $permission) {
         Permission::firstOrCreate([
             'name'       => $permission,
             'guard_name' => 'admin',
@@ -48,6 +48,27 @@ it('无 export_login_log 权限用户触发导出被拒', function () {
     $this->actingAs($user, 'admin');
 
     expect(Gate::check('export_login_log'))->toBeFalse();
+});
+
+/**
+ * 询盘导出属于访客 PII 批量外流，必须有独立权限点门住（A4）
+ */
+it('无 export_contact_message 权限用户触发导出被拒', function () {
+    $user = AdminUser::factory()->create();
+    $this->actingAs($user, 'admin');
+
+    expect(Gate::check('export_contact_message'))->toBeFalse();
+});
+
+it('有 export_contact_message 权限的用户 Gate::check 返回 true', function () {
+    $role = Role::create(['name' => 'lead-exporter', 'guard_name' => 'admin']);
+    $role->givePermissionTo('export_contact_message');
+
+    $user = AdminUser::factory()->create();
+    $user->assignRole($role);
+    $this->actingAs($user, 'admin');
+
+    expect(Gate::check('export_contact_message'))->toBeTrue();
 });
 
 it('有 export_admin_user 权限的用户 Gate::check 返回 true', function () {

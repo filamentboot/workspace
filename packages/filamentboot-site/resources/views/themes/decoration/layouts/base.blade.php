@@ -29,6 +29,9 @@
          宿主需在 vite.config.js 的 input 中声明该路径后执行 npm run build。 --}}
     @vite(\Filamentboot\FilamentbootSite\Support\ThemeAsset::viteEntry('decoration'))
 
+    {{-- 统计代码注入位（A3）：结构化 ID 生成的代码 + 自定义 head 代码块 --}}
+    @include('filamentboot-site::components.analytics', ['position' => 'head'])
+
     @stack('head')
 </head>
 {{-- body 级 x-data：Alpine 只处理 x-data 根之内的指令。
@@ -43,6 +46,9 @@
     </a>
 
     @yield('body')
+
+    {{-- 统计代码注入位（A3）：自定义 body 尾代码块 + 表单转化事件上报 --}}
+    @include('filamentboot-site::components.analytics', ['position' => 'body'])
 
     @stack('scripts')
 </body>
