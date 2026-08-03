@@ -1,10 +1,12 @@
 # filamentboot-site — 前台官网管理插件
 
-面向中小企业的前台官网管理插件，提供案例/方案/产品/页面/询盘五类内容管理，支持中英双语与主题切换。
+面向中小企业的前台官网管理插件，提供案例/方案/产品/页面/询盘五类内容管理，中文单语言，支持主题切换。
 
 ## 简介
 
-本包为 Filamentboot 后台增加完整的企业官网内容管理能力。注册 `SitePlugin` 后，后台将出现「官网管理」分组，包含装修案例（`SiteCaseResource`）、智能方案（`SiteSolutionResource`）、智能产品（`SiteProductResource`）、静态页面（`SitePageResource`）、询盘管理（`ContactMessageResource`）五个 Resource，以及未读询盘统计小部件（`UnreadContactMessagesWidget`）。前台路由、Livewire 组件（`CaseFilter`、`ContactForm`）和视图由 `SiteServiceProvider` 自动注册。官网设置（站点名称、联系方式、主题、双语切换等）通过后台「官网设置」页（`SiteSettingsPage`）管理。
+本包为 Filamentboot 后台增加完整的企业官网内容管理能力。注册 `SitePlugin` 后，后台将出现「官网管理」分组，包含装修案例（`SiteCaseResource`）、智能方案（`SiteSolutionResource`）、智能产品（`SiteProductResource`）、静态页面（`SitePageResource`）、询盘管理（`ContactMessageResource`）五个 Resource，以及询盘与站点健康统计小部件（`UnreadContactMessagesWidget`）。前台路由、Livewire 组件（`CaseFilter`、`ContactForm`）和视图由 `SiteServiceProvider` 自动注册。官网设置（公司信息、联系方式、SEO 默认值、主题等）通过后台「网站设置」页（`SiteSettingsPage`）管理。
+
+> **语言范围**：当前版本只维护中文内容流。数据库中的 `*_en` 列为早期双语实现的遗留字段，后台表单与前台渲染均已移除英文入口。
 
 ## 要求
 
@@ -30,7 +32,7 @@ php artisan vendor:publish --tag=filamentboot-site-config
 php artisan vendor:publish --tag=filamentboot-site-assets
 ```
 
-执行数据库迁移（8 张内容表）：
+执行数据库迁移（9 张内容表）：
 
 ```bash
 php artisan migrate
@@ -39,7 +41,7 @@ php artisan migrate
 运行初始化种子数据（可选）：
 
 ```bash
-php artisan db:seed --class="Filamentboot\FilamentbootSite\Database\Seeders\SiteSeeder"
+php artisan db:seed --class="Filamentboot\FilamentbootSite\Database\Seeders\SiteDemoSeeder"
 ```
 
 ## 使用
@@ -65,17 +67,71 @@ public function panel(Panel $panel): Panel
 
 | 组件 | 类 | 说明 |
 |------|----|------|
-| 官网设置页 | `SiteSettingsPage` | 站点基础信息、双语、主题 |
-| 装修案例 | `SiteCaseResource` | 含分类、标签、封面图 |
+| 网站设置页 | `SiteSettingsPage` | 公司信息、联系方式、SEO 默认值、主题 |
+| 装修案例 | `SiteCaseResource` | 含分类、标签、封面图、图集 |
 | 智能方案 | `SiteSolutionResource` | 解决方案内容管理 |
-| 智能产品 | `SiteProductResource` | 含分类、规格 |
+| 智能产品 | `SiteProductResource` | 含分类、品牌、价格 |
 | 静态页面 | `SitePageResource` | 关于我们、联系我们等 |
 | 询盘管理 | `ContactMessageResource` | 只读 + 状态流转 |
-| 未读询盘统计 | `UnreadContactMessagesWidget` | 仪表盘小部件 |
+| 官网概览 | `UnreadContactMessagesWidget` | 未读询盘数 + 发布前健康检查 |
 
-### 2. 前台路由
+### 2. 前台路由挂载模式
 
-`SiteServiceProvider` 自动注册前台路由，`SetLocaleMiddleware` 处理中英文切换，`ContactForm` Livewire 组件带频率限制保护。
+前台路由由 `config/filamentboot-site.php` 的 `route.mode` 决定，**默认 `prefix`，不抢占宿主根路由**：
+
+| 模式 | 用途 | 示例 URL | 环境变量 |
+|------|------|----------|----------|
+| `prefix`（默认） | 宿主已有前台业务 | `/site/about` | `SITE_ROUTE_MODE=prefix`、`SITE_ROUTE_PREFIX=site` |
+| `root` | 项目本身就是官网 | `/about` | `SITE_ROUTE_MODE=root` |
+| `domain` | 官网使用独立域名 | `www.example.com/about` | `SITE_ROUTE_MODE=domain`、`SITE_ROUTE_DOMAIN=www.example.com` |
+
+固定系统路径（`sitemap.xml`、`robots.txt` 等）先于动态 `/{slug}` 注册，并通过 `route.reserved_slugs` 排除，不会被页面路由吞掉。
+
+> 使用动态 `robots.txt` 时，需删除宿主的静态 `public/robots.txt`——Web 服务器会优先返回静态文件。
+
+### 3. 前端资源构建
+
+在宿主 `vite.config.js` 的 `input` 中加入主题 CSS，然后执行 `npm run build`：
+
+```js
+input: [
+    // ...
+    'vendor/filamentboot/filamentboot-site/resources/css/themes/decoration.css',
+    'vendor/filamentboot/filamentboot-site/resources/css/themes/tech-product.css',
+],
+```
+
+### 4. 主题定制
+
+内置两套主题：`decoration`（科技装修 · 深色）与 `tech-product`（科技产品 · 浅色），在「网站设置 → 外观」中切换，保存后自动清除视图缓存。
+
+发布主题视图后即可覆盖包内模板：
+
+```bash
+php artisan vendor:publish --tag=filamentboot-site-views
+```
+
+视图解析优先级（先命中者生效）：
+
+```text
+resources/views/vendor/filamentboot-site/themes/{theme}/   ← 宿主发布覆盖
+包内 resources/views/themes/{theme}/                        ← 主题模板
+包内 resources/views/shared/                                ← 跨主题共享组件
+包内 resources/views/                                       ← Livewire 视图兜底
+```
+
+### 5. 发布前检查
+
+「网站设置」页与仪表盘会提示尚未配置的发布前必填项：联系电话、公司地址、ICP 备案号、隐私政策链接、默认 SEO 标题与描述、默认 Open Graph 图、公司 LOGO。未配置的项不会在前台渲染空栏目，但会在后台持续告警。
+
+## 发布 Tag 一览
+
+| Tag | 内容 | 目标路径 |
+|-----|------|----------|
+| `filamentboot-site-config` | 配置文件 | `config/filamentboot-site.php` |
+| `filamentboot-site-migrations` | 内容与设置迁移 | `database/migrations/` |
+| `filamentboot-site-views` | 主题视图 | `resources/views/vendor/filamentboot-site/themes/` |
+| `filamentboot-site-assets` | 主题 CSS | `resources/css/vendor/filamentboot-site/` |
 
 ## 许可
 

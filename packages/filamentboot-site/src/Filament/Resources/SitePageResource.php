@@ -29,7 +29,7 @@ use UnitEnum;
 /**
  * 静态页面后台资源
  *
- * 提供静态页面 CRUD，含双语 Tab（中文/English/SEO）、
+ * 提供静态页面 CRUD，含内容 Tab（内容/SEO）、
  * slug、is_published 布尔发布、Phase 9 富文本编辑器。
  * 静态页无封面图（D-10-16 简化）。
  */
@@ -49,14 +49,14 @@ class SitePageResource extends Resource
     protected static ?string $pluralModelLabel = '静态页面';
 
     /**
-     * 表单定义（中文/English/SEO 三 Tab，slug + is_published 置顶中文 Tab）
+     * 表单定义（内容/SEO 两 Tab，slug + is_published 置顶内容 Tab）
      */
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
             Tabs::make('内容')
                 ->tabs([
-                    Tab::make('中文')->schema([
+                    Tab::make('内容')->schema([
                         TextInput::make('slug')
                             ->label('URL Slug')
                             ->required()
@@ -66,18 +66,11 @@ class SitePageResource extends Resource
                         Toggle::make('is_published')
                             ->label('已发布'),
                         TextInput::make('title_zh')
-                            ->label('标题（中文）')
+                            ->label('标题')
                             ->required()
                             ->maxLength(255),
                         RichEditorField::make('content_zh')
-                            ->label('正文（中文）'),
-                    ]),
-                    Tab::make('English')->schema([
-                        TextInput::make('title_en')
-                            ->label('Title (English)')
-                            ->maxLength(255),
-                        RichEditorField::make('content_en')
-                            ->label('Content (English)'),
+                            ->label('正文'),
                     ]),
                     Tab::make('SEO')->schema([
                         TextInput::make('seo_title')
@@ -104,7 +97,7 @@ class SitePageResource extends Resource
         return $table
             ->columns([
                 TextColumn::make('title_zh')
-                    ->label('标题（中文）')
+                    ->label('标题')
                     ->searchable()
                     ->limit(30),
                 TextColumn::make('slug')

@@ -1,7 +1,8 @@
 <?php
 
 use Filamentboot\FilamentbootSite\Http\Controllers\SiteFrontController;
-use Filamentboot\FilamentbootSite\Http\Middleware\SetLocaleMiddleware;
+use Filamentboot\FilamentbootSite\Http\Controllers\SitemapController;
+use Illuminate\Routing\RouteRegistrar;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -11,20 +12,61 @@ use Illuminate\Support\Facades\Route;
 | 仅在 plugins.is_enabled = true 时由 SiteServiceProvider::registerFrontend()
 | 通过 loadRoutesFrom 加载，插件禁用时此文件不被引入（T-10-04-01，Pitfall 1）。
 |
-| 双语路由（D-10-06/07）：
-|   - 中文路由：/、/cases、/cases/{slug}、/solutions、...、/{slug}（静态页）
-|   - 英文路由：/en/、/en/cases、...（SetLocaleMiddleware 切换 locale 为 'en'）
+| 挂载模式由 config('filamentboot-site.route.mode') 决定：
+|   prefix（默认）— 挂在 /{prefix} 下，不抢占宿主根路由
+|   root          — 接管根路径，项目本身就是官网时使用
+|   domain        — 绑定独立域名/子域名
 |
-| Pitfall 4 防护：/{slug} 使用负向预查正则 ^(?!en$)，排除与 /en 路由冲突。
-| /{slug} 必须放在所有固定前缀路由之后（防贪婪匹配）。
+| CMS v1 为中文单语言，不再注册 /en 镜像路由。
+|
+| /{slug} 必须放在所有固定前缀路由之后（防贪婪匹配），并用负向预查排除
+| config 中声明的保留 slug，避免 root 模式下吞掉 /admin、/sitemap.xml 等固定路径。
 */
 
-// -----------------------------------------------------------------------
-// 中文路由（默认，无前缀）
-// -----------------------------------------------------------------------
-Route::middleware('web')
-    ->controller(SiteFrontController::class)
-    ->group(function () {
+/** @var array<string, mixed> $routeConfig */
+$routeConfig = config('filamentboot-site.route', []);
+
+$mode   = $routeConfig['mode'] ?? 'prefix';
+$domain = $routeConfig['domain'] ?? null;
+
+/** @var list<string> $reservedSlugs */
+$reservedSlugs = $routeConfig['reserved_slugs'] ?? [];
+
+// 保留 slug 负向预查，防止动态页面路由吞掉固定系统路径
+$escaped     = array_map(static fn (string $slug): string => preg_quote($slug, '/'), $reservedSlugs);
+$slugPattern = $escaped === []
+    ? '^[a-z0-9\-]+$'
+    : '^(?!(?:'.implode('|', $escaped).')$)[a-z0-9\-]+$';
+
+/**
+ * 按挂载模式套用 domain/prefix 约束
+ *
+ * domain 模式未配置域名时降级为 prefix，避免注册出无主机名的路由。
+ */
+$applyMode = static function (RouteRegistrar $registrar) use ($mode, $domain, $routeConfig) {
+    if ($mode === 'domain' && is_string($domain) && $domain !== '') {
+        return $registrar->domain($domain);
+    }
+
+    if ($mode === 'root') {
+        return $registrar;
+    }
+
+    /** @var string $prefix */
+    $prefix = $routeConfig['prefix'] ?? 'site';
+
+    return $registrar->prefix($prefix);
+};
+
+// 固定系统路径：必须先于动态 /{slug} 注册，且已列入 reserved_slugs
+$applyMode(Route::middleware('web')->controller(SitemapController::class))
+    ->group(function (): void {
+        Route::get('/sitemap.xml', 'sitemap')->name('site.sitemap');
+        Route::get('/robots.txt', 'robots')->name('site.robots');
+    });
+
+$applyMode(Route::middleware('web')->controller(SiteFrontController::class))
+    ->group(function () use ($slugPattern): void {
         // 首页
         Route::get('/', 'home')->name('site.home');
 
@@ -40,37 +82,10 @@ Route::middleware('web')
         Route::get('/products', 'productIndex')->name('site.products.index');
         Route::get('/products/{slug}', 'productShow')->name('site.products.show');
 
-        // 静态页面：/{slug} 用负向预查排除 'en'（Pitfall 4，T-10-04-03）
-        // 必须放在所有固定前缀路由之后，防止贪婪匹配覆盖上方路由
+        // 静态页面（必须最后注册，slug 已排除保留路径，T-10-04-03 参数绑定防注入）
         Route::get('/{slug}', 'page')
             ->name('site.page')
-            ->where('slug', '^(?!en$)[a-z0-9\-]+$');
+            ->where('slug', $slugPattern);
     });
 
-// -----------------------------------------------------------------------
-// 英文路由（/en/ 前缀，SetLocaleMiddleware 切换 locale，D-10-07/09）
-// -----------------------------------------------------------------------
-Route::middleware(['web', SetLocaleMiddleware::class])
-    ->prefix('en')
-    ->controller(SiteFrontController::class)
-    ->group(function () {
-        // 英文首页
-        Route::get('/', 'home')->name('site.en.home');
-
-        // 英文装修案例
-        Route::get('/cases', 'caseIndex')->name('site.en.cases.index');
-        Route::get('/cases/{slug}', 'caseShow')->name('site.en.cases.show');
-
-        // 英文智能方案
-        Route::get('/solutions', 'solutionIndex')->name('site.en.solutions.index');
-        Route::get('/solutions/{slug}', 'solutionShow')->name('site.en.solutions.show');
-
-        // 英文智能产品
-        Route::get('/products', 'productIndex')->name('site.en.products.index');
-        Route::get('/products/{slug}', 'productShow')->name('site.en.products.show');
-
-        // 英文静态页面
-        Route::get('/{slug}', 'page')
-            ->name('site.en.page')
-            ->where('slug', '^[a-z0-9\-]+$');
-    });
+unset($applyMode, $routeConfig, $mode, $domain, $reservedSlugs, $escaped, $slugPattern);

@@ -3,29 +3,23 @@
  *
  * 固定顶部 glassmorphism 效果，移动端 hamburger 抽屉（Alpine.js）。
  * 44px 最小触达区，aria-expanded/aria-controls/focus trap 无障碍支持。
+ *
+ * 咨询 CTA 统一调用 $store.contactPanel.show()，与悬浮按钮共用同一面板。
+ * $siteSettings 由 SiteServiceProvider::shareSiteSettings() 注入。
  --}}
 @php
-    $isZh         = app()->getLocale() !== 'en';
-    $companyName  = $isZh
-        ? (optional($siteSettings ?? null)->company_name_zh ?? '晴空妙享科技')
-        : (optional($siteSettings ?? null)->company_name_en ?? 'QKZ Tech');
-    $logoPath     = optional($siteSettings ?? null)->logo;
+    $companyName = ($siteSettings?->company_name_zh ?: '') ?: config('app.name', '');
+    $logoPath    = $siteSettings?->logo;
 
-    $navLinks = $isZh ? [
-        ['href' => url('/cases'),     'label' => '装修案例'],
-        ['href' => url('/solutions'), 'label' => '智能方案'],
-        ['href' => url('/products'),  'label' => '智能产品'],
-        ['href' => url('/about'),     'label' => '关于我们'],
-        ['href' => url('/contact'),   'label' => '联系我们'],
-    ] : [
-        ['href' => url('/en/cases'),     'label' => 'Cases'],
-        ['href' => url('/en/solutions'), 'label' => 'Solutions'],
-        ['href' => url('/en/products'),  'label' => 'Products'],
-        ['href' => url('/en/about'),     'label' => 'About Us'],
-        ['href' => url('/en/contact'),   'label' => 'Contact'],
+    $navLinks = [
+        ['href' => route('site.cases.index'),     'label' => '装修案例'],
+        ['href' => route('site.solutions.index'), 'label' => '智能方案'],
+        ['href' => route('site.products.index'),  'label' => '智能产品'],
+        ['href' => route('site.page', 'about'),   'label' => '关于我们'],
+        ['href' => route('site.page', 'contact'), 'label' => '联系我们'],
     ];
 
-    $ctaLabel = $isZh ? '预约咨询' : 'Book a Consultation';
+    $ctaLabel = '预约咨询';
 @endphp
 
 <header
@@ -36,7 +30,7 @@
     <div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8 h-full flex items-center justify-between">
 
         {{-- 品牌 Logo / 公司名 --}}
-        <a href="{{ url($isZh ? '/' : '/en') }}"
+        <a href="{{ route('site.home') }}"
            class="flex items-center gap-3 min-h-[44px] focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:ring-offset-2 focus-visible:ring-offset-[--color-bg-base] focus-visible:outline-none rounded-sm">
             @if($logoPath)
                 <img src="{{ $logoPath }}" alt="{{ $companyName }}" class="max-h-10 w-auto">
@@ -46,25 +40,24 @@
         </a>
 
         {{-- 桌面导航（md:+ 可见） --}}
-        <nav class="hidden md:flex items-center gap-1" aria-label="{{ $isZh ? '主导航' : 'Main Navigation' }}">
+        <nav class="hidden md:flex items-center gap-1" aria-label="主导航">
             @foreach($navLinks as $link)
                 <a href="{{ $link['href'] }}"
                    class="inline-flex items-center min-h-[44px] px-3 text-sm text-site-secondary hover:text-site-accent transition-colors duration-200
                           focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:ring-offset-2 focus-visible:ring-offset-[--color-bg-base] focus-visible:outline-none rounded-sm
-                          {{ request()->is(ltrim(parse_url($link['href'], PHP_URL_PATH), '/') . '*') ? 'text-site-accent border-b-2 border-[--color-primary]' : '' }}">
+                          {{ request()->is(ltrim(parse_url($link['href'], PHP_URL_PATH) ?? '', '/') . '*') ? 'text-site-accent border-b-2 border-[--color-primary]' : '' }}">
                     {{ $link['label'] }}
                 </a>
             @endforeach
 
-            {{-- 语言切换 --}}
-            @include('filamentboot-site::components.lang-switcher')
-
-            {{-- CTA 按钮 --}}
+            {{-- CTA 按钮（与悬浮询盘按钮共用 $store.contactPanel） --}}
             <button
                 type="button"
+                data-contact-trigger="nav-desktop"
                 class="btn-site-primary inline-flex items-center justify-center min-h-[44px] px-5 py-2 rounded-full text-sm ml-2
                        focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:ring-offset-2 focus-visible:ring-offset-[--color-bg-base] focus-visible:outline-none"
-                onclick="document.getElementById('contact-panel')?.classList.remove('hidden')"
+                @click="$store.contactPanel.show('nav-desktop')"
+                aria-controls="contact-panel"
                 aria-label="{{ $ctaLabel }}">
                 {{ $ctaLabel }}
             </button>
@@ -75,10 +68,10 @@
             type="button"
             class="md:hidden inline-flex items-center justify-center min-w-[44px] min-h-[44px] text-site-secondary hover:text-site-primary
                    focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:ring-offset-2 focus-visible:ring-offset-[--color-bg-base] focus-visible:outline-none rounded-lg"
-            @click="mobileNavOpen = !mobileNavOpen"
+            @click="mobileNavOpen = ! mobileNavOpen"
             :aria-expanded="mobileNavOpen.toString()"
             aria-controls="mobile-nav"
-            :aria-label="mobileNavOpen ? '{{ $isZh ? '关闭导航菜单' : 'Close navigation menu' }}' : '{{ $isZh ? '打开导航菜单' : 'Open navigation menu' }}'">
+            :aria-label="mobileNavOpen ? '关闭导航菜单' : '打开导航菜单'">
             {{-- Heroicons bars-3 --}}
             <svg x-show="!mobileNavOpen" class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
@@ -94,8 +87,8 @@
     <div
         id="mobile-nav"
         role="navigation"
-        :aria-label="'{{ $isZh ? '移动端导航' : 'Mobile Navigation' }}'"
-        class="md:hidden fixed inset-y-0 left-0 z-40 w-72 max-w-xs bg-site-surface border-r border-site shadow-2xl"
+        aria-label="移动端导航"
+        class="md:hidden fixed inset-y-0 left-0 z-[60] w-72 max-w-xs bg-site-surface border-r border-site shadow-2xl"
         x-show="mobileNavOpen"
         x-trap="mobileNavOpen"
         style="display: none;"
@@ -109,7 +102,7 @@
                 class="inline-flex items-center justify-center min-w-[44px] min-h-[44px] text-site-muted hover:text-site-primary
                        focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:outline-none rounded-lg"
                 @click="mobileNavOpen = false"
-                aria-label="{{ $isZh ? '关闭导航菜单' : 'Close navigation menu' }}">
+                aria-label="关闭导航菜单">
                 <svg class="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
                     <path stroke-linecap="round" stroke-linejoin="round" d="M6 18 18 6M6 6l12 12" />
                 </svg>
@@ -127,13 +120,14 @@
             @endforeach
         </nav>
 
-        {{-- 底部：语言切换 + CTA --}}
-        <div class="px-4 py-4 border-t border-site space-y-4">
-            @include('filamentboot-site::components.lang-switcher')
+        {{-- 底部 CTA --}}
+        <div class="px-4 py-4 border-t border-site">
             <button
                 type="button"
+                data-contact-trigger="nav-mobile"
                 class="btn-site-primary w-full inline-flex items-center justify-center min-h-[44px] px-5 py-3 rounded-full font-bold text-sm"
-                onclick="document.getElementById('contact-panel')?.classList.remove('hidden'); mobileNavOpen = false"
+                @click="mobileNavOpen = false; $store.contactPanel.show('nav-mobile')"
+                aria-controls="contact-panel"
                 aria-label="{{ $ctaLabel }}">
                 {{ $ctaLabel }}
             </button>
@@ -142,7 +136,7 @@
 
     {{-- 移动端背景遮罩 --}}
     <div
-        class="md:hidden fixed inset-0 z-30 bg-black/50"
+        class="md:hidden fixed inset-0 z-[55] bg-black/50"
         x-show="mobileNavOpen"
         @click="mobileNavOpen = false"
         style="display: none;"

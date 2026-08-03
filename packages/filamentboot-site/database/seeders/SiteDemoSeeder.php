@@ -18,8 +18,9 @@ use Illuminate\Database\Seeder;
  * 植入湖北晴空妙享科技有限公司官网演示数据：
  * 装修案例/智能方案/产品/静态页面（D-10-18）。
  *
- * 图片：优先使用本地 storage/app/public/site/ 目录图片（D-11-11）；
- * 本地图片不存在时降级到 picsum.photos（开发/演示/离线环境不阻断播种）。
+ * 图片：仅使用本地 storage/app/public/site/ 目录图片（D-11-11）；
+ * 图片不存在时不写入任何媒体，由前台 image-placeholder 组件渲染空态。
+ * 播种数据禁止引入 picsum.photos 等外部图片服务。
  * diskRelPath 形如 'site/cases/modern-3bed-smart.jpg'，相对 public disk（Pitfall 5）。
  * 禁止使用已关闭的 Unsplash source 接口（per RESEARCH Pitfall 7）。
  *
@@ -75,7 +76,7 @@ class SiteDemoSeeder extends Seeder
         );
 
         // 4. 创建装修案例（6 个）
-        // 图片：本地优先（site/cases/{slug}.jpg），降级 picsum.photos（D-11-11）
+        // 图片：仅取本地 site/cases/{slug}.jpg，缺失时不写媒体（D-11-11）
         $casesData = [
             [
                 'title_zh'        => '现代简约三居室全屋智能改造',
@@ -193,11 +194,11 @@ class SiteDemoSeeder extends Seeder
             ],
         ];
 
-        foreach ($casesData as $index => $data) {
+        foreach ($casesData as $data) {
             $case = SiteCase::firstOrCreate(['slug' => $data['slug']], $data);
 
-            // 封面图：本地图片优先，降级 picsum.photos（D-11-11）
-            $this->addCoverImage($case, 'site/cases/'.$data['slug'].'.jpg', $index + 1);
+            // 封面图：仅取本地图片，无图时由前台占位组件兜底（D-11-11）
+            $this->addCoverImage($case, 'site/cases/'.$data['slug'].'.jpg');
 
             // 关联标签
             $case->tags()->syncWithoutDetaching(
@@ -273,11 +274,11 @@ class SiteDemoSeeder extends Seeder
             ],
         ];
 
-        foreach ($solutionsData as $index => $data) {
+        foreach ($solutionsData as $data) {
             $solution = SiteSolution::firstOrCreate(['slug' => $data['slug']], $data);
 
-            // 封面图：本地图片优先，降级 picsum.photos（D-11-11）
-            $this->addCoverImage($solution, 'site/solutions/'.$data['slug'].'.jpg', $index + 1);
+            // 封面图：仅取本地图片，无图时由前台占位组件兜底（D-11-11）
+            $this->addCoverImage($solution, 'site/solutions/'.$data['slug'].'.jpg');
 
             $solution->tags()->syncWithoutDetaching(
                 $tags->random(min(2, $tags->count()))->pluck('id')->toArray()
@@ -296,7 +297,7 @@ class SiteDemoSeeder extends Seeder
             ['title_zh' => '智能电动窗帘电机', 'title_en' => 'Smart Curtain Motor', 'slug' => 'smart-curtain-motor', 'price' => 799.00, 'brand' => '晴空妙享', 'category_id' => $productCategories->get(2)?->id, 'is_featured' => false, 'sort' => 8],
         ];
 
-        foreach ($productsData as $index => $data) {
+        foreach ($productsData as $data) {
             $data['description_zh']  = '晴空妙享旗舰产品，'.$data['title_zh'].'，专为智能家居场景设计，品质保障，专业安装。';
             $data['description_en']  = 'QingKong flagship product '.$data['title_en'].', designed for smart home scenarios with professional installation.';
             $data['seo_title']       = $data['title_zh'].' - 晴空妙享智能家居';
@@ -306,8 +307,8 @@ class SiteDemoSeeder extends Seeder
 
             $product = SiteProduct::firstOrCreate(['slug' => $data['slug']], $data);
 
-            // 封面图：本地图片优先，降级 picsum.photos（D-11-11）
-            $this->addCoverImage($product, 'site/products/'.$data['slug'].'.jpg', $index + 1);
+            // 封面图：仅取本地图片，无图时由前台占位组件兜底（D-11-11）
+            $this->addCoverImage($product, 'site/products/'.$data['slug'].'.jpg');
         }
 
         // 7. 创建静态页面（3 个：about/contact/services）
@@ -381,21 +382,22 @@ class SiteDemoSeeder extends Seeder
     }
 
     /**
-     * 添加封面图：本地 storage 优先，降级 picsum.photos（D-11-11）
+     * 添加封面图：仅使用本地 storage 图片（D-11-11）
      *
-     * 先检查媒体集合幂等守卫，再尝试本地图片；
-     * 本地图片不存在时降级为 picsum.photos；
+     * 本地图片不存在时不添加任何媒体，前台由 image-placeholder 组件兜底。
+     * 此前会降级到 picsum.photos，导致演示数据向站点写入外部占位图 URL，
+     * 上线后表现为封面持续模糊、且依赖第三方图片服务可用性。
+     * 播种数据一律不得引入外部图片来源。
+     *
      * 任何异常静默处理，不阻断 Seeder 执行（适用离线环境）。
      *
      * @param  mixed  $model  目标模型（InteractsWithMedia）
      * @param  string  $diskRelPath  相对 public disk 的路径，如 'site/cases/modern-3bed-smart.jpg'
-     * @param  int  $fallbackSeed  picsum.photos seed 序号（降级用）
      * @param  string  $collection  媒体集合名称（默认 'cover'）
      */
     protected function addCoverImage(
         mixed $model,
         string $diskRelPath,
-        int $fallbackSeed,
         string $collection = 'cover'
     ): void {
         // 幂等守卫：已有图片则跳过
@@ -403,23 +405,17 @@ class SiteDemoSeeder extends Seeder
             return;
         }
 
+        // 本地图片不存在时直接跳过，由前台占位组件渲染空态
+        if (! file_exists(storage_path('app/public/'.$diskRelPath))) {
+            return;
+        }
+
         try {
-            // 优先使用本地图片（生产/晴空独立项目环境）
-            $fullPath = storage_path('app/public/'.$diskRelPath);
-
-            if (file_exists($fullPath)) {
-                // diskRelPath 必须相对 public disk，禁绝对路径（Pitfall 5）
-                $model->addMediaFromDisk($diskRelPath, 'public')
-                    ->toMediaCollection($collection);
-
-                return;
-            }
-
-            // 降级：使用 picsum.photos 占位（开发/演示/离线环境）
-            $model->addMediaFromUrl("https://picsum.photos/seed/qkznj{$fallbackSeed}/800/600")
+            // diskRelPath 必须相对 public disk，禁绝对路径（Pitfall 5）
+            $model->addMediaFromDisk($diskRelPath, 'public')
                 ->toMediaCollection($collection);
         } catch (\Throwable) {
-            // 离线环境或图片不可达时静默跳过，不阻断播种
+            // 磁盘不可用时静默跳过，不阻断播种
         }
     }
 }

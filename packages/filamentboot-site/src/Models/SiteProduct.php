@@ -2,6 +2,7 @@
 
 namespace Filamentboot\FilamentbootSite\Models;
 
+use Filamentboot\FilamentbootSite\Concerns\HasCoverImage;
 use Filamentboot\FilamentbootSite\Database\Factories\SiteProductFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,6 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 /**
  * 智能产品内容模型
@@ -41,6 +43,8 @@ use Spatie\MediaLibrary\InteractsWithMedia;
  */
 class SiteProduct extends Model implements HasMedia
 {
+    use HasCoverImage;
+
     /** @use HasFactory<SiteProductFactory> */
     use HasFactory;
 
@@ -81,6 +85,16 @@ class SiteProduct extends Model implements HasMedia
     {
         $this->addMediaCollection('cover')
             ->singleFile();
+    }
+
+    /**
+     * 注册媒体转换尺寸（thumb/card/og）
+     *
+     * @param  Media|null  $media  触发转换的媒体实例（Spatie 回调签名要求）
+     */
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this->registerCoverConversions();
     }
 
     /**

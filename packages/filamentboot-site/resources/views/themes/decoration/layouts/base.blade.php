@@ -2,18 +2,21 @@
  * decoration 主题基础布局
  *
  * <html class="dark"> 固定深色模式（UI-SPEC §Dark Mode）。
- * 包含 SEO meta 组件、Google Fonts CDN、vite 主题 CSS 注入。
+ * 包含 SEO meta 组件、询盘面板 Store、Google Fonts、vite 主题 CSS 注入。
  * skip-nav 无障碍快捷链接（UI-SPEC §Accessibility）。
  --}}
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}" class="dark">
+<html lang="zh-CN" class="dark">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
 
-    {{-- SEO meta 组件（title/description/keywords/OG/canonical/hreflang，Pattern 5） --}}
+    {{-- SEO meta 组件（title/description/keywords/OG/canonical，Pattern 5） --}}
     @include('filamentboot-site::components.seo-meta')
+
+    {{-- 询盘面板全局 Store，须早于任何 CTA 渲染 --}}
+    @include('filamentboot-site::components.contact-panel-store')
 
     {{-- Google Fonts：Inter（拉丁/数字）+ Noto Sans SC（中文） --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -21,13 +24,17 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Noto+Sans+SC:wght@400;700&display=swap" rel="stylesheet">
 
     {{-- decoration 主题 CSS（Tailwind v4 CSS-first，包含 @theme token + 语义工具类）
-         Vite 入口路径通过 vendor/ 访问，与宿主项目 vite.config.js 输入声明一致。
-         须在宿主项目 vite.config.js 的 input 中添加此路径后执行 npm run build。 --}}
-    @vite('vendor/filamentboot/filamentboot-site/resources/css/themes/decoration.css')
+         入口路径由 ThemeAsset 按 Vite manifest 实际命中的候选解析，
+         兼容真实安装、宿主发布资源与 monorepo 符号链接三种形态。
+         宿主需在 vite.config.js 的 input 中声明该路径后执行 npm run build。 --}}
+    @vite(\Filamentboot\FilamentbootSite\Support\ThemeAsset::viteEntry('decoration'))
 
     @stack('head')
 </head>
-<body class="bg-site-base text-site-primary font-sans antialiased" style="font-feature-settings: 'kern'">
+{{-- body 级 x-data：Alpine 只处理 x-data 根之内的指令。
+     页面各处的咨询 CTA（hero、卡片、详情页 CTA）都不在自己的 x-data 里，
+     统一由此建立顶层 Alpine 根，避免遗漏某个入口。 --}}
+<body x-data class="bg-site-base text-site-primary font-sans antialiased" style="font-feature-settings: 'kern'">
 
     {{-- 跳到主内容（无障碍快捷链接，UI-SPEC §Accessibility skip-nav） --}}
     <a href="#main-content"

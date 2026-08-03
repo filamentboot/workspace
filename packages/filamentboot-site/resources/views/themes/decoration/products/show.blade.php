@@ -4,14 +4,11 @@
 @extends('filamentboot-site::layouts.app')
 
 @php
-    $isZh  = app()->getLocale() !== 'en';
-    $title = $isZh ? ($record->title_zh ?? '') : ($record->title_en ?? $record->title_zh ?? '');
-    $desc  = $isZh ? ($record->description_zh ?? '') : ($record->description_en ?? $record->description_zh ?? '');
-    $cover = $record->cover_image ?? 'https://picsum.photos/seed/product-' . ($record->slug ?? 'product') . '/800/800';
+    $title = $record->title_zh ?? '';
+    $desc  = $record->description_zh ?? '';
+    $cover = $record->coverUrl('card');
     $brand = $record->brand ?? '';
     $price = $record->price ?? null;
-    $altText = $title;
-    $inquireLabel = $isZh ? '咨询价格' : 'Inquire about Pricing';
 @endphp
 
 @section('content')
@@ -21,50 +18,56 @@
 
             {{-- 产品封面图 --}}
             <div class="aspect-square overflow-hidden rounded-2xl bg-site-elevated">
-                <img src="{{ $cover }}"
-                     alt="{{ $altText }}"
-                     class="w-full h-full object-cover"
-                     loading="eager"
-                     fetchpriority="high"
-                     decoding="sync"
-                     width="800"
-                     height="800">
+                @if($cover)
+                    <img src="{{ $cover }}"
+                         alt="{{ $title }} — 产品图"
+                         class="w-full h-full object-cover"
+                         loading="eager"
+                         fetchpriority="high"
+                         decoding="sync"
+                         width="800"
+                         height="800">
+                @else
+                    @include('filamentboot-site::components.image-placeholder', ['label' => '智能产品'])
+                @endif
             </div>
 
             {{-- 产品信息 --}}
             <div class="flex flex-col justify-start">
                 @if($brand)
-                    <p class="text-site-muted text-sm uppercase tracking-wide mb-3">{{ $brand }}</p>
+                    <p class="text-site-secondary text-sm uppercase tracking-wide mb-3">{{ $brand }}</p>
                 @endif
 
                 <h1 class="text-site-primary text-3xl font-bold mb-6 leading-tight">{{ $title }}</h1>
 
                 @if($price)
-                    <p class="text-site-accent font-bold text-2xl mb-6">¥{{ number_format($price, 0) }}</p>
+                    <p class="text-site-accent font-bold text-2xl mb-6">¥{{ number_format((float) $price, 0) }}</p>
                 @else
-                    <p class="text-site-muted text-base mb-6">{{ $inquireLabel }}</p>
+                    <p class="text-site-secondary text-base mb-6">价格以实际配置为准，欢迎咨询</p>
                 @endif
 
                 @if($desc)
                     <p class="text-site-secondary text-base leading-relaxed mb-8">{{ $desc }}</p>
                 @endif
 
-                {{-- 询盘 CTA --}}
+                {{-- 询盘 CTA（与导航、悬浮按钮共用同一面板） --}}
                 <button
                     type="button"
+                    data-contact-trigger="product-detail"
                     class="btn-site-primary inline-flex items-center justify-center min-h-[44px] px-8 py-4 rounded-full font-bold text-base
                            focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:ring-offset-2 focus-visible:ring-offset-[--color-bg-base] focus-visible:outline-none"
-                    onclick="document.getElementById('floating-contact-btn')?.click()"
-                    aria-label="{{ $isZh ? '预约咨询' : 'Book a Consultation' }}">
-                    {{ $isZh ? '预约咨询' : 'Book a Consultation' }}
+                    @click="$store.contactPanel.show('product-detail')"
+                    aria-controls="contact-panel"
+                    aria-label="预约咨询">
+                    预约咨询
                 </button>
             </div>
         </div>
 
         <div class="mt-12">
-            <a href="{{ $isZh ? url('/products') : url('/en/products') }}"
+            <a href="{{ route('site.products.index') }}"
                class="text-site-accent text-sm hover:underline focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:outline-none rounded-sm">
-                &larr; {{ $isZh ? '返回产品列表' : 'Back to Products' }}
+                &larr; 返回产品列表
             </a>
         </div>
     </div>

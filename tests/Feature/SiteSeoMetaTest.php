@@ -1,12 +1,9 @@
 <?php
 
-use Filamentboot\FilamentbootSite\Http\Controllers\SiteFrontController;
-use Filamentboot\FilamentbootSite\Http\Livewire\CaseFilter;
-use Filamentboot\FilamentbootSite\Http\Livewire\ContactForm;
 use Filamentboot\FilamentbootSite\Models\SiteCase;
+use Filamentboot\FilamentbootSite\Settings\SiteSettings;
+use Filamentboot\FilamentbootSite\SiteServiceProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Route;
-use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
@@ -14,153 +11,185 @@ uses(RefreshDatabase::class);
  * SEO 元数据测试（SiteSeoMetaTest）
  *
  * 覆盖场景：
- * - SiteFrontController::buildSeo() 回退链：记录 seo_title → 标题 → 全局默认 → app.name（Pattern 5）
- * - SiteFrontController 仅展示已发布内容（T-10-04-04 未发布内容不泄露）
- * - 视图数据契约：controller 传递 $seoData 到视图（D-10-17）
- * - 渲染级 HTML 断言：GET 详情页响应 HTML 含 <title>/<meta name="description">/<meta property="og:title">
+ * - SEO 回退链：记录 seo_title → 标题 → 全局默认 → app.name（Pattern 5）
+ * - 列表页 meta description 永不为空（线上 P0：首页/列表页 description 为空）
+ * - 站点设置真实注入前台视图（此前控制器传 $settings、视图读 $siteSettings，从未生效）
+ * - 未配置 OG 图时不输出 og:image（此前硬编码到不存在的 /img/og-default.jpg）
+ * - 未发布内容不泄露（T-10-04-04）
+ *
+ * 测试一律走真实 HTTP 路由：上一版本直接给视图手工注入 'siteSettings' => null，
+ * 恰好绕开了控制器与视图之间的变量名不一致，导致该 bug 长期不被发现。
  *
  * @group site
  */
 
 /**
- * 注册路由与视图命名空间（仅在此测试文件中，模拟插件启用状态）
+ * 用 SiteServiceProvider 的真实注册路径挂载前台资源
+ *
+ * 复用生产代码而非在测试里重写一份注册逻辑，避免两边行为漂移。
  */
 beforeEach(function () {
-    // 注册 filamentboot-site 视图命名空间（指向 decoration 主题，同插件启用时行为）
-    $themePath  = base_path('packages/filamentboot-site/resources/views/themes/decoration');
-    $sharedPath = base_path('packages/filamentboot-site/resources/views');
-    view()->addNamespace('filamentboot-site', $themePath);
-    view()->addNamespace('filamentboot-site-shared', $sharedPath);
+    config([
+        'filamentboot-site.route.mode'    => 'root',
+        'filamentboot-site.themes'        => ['decoration' => '科技装修（深色）'],
+        'filamentboot-site.default_theme' => 'decoration',
+    ]);
 
-    // 注册 Livewire 组件（ContactForm/CaseFilter），避免 floating-contact 渲染报错
-    Livewire::component('filamentboot-site::contact-form', ContactForm::class);
-    Livewire::component('filamentboot-site::case-filter', CaseFilter::class);
+    $provider = new SiteServiceProvider(app());
 
-    // 手动注册案例详情路由（模拟 SiteServiceProvider::registerFrontend()）
-    // 仅注册 /cases/{slug}，避免与现有路由冲突
-    Route::middleware('web')
-        ->controller(SiteFrontController::class)
-        ->group(function () {
-            Route::get('/test-cases/{slug}', 'caseShow')
-                ->name('site.test.cases.show');
-        });
+    foreach (['registerLivewireComponents', 'registerThemeViews', 'shareSiteSettings', 'registerFrontend'] as $method) {
+        $reflection = new ReflectionMethod($provider, $method);
+        $reflection->setAccessible(true);
+        $reflection->invoke($provider);
+    }
+
+    // 生产环境由 RouteServiceProvider 的 app->booted 回调统一刷新路由名查找表；
+    // 测试里 provider 是在应用 boot 之后手工调用的，需显式刷新才能用 route() 生成 URL。
+    app('router')->getRoutes()->refreshNameLookups();
+    app('router')->getRoutes()->refreshActionLookups();
 });
 
 /**
- * 案例详情页 SEO meta 数据层面正确输出（Pattern 5 三层回退链验证）
+ * 案例详情页输出记录自身的 SEO 字段（回退链第一层）
  */
-it('案例详情页输出 SEO meta 标签', function () {
-    // 创建一条已发布的案例（带明确 SEO 字段）
-    $case = SiteCase::factory()->create([
+it('案例详情页输出记录自身的 SEO meta', function () {
+    SiteCase::factory()->create([
         'title_zh'        => '现代简约客厅装修案例',
         'slug'            => 'modern-living-room-case',
-        'seo_title'       => '现代简约客厅 - 晴空妙享智能家居 SEO标题',
+        'seo_title'       => '现代简约客厅 - 晴空妙享智能家居',
         'seo_description' => '这是案例专属 SEO 描述，满足 160 字符以内。',
         'seo_keywords'    => '现代简约,客厅装修,智能家居',
         'published_at'    => now()->subDay(),
     ]);
 
-    // 通过反射实例化 SiteFrontController，直接调用 buildSeo 方法验证数据层契约
-    $controller = new SiteFrontController;
-    $reflection = new ReflectionMethod($controller, 'buildSeo');
-    $reflection->setAccessible(true);
-    $seoData = $reflection->invoke($controller, $case, null, 'zh');
+    $response = $this->get('/cases/modern-living-room-case');
 
-    // 验证 SEO 回退链第一层：使用记录自身 seo_title
-    expect($seoData['title'])->toBe('现代简约客厅 - 晴空妙享智能家居 SEO标题');
-    expect($seoData['description'])->toBe('这是案例专属 SEO 描述，满足 160 字符以内。');
-    expect($seoData['keywords'])->toBe('现代简约,客厅装修,智能家居');
-    expect($seoData['ogTitle'])->toBe($seoData['title']);
-    expect($seoData['ogDescription'])->toBe($seoData['description']);
+    $response->assertOk();
+    $response->assertSee('现代简约客厅 - 晴空妙享智能家居', escape: false);
+    $response->assertSee('这是案例专属 SEO 描述，满足 160 字符以内。', escape: false);
+    $response->assertSee('现代简约,客厅装修,智能家居', escape: false);
+    $response->assertSee('<meta property="og:title"', escape: false);
+    $response->assertSee('rel="canonical"', escape: false);
 });
 
 /**
- * SEO 回退链第二层：无 seo_title 时降级到标题字段（Pattern 5）
+ * 无 seo_title 时回退到标题字段（回退链第二层）
  */
-it('SEO 回退链无记录 SEO 字段时使用标题回退', function () {
-    $case = SiteCase::factory()->create([
+it('无记录 SEO 字段时回退到标题', function () {
+    SiteCase::factory()->create([
         'title_zh'        => '北欧风格卧室改造',
         'slug'            => 'nordic-bedroom-renovation',
-        'seo_title'       => '',        // 空字符串：触发回退
-        'seo_description' => '',        // 空字符串：触发回退
+        'seo_title'       => '',
+        'seo_description' => '',
         'published_at'    => now()->subDay(),
     ]);
 
-    // 直接操作对象属性确保空值
-    $case->seo_title       = '';
-    $case->seo_description = '';
+    $response = $this->get('/cases/nordic-bedroom-renovation');
 
-    $controller = new SiteFrontController;
-    $reflection = new ReflectionMethod($controller, 'buildSeo');
-    $reflection->setAccessible(true);
-    $seoData = $reflection->invoke($controller, $case, null, 'zh');
+    $response->assertOk();
+    $response->assertSee('北欧风格卧室改造', escape: false);
+});
 
-    // 第二层回退：标题字段 title_zh
-    expect($seoData['title'])->toBe('北欧风格卧室改造');
+/**
+ * 列表页 meta description 永不为空
+ *
+ * 线上 P0：首页、案例、方案、产品列表页的 meta description 全部为空字符串。
+ * 站点设置未填写默认描述时，必须回退到 config 兜底文案。
+ */
+it('列表页 meta description 不为空', function () {
+    $settings                             = app(SiteSettings::class);
+    $settings->seo_default_description_zh = '';
+    $settings->save();
+
+    foreach (['/', '/cases', '/solutions', '/products'] as $path) {
+        $html = $this->get($path)->assertOk()->getContent();
+
+        preg_match('/<meta name="description" content="([^"]*)"/', (string) $html, $matches);
+
+        expect($matches[1] ?? '')->not->toBe('', "页面 {$path} 的 meta description 不应为空");
+    }
+});
+
+/**
+ * 站点设置真实注入前台视图
+ *
+ * 控制器与 Blade 的变量名一旦再次错位，本用例立即失败。
+ */
+it('站点设置注入前台视图并渲染', function () {
+    $settings                             = app(SiteSettings::class);
+    $settings->company_name_zh            = '测试科技有限公司';
+    $settings->phone                      = '027-9999-8888';
+    $settings->address_zh                 = '湖北省武汉市测试路 1 号';
+    $settings->icp_number                 = '鄂ICP备12345678号';
+    $settings->seo_default_description_zh = '来自站点设置的默认描述。';
+    $settings->save();
+
+    $response = $this->get('/');
+
+    $response->assertOk();
+    $response->assertSee('测试科技有限公司', escape: false);
+    $response->assertSee('027-9999-8888', escape: false);
+    $response->assertSee('湖北省武汉市测试路 1 号', escape: false);
+    $response->assertSee('鄂ICP备12345678号', escape: false);
+    $response->assertSee('来自站点设置的默认描述。', escape: false);
+});
+
+/**
+ * 联系方式全部未配置时页脚不渲染空的「联系我们」栏目
+ */
+it('联系方式未配置时页脚不渲染空栏目', function () {
+    $settings                = app(SiteSettings::class);
+    $settings->phone         = '';
+    $settings->address_zh    = '';
+    $settings->wechat_qrcode = null;
+    $settings->save();
+
+    $html = (string) $this->get('/')->assertOk()->getContent();
+
+    expect(substr_count($html, '联系我们'))->toBeGreaterThan(0); // 导航/CTA 中仍有
+    expect($html)->not->toContain('tracking-widest mb-4">联系我们');
+});
+
+/**
+ * 未配置默认 OG 图时不输出 og:image
+ *
+ * 此前硬编码 asset('img/og-default.jpg')，该文件不存在，线上 og:image 恒为 404。
+ */
+it('未配置 OG 图时不输出 og:image', function () {
+    $settings                   = app(SiteSettings::class);
+    $settings->og_default_image = null;
+    $settings->save();
+
+    $html = (string) $this->get('/')->assertOk()->getContent();
+
+    expect($html)->not->toContain('og:image');
+    expect($html)->not->toContain('img/og-default.jpg');
+});
+
+/**
+ * 前台不再输出任何外部占位图
+ */
+it('前台不输出外部占位图服务地址', function () {
+    SiteCase::factory()->count(3)->create(['published_at' => now()->subDay()]);
+
+    foreach (['/', '/cases'] as $path) {
+        $html = (string) $this->get($path)->assertOk()->getContent();
+
+        expect($html)->not->toContain('picsum.photos');
+        expect($html)->not->toContain('unsplash.com');
+    }
 });
 
 /**
  * 未发布内容不泄露（T-10-04-04 安全验证）
- *
- * SiteCase::published() scope 过滤草稿。
  */
-it('未发布案例不被前台路由展示', function () {
-    // 创建草稿案例（无 published_at）
-    $draftCase = SiteCase::factory()->draft()->create([
-        'slug' => 'draft-case-should-not-appear',
-    ]);
-
-    // 已发布案例
-    $publishedCase = SiteCase::factory()->create([
+it('未发布案例不被前台展示', function () {
+    SiteCase::factory()->draft()->create(['slug' => 'draft-case-should-not-appear']);
+    SiteCase::factory()->create([
         'slug'         => 'published-case-visible',
         'published_at' => now()->subDay(),
     ]);
 
-    // published() scope 仅返回已发布内容
-    $publishedCases = SiteCase::published()->get();
-
-    expect($publishedCases->pluck('slug'))->toContain('published-case-visible');
-    expect($publishedCases->pluck('slug'))->not->toContain('draft-case-should-not-appear');
-});
-
-/**
- * 渲染级 HTML 断言：seo-meta 组件渲染输出含 title/description/og:title（SEO Contract）
- *
- * 补强 10-04 仅测试数据层的 buildSeo 方法，本测试升级为 Blade 渲染级验证。
- * 直接渲染 seo-meta 组件（不走完整 HTTP 路由，避免 floating-contact 的 Livewire 依赖），
- * 断言 HTML 中含关键 SEO 标签（Pattern 5，D-10-17，SEO Contract）。
- */
-it('详情页 seo-meta 组件渲染 HTML 包含 SEO meta 标签', function () {
-    // Seed 一条已发布案例（带 seo_title 和 seo_description）
-    $case = SiteCase::factory()->create([
-        'title_zh'        => '现代科技客厅方案',
-        'slug'            => 'modern-tech-living-room',
-        'seo_title'       => '现代科技客厅方案 - 晴空妙享',
-        'seo_description' => '专业智能家居方案，现代科技客厅定制服务。',
-        'published_at'    => now()->subDay(),
-    ]);
-
-    // 通过 buildSeo 获取 SEO 数据（同控制器行为）
-    $controller = new SiteFrontController;
-    $reflection = new ReflectionMethod($controller, 'buildSeo');
-    $reflection->setAccessible(true);
-    $seoData = $reflection->invoke($controller, $case, null, 'zh');
-
-    // 直接渲染 seo-meta.blade.php，传入 seoData（绕开 HTTP 路由，避免 Livewire 依赖）
-    $html = view('filamentboot-site::components.seo-meta', [
-        'seoData'      => $seoData,
-        'siteSettings' => null,
-    ])->render();
-
-    // 渲染级 HTML 断言：title 标签存在且包含 seo_title（SEO Contract）
-    expect($html)->toContain('<title>');
-    expect($html)->toContain('现代科技客厅方案 - 晴空妙享');
-
-    // meta name="description" 存在（SEO Contract）
-    expect($html)->toContain('<meta name="description"');
-    expect($html)->toContain('专业智能家居方案');
-
-    // og:title Open Graph 标签存在（D-10-17，SEO Contract）
-    expect($html)->toContain('<meta property="og:title"');
-    expect($html)->toContain('现代科技客厅方案 - 晴空妙享');
+    $this->get('/cases/published-case-visible')->assertOk();
+    $this->get('/cases/draft-case-should-not-appear')->assertNotFound();
 });

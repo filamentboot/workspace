@@ -32,7 +32,7 @@ use UnitEnum;
 /**
  * 智能产品后台资源
  *
- * 提供产品 CRUD，含双语 Tab（基本信息/中文/English/SEO）、
+ * 提供产品 CRUD，含内容 Tab（基本信息/内容/SEO）、
  * 分类、标签、is_published 布尔发布、置顶、封面图（UploadSettings 磁盘）。
  */
 class SiteProductResource extends Resource
@@ -51,7 +51,7 @@ class SiteProductResource extends Resource
     protected static ?string $pluralModelLabel = '智能产品';
 
     /**
-     * 表单定义（双语 Tab + SEO + 分类标签 + 发布置顶 + 封面图）
+     * 表单定义（内容 Tab + SEO + 分类标签 + 发布置顶 + 封面图）
      */
     public static function form(Schema $schema): Schema
     {
@@ -95,21 +95,13 @@ class SiteProductResource extends Resource
                             ->image()
                             ->imageEditor(),
                     ]),
-                    Tab::make('中文')->schema([
+                    Tab::make('内容')->schema([
                         TextInput::make('title_zh')
-                            ->label('标题（中文）')
+                            ->label('标题')
                             ->required()
                             ->maxLength(255),
                         Textarea::make('description_zh')
-                            ->label('描述（中文）')
-                            ->rows(3),
-                    ]),
-                    Tab::make('English')->schema([
-                        TextInput::make('title_en')
-                            ->label('Title (English)')
-                            ->maxLength(255),
-                        Textarea::make('description_en')
-                            ->label('Description (English)')
+                            ->label('描述')
                             ->rows(3),
                     ]),
                     Tab::make('SEO')->schema([
@@ -142,7 +134,7 @@ class SiteProductResource extends Resource
                     ->conversion('thumb')
                     ->circular(),
                 TextColumn::make('title_zh')
-                    ->label('标题（中文）')
+                    ->label('标题')
                     ->searchable()
                     ->limit(30),
                 TextColumn::make('category.name_zh')

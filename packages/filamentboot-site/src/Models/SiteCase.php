@@ -2,6 +2,7 @@
 
 namespace Filamentboot\FilamentbootSite\Models;
 
+use Filamentboot\FilamentbootSite\Concerns\HasCoverImage;
 use Filamentboot\FilamentbootSite\Database\Factories\SiteCaseFactory;
 use Filamentboot\FilamentbootSite\Enums\CaseStyle;
 use Filamentboot\FilamentbootSite\Enums\HouseType;
@@ -14,6 +15,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\InteractsWithMedia;
+use Spatie\MediaLibrary\MediaCollections\Models\Media;
 
 /**
  * 装修案例内容模型
@@ -48,6 +50,8 @@ use Spatie\MediaLibrary\InteractsWithMedia;
  */
 class SiteCase extends Model implements HasMedia
 {
+    use HasCoverImage;
+
     /** @use HasFactory<SiteCaseFactory> */
     use HasFactory;
 
@@ -92,6 +96,16 @@ class SiteCase extends Model implements HasMedia
             ->singleFile();
 
         $this->addMediaCollection('gallery');
+    }
+
+    /**
+     * 注册媒体转换尺寸（thumb/card/og）
+     *
+     * @param  Media|null  $media  触发转换的媒体实例（Spatie 回调签名要求）
+     */
+    public function registerMediaConversions(?Media $media = null): void
+    {
+        $this->registerCoverConversions();
     }
 
     /**

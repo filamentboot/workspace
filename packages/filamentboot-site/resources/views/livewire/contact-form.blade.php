@@ -5,10 +5,6 @@
  * + 速率限制错误红字（UI-SPEC §Livewire Interaction States）。
  * 由 ContactForm Livewire 组件渲染（10-04 落地组件逻辑）。
  --}}
-@php
-    $isZh = app()->getLocale() !== 'en';
-@endphp
-
 <div>
     @if($submitted)
         {{-- 成功状态：check-circle + 感谢文案 --}}
@@ -20,10 +16,10 @@
                 <path stroke-linecap="round" stroke-linejoin="round" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0z" />
             </svg>
             <h3 class="text-site-primary font-bold text-xl mb-3">
-                {{ $isZh ? '感谢您的留言！' : 'Thank you!' }}
+                感谢您的留言！
             </h3>
             <p class="text-site-secondary text-base">
-                {{ $isZh ? '我们会尽快与您联系。' : "We'll be in touch shortly." }}
+                我们会尽快与您联系。
             </p>
         </div>
     @else
@@ -34,7 +30,7 @@
             <div class="mb-6">
                 <label for="contact-name"
                        class="block text-site-secondary text-sm font-normal mb-2">
-                    {{ $isZh ? '姓名 *' : 'Name *' }}
+                    姓名 *
                 </label>
                 <input
                     id="contact-name"
@@ -47,7 +43,7 @@
                            focus:outline-none focus:border-site-glow focus:ring-1
                            @error('name') border-[--color-destructive] @enderror"
                     style="--tw-ring-color: rgba(0, 212, 255, 0.3);"
-                    placeholder="{{ $isZh ? '请输入您的姓名' : 'Your name' }}"
+                    placeholder="请输入您的姓名"
                     aria-required="true"
                     aria-describedby="{{ $errors->has('name') ? 'name-error' : '' }}">
                 @error('name')
@@ -61,7 +57,7 @@
             <div class="mb-6">
                 <label for="contact-phone"
                        class="block text-site-secondary text-sm font-normal mb-2">
-                    {{ $isZh ? '电话 *' : 'Phone *' }}
+                    电话 *
                 </label>
                 <input
                     id="contact-phone"
@@ -74,7 +70,7 @@
                            placeholder:text-site-muted text-base min-h-[44px]
                            focus:outline-none focus:border-site-glow focus:ring-1
                            @error('phone') border-[--color-destructive] @enderror"
-                    placeholder="{{ $isZh ? '请输入联系电话' : 'Your phone number' }}"
+                    placeholder="请输入联系电话"
                     aria-required="true"
                     aria-describedby="{{ $errors->has('phone') ? 'phone-error' : '' }}">
                 @error('phone')
@@ -88,7 +84,7 @@
             <div class="mb-6">
                 <label for="contact-message"
                        class="block text-site-secondary text-sm font-normal mb-2">
-                    {{ $isZh ? '留言' : 'Message' }}
+                    留言
                 </label>
                 <textarea
                     id="contact-message"
@@ -98,7 +94,7 @@
                            placeholder:text-site-muted text-base
                            focus:outline-none focus:border-site-glow focus:ring-1
                            @error('message') border-[--color-destructive] @enderror"
-                    placeholder="{{ $isZh ? '请简要描述您的需求（选填）' : 'Briefly describe your needs (optional)' }}"
+                    placeholder="请简要描述您的需求（选填）"
                     aria-describedby="{{ $errors->has('message') ? 'message-error' : '' }}"></textarea>
                 @error('message')
                     <span id="message-error" class="mt-1 text-xs block" style="color: var(--color-destructive);" role="alert">
@@ -117,7 +113,7 @@
 
                 {{-- 正常状态 --}}
                 <span wire:loading.remove>
-                    {{ $isZh ? '提交留言' : 'Submit Message' }}
+                    提交留言
                 </span>
 
                 {{-- 加载状态（wire:loading.delay 防止快速响应闪烁） --}}
@@ -127,7 +123,7 @@
                         <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" fill="none"></circle>
                         <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path>
                     </svg>
-                    {{ $isZh ? '提交中...' : 'Submitting...' }}
+                    提交中...
                 </span>
             </button>
 

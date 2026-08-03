@@ -17,9 +17,11 @@ use Illuminate\View\View;
  * 所有方法仅返回已发布（scopePublished）的内容，防止草稿泄露（T-10-04-04）。
  * slug 参数通过 Eloquent where() 参数绑定传递，防止 SQL 注入（T-10-04-03）。
  *
+ * 站点设置由 SiteServiceProvider::shareSiteSettings() 以 $siteSettings 注入全部
+ * 前台视图，控制器不再重复传参。
+ *
  * 视图命名空间 'filamentboot-site::' 由 SiteServiceProvider::registerThemeViews()
- * 动态指向当前主题目录（resources/views/themes/{active_theme}/），
- * 10-05 在主题目录下提供具体 Blade 模板。
+ * 按「宿主发布覆盖 → 包内主题 → 共享层 → 包内视图根」的顺序解析。
  */
 class SiteFrontController extends Controller
 {
@@ -30,21 +32,17 @@ class SiteFrontController extends Controller
      */
     public function home(): View
     {
-        $settings          = $this->resolveSettings();
-        $locale            = app()->getLocale();
         $featuredCases     = SiteCase::published()->featured()->latest('published_at')->take(6)->get();
         $featuredSolutions = SiteSolution::published()->featured()->latest('published_at')->take(4)->get();
         $featuredProducts  = SiteProduct::published()->featured()->take(6)->get();
 
-        $seoData = $this->buildHomeSeo($settings, $locale);
+        $seoData = $this->buildHomeSeo();
 
         return view('filamentboot-site::home', compact(
             'featuredCases',
             'featuredSolutions',
             'featuredProducts',
-            'seoData',
-            'locale',
-            'settings'
+            'seoData'
         ));
     }
 
@@ -53,12 +51,10 @@ class SiteFrontController extends Controller
      */
     public function caseIndex(): View
     {
-        $settings = $this->resolveSettings();
-        $locale   = app()->getLocale();
-        $records  = SiteCase::published()->latest('published_at')->paginate(12);
-        $seoData  = $this->buildListSeo('案例', 'Cases', $settings, $locale);
+        $records = SiteCase::published()->latest('published_at')->paginate(12);
+        $seoData = $this->buildListSeo('装修案例');
 
-        return view('filamentboot-site::cases.index', compact('records', 'seoData', 'locale', 'settings'));
+        return view('filamentboot-site::cases.index', compact('records', 'seoData'));
     }
 
     /**
@@ -68,12 +64,10 @@ class SiteFrontController extends Controller
      */
     public function caseShow(string $slug): View
     {
-        $record   = SiteCase::published()->where('slug', $slug)->firstOrFail();
-        $settings = $this->resolveSettings();
-        $locale   = app()->getLocale();
-        $seoData  = $this->buildSeo($record, $settings, $locale);
+        $record  = SiteCase::published()->where('slug', $slug)->firstOrFail();
+        $seoData = $this->buildSeo($record);
 
-        return view('filamentboot-site::cases.show', compact('record', 'seoData', 'locale', 'settings'));
+        return view('filamentboot-site::cases.show', compact('record', 'seoData'));
     }
 
     /**
@@ -81,12 +75,10 @@ class SiteFrontController extends Controller
      */
     public function solutionIndex(): View
     {
-        $settings = $this->resolveSettings();
-        $locale   = app()->getLocale();
-        $records  = SiteSolution::published()->latest('published_at')->paginate(12);
-        $seoData  = $this->buildListSeo('方案', 'Solutions', $settings, $locale);
+        $records = SiteSolution::published()->latest('published_at')->paginate(12);
+        $seoData = $this->buildListSeo('智能方案');
 
-        return view('filamentboot-site::solutions.index', compact('records', 'seoData', 'locale', 'settings'));
+        return view('filamentboot-site::solutions.index', compact('records', 'seoData'));
     }
 
     /**
@@ -96,12 +88,10 @@ class SiteFrontController extends Controller
      */
     public function solutionShow(string $slug): View
     {
-        $record   = SiteSolution::published()->where('slug', $slug)->firstOrFail();
-        $settings = $this->resolveSettings();
-        $locale   = app()->getLocale();
-        $seoData  = $this->buildSeo($record, $settings, $locale);
+        $record  = SiteSolution::published()->where('slug', $slug)->firstOrFail();
+        $seoData = $this->buildSeo($record);
 
-        return view('filamentboot-site::solutions.show', compact('record', 'seoData', 'locale', 'settings'));
+        return view('filamentboot-site::solutions.show', compact('record', 'seoData'));
     }
 
     /**
@@ -109,12 +99,10 @@ class SiteFrontController extends Controller
      */
     public function productIndex(): View
     {
-        $settings = $this->resolveSettings();
-        $locale   = app()->getLocale();
-        $records  = SiteProduct::published()->paginate(12);
-        $seoData  = $this->buildListSeo('产品', 'Products', $settings, $locale);
+        $records = SiteProduct::published()->paginate(12);
+        $seoData = $this->buildListSeo('智能产品');
 
-        return view('filamentboot-site::products.index', compact('records', 'seoData', 'locale', 'settings'));
+        return view('filamentboot-site::products.index', compact('records', 'seoData'));
     }
 
     /**
@@ -124,108 +112,73 @@ class SiteFrontController extends Controller
      */
     public function productShow(string $slug): View
     {
-        $record   = SiteProduct::published()->where('slug', $slug)->firstOrFail();
-        $settings = $this->resolveSettings();
-        $locale   = app()->getLocale();
-        $seoData  = $this->buildSeo($record, $settings, $locale);
+        $record  = SiteProduct::published()->where('slug', $slug)->firstOrFail();
+        $seoData = $this->buildSeo($record);
 
-        return view('filamentboot-site::products.show', compact('record', 'seoData', 'locale', 'settings'));
+        return view('filamentboot-site::products.show', compact('record', 'seoData'));
     }
 
     /**
-     * 静态页面（/{slug}，排除 en，Pitfall 4）
+     * 静态页面（/{slug}，保留 slug 已在路由层排除）
      *
      * @param  string  $slug  页面 slug（参数绑定防注入，T-10-04-03）
      */
     public function page(string $slug): View
     {
-        $record   = SitePage::published()->where('slug', $slug)->firstOrFail();
-        $settings = $this->resolveSettings();
-        $locale   = app()->getLocale();
-        $seoData  = $this->buildSeo($record, $settings, $locale);
+        $record  = SitePage::published()->where('slug', $slug)->firstOrFail();
+        $seoData = $this->buildSeo($record);
 
-        return view('filamentboot-site::pages.show', compact('record', 'seoData', 'locale', 'settings'));
+        return view('filamentboot-site::pages.show', compact('record', 'seoData'));
     }
 
     /**
-     * SEO 回退链构建器（Pattern 5）
+     * 内容页 SEO 回退链构建器（Pattern 5）
      *
-     * 三层回退：记录 SEO 字段 → 记录标题字段 → SiteSettings 全局默认值 → config('app.name')
-     * 按当前语言环境（zh/en）选择对应字段。
+     * 标题：记录 seo_title → 记录 title_zh → 全局默认标题 → app.name
+     * 描述：记录 seo_description → 记录 description_zh → 全局默认描述 → config 兜底文案
      *
      * @param  object  $record  内容记录（含 seo_title/seo_description/seo_keywords 字段）
-     * @param  object|null  $settings  SiteSettings 实例（降级时为 null）
-     * @param  string  $locale  当前语言环境（'zh' 或 'en'）
-     * @return array{title: string, description: string, keywords: string, ogTitle: string, ogDescription: string}
+     * @return array{title: string, description: string, keywords: string, ogTitle: string, ogDescription: string, ogImage: string|null, ogType: string}
      */
-    protected function buildSeo(object $record, mixed $settings, string $locale): array
+    protected function buildSeo(object $record): array
     {
-        $isEn = $locale === 'en';
-
-        // 标题回退：记录 seo_title → 记录标题字段 → 全局默认 → app.name
         // 使用 isset() 检查 Eloquent 动态属性（property_exists 对 __get 魔术属性无效）
-        $titleFallback = $isEn
-            ? (isset($record->title_en) ? ($record->title_en ?: '') : '')
-            : (isset($record->title_zh) ? ($record->title_zh ?: '') : '');
-
-        $globalTitle = $settings
-            ? ($isEn ? ($settings->seo_default_title_en ?: '') : ($settings->seo_default_title_zh ?: ''))
-            : '';
+        $titleFallback = isset($record->title_zh) ? ($record->title_zh ?: '') : '';
+        $descFallback  = isset($record->description_zh) ? ($record->description_zh ?: '') : '';
 
         $title = ($record->seo_title ?: '')
             ?: $titleFallback
-            ?: $globalTitle
-            ?: config('app.name', '');
+            ?: $this->defaultTitle();
 
-        // 描述回退：记录 seo_description → 记录 description 字段 → 全局默认
-        // 使用 isset() 检查 Eloquent 动态属性
-        $descFallback = '';
-        if (isset($record->description_zh) || isset($record->description_en)) {
-            $descFallback = $isEn
-                ? (isset($record->description_en) ? ($record->description_en ?: '') : '')
-                : (isset($record->description_zh) ? ($record->description_zh ?: '') : '');
-        }
-
-        $globalDesc = $settings
-            ? ($isEn ? ($settings->seo_default_description_en ?: '') : ($settings->seo_default_description_zh ?: ''))
-            : '';
-
-        $description = $record->seo_description
+        $description = ($record->seo_description ?: '')
             ?: $descFallback
-            ?: $globalDesc
-            ?: '';
+            ?: $this->defaultDescription();
 
-        // 关键词
-        $keywords = $record->seo_keywords ?? '';
+        // 内容页优先使用自身封面作为 OG 图，无封面时回退全局默认
+        $ogImage = method_exists($record, 'ogImageUrl')
+            ? ($record->ogImageUrl() ?: $this->defaultOgImage())
+            : $this->defaultOgImage();
 
         return [
             'title'         => $title,
             'description'   => $description,
-            'keywords'      => $keywords,
+            'keywords'      => (string) ($record->seo_keywords ?? ''),
             'ogTitle'       => $title,
             'ogDescription' => $description,
+            'ogImage'       => $ogImage,
+            'ogType'        => 'article',
         ];
     }
 
     /**
-     * 构建首页 SEO 数据（无具体记录，直接读全局设置）
+     * 首页 SEO 数据（无具体记录，直接读全局设置）
      *
-     * @param  mixed  $settings  SiteSettings 实例或 null
-     * @param  string  $locale  当前语言环境
-     * @return array{title: string, description: string, keywords: string, ogTitle: string, ogDescription: string}
+     * @return array{title: string, description: string, keywords: string, ogTitle: string, ogDescription: string, ogImage: string|null, ogType: string}
      */
-    protected function buildHomeSeo(mixed $settings, string $locale): array
+    protected function buildHomeSeo(): array
     {
-        $isEn = $locale === 'en';
-
-        $title = $settings
-            ? ($isEn ? ($settings->seo_default_title_en ?: '') : ($settings->seo_default_title_zh ?: ''))
-            : '';
-        $title = $title ?: config('app.name', '');
-
-        $description = $settings
-            ? ($isEn ? ($settings->seo_default_description_en ?: '') : ($settings->seo_default_description_zh ?: ''))
-            : '';
+        $title       = $this->defaultTitle();
+        $description = $this->defaultDescription();
 
         return [
             'title'         => $title,
@@ -233,33 +186,23 @@ class SiteFrontController extends Controller
             'keywords'      => '',
             'ogTitle'       => $title,
             'ogDescription' => $description,
+            'ogImage'       => $this->defaultOgImage(),
+            'ogType'        => 'website',
         ];
     }
 
     /**
-     * 构建列表页 SEO 数据（使用全局默认 + 列表类型名称）
+     * 列表页 SEO 数据（全局默认 + 列表类型名称）
      *
-     * @param  string  $labelZh  中文列表名称（如 '案例'）
-     * @param  string  $labelEn  英文列表名称（如 'Cases'）
-     * @param  mixed  $settings  SiteSettings 实例或 null
-     * @param  string  $locale  当前语言环境
-     * @return array{title: string, description: string, keywords: string, ogTitle: string, ogDescription: string}
+     * 描述始终经 defaultDescription() 兜底，确保列表页 meta description 不为空。
+     *
+     * @param  string  $label  列表名称（如 '装修案例'）
+     * @return array{title: string, description: string, keywords: string, ogTitle: string, ogDescription: string, ogImage: string|null, ogType: string}
      */
-    protected function buildListSeo(string $labelZh, string $labelEn, mixed $settings, string $locale): array
+    protected function buildListSeo(string $label): array
     {
-        $isEn      = $locale === 'en';
-        $appName   = config('app.name', '');
-        $label     = $isEn ? $labelEn : $labelZh;
-
-        $globalTitle = $settings
-            ? ($isEn ? ($settings->seo_default_title_en ?: '') : ($settings->seo_default_title_zh ?: ''))
-            : '';
-
-        $title = ($globalTitle ?: $appName) ? "{$label} - ".($globalTitle ?: $appName) : $label;
-
-        $description = $settings
-            ? ($isEn ? ($settings->seo_default_description_en ?: '') : ($settings->seo_default_description_zh ?: ''))
-            : '';
+        $title       = $label.' - '.$this->defaultTitle();
+        $description = $this->defaultDescription();
 
         return [
             'title'         => $title,
@@ -267,11 +210,52 @@ class SiteFrontController extends Controller
             'keywords'      => '',
             'ogTitle'       => $title,
             'ogDescription' => $description,
+            'ogImage'       => $this->defaultOgImage(),
+            'ogType'        => 'website',
         ];
     }
 
     /**
-     * 解析 SiteSettings 实例（try/catch 降级防 settings 表未迁移崩溃，Pitfall 2）
+     * 全局默认标题：站点设置 → 公司名称 → app.name
+     */
+    protected function defaultTitle(): string
+    {
+        $settings = $this->resolveSettings();
+
+        return ($settings?->seo_default_title_zh ?: '')
+            ?: ($settings?->company_name_zh ?: '')
+            ?: (string) config('app.name', '');
+    }
+
+    /**
+     * 全局默认描述：站点设置 → config 兜底文案
+     *
+     * 站点设置未填写时回退到 config('filamentboot-site.seo.fallback_description')，
+     * 保证任何页面的 meta description 都不为空。
+     */
+    protected function defaultDescription(): string
+    {
+        $settings = $this->resolveSettings();
+
+        return ($settings?->seo_default_description_zh ?: '')
+            ?: (string) config('filamentboot-site.seo.fallback_description', '');
+    }
+
+    /**
+     * 全局默认 Open Graph 图片
+     *
+     * 未配置时返回 null，视图据此不输出 og:image，
+     * 避免像此前那样硬编码到一个并不存在的 /img/og-default.jpg。
+     */
+    protected function defaultOgImage(): ?string
+    {
+        $image = $this->resolveSettings()?->og_default_image;
+
+        return ($image !== null && $image !== '') ? $image : null;
+    }
+
+    /**
+     * 解析 SiteSettings 实例（settings 表未迁移时降级为 null，Pitfall 2）
      */
     protected function resolveSettings(): ?SiteSettings
     {

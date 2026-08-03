@@ -8,9 +8,11 @@
 
 @import 'tailwindcss';
 
-/* Pitfall 5 防 purge：扫描包内视图与 vendor publish 后视图 */
-@source '../views/**/*.blade.php';
-@source '../../../../../../resources/views/vendor/filament-admin-site/**/*.blade.php';
+/* Pitfall 5 防 purge：扫描包内主题视图、跨主题共享视图与宿主发布后的视图 */
+@source '../../views/themes/**/*.blade.php';
+@source '../../views/shared/**/*.blade.php';
+@source '../../views/livewire/**/*.blade.php';
+@source '../../../../../../resources/views/vendor/filamentboot-site/**/*.blade.php';
 
 @theme {
     /* === tech-product 主题：浅色 SaaS/科技产品骨架 === */
@@ -39,10 +41,11 @@
     --color-gradient-end:   #0ea5e9;
 
     /* 文本 */
+    /* 文字对比度按 WCAG AA（4.5:1）校准，取值不得再调浅 */
     --color-text-primary:   #0f172a;
-    --color-text-secondary: #475569;
-    --color-text-muted:     #94a3b8;
-    --color-text-accent:    #6366f1;
+    --color-text-secondary: #475569;  /* 最低 6.92:1（bg-elevated） */
+    --color-text-muted:     #64748b;  /* 最低 4.34:1，仅用于非关键辅助文字 */
+    --color-text-accent:    #4f46e5;  /* 由 #6366f1 加深，使链接文字在浅底达到 AA */
 
     /* 语义状态色 */
     --color-destructive:    #ef4444;
@@ -104,9 +107,30 @@
     }
 
     .card-hover {
-        transition: transform 200ms ease-out, border-color 200ms ease-out;
+        transition: transform 200ms ease-out, border-color 200ms ease-out, box-shadow 200ms ease-out;
     }
     .card-hover:hover {
         transform: translateY(-4px);
+        border-color: var(--color-border-glow);
+        box-shadow: 0 8px 24px rgba(99, 102, 241, 0.10);
+    }
+
+    /* 英雄光圈脉冲（与 decoration 共用类名，两套主题的组件模板可互相参照） */
+    @keyframes glow-pulse {
+        0%, 100% { opacity: 0.3; }
+        50% { opacity: 0.7; }
+    }
+
+    .hero-glow-pulse {
+        animation: glow-pulse 3000ms ease-in-out infinite;
+    }
+
+    /* 图片模糊渐入 */
+    .img-blur-up {
+        transition: filter 300ms ease-out;
+        filter: blur(8px);
+    }
+    .img-blur-up.loaded {
+        filter: blur(0);
     }
 }

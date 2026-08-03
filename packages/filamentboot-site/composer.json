@@ -1,10 +1,10 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
     "name": "filamentboot/filamentboot-site",
-    "description": "面向中小企业的前台官网管理插件，提供案例/方案/产品/页面/询盘五类内容管理，支持中英双语与主题切换。",
+    "description": "面向中小企业的前台官网管理插件，提供案例/方案/产品/页面/询盘五类内容管理，中文单语言，支持主题切换。",
     "type": "library",
     "license": "MIT",
-    "keywords": ["filament", "laravel", "website", "cms", "official-site", "filament-plugin", "bilingual"],
+    "keywords": ["filament", "laravel", "website", "cms", "official-site", "filament-plugin"],
     "homepage": "https://github.com/filamentboot/filamentboot-site",
     "authors": [
         {
@@ -61,7 +61,7 @@
             "plugin_class": "Filamentboot\\FilamentbootSite\\SitePlugin",
             "settings_page_slug": "settings/site",
             "service_provider": "Filamentboot\\FilamentbootSite\\SiteServiceProvider",
-            "description": "面向中小企业的前台官网管理插件（案例/方案/产品/页面/询盘五类内容，双语+主题可切换）",
+            "description": "面向中小企业的前台官网管理插件（案例/方案/产品/页面/询盘五类内容，中文单语言，主题可切换）",
             "requires": ["filamentboot/filamentboot"],
             "compatibility": {
                 "laravel/framework": "^13.0",
@@ -70,7 +70,10 @@
             "post_install": {
                 "publish_tags": ["filamentboot-site-config", "filamentboot-site-assets"],
                 "run_migrations": true,
-                "seeders": ["Filamentboot\\FilamentbootSite\\Database\\Seeders\\SiteSeeder"]
+                "seeders": [
+                    "Filamentboot\\FilamentbootSite\\Database\\Seeders\\SiteMenuSeeder",
+                    "Filamentboot\\FilamentbootSite\\Database\\Seeders\\SiteDemoSeeder"
+                ]
             }
         },
         "branch-alias": {

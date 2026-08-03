@@ -385,7 +385,7 @@ class OssServiceProvider extends ServiceProvider
 "post_install": {
     "publish_tags": ["filamentboot-site-config", "filamentboot-site-assets"],
     "run_migrations": true,
-    "seeders": ["Filamentboot\\FilamentbootSite\\Database\\Seeders\\SiteSeeder"]
+    "seeders": ["Filamentboot\\FilamentbootSite\\Database\\Seeders\\SiteDemoSeeder"]
 }
 ```
 
@@ -394,7 +394,7 @@ class OssServiceProvider extends ServiceProvider
 1. `php artisan vendor:publish --tag=filamentboot-site-config --force`
 2. `php artisan vendor:publish --tag=filamentboot-site-assets --force`
 3. `php artisan migrate --force`
-4. `php artisan db:seed --class="Filamentboot\\FilamentbootSite\\Database\\Seeders\\SiteSeeder"`
+4. `php artisan db:seed --class="Filamentboot\\FilamentbootSite\\Database\\Seeders\\SiteDemoSeeder"`
 5. `composer dump-autoload`
 
 ### 5.6 合规自检

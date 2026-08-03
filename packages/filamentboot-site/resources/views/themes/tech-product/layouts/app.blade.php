@@ -1,34 +1,23 @@
 {{--
- * tech-product 主题应用布局骨架（v0.5 最小结构，完整模板 v1.x）
+ * tech-product 主题应用布局
+ *
+ * extends base，包含：导航栏、主内容区、浮动询盘入口、页脚。
+ * main 底部 pb-24 为固定悬浮询盘按钮预留滚动避让空间。
  --}}
 @extends('filamentboot-site::layouts.base')
 
 @section('body')
-    {{-- 导航占位（v1.x 完整导航）--}}
-    <header class="h-16 bg-site-surface border-b border-site flex items-center px-4 sm:px-6 lg:px-8">
-        <div class="max-w-screen-xl mx-auto w-full flex items-center justify-between">
-            @php
-                $isZh = app()->getLocale() !== 'en';
-                $companyName = optional($siteSettings ?? null)->{$isZh ? 'company_name_zh' : 'company_name_en'}
-                    ?? config('app.name', '晴空妙享科技');
-            @endphp
-            <a href="{{ $isZh ? url('/') : url('/en') }}"
-               class="text-site-primary font-bold text-xl">{{ $companyName }}</a>
-            {{-- v1.x: 完整导航链接 --}}
-        </div>
-    </header>
+    {{-- 顶部导航栏 --}}
+    @include('filamentboot-site::components.nav')
 
-    {{-- 主内容区 --}}
-    <main id="main-content">
+    {{-- 主内容区（id="main-content" 供 skip-nav 锚点定位） --}}
+    <main id="main-content" class="pb-24">
         @yield('content')
     </main>
 
-    {{-- 页脚占位（v1.x 完整页脚）--}}
-    <footer class="bg-site-surface border-t border-site py-8 px-4 sm:px-6 lg:px-8">
-        <div class="max-w-screen-xl mx-auto text-center">
-            <p class="text-site-muted text-xs">
-                &copy; {{ date('Y') }} {{ $companyName ?? '' }}
-            </p>
-        </div>
-    </footer>
+    {{-- 浮动询盘入口 + 滑入面板（shared 层，与 decoration 共用同一 Store） --}}
+    @include('filamentboot-site::components.floating-contact')
+
+    {{-- 页脚 --}}
+    @include('filamentboot-site::components.footer')
 @endsection

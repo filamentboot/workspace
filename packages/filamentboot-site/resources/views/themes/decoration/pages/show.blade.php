@@ -6,9 +6,8 @@
 @extends('filamentboot-site::layouts.app')
 
 @php
-    $isZh    = app()->getLocale() !== 'en';
-    $title   = $isZh ? ($record->title_zh ?? '') : ($record->title_en ?? $record->title_zh ?? '');
-    $content = $isZh ? ($record->content_zh ?? '') : ($record->content_en ?? $record->content_zh ?? '');
+    $title   = $record->title_zh ?? '';
+    $content = $record->content_zh ?? '';
 @endphp
 
 @section('content')
@@ -18,7 +17,7 @@
 
         {{-- 富文本内容（必须经 purifier 过滤，T-10-05-01 安全硬要求） --}}
         @if($content)
-            <div class="prose text-site-primary leading-relaxed" style="word-break: break-all;">
+            <div class="prose text-site-primary leading-relaxed" style="word-break: break-word;">
                 {!! app('purifier')->clean($content) !!}
             </div>
         @endif

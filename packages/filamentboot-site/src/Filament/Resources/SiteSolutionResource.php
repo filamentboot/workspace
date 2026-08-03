@@ -34,7 +34,7 @@ use UnitEnum;
 /**
  * 智能方案后台资源
  *
- * 提供方案 CRUD，含双语 Tab（基本信息/中文/English/SEO/图片）、
+ * 提供方案 CRUD，含内容 Tab（基本信息/内容/SEO/图片）、
  * 标签、发布状态、置顶、Phase 9 富文本编辑器与封面图。
  */
 class SiteSolutionResource extends Resource
@@ -53,7 +53,7 @@ class SiteSolutionResource extends Resource
     protected static ?string $pluralModelLabel = '智能方案';
 
     /**
-     * 表单定义（双语 Tab + SEO + 图片 + 标签 + 发布置顶）
+     * 表单定义（内容 Tab + SEO + 图片 + 标签 + 发布置顶）
      */
     public static function form(Schema $schema): Schema
     {
@@ -82,26 +82,16 @@ class SiteSolutionResource extends Resource
                         DateTimePicker::make('published_at')
                             ->label('发布时间（留空=草稿）'),
                     ]),
-                    Tab::make('中文')->schema([
+                    Tab::make('内容')->schema([
                         TextInput::make('title_zh')
-                            ->label('标题（中文）')
+                            ->label('标题')
                             ->required()
                             ->maxLength(255),
                         Textarea::make('description_zh')
-                            ->label('描述（中文）')
+                            ->label('描述')
                             ->rows(3),
                         RichEditorField::make('content_zh')
-                            ->label('正文（中文）'),
-                    ]),
-                    Tab::make('English')->schema([
-                        TextInput::make('title_en')
-                            ->label('Title (English)')
-                            ->maxLength(255),
-                        Textarea::make('description_en')
-                            ->label('Description (English)')
-                            ->rows(3),
-                        RichEditorField::make('content_en')
-                            ->label('Content (English)'),
+                            ->label('正文'),
                     ]),
                     Tab::make('SEO')->schema([
                         TextInput::make('seo_title')
@@ -141,7 +131,7 @@ class SiteSolutionResource extends Resource
                     ->conversion('thumb')
                     ->circular(),
                 TextColumn::make('title_zh')
-                    ->label('标题（中文）')
+                    ->label('标题')
                     ->searchable()
                     ->limit(30),
                 IconColumn::make('is_published')

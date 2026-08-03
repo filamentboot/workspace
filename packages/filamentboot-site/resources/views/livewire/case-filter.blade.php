@@ -6,17 +6,16 @@
  * 由 CaseFilter Livewire 组件渲染（10-04 落地组件逻辑）。
  --}}
 @php
-    $isZh = app()->getLocale() !== 'en';
-    $allLabel = $isZh ? '全部' : 'All';
-    $prevLabel = $isZh ? '上一页' : 'Previous';
-    $nextLabel = $isZh ? '下一页' : 'Next';
-    $styleLabel = $isZh ? '风格' : 'Style';
-    $houseTypeLabel = $isZh ? '户型' : 'Type';
+    $allLabel = '全部';
+    $prevLabel = '上一页';
+    $nextLabel = '下一页';
+    $styleLabel = '风格';
+    $houseTypeLabel = '户型';
 @endphp
 
 <div>
     {{-- 筛选 pills 栏 --}}
-    <div class="flex flex-wrap gap-3 mb-8" role="group" aria-label="{{ $isZh ? '案例筛选' : 'Filter Cases' }}">
+    <div class="flex flex-wrap gap-3 mb-8" role="group" aria-label="案例筛选">
 
         {{-- 风格筛选 --}}
         <div class="flex flex-wrap items-center gap-2">
@@ -79,7 +78,7 @@
         <div wire:loading wire:loading.delay
              class="absolute inset-0 z-10 flex items-center justify-center"
              aria-live="polite"
-             aria-label="{{ $isZh ? '加载中' : 'Loading' }}">
+             aria-label="加载中">
             <svg class="w-8 h-8 border-2 border-site rounded-full animate-spin"
                  viewBox="0 0 24 24"
                  style="border-top-color: var(--color-primary);"
@@ -96,7 +95,7 @@
             @empty
                 <div class="col-span-full py-16 text-center">
                     <p class="text-site-muted text-base">
-                        {{ $isZh ? '暂无案例，敬请期待' : 'No cases yet — check back soon' }}
+                        暂无案例，敬请期待
                     </p>
                 </div>
             @endforelse
