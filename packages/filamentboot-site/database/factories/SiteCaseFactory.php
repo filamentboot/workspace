@@ -2,9 +2,9 @@
 
 namespace Filamentboot\FilamentbootSite\Database\Factories;
 
-use Filamentboot\FilamentbootSite\Enums\CaseStyle;
-use Filamentboot\FilamentbootSite\Enums\HouseType;
-use Filamentboot\FilamentbootSite\Models\SiteCase;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Enums\CaseStyle;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Enums\HouseType;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Models\SiteCase;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 

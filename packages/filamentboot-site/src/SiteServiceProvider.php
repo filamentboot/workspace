@@ -7,18 +7,20 @@ use Filamentboot\FilamentbootSite\Cms\Blocks\ContactFormBlock;
 use Filamentboot\FilamentbootSite\Cms\Blocks\CtaBlock;
 use Filamentboot\FilamentbootSite\Cms\Blocks\FaqBlock;
 use Filamentboot\FilamentbootSite\Cms\Blocks\FeatureGridBlock;
+use Filamentboot\FilamentbootSite\Cms\Blocks\GatedDownloadBlock;
 use Filamentboot\FilamentbootSite\Cms\Blocks\HeroBlock;
+use Filamentboot\FilamentbootSite\Cms\Blocks\MapBlock;
 use Filamentboot\FilamentbootSite\Cms\Blocks\MediaTextBlock;
 use Filamentboot\FilamentbootSite\Cms\Blocks\RichContentBlock;
+use Filamentboot\FilamentbootSite\Cms\Models\SitePage;
+use Filamentboot\FilamentbootSite\Cms\Observers\SitePageObserver;
+use Filamentboot\FilamentbootSite\Cms\Routing\SiteRedirectMiddleware;
 use Filamentboot\FilamentbootSite\Console\Commands\PushBaiduCommand;
-use Filamentboot\FilamentbootSite\Http\Middleware\SiteRedirectMiddleware;
-use Filamentboot\FilamentbootSite\Models\SiteCase;
-use Filamentboot\FilamentbootSite\Models\SitePage;
-use Filamentboot\FilamentbootSite\Models\SiteProduct;
-use Filamentboot\FilamentbootSite\Models\SiteSolution;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Models\SiteCase;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Products\Models\SiteProduct;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Solutions\Models\SiteSolution;
 use Filamentboot\FilamentbootSite\Modules\News\Models\NewsArticle;
 use Filamentboot\FilamentbootSite\Observers\SearchPushObserver;
-use Filamentboot\FilamentbootSite\Observers\SitePageObserver;
 use Filamentboot\FilamentbootSite\Settings\SiteSettings;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Contracts\View\View as ViewContract;
@@ -26,7 +28,6 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
-use Livewire\Livewire;
 
 /**
  * 官网插件服务提供者
@@ -34,11 +35,16 @@ use Livewire\Livewire;
  * 职责：
  * 1. 合并包配置，暴露 filamentboot-site-config 发布 tag
  * 2. 注册区块注册表单例（#12，无条件注册：后台表单与前台渲染都要用）
- * 3. 按 plugins.is_enabled 条件决定是否注册前台路由/视图/Livewire 组件
+ * 3. 按 plugins.is_enabled 条件决定是否注册前台路由与主题视图
  * 4. plugins/settings 表未迁移时静默降级，不阻断应用启动（T-10-01-01 防护）
  * 5. 无论是否启用，均注册 settings 迁移供 php artisan migrate 使用
  *
- * 注意：前台资源（路由/Livewire/主题视图）仅在插件启用时注册。
+ * 注意：前台资源（路由/主题视图）仅在插件启用时注册。
+ *
+ * ⚠️ #29 起公开页**零 Livewire**：包内不再有任何 Livewire 组件，因此不注册
+ * Livewire 命名空间。原因是 Livewire 注入的 livewire.js 带 data-csrf，
+ * 渲染时会调 csrf_token() → 起 session → 公开页必然带 Set-Cookie，整页缓存无从谈起。
+ * Alpine 改由 resources/js/site.js 经 Vite 独立交付。
  * catch 分支已 return，因此 plugins 表未迁移时 registerFrontend 不会被执行（Pitfall 1/2）。
  */
 class SiteServiceProvider extends ServiceProvider
@@ -88,6 +94,8 @@ class SiteServiceProvider extends ServiceProvider
                 new CtaBlock,
                 new FaqBlock,
                 new ContactFormBlock,
+                new MapBlock,
+                new GatedDownloadBlock,
             ]);
 
             return $registry;
@@ -104,9 +112,6 @@ class SiteServiceProvider extends ServiceProvider
     public function boot(): void
     {
         if ($this->pluginIsEnabled()) {
-            // 插件已启用：注册 Livewire 组件（须先于路由，Pitfall 6）
-            $this->registerLivewireComponents();
-
             // 注册主题视图命名空间（须先于路由，确保 view() 可解析）
             $this->registerThemeViews();
 
@@ -227,25 +232,6 @@ class SiteServiceProvider extends ServiceProvider
     protected function registerFrontend(): void
     {
         $this->loadRoutesFrom(__DIR__.'/../routes/site.php');
-    }
-
-    /**
-     * 注册 Livewire 前台命名空间（Livewire v4 fix）
-     *
-     * Livewire v4 Finder::parseNamespaceAndName() 将 '::' 识别为命名空间分隔符，
-     * Livewire::component() 显式注册的组件在命名空间查找路径中不可见（会直接返回 null）。
-     * 必须改用 addNamespace() 注册类命名空间，
-     * 使 filamentboot-site::case-filter 自动解析到 Http\Livewire\CaseFilter，
-     *    filamentboot-site::contact-form  自动解析到 Http\Livewire\ContactForm。
-     *
-     * 必须在 registerFrontend()（loadRoutesFrom）之前调用（Pitfall 6）。
-     */
-    protected function registerLivewireComponents(): void
-    {
-        Livewire::addNamespace(
-            self::VIEW_NAMESPACE,
-            classNamespace: 'Filamentboot\\FilamentbootSite\\Http\\Livewire',
-        );
     }
 
     /**
@@ -372,6 +358,15 @@ class SiteServiceProvider extends ServiceProvider
         if (is_dir($resourcesCssPath)) {
             $this->publishes([
                 $resourcesCssPath => resource_path('css/vendor/'.self::VIEW_NAMESPACE),
+            ], 'filamentboot-site-assets');
+        }
+
+        // 前台脚本（#29：Alpine 的交付路径）。发布后落在
+        // resources/js/vendor/filamentboot-site/site.js，对应 config 的第二个候选。
+        $resourcesJsPath = __DIR__.'/../resources/js';
+        if (is_dir($resourcesJsPath)) {
+            $this->publishes([
+                $resourcesJsPath => resource_path('js/vendor/'.self::VIEW_NAMESPACE),
             ], 'filamentboot-site-assets');
         }
     }

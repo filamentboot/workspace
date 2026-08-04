@@ -128,6 +128,25 @@ class SiteSettings extends Settings
     public string $body_end_scripts = '';
 
     /**
+     * 在线客服代码是否启用
+     *
+     * 与 live_chat_script 分开是为了「留着代码但先关掉」：换供应商、大促期间
+     * 没人值守、或客服气泡挡了移动端底部操作条时，运营要能一键停掉，
+     * 而不是把一大段脚本剪出去存在别处、回头再贴回来——那种操作迟早贴错。
+     */
+    public bool $live_chat_enabled = false;
+
+    /**
+     * 在线客服代码
+     *
+     * 输出在 </body> 前，风险与约束同 head_scripts（原样输出、不过 purifier、
+     * 仅 manage_site_settings 可改）。独立成一个字段而不是让人塞进
+     * body_end_scripts：客服代码是全站最长也最常被换的一段，
+     * 与统计代码混在一个 textarea 里，改一处碰坏另一处只是时间问题。
+     */
+    public string $live_chat_script = '';
+
+    /**
      * 百度站长平台验证串（B4）
      *
      * 输出为 <meta name="baidu-site-verification">。做成设置项而非改模板，

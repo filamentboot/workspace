@@ -46,14 +46,72 @@
         {{-- 桌面导航（md:+ 可见） --}}
         <nav class="hidden md:flex items-center gap-1" aria-label="主导航">
             @foreach($navLinks as $link)
-                <a href="{{ $link['href'] }}"
-                   @if($link['target'] ?? null) target="{{ $link['target'] }}" rel="noopener noreferrer" @endif
-                   class="inline-flex items-center min-h-[44px] px-3 text-sm text-site-secondary hover:text-site-accent transition-colors duration-200
-                          focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:ring-offset-2 focus-visible:ring-offset-[--color-bg-base] focus-visible:outline-none rounded-sm
-                          {{ request()->is(ltrim(parse_url($link['href'], PHP_URL_PATH) ?? '', '/') . '*') ? 'text-site-accent border-b-2 border-[--color-primary]' : '' }}">
-                    {{ $link['label'] }}
-                </a>
+                @php($children = $link['children'] ?? [])
+
+                @if($children === [])
+                    <a href="{{ $link['href'] }}"
+                       @if($link['target'] ?? null) target="{{ $link['target'] }}" rel="noopener noreferrer" @endif
+                       class="inline-flex items-center min-h-[44px] px-3 text-sm text-site-secondary hover:text-site-accent transition-colors duration-200
+                              focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:ring-offset-2 focus-visible:ring-offset-[--color-bg-base] focus-visible:outline-none rounded-sm
+                              {{ request()->is(ltrim(parse_url($link['href'], PHP_URL_PATH) ?? '', '/') . '*') ? 'text-site-accent border-b-2 border-[--color-primary]' : '' }}">
+                        {{ $link['label'] }}
+                    </a>
+                @else
+                    {{-- 二级下拉（#28）。父项自己也是可点的链接，另给一个箭头按钮开合：
+                         把整个父项做成只开合不跳转，会让「关于我们」这类既是栏目页
+                         又有子项的入口在桌面端点不进去。 --}}
+                    <div class="relative"
+                         x-data="{ open: false }"
+                         @mouseenter="open = true"
+                         @mouseleave="open = false"
+                         @keydown.escape="open = false">
+                        <div class="inline-flex items-center">
+                            <a href="{{ $link['href'] }}"
+                               @if($link['target'] ?? null) target="{{ $link['target'] }}" rel="noopener noreferrer" @endif
+                               class="inline-flex items-center min-h-[44px] pl-3 text-sm text-site-secondary hover:text-site-accent transition-colors duration-200
+                                      focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:ring-offset-2 focus-visible:ring-offset-[--color-bg-base] focus-visible:outline-none rounded-sm
+                                      {{ request()->is(ltrim(parse_url($link['href'], PHP_URL_PATH) ?? '', '/') . '*') ? 'text-site-accent' : '' }}">
+                                {{ $link['label'] }}
+                            </a>
+                            <button type="button"
+                                    class="inline-flex items-center min-h-[44px] pl-1 pr-3 text-site-secondary hover:text-site-accent
+                                           focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:outline-none rounded-sm"
+                                    :aria-expanded="open.toString()"
+                                    aria-label="展开「{{ $link['label'] }}」子菜单"
+                                    @click="open = ! open">
+                                <svg class="w-4 h-4 transition-transform duration-200" :class="open && 'rotate-180'"
+                                     viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                                    <path fill-rule="evenodd" d="M5.23 7.21a.75.75 0 0 1 1.06.02L10 11.17l3.71-3.94a.75.75 0 1 1 1.08 1.04l-4.25 4.5a.75.75 0 0 1-1.08 0l-4.25-4.5a.75.75 0 0 1 .02-1.06Z" clip-rule="evenodd"/>
+                                </svg>
+                            </button>
+                        </div>
+
+                        <div x-show="open" x-cloak x-transition.opacity.duration.150ms
+                             class="absolute left-0 top-full min-w-[11rem] py-2 bg-site-surface border border-site rounded-xl shadow-xl">
+                            @foreach($children as $child)
+                                <a href="{{ $child['href'] }}"
+                                   @if($child['target'] ?? null) target="{{ $child['target'] }}" rel="noopener noreferrer" @endif
+                                   class="block min-h-[44px] px-4 py-2 text-sm text-site-secondary hover:text-site-accent hover:bg-site-elevated transition-colors duration-200
+                                          focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:outline-none">
+                                    {{ $child['label'] }}
+                                </a>
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
             @endforeach
+
+            {{-- 站内搜索入口：给图标链接而不是内嵌输入框，导航栏塞一个输入框会挤掉栏目位，
+                 而搜索页本身就有输入框，少一次布局妥协 --}}
+            <a href="{{ route('site.search') }}"
+               class="inline-flex items-center justify-center min-w-[44px] min-h-[44px] text-site-secondary hover:text-site-accent transition-colors duration-200
+                      focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:ring-offset-2 focus-visible:ring-offset-[--color-bg-base] focus-visible:outline-none rounded-lg"
+               aria-label="站内搜索">
+                {{-- Heroicons magnifying-glass --}}
+                <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                </svg>
+            </a>
 
             {{-- CTA 按钮（与悬浮询盘按钮共用 $store.contactPanel） --}}
             <button
@@ -123,7 +181,28 @@
                    @click="mobileNavOpen = false">
                     {{ $link['label'] }}
                 </a>
+
+                {{-- 二级项在移动端直接缩进平铺（#28）：抽屉里再套一层折叠会多一次点击，
+                     而导航层级最多两层，全部展开更省事 --}}
+                @foreach($link['children'] ?? [] as $child)
+                    <a href="{{ $child['href'] }}"
+                       @if($child['target'] ?? null) target="{{ $child['target'] }}" rel="noopener noreferrer" @endif
+                       class="flex items-center min-h-[44px] pl-7 pr-3 rounded-xl text-sm text-site-secondary hover:text-site-accent hover:bg-site-elevated transition-colors duration-200"
+                       @click="mobileNavOpen = false">
+                        {{ $child['label'] }}
+                    </a>
+                @endforeach
             @endforeach
+
+            {{-- 站内搜索（抽屉里放在栏目之后：它不是栏目，是工具） --}}
+            <a href="{{ route('site.search') }}"
+               class="flex items-center gap-2 min-h-[44px] px-3 rounded-xl text-site-secondary hover:text-site-accent hover:bg-site-elevated transition-colors duration-200"
+               @click="mobileNavOpen = false">
+                <svg class="w-5 h-5 shrink-0" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+                </svg>
+                站内搜索
+            </a>
         </nav>
 
         {{-- 底部 CTA --}}

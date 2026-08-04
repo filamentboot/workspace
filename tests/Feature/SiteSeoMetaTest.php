@@ -1,8 +1,8 @@
 <?php
 
-use Filamentboot\FilamentbootSite\Models\SiteCase;
-use Filamentboot\FilamentbootSite\Models\SitePage;
-use Filamentboot\FilamentbootSite\Models\SiteProduct;
+use Filamentboot\FilamentbootSite\Cms\Models\SitePage;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Models\SiteCase;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Products\Models\SiteProduct;
 use Filamentboot\FilamentbootSite\Modules\News\Models\NewsArticle;
 use Filamentboot\FilamentbootSite\Settings\SiteSettings;
 use Filamentboot\FilamentbootSite\SiteServiceProvider;
@@ -40,7 +40,7 @@ beforeEach(function () {
 
     $provider = new SiteServiceProvider(app());
 
-    foreach (['registerLivewireComponents', 'registerThemeViews', 'shareSiteSettings', 'registerFrontend'] as $method) {
+    foreach (['registerThemeViews', 'shareSiteSettings', 'registerFrontend'] as $method) {
         $reflection = new ReflectionMethod($provider, $method);
         $reflection->setAccessible(true);
         $reflection->invoke($provider);

@@ -1,6 +1,6 @@
 <?php
 
-use Filamentboot\FilamentbootSite\Enums\PageStatus;
+use Filamentboot\FilamentbootSite\Cms\Enums\PageStatus;
 
 /**
  * 页面状态机测试（#14）
@@ -10,7 +10,7 @@ use Filamentboot\FilamentbootSite\Enums\PageStatus;
  *
  * @group site
  *
- * @covers \Filamentboot\FilamentbootSite\Enums\PageStatus
+ * @covers \Filamentboot\FilamentbootSite\Cms\Enums\PageStatus
  */
 
 /**

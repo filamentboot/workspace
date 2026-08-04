@@ -7,7 +7,9 @@ use Filamentboot\FilamentbootSite\Cms\Blocks\ContactFormBlock;
 use Filamentboot\FilamentbootSite\Cms\Blocks\CtaBlock;
 use Filamentboot\FilamentbootSite\Cms\Blocks\FaqBlock;
 use Filamentboot\FilamentbootSite\Cms\Blocks\FeatureGridBlock;
+use Filamentboot\FilamentbootSite\Cms\Blocks\GatedDownloadBlock;
 use Filamentboot\FilamentbootSite\Cms\Blocks\HeroBlock;
+use Filamentboot\FilamentbootSite\Cms\Blocks\MapBlock;
 use Filamentboot\FilamentbootSite\Cms\Blocks\MediaTextBlock;
 use Filamentboot\FilamentbootSite\Cms\Blocks\RichContentBlock;
 
@@ -16,7 +18,7 @@ use Filamentboot\FilamentbootSite\Cms\Blocks\RichContentBlock;
  *
  * 覆盖场景：
  * - 注册表作为安全白名单：未知 key 查不到、非法 key 与重复 key 被拒
- * - 7 个内置区块均已注册且 key 唯一
+ * - 9 个内置区块均已注册且 key 唯一
  * - 各区块 rules() 能挡住缺字段与超长输入
  * - 有图必须有 alt
  *
@@ -26,12 +28,12 @@ use Filamentboot\FilamentbootSite\Cms\Blocks\RichContentBlock;
  */
 
 /**
- * 7 个内置区块全部注册到容器单例
+ * 9 个内置区块全部注册到容器单例
  */
-it('容器中注册了 7 个内置区块', function () {
+it('容器中注册了 9 个内置区块', function () {
     $registry = app(BlockRegistry::class);
 
-    expect($registry->keys())->toHaveCount(7)
+    expect($registry->keys())->toHaveCount(9)
         ->and($registry->keys())->toContain(
             'hero',
             'rich-content',
@@ -40,6 +42,8 @@ it('容器中注册了 7 个内置区块', function () {
             'cta',
             'faq',
             'contact-form',
+            'map',
+            'gated-download',
         );
 });
 
@@ -130,6 +134,8 @@ it('内置区块契约完整', function (string $class) {
     CtaBlock::class,
     FaqBlock::class,
     ContactFormBlock::class,
+    MapBlock::class,
+    GatedDownloadBlock::class,
 ]);
 
 /**

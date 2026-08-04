@@ -1,7 +1,7 @@
 {{--
  * 内嵌询盘表单区块（tech-product 浅色主题，#13）
  *
- * 复用已有的 filamentboot-site::contact-form Livewire 组件，不新增组件
+ * 复用 shared/components/contact-form（#29 起是纯 Alpine + fetch，不再是 Livewire 组件）
  * （§0.3 第 5 条：公开页只用 Alpine，不新增 Livewire）。source 作为挂载参数传入，
  * 组件据此关掉与悬浮面板 store 的同步，保住落地页归因。
  *
@@ -11,9 +11,12 @@
 @php
     $title       = (string) ($data['title'] ?? '');
     $description = (string) ($data['description'] ?? '');
-    // 与 ContactForm::normalizedSource() 同一套字符集过滤：区块 rules() 已限制，
+    // 与 ContactSubmission::normalizedSource() 同一套字符集过滤：区块 rules() 已限制，
     // 但存量 payload 与直接写库的数据不受表单约束
     $source = preg_replace('/[^a-z0-9\-]/', '', mb_strtolower((string) ($data['source'] ?? ''))) ?? '';
+
+    // 额外问题的解析（一行一个选项、丢弃重名与空下拉）放在区块类里，两套主题共用同一份判据
+    $extraFields = $block->normalizedFields($data);
 
     $headingId = 'block-contact-form-' . $index;
 @endphp
@@ -37,7 +40,12 @@
             </div>
 
             <div class="bg-site-base rounded-xl border border-site p-5 sm:p-6">
-                @livewire('filamentboot-site::contact-form', ['source' => $source], key('block-contact-form-' . $index))
+                @include('filamentboot-site::components.contact-form', [
+                    'source' => $source,
+                    'tracksPanelSource' => false,
+                    'formKey' => 'block-'.$index,
+                    'extraFields' => $extraFields,
+                ])
             </div>
         </div>
     </div>

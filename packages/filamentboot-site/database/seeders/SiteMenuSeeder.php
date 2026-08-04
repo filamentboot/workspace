@@ -129,6 +129,21 @@ class SiteMenuSeeder extends Seeder
                 'route_name'      => 'filament.admin.resources.site-pages.index',
                 'permission_name' => 'view_any_site_page',
             ],
+            // 导航菜单与重定向随 #17 / #18 交付，当时漏了这两行登记：
+            // 侧边栏由本表驱动，没有登记行的资源即使路由已注册也只能靠直链访问。
+            // 两者的 Policy 不走 BasePolicy，权限点是自定义的 manage_*（见 SiteMenuPolicy）。
+            [
+                'title'           => '导航菜单',
+                'icon'            => 'heroicon-o-bars-3',
+                'route_name'      => 'filament.admin.resources.site-menus.index',
+                'permission_name' => 'manage_site_menu',
+            ],
+            [
+                'title'           => '重定向',
+                'icon'            => 'heroicon-o-arrow-uturn-right',
+                'route_name'      => 'filament.admin.resources.site-redirects.index',
+                'permission_name' => 'manage_site_redirect',
+            ],
             [
                 'title'           => '询盘',
                 'icon'            => 'heroicon-o-envelope',

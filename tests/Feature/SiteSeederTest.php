@@ -1,11 +1,11 @@
 <?php
 
+use Filamentboot\FilamentbootSite\Cms\Enums\PageStatus;
+use Filamentboot\FilamentbootSite\Cms\Models\SitePage;
 use Filamentboot\FilamentbootSite\Database\Seeders\SiteDemoSeeder;
 use Filamentboot\FilamentbootSite\Database\Seeders\SiteNewsSeeder;
-use Filamentboot\FilamentbootSite\Enums\PageStatus;
-use Filamentboot\FilamentbootSite\Models\SiteCase;
-use Filamentboot\FilamentbootSite\Models\SitePage;
-use Filamentboot\FilamentbootSite\Models\SiteProduct;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Models\SiteCase;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Products\Models\SiteProduct;
 use Filamentboot\FilamentbootSite\Modules\News\Models\NewsArticle;
 use Filamentboot\FilamentbootSite\Support\RichText;
 use Illuminate\Database\Eloquent\Model;

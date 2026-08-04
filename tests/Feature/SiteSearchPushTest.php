@@ -1,8 +1,8 @@
 <?php
 
 use Filamentboot\FilamentbootSite\Jobs\PushUrlsToBaidu;
-use Filamentboot\FilamentbootSite\Models\SiteCase;
-use Filamentboot\FilamentbootSite\Models\SiteProduct;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Models\SiteCase;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Products\Models\SiteProduct;
 use Filamentboot\FilamentbootSite\Observers\SearchPushObserver;
 use Filamentboot\FilamentbootSite\Services\BaiduPushService;
 use Filamentboot\FilamentbootSite\Settings\SiteSettings;
@@ -31,7 +31,7 @@ beforeEach(function () {
 
     $provider = new SiteServiceProvider(app());
 
-    foreach (['registerLivewireComponents', 'registerThemeViews', 'shareSiteSettings', 'registerFrontend'] as $method) {
+    foreach (['registerThemeViews', 'shareSiteSettings', 'registerFrontend'] as $method) {
         $reflection = new ReflectionMethod($provider, $method);
         $reflection->setAccessible(true);
         $reflection->invoke($provider);

@@ -2,6 +2,10 @@
 
 namespace Filamentboot\FilamentbootSite\Models;
 
+use Filamentboot\FilamentbootSite\Database\Factories\SiteTagFactory;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Models\SiteCase;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Products\Models\SiteProduct;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Solutions\Models\SiteSolution;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphToMany;
@@ -21,10 +25,19 @@ use Illuminate\Support\Carbon;
  */
 class SiteTag extends Model
 {
+    /** @use HasFactory<SiteTagFactory> */
     use HasFactory;
 
     /** @var list<string> */
     protected $guarded = [];
+
+    /**
+     * 解析对应的工厂（因命名空间非 Laravel 默认推导路径）
+     */
+    protected static function newFactory(): SiteTagFactory
+    {
+        return SiteTagFactory::new();
+    }
 
     /**
      * 关联的装修案例（多态反向关系）

@@ -2,7 +2,7 @@
 
 namespace Filamentboot\FilamentbootSite\Database\Factories;
 
-use Filamentboot\FilamentbootSite\Models\SiteCaseCategory;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Models\SiteCaseCategory;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 

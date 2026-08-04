@@ -4,16 +4,16 @@ namespace Filamentboot\FilamentbootSite;
 
 use Filament\Contracts\Plugin;
 use Filament\Panel;
+use Filamentboot\FilamentbootSite\Cms\Filament\Resources\SiteMenuItemResource;
+use Filamentboot\FilamentbootSite\Cms\Filament\Resources\SiteMenuResource;
+use Filamentboot\FilamentbootSite\Cms\Filament\Resources\SitePageResource;
+use Filamentboot\FilamentbootSite\Cms\Filament\Resources\SiteRedirectResource;
 use Filamentboot\FilamentbootSite\Filament\Pages\SiteSettingsPage;
 use Filamentboot\FilamentbootSite\Filament\Resources\ContactMessageResource;
-use Filamentboot\FilamentbootSite\Filament\Resources\SiteCaseResource;
-use Filamentboot\FilamentbootSite\Filament\Resources\SiteMenuItemResource;
-use Filamentboot\FilamentbootSite\Filament\Resources\SiteMenuResource;
-use Filamentboot\FilamentbootSite\Filament\Resources\SitePageResource;
-use Filamentboot\FilamentbootSite\Filament\Resources\SiteProductResource;
-use Filamentboot\FilamentbootSite\Filament\Resources\SiteRedirectResource;
-use Filamentboot\FilamentbootSite\Filament\Resources\SiteSolutionResource;
 use Filamentboot\FilamentbootSite\Filament\Widgets\UnreadContactMessagesWidget;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Filament\SiteCaseResource;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Products\Filament\SiteProductResource;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Solutions\Filament\SiteSolutionResource;
 use Filamentboot\FilamentbootSite\Modules\News\Filament\NewsArticleResource;
 use Filamentboot\FilamentbootSite\Modules\News\Filament\NewsCategoryResource;
 

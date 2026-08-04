@@ -2,17 +2,17 @@
 
 namespace Filamentboot\FilamentbootSite\Database\Seeders;
 
+use Filamentboot\FilamentbootSite\Cms\Enums\PageStatus;
+use Filamentboot\FilamentbootSite\Cms\Models\SitePage;
 use Filamentboot\FilamentbootSite\Database\Seeders\Concerns\SeedsBySlug;
 use Filamentboot\FilamentbootSite\Database\Seeders\Concerns\SeedsMediaImages;
-use Filamentboot\FilamentbootSite\Enums\PageStatus;
 use Filamentboot\FilamentbootSite\Models\ContactMessage;
-use Filamentboot\FilamentbootSite\Models\SiteCase;
-use Filamentboot\FilamentbootSite\Models\SiteCaseCategory;
-use Filamentboot\FilamentbootSite\Models\SitePage;
-use Filamentboot\FilamentbootSite\Models\SiteProduct;
-use Filamentboot\FilamentbootSite\Models\SiteProductCategory;
-use Filamentboot\FilamentbootSite\Models\SiteSolution;
 use Filamentboot\FilamentbootSite\Models\SiteTag;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Models\SiteCase;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Models\SiteCaseCategory;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Products\Models\SiteProduct;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Products\Models\SiteProductCategory;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Solutions\Models\SiteSolution;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Collection;
 

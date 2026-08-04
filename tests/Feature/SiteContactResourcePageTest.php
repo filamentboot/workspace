@@ -1,17 +1,18 @@
 <?php
 
 use Filament\Facades\Filament;
+use Filamentboot\FilamentbootSite\Cms\Filament\Resources\SitePageResource\Pages\CreateSitePage;
+use Filamentboot\FilamentbootSite\Cms\Filament\Resources\SitePageResource\Pages\ListSitePages;
+use Filamentboot\FilamentbootSite\Cms\Models\SitePage;
 use Filamentboot\FilamentbootSite\Enums\ContactMessageStatus;
 use Filamentboot\FilamentbootSite\Filament\Resources\ContactMessageResource\Pages\ListContactMessages;
 use Filamentboot\FilamentbootSite\Filament\Resources\ContactMessageResource\Pages\ViewContactMessage;
-use Filamentboot\FilamentbootSite\Filament\Resources\SitePageResource\Pages\CreateSitePage;
-use Filamentboot\FilamentbootSite\Filament\Resources\SitePageResource\Pages\ListSitePages;
 use Filamentboot\FilamentbootSite\Models\ContactMessage;
 use Filamentboot\FilamentbootSite\Models\ContactMessageNote;
-use Filamentboot\FilamentbootSite\Models\SitePage;
 use Filamentboot\FilamentbootSite\SitePlugin;
 use Filamentboot\Models\AdminUser;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Schema;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Permission;
 use Spatie\Permission\Models\Role;
@@ -243,10 +244,11 @@ it('页面列表渲染状态标签', function () {
 });
 
 /**
- * 页面表单能保存状态与发布时间，且旧的 is_published 开关已移除
+ * 页面表单能保存状态与发布时间
  *
  * scopePublished() 改读 status 之后，表单若还只有 is_published 开关，
  * 就会出现「后台点了发布、前台看不到」——这条锁住那个回归。
+ * 旧列本身已在 #27 随目录重构一起删掉，这里顺带断言它真的不在表上了。
  */
 it('页面表单保存状态与发布时间', function () {
     loginWithPermissions(['view_any_site_page', 'create_site_page']);
@@ -267,7 +269,7 @@ it('页面表单保存状态与发布时间', function () {
 
     expect($page->status->value)->toBe('scheduled')
         ->and($page->published_at->format('Y-m-d H:i'))->toBe($publishAt->format('Y-m-d H:i'))
-        ->and($page->is_published)->toBeFalse();
+        ->and(Schema::hasColumn('site_pages', 'is_published'))->toBeFalse();
 });
 
 /**

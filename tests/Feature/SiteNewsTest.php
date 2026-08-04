@@ -31,7 +31,7 @@ beforeEach(function () {
 
     $provider = new SiteServiceProvider(app());
 
-    foreach (['registerLivewireComponents', 'registerThemeViews', 'shareSiteSettings', 'registerFrontend'] as $method) {
+    foreach (['registerThemeViews', 'shareSiteSettings', 'registerFrontend'] as $method) {
         (new ReflectionMethod($provider, $method))->invoke($provider);
     }
 

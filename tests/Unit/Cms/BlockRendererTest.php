@@ -17,7 +17,7 @@ use Illuminate\Support\Facades\Log;
  * - withDefaults() 补齐历史 payload 缺失字段后再渲染
  * - faq 区块转 FAQPage 结构化数据；空问答不产出无效节点
  * - BlockSanitizer 只净化 rich-content.content，其余字段原样保留
- * - 两套主题各 7 个区块视图文件齐备（§0.3 第 1 条）
+ * - 两套主题各 9 个区块视图文件齐备（§0.3 第 1 条）
  *
  * 视图解析需要主题命名空间就位，因此手工调 registerThemeViews()——
  * 单测不经 HTTP，SiteServiceProvider::boot() 里那段只在插件启用时跑。
@@ -251,12 +251,12 @@ it('保存侧净化不改动其它区块', function () {
 });
 
 /**
- * 两套主题各 7 个区块视图文件齐备
+ * 两套主题各 9 个区块视图文件齐备
  *
  * 任何新增视觉视图必须在两个主题目录各存一份完整副本（§0.3 第 1 条）：
  * 客户装上后可能只想保留一套，两份互不依赖才删得干净。
  */
-it('两套主题的 7 个区块视图都存在', function () {
+it('两套主题的 9 个区块视图都存在', function () {
     $base = realpath(__DIR__.'/../../../packages/filamentboot-site/resources/views/themes');
 
     foreach (['decoration', 'tech-product'] as $theme) {

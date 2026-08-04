@@ -4,6 +4,7 @@ namespace Filamentboot\FilamentbootSite\Filament\Resources;
 
 use BackedEnum;
 use Filament\Actions\ViewAction;
+use Filament\Infolists\Components\KeyValueEntry;
 use Filament\Infolists\Components\RepeatableEntry;
 use Filament\Infolists\Components\TextEntry;
 use Filament\Resources\Resource;
@@ -91,6 +92,19 @@ class ContactMessageResource extends Resource
                 ->label('留言')
                 ->placeholder('-')
                 ->columnSpanFull(),
+
+            // 询盘表单区块配的额外问题。库里存的是有序列表 [{label, value}]，
+            // 这里现拼成映射喂给 KeyValueEntry——PHP 数组保留插入顺序，
+            // 因此展示顺序就是访客看到的问题顺序（存映射会被 MySQL 的 JSON 规范化打乱）。
+            //
+            // 整条为空时整块隐藏：多数询盘没有额外答案，留一个空的键值表只会让详情页变长。
+            KeyValueEntry::make('extra')
+                ->label('额外问题')
+                ->keyLabel('问题')
+                ->valueLabel('答案')
+                ->state(fn (ContactMessage $record): array => static::extraAsMap($record))
+                ->visible(fn (ContactMessage $record): bool => static::extraAsMap($record) !== [])
+                ->columnSpanFull(),
             Grid::make(2)->schema([
                 TextEntry::make('status')
                     ->label('状态')
@@ -156,6 +170,34 @@ class ContactMessageResource extends Resource
                         ->columnSpanFull(),
                 ]),
         ]);
+    }
+
+    /**
+     * 把 extra 的有序列表拼成「问题 => 答案」映射
+     *
+     * 只在展示层做这一步转换：库里必须是列表（MySQL 的 JSON 对象不保留键顺序），
+     * 而 KeyValueEntry 要的是映射。PHP 数组保留插入顺序，转换不丢顺序信息。
+     *
+     * @return array<string, string>
+     */
+    protected static function extraAsMap(ContactMessage $record): array
+    {
+        $map = [];
+
+        foreach ($record->extra ?? [] as $answer) {
+            if (! is_array($answer)) {
+                continue;
+            }
+
+            $label = (string) ($answer['label'] ?? '');
+            $value = (string) ($answer['value'] ?? '');
+
+            if ($label !== '' && $value !== '') {
+                $map[$label] = $value;
+            }
+        }
+
+        return $map;
     }
 
     /**

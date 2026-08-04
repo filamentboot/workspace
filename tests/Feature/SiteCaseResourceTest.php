@@ -4,9 +4,9 @@ namespace Tests\Feature;
 
 use Filament\Panel;
 use Filamentboot\FilamentbootSite\Enums\ContactMessageStatus;
-use Filamentboot\FilamentbootSite\Filament\Resources\SiteCaseResource;
 use Filamentboot\FilamentbootSite\Models\ContactMessage;
-use Filamentboot\FilamentbootSite\Models\SiteCase;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Filament\SiteCaseResource;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Models\SiteCase;
 use Filamentboot\FilamentbootSite\SitePlugin;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Schema;
@@ -23,7 +23,7 @@ use Tests\TestCase;
  *
  * @group site
  *
- * @covers \Filamentboot\FilamentbootSite\Models\SiteCase
+ * @covers \Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Models\SiteCase
  */
 class SiteCaseResourceTest extends TestCase
 {

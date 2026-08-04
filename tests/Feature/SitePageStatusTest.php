@@ -1,11 +1,11 @@
 <?php
 
-use Filamentboot\FilamentbootSite\Enums\PageStatus;
-use Filamentboot\FilamentbootSite\Models\SiteMenu;
-use Filamentboot\FilamentbootSite\Models\SiteMenuItem;
-use Filamentboot\FilamentbootSite\Models\SitePage;
-use Filamentboot\FilamentbootSite\Models\SitePageRevision;
-use Filamentboot\FilamentbootSite\Models\SiteRedirect;
+use Filamentboot\FilamentbootSite\Cms\Enums\PageStatus;
+use Filamentboot\FilamentbootSite\Cms\Models\SiteMenu;
+use Filamentboot\FilamentbootSite\Cms\Models\SiteMenuItem;
+use Filamentboot\FilamentbootSite\Cms\Models\SitePage;
+use Filamentboot\FilamentbootSite\Cms\Models\SitePageRevision;
+use Filamentboot\FilamentbootSite\Cms\Models\SiteRedirect;
 use Filamentboot\FilamentbootSite\SiteServiceProvider;
 use Filamentboot\Models\AdminUser;
 use Illuminate\Database\QueryException;
@@ -34,7 +34,7 @@ beforeEach(function () {
 
     $provider = new SiteServiceProvider(app());
 
-    foreach (['registerLivewireComponents', 'registerThemeViews', 'shareSiteSettings', 'registerFrontend'] as $method) {
+    foreach (['registerThemeViews', 'shareSiteSettings', 'registerFrontend'] as $method) {
         $reflection = new ReflectionMethod($provider, $method);
         $reflection->setAccessible(true);
         $reflection->invoke($provider);
@@ -116,23 +116,6 @@ it('发布时间在未来的已发布页面仍不可见', function () {
     ]);
 
     $this->get('/future-published-page')->assertNotFound();
-});
-
-/**
- * is_published 旧列由 status 派生
- *
- * 旧列保留一个版本供下游回滚，saving 钩子保证它不会停在一个过期的值上。
- */
-it('is_published 旧列跟随 status 变化', function () {
-    $page = SitePage::factory()->draft()->create(['slug' => 'legacy-column-page']);
-
-    expect($page->fresh()->is_published)->toBeFalse();
-
-    $page->update(['status' => PageStatus::PUBLISHED, 'published_at' => now()->subMinute()]);
-    expect($page->fresh()->is_published)->toBeTrue();
-
-    $page->update(['status' => PageStatus::ARCHIVED]);
-    expect($page->fresh()->is_published)->toBeFalse();
 });
 
 /**

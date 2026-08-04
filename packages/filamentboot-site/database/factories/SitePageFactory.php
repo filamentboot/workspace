@@ -2,8 +2,8 @@
 
 namespace Filamentboot\FilamentbootSite\Database\Factories;
 
-use Filamentboot\FilamentbootSite\Enums\PageStatus;
-use Filamentboot\FilamentbootSite\Models\SitePage;
+use Filamentboot\FilamentbootSite\Cms\Enums\PageStatus;
+use Filamentboot\FilamentbootSite\Cms\Models\SitePage;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 

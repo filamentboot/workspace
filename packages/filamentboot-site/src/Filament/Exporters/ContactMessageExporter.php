@@ -37,6 +37,35 @@ class ContactMessageExporter extends Exporter
                 ->label('电话'),
             ExportColumn::make('message')
                 ->label('留言'),
+            // 额外问题摊成一列「问题：答案」，不给每个问题单独开一列：
+            // 问题随活动增删，列集会随导出批次里的记录变化，那种 CSV 没法对齐
+            ExportColumn::make('extra')
+                ->label('额外问题')
+                ->formatStateUsing(function (mixed $state): string {
+                    // 导出跑在队列里，state 可能已被 cast 成数组，也可能是原始 JSON 串
+                    $answers = is_array($state) ? $state : (json_decode((string) $state, true) ?: []);
+
+                    if (! is_array($answers)) {
+                        return '';
+                    }
+
+                    $parts = [];
+
+                    foreach ($answers as $answer) {
+                        if (! is_array($answer)) {
+                            continue;
+                        }
+
+                        $label = (string) ($answer['label'] ?? '');
+                        $value = (string) ($answer['value'] ?? '');
+
+                        if ($label !== '' && $value !== '') {
+                            $parts[] = $label.'：'.$value;
+                        }
+                    }
+
+                    return implode('；', $parts);
+                }),
             ExportColumn::make('status')
                 ->label('状态')
                 ->formatStateUsing(fn (mixed $state): string => $state instanceof ContactMessageStatus

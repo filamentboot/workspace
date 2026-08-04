@@ -50,4 +50,19 @@ class NewsCategory extends Model
     {
         return $this->hasMany(NewsArticle::class, 'category_id');
     }
+
+    /**
+     * 已发布的文章
+     *
+     * 存在的理由是给 withCount 用。写成 withCount(['articles' => fn (Builder $q) => $q->published()])
+     * 时闭包参数只能被推成 Builder<Model>，PHPStan 看不见 published() 这个作用域；
+     * 而把判据在闭包里重写一遍，等于让「已发布」在两处各有一份定义。
+     * 收进一个具体到模型的关系方法，两个问题一起没有。
+     *
+     * @return HasMany<NewsArticle, $this>
+     */
+    public function publishedArticles(): HasMany
+    {
+        return $this->articles()->published();
+    }
 }

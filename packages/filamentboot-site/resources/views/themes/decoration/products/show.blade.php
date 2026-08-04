@@ -150,6 +150,18 @@
             </div>
         @endif
 
+        {{-- 相关产品（同分类 / 同品牌优先，不足由最新补齐） --}}
+        @if($related->isNotEmpty())
+            <section class="mt-16 pt-12 border-t border-site" aria-labelledby="related-products-heading">
+                <h2 id="related-products-heading" class="text-site-primary text-xl font-bold mb-6">相关产品</h2>
+                <div class="grid grid-cols-2 md:grid-cols-3 gap-6">
+                    @foreach($related as $relatedProduct)
+                        @include('filamentboot-site::components.product-card', ['product' => $relatedProduct])
+                    @endforeach
+                </div>
+            </section>
+        @endif
+
         <div class="mt-12">
             <a href="{{ route('site.products.index') }}"
                class="text-site-accent text-sm hover:underline focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:outline-none rounded-sm">

@@ -2,7 +2,7 @@
 
 namespace Filamentboot\FilamentbootSite\Database\Factories;
 
-use Filamentboot\FilamentbootSite\Models\SiteSolution;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Solutions\Models\SiteSolution;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 

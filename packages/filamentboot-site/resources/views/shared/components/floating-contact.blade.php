@@ -81,9 +81,9 @@
             </button>
         </div>
 
-        {{-- 面板内容：Livewire ContactForm --}}
+        {{-- 面板内容：询盘表单（#29 起是纯 Alpine + fetch，不再是 Livewire 组件） --}}
         <div class="flex-1 overflow-y-auto p-6">
-            @livewire('filamentboot-site::contact-form')
+            @include('filamentboot-site::components.contact-form', ['formKey' => 'panel'])
         </div>
     </div>
 </div>

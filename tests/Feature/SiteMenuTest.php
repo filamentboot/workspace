@@ -1,9 +1,9 @@
 <?php
 
+use Filamentboot\FilamentbootSite\Cms\Models\SiteMenu;
+use Filamentboot\FilamentbootSite\Cms\Models\SiteMenuItem;
+use Filamentboot\FilamentbootSite\Cms\Models\SitePage;
 use Filamentboot\FilamentbootSite\Cms\Services\MenuResolver;
-use Filamentboot\FilamentbootSite\Models\SiteMenu;
-use Filamentboot\FilamentbootSite\Models\SiteMenuItem;
-use Filamentboot\FilamentbootSite\Models\SitePage;
 use Filamentboot\FilamentbootSite\Settings\SiteSettings;
 use Filamentboot\FilamentbootSite\SiteServiceProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -31,7 +31,7 @@ beforeEach(function () {
 
     $provider = new SiteServiceProvider(app());
 
-    foreach (['registerLivewireComponents', 'registerThemeViews', 'shareSiteSettings', 'registerFrontend'] as $method) {
+    foreach (['registerThemeViews', 'shareSiteSettings', 'registerFrontend'] as $method) {
         $reflection = new ReflectionMethod($provider, $method);
         $reflection->setAccessible(true);
         $reflection->invoke($provider);

@@ -1,6 +1,6 @@
 <?php
 
-use Filamentboot\FilamentbootSite\Models\SitePage;
+use Filamentboot\FilamentbootSite\Cms\Models\SitePage;
 use Filamentboot\FilamentbootSite\SiteServiceProvider;
 use Filamentboot\Models\AdminUser;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -37,7 +37,7 @@ beforeEach(function () {
 
     $provider = new SiteServiceProvider(app());
 
-    foreach (['registerLivewireComponents', 'registerThemeViews', 'shareSiteSettings', 'registerFrontend'] as $method) {
+    foreach (['registerThemeViews', 'shareSiteSettings', 'registerFrontend'] as $method) {
         $reflection = new ReflectionMethod($provider, $method);
         $reflection->setAccessible(true);
         $reflection->invoke($provider);

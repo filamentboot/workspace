@@ -1,6 +1,6 @@
 <?php
 
-use Filamentboot\FilamentbootSite\Filament\Resources\SiteCaseResource;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Filament\SiteCaseResource;
 use Filamentboot\Settings\UploadSettings;
 
 /**

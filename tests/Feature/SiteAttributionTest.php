@@ -7,16 +7,21 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 uses(RefreshDatabase::class);
 
 /**
- * 访客首触归因测试（SiteAttributionTest）
+ * 访客首触归因测试（#29 起归因在客户端）
  *
- * 覆盖场景：
- * - 首次落地时把落地页、来源页与 UTM 写入 session
- * - 后续访问不覆盖已有归因（首触语义：广告落地后跳几个页面再提交，渠道不能丢）
- * - sitemap/robots 不触发归因采集
+ * 原来这件事由 `CaptureVisitorAttribution` 中间件在服务端做、写 session。#29 把它搬到
+ * 客户端 localStorage（`shared/components/attribution-store.blade.php`），因为公开页要能
+ * 整页缓存就不能起 session——起了就有 Set-Cookie，共享缓存直接失效。
+ *
+ * 因此本文件只能验两件事：
+ * 1. 归因脚本真的被注入到每个公开页，且「只在 key 不存在时写一次」的首触语义写在里面
+ * 2. 服务端不再往 session 写任何归因（回归护栏——中间件真的退役了）
+ *
+ * 「首触值算得对不对」是浏览器行为，Feature 测试碰不到，归 Playwright
+ * （`tests/e2e/uat-phase12.spec.cjs` 的归因用例）。而「归因怎么从请求体落到列上」
+ * 在 `ContactFormTest` 里。
  *
  * @group site
- *
- * @covers \Filamentboot\FilamentbootSite\Http\Middleware\CaptureVisitorAttribution
  */
 beforeEach(function () {
     config([
@@ -27,7 +32,7 @@ beforeEach(function () {
 
     $provider = new SiteServiceProvider(app());
 
-    foreach (['registerLivewireComponents', 'registerThemeViews', 'shareSiteSettings', 'registerFrontend'] as $method) {
+    foreach (['registerThemeViews', 'shareSiteSettings', 'registerFrontend'] as $method) {
         $reflection = new ReflectionMethod($provider, $method);
         $reflection->setAccessible(true);
         $reflection->invoke($provider);
@@ -38,60 +43,40 @@ beforeEach(function () {
 });
 
 /**
- * 首次落地写入落地页、来源页与 UTM
+ * 归因脚本注入到公开页，且带着首触语义
  */
-it('首次落地写入归因数据', function () {
+it('公开页注入客户端归因脚本', function (string $path) {
+    $html = $this->get($path)->assertOk()->getContent();
+
+    expect($html)->toContain("Alpine.store('siteAttribution'")
+        // 首触语义：只在读不到时写一次
+        ->and($html)->toContain('if (read() === null)')
+        // 采集的字段
+        ->and($html)->toContain('landing_url')
+        ->and($html)->toContain('utm_campaign')
+        // localStorage 不可用时降级为内存，而不是整段抛异常把表单搞坏
+        ->and($html)->toContain('memory');
+})->with(['/', '/cases', '/solutions', '/products', '/news']);
+
+/**
+ * 服务端不再往 session 写归因（回归护栏）
+ *
+ * 中间件退役后若有人把它加回来，公开页就会重新起 session、整页缓存静默失效——
+ * 那种失效不会有任何报错，只会表现为「CDN 命中率一直是 0」。
+ */
+it('公开页不再往 session 写归因', function () {
     $this->withHeader('referer', 'https://www.baidu.com/s?wd=test')
-        ->get('/solutions?utm_source=wechat&utm_medium=cpc&utm_campaign=summer')
+        ->get('/solutions?utm_source=wechat&utm_medium=cpc')
         ->assertOk();
 
-    $attribution = session(CaptureVisitorAttribution::SESSION_KEY);
-
-    // fullUrl() 经 Symfony getQueryString() 归一化，查询参数按键排序
-    expect($attribution['landing_url'])->toContain('/solutions?')
-        ->and($attribution['landing_url'])->toContain('utm_source=wechat')
-        ->and($attribution['referer'])->toBe('https://www.baidu.com/s?wd=test')
-        ->and($attribution['utm_source'])->toBe('wechat')
-        ->and($attribution['utm_medium'])->toBe('cpc')
-        ->and($attribution['utm_campaign'])->toBe('summer')
-        ->and($attribution['utm_term'])->toBeNull();
+    expect(session()->has('site.attribution'))->toBeFalse()
+        ->and(session()->all())->not->toHaveKey('site.attribution');
 });
 
 /**
- * 后续访问不覆盖首次归因
- *
- * 这是「首触」的核心：访客从广告落地后往往要跳几个页面才提交表单，
- * 若每次请求都刷新归因，提交时拿到的会是站内最后一跳，渠道信息全部丢失。
+ * 归因中间件类已删除
  */
-it('后续访问不覆盖首触归因', function () {
-    $this->get('/solutions?utm_source=wechat&utm_campaign=summer')->assertOk();
-
-    // 站内继续浏览两个页面（无 UTM）
-    $this->get('/cases')->assertOk();
-    $this->get('/products')->assertOk();
-
-    $attribution = session(CaptureVisitorAttribution::SESSION_KEY);
-
-    expect($attribution['landing_url'])->toContain('utm_source=wechat')
-        ->and($attribution['utm_source'])->toBe('wechat')
-        ->and($attribution['utm_campaign'])->toBe('summer');
-});
-
-/**
- * 归因数据长度受限，超长 UTM 不会写坏后续入库
- */
-it('超长 UTM 参数被截断', function () {
-    $this->get('/solutions?utm_source='.str_repeat('a', 400))->assertOk();
-
-    expect(mb_strlen(session(CaptureVisitorAttribution::SESSION_KEY)['utm_source']))->toBe(255);
-});
-
-/**
- * sitemap 与 robots 不触发归因采集（不为爬虫开 session）
- */
-it('sitemap 与 robots 不采集归因', function () {
-    $this->get('/sitemap.xml')->assertOk();
-    $this->get('/robots.txt')->assertOk();
-
-    expect(session()->has(CaptureVisitorAttribution::SESSION_KEY))->toBeFalse();
+it('归因中间件类已不存在', function () {
+    expect(class_exists(CaptureVisitorAttribution::class))
+        ->toBeFalse();
 });

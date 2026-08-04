@@ -1,179 +1,229 @@
 <?php
 
 use Filamentboot\FilamentbootSite\Enums\ContactMessageStatus;
-use Filamentboot\FilamentbootSite\Http\Livewire\ContactForm;
-use Filamentboot\FilamentbootSite\Http\Middleware\CaptureVisitorAttribution;
 use Filamentboot\FilamentbootSite\Mail\NewContactMessageMail;
 use Filamentboot\FilamentbootSite\Models\ContactMessage;
+use Filamentboot\FilamentbootSite\Services\ContactSubmission;
 use Filamentboot\FilamentbootSite\Settings\SiteSettings;
+use Filamentboot\FilamentbootSite\SiteServiceProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\RateLimiter;
-use Livewire\Livewire;
-
-use function Pest\Laravel\travel;
+use Illuminate\Testing\TestResponse;
 
 uses(RefreshDatabase::class);
 
-// 注册 filamentboot-site 视图命名空间指向包内视图目录（10-04 测试阶段，10-05 完整主题视图替代）
+/**
+ * 询盘提交测试（#29 起测的是无状态端点，不再是 Livewire 组件）
+ *
+ * 覆盖场景：
+ * - 提交后持久化到 site_contact_messages，status=UNREAD（D-10-15）
+ * - 来源与首触归因从**请求体**入库（#29：归因搬到客户端 localStorage，不再读 session）
+ * - 归因走白名单逐键取值，请求体里的其它键进不了库
+ * - 同 IP 超过 3 次触发限流，返回 429 且不写新记录（T-10-04-02）
+ * - 蜜罐字段被填、或客户端上报耗时不足 3 秒，静默丢弃但**对外回成功**（C2）
+ * - 机器人提交不消耗真实访客的限流额度
+ * - 通知邮件按 A2 的约定投递，且模板真的能渲染
+ *
+ * ⚠️ 端点**不挂 web 中间件组**，因此没有 CSRF token 可带。用 postJson 直打即可，
+ * 不要 withoutMiddleware——那会连 throttle 一起关掉，反而测不到限流。
+ *
+ * @group site
+ */
 beforeEach(function () {
-    $viewsPath = base_path('packages/filamentboot-site/resources/views');
-    if (is_dir($viewsPath)) {
-        view()->addNamespace('filamentboot-site', $viewsPath);
-    }
+    // 前台路由只在 plugins.is_enabled = true 时由 SiteServiceProvider 引入，
+    // 测试库在应用 boot 之后才有数据，所以手工加载
+    $provider = new SiteServiceProvider(app());
+
+    (new ReflectionMethod(SiteServiceProvider::class, 'registerThemeViews'))->invoke($provider);
+    (new ReflectionMethod(SiteServiceProvider::class, 'shareSiteSettings'))->invoke($provider);
+
+    require base_path('packages/filamentboot-site/routes/site.php');
+
+    app('router')->getRoutes()->refreshNameLookups();
+    app('router')->getRoutes()->refreshActionLookups();
+
+    RateLimiter::clear('site-contact:127.0.0.1');
 });
 
 /**
- * 模拟真人填表耗时（C2）
+ * 一份通过校验、不像机器人的提交载荷
  *
- * 组件在 mount() 记下渲染时刻，提交时若不足 3 秒即判为机器人并静默丢弃。
- * Livewire::test() 里 mount 与 call 之间只隔几微秒，不推进时钟的话
- * 每个正常提交用例都会被反刷规则挡下——这不是绕过，正是它该有的行为。
+ * elapsed 由客户端上报（表单可交互到提交的秒数），给 5 表示「真人填了一会儿」。
+ * 不给这个字段也算通过——服务端对缺失值不做耗时判断，宁可放过也不误杀。
  *
- * 交给 tap 而不是放进 beforeEach：时钟必须在 mount 之后才推进。
+ * @param  array<string, mixed>  $overrides
+ * @return array<string, mixed>
  */
-function humanPace(): Closure
+function contactPayload(array $overrides = []): array
 {
-    return static function (): void {
-        travel(4)->seconds();
-    };
+    return [
+        'name'    => '张三',
+        'phone'   => '13800138000',
+        'message' => '想了解全屋智能方案',
+        'elapsed' => 5,
+        ...$overrides,
+    ];
 }
 
 /**
- * 询盘表单测试（ContactFormTest）
+ * 提交一次询盘
  *
- * 覆盖场景：
- * - 表单提交后持久化到 site_contact_messages，status=UNREAD（D-10-15）
- * - 同 IP 超过 3 次提交触发速率限制，不写入新记录（D-10-15 安全，T-10-04-02）
- *
- * @group site
- *
- * @covers \Filamentboot\FilamentbootSite\Http\Livewire\ContactForm
+ * @param  array<string, mixed>  $overrides
  */
+function submitContact(array $overrides = []): TestResponse
+{
+    return test()->postJson(route('site.contact.store'), contactPayload($overrides));
+}
 
-/**
- * 询盘表单提交后持久化到数据库且默认状态为未读（D-10-15）
- */
-it('询盘表单提交后持久化到数据库且默认状态为未读', function () {
-    // 清除该测试的速率限制器（避免测试间干扰）
-    RateLimiter::clear(
-        'livewire-rate-limiter:'.sha1(ContactForm::class.'|submit|127.0.0.1')
-    );
+it('提交后持久化到数据库且默认状态为未读', function () {
+    submitContact()->assertOk()->assertJson(['ok' => true]);
 
-    Livewire::test(ContactForm::class)
-        ->set('name', '张三')
-        ->set('phone', '13800138000')
-        ->set('message', '我想了解你们的智能家居方案，请与我联系。')
-        ->tap(humanPace())->call('submit');
+    $record = ContactMessage::sole();
 
-    // 断言 site_contact_messages 表新增了一条记录
-    $this->assertDatabaseCount('site_contact_messages', 1);
-
-    // 断言记录内容正确
-    $this->assertDatabaseHas('site_contact_messages', [
-        'name'   => '张三',
-        'phone'  => '13800138000',
-        'status' => ContactMessageStatus::UNREAD->value,
-    ]);
+    expect($record->name)->toBe('张三')
+        ->and($record->phone)->toBe('13800138000')
+        ->and($record->message)->toBe('想了解全屋智能方案')
+        ->and($record->status)->toBe(ContactMessageStatus::UNREAD)
+        ->and($record->ip)->toBe('127.0.0.1');
 });
 
-/**
- * 提交时把转化入口与 session 中的首触归因一并入库（A1）
- *
- * 此前埋点入口全做了（Alpine store 有 source、各 CTA 有 data-contact-trigger），
- * 但组件没有 source 属性、表也没有对应列，数据一列没落。
- */
-it('提交时来源与首触归因一并入库', function () {
-    RateLimiter::clear(
-        'livewire-rate-limiter:'.sha1(ContactForm::class.'|submit|127.0.0.1')
-    );
+it('缺必填字段时返回 422 且不入库', function () {
+    test()->postJson(route('site.contact.store'), ['elapsed' => 5])
+        ->assertStatus(422)
+        ->assertJsonPath('ok', false)
+        ->assertJsonStructure(['errors' => ['name', 'phone']]);
 
-    session([CaptureVisitorAttribution::SESSION_KEY => [
-        'landing_url'  => 'http://localhost/solutions?utm_source=wechat',
-        'referer'      => 'https://www.baidu.com/s?wd=%E6%99%BA%E8%83%BD%E5%AE%B6%E5%B1%85',
-        'utm_source'   => 'wechat',
+    expect(ContactMessage::count())->toBe(0);
+});
+
+it('来源与首触归因从请求体入库', function () {
+    submitContact([
+        'source'       => 'hero',
+        'landing_url'  => 'https://www.qkznj.com/solutions?utm_source=baidu',
+        'referer'      => 'https://www.baidu.com/',
+        'utm_source'   => 'baidu',
         'utm_medium'   => 'cpc',
-        'utm_campaign' => 'summer-2026',
-        'utm_term'     => null,
-        'utm_content'  => null,
-    ]]);
+        'utm_campaign' => 'quanwu',
+    ])->assertOk();
 
-    Livewire::test(ContactForm::class)
-        ->set('name', '李四')
-        ->set('phone', '13900139000')
-        ->set('source', 'product-detail')
-        ->tap(humanPace())->call('submit');
+    $record = ContactMessage::sole();
 
-    $record = ContactMessage::latest('id')->first();
-
-    expect($record->source)->toBe('product-detail')
-        ->and($record->landing_url)->toBe('http://localhost/solutions?utm_source=wechat')
-        ->and($record->referer)->toContain('baidu.com')
-        ->and($record->utm_source)->toBe('wechat')
+    expect($record->source)->toBe('hero')
+        ->and($record->landing_url)->toBe('https://www.qkznj.com/solutions?utm_source=baidu')
+        ->and($record->referer)->toBe('https://www.baidu.com/')
+        ->and($record->utm_source)->toBe('baidu')
         ->and($record->utm_medium)->toBe('cpc')
-        ->and($record->utm_campaign)->toBe('summer-2026')
-        ->and($record->utm_term)->toBeNull();
+        ->and($record->utm_campaign)->toBe('quanwu');
 });
 
-/**
- * 非法字符的 source 被过滤而不是拒绝提交
- *
- * source 由客户端提供且访客并未填写，为它报错只会让人无从修正；
- * 但不过滤会把任意字符串原样带进后台列表与导出文件。
- */
-it('非法来源标识被过滤后仍正常提交', function () {
-    RateLimiter::clear(
-        'livewire-rate-limiter:'.sha1(ContactForm::class.'|submit|127.0.0.1')
-    );
+it('归因字段走白名单，请求体里的其它键不入库', function () {
+    // ContactMessage 的 $guarded 为空，若把整段请求体摊进 create() 就等于
+    // 给任意字段开了批量赋值入口——这条锁住「逐键取值」这个决定
+    submitContact([
+        'status' => 'read',
+        'ip'     => '9.9.9.9',
+    ])->assertOk();
 
-    Livewire::test(ContactForm::class)
-        ->set('name', '王五')
-        ->set('phone', '13700137000')
-        ->set('source', '<script>alert(1)</script>')
-        ->tap(humanPace())->call('submit')
-        ->assertHasNoErrors();
+    $record = ContactMessage::sole();
 
-    expect(ContactMessage::latest('id')->first()->source)->toBe('scriptalert1script');
+    expect($record->status)->toBe(ContactMessageStatus::UNREAD)
+        ->and($record->ip)->toBe('127.0.0.1');
 });
 
-/**
- * 无归因数据时归因列为 null，不写入空字符串
- */
 it('无归因数据时归因列为 null', function () {
-    RateLimiter::clear(
-        'livewire-rate-limiter:'.sha1(ContactForm::class.'|submit|127.0.0.1')
-    );
+    submitContact()->assertOk();
 
-    Livewire::test(ContactForm::class)
-        ->set('name', '赵六')
-        ->set('phone', '13600136000')
-        ->tap(humanPace())->call('submit');
+    $record = ContactMessage::sole();
 
-    $record = ContactMessage::latest('id')->first();
-
-    expect($record->source)->toBeNull()
-        ->and($record->landing_url)->toBeNull()
-        ->and($record->utm_source)->toBeNull();
+    foreach (ContactSubmission::ATTRIBUTION_KEYS as $key) {
+        expect($record->{$key})->toBeNull();
+    }
 });
 
-/**
- * 配置了收件人时投递新询盘通知邮件（A2）
- */
-it('配置收件人后提交发出新询盘通知邮件', function () {
-    RateLimiter::clear(
-        'livewire-rate-limiter:'.sha1(ContactForm::class.'|submit|127.0.0.1')
-    );
+it('超长归因值被截断到列宽', function () {
+    submitContact([
+        'landing_url' => 'https://a.test/'.str_repeat('x', 2000),
+        'utm_source'  => str_repeat('y', 500),
+    ])->assertOk();
 
+    $record = ContactMessage::sole();
+
+    expect(mb_strlen((string) $record->landing_url))->toBe(1024)
+        ->and(mb_strlen((string) $record->utm_source))->toBe(255);
+});
+
+it('非法来源标识被过滤后仍正常提交', function () {
+    submitContact(['source' => '<script>Hero!</script>'])->assertOk();
+
+    // 只留小写字母、数字与连字符（开闭标签的字母都会留下来）
+    expect(ContactMessage::sole()->source)->toBe('scriptheroscript');
+});
+
+it('来源过滤后为空时归一为 null', function () {
+    submitContact(['source' => '！！！'])->assertOk();
+
+    expect(ContactMessage::sole()->source)->toBeNull();
+});
+
+it('超过速率限制后返回 429 且不写新记录', function () {
+    for ($i = 0; $i < ContactSubmission::RATE_LIMIT; $i++) {
+        submitContact(['phone' => '1380013800'.$i])->assertOk();
+    }
+
+    expect(ContactMessage::count())->toBe(ContactSubmission::RATE_LIMIT);
+
+    submitContact(['phone' => '13900139000'])
+        ->assertStatus(429)
+        ->assertJsonPath('ok', false)
+        ->assertJsonPath('errors.phone.0', '提交过于频繁，请稍后再试。');
+
+    expect(ContactMessage::count())->toBe(ContactSubmission::RATE_LIMIT);
+});
+
+it('填了蜜罐字段的提交被静默丢弃', function () {
+    // 对外回成功：回错误等于在教脚本怎么绕过
+    submitContact(['website' => 'https://spam.example'])
+        ->assertOk()
+        ->assertJson(['ok' => true]);
+
+    expect(ContactMessage::count())->toBe(0);
+});
+
+it('客户端上报耗时不足阈值时被静默丢弃', function () {
+    submitContact(['elapsed' => ContactSubmission::MIN_FILL_SECONDS - 1])
+        ->assertOk()
+        ->assertJson(['ok' => true]);
+
+    expect(ContactMessage::count())->toBe(0);
+});
+
+it('未上报耗时时不做耗时判断', function () {
+    // 客户端 JS 被拦、宿主自行调用服务、时钟异常都会走到这里。宁可放过也不误杀
+    submitContact(['elapsed' => 0])->assertOk();
+
+    expect(ContactMessage::count())->toBe(1);
+});
+
+it('机器人提交不消耗真实访客的限流额度', function () {
+    // 机器人识别排在限流之前，所以下面这三次不该吃掉额度
+    for ($i = 0; $i < 3; $i++) {
+        submitContact(['website' => 'spam'])->assertOk();
+    }
+
+    submitContact()->assertOk();
+
+    expect(ContactMessage::count())->toBe(1);
+});
+
+it('配置收件人后提交发出新询盘通知邮件', function () {
     $settings                = app(SiteSettings::class);
     $settings->notify_emails = 'sales@example.com, 这不是邮箱, ops@example.com';
     $settings->save();
 
     Mail::fake();
 
-    Livewire::test(ContactForm::class)
-        ->set('name', '钱七')
-        ->set('phone', '13500135000')
-        ->tap(humanPace())->call('submit');
+    submitContact()->assertOk();
 
     // 一封邮件投给全部合法收件人，中间那个非法地址被过滤掉
     Mail::assertQueued(
@@ -184,10 +234,20 @@ it('配置收件人后提交发出新询盘通知邮件', function () {
     Mail::assertQueuedCount(1);
 });
 
+it('未配置收件人时不发通知', function () {
+    Mail::fake();
+
+    submitContact()->assertOk();
+
+    Mail::assertNothingQueued();
+
+    expect(ContactMessage::count())->toBe(1);
+});
+
 /**
  * 通知邮件正文可真实渲染
  *
- * Mail::fake() 不会渲染视图，光靠上面的 assertQueued 无法发现模板坏掉；
+ * Mail::fake() 不会渲染视图，光靠 assertQueued 无法发现模板坏掉；
  * 邮件模板出错只会在队列 worker 里静默失败，必须单独渲染一次。
  */
 it('新询盘通知邮件正文可渲染', function () {
@@ -209,199 +269,12 @@ it('新询盘通知邮件正文可渲染', function () {
         ->and($html)->toContain('wechat');
 });
 
-/**
- * 未配置收件人时不发通知，也不报错
- */
-it('未配置收件人时不发通知', function () {
-    RateLimiter::clear(
-        'livewire-rate-limiter:'.sha1(ContactForm::class.'|submit|127.0.0.1')
-    );
+it('提交端点不起 session', function () {
+    // 端点不挂 web 组，这是「公开页零 session」的一半；
+    // 另一半是内容页，在 SiteCacheBoundaryTest 里验
+    $response = submitContact();
 
-    $settings                = app(SiteSettings::class);
-    $settings->notify_emails = '';
-    $settings->save();
+    $response->assertOk();
 
-    Mail::fake();
-
-    Livewire::test(ContactForm::class)
-        ->set('name', '孙八')
-        ->set('phone', '13400134000')
-        ->tap(humanPace())->call('submit')
-        ->assertSet('submitted', true);
-
-    Mail::assertNothingQueued();
-    $this->assertDatabaseCount('site_contact_messages', 1);
-});
-
-/**
- * 通知通道抛异常时表单仍然提交成功（A2 硬要求）
- *
- * Mail::queue() 在队列后端不可用时会抛异常。访客侧的成功提示不能依赖通知结果——
- * 线索已经落库，通知失败是运维问题，不该让访客看到失败页面然后重复提交。
- */
-it('通知发送失败时表单仍提交成功', function () {
-    RateLimiter::clear(
-        'livewire-rate-limiter:'.sha1(ContactForm::class.'|submit|127.0.0.1')
-    );
-
-    $settings                = app(SiteSettings::class);
-    $settings->notify_emails = 'sales@example.com';
-    $settings->save();
-
-    // 模拟队列后端不可用：Mail::to()->queue() 直接抛异常
-    Mail::shouldReceive('to')->andThrow(new RuntimeException('queue backend unavailable'));
-
-    Livewire::test(ContactForm::class)
-        ->set('name', '周九')
-        ->set('phone', '13300133000')
-        ->tap(humanPace())->call('submit')
-        ->assertHasNoErrors()
-        ->assertSet('submitted', true);
-
-    $this->assertDatabaseCount('site_contact_messages', 1);
-});
-
-/**
- * 询盘表单超过速率限制后拒绝提交，不写入新记录（D-10-15 安全，T-10-04-02）
- */
-it('询盘表单超过速率限制后拒绝提交', function () {
-    $rateLimitKey = 'livewire-rate-limiter:'.sha1(ContactForm::class.'|submit|127.0.0.1');
-
-    // 清除速率限制，确保干净环境
-    RateLimiter::clear($rateLimitKey);
-
-    // 连续提交 3 次（达到上限），每次都应成功
-    for ($i = 1; $i <= 3; $i++) {
-        Livewire::test(ContactForm::class)
-            ->set('name', "用户{$i}")
-            ->set('phone', '13800138'.str_pad($i, 3, '0', STR_PAD_LEFT))
-            ->set('message', "留言内容{$i}")
-            ->tap(humanPace())->call('submit');
-    }
-
-    // 3 条记录已写入
-    $this->assertDatabaseCount('site_contact_messages', 3);
-
-    // 第 4 次提交应触发速率限制，返回错误，不写入新记录
-    $component = Livewire::test(ContactForm::class)
-        ->set('name', '第四次提交')
-        ->set('phone', '13800138999')
-        ->set('message', '这次应该被限速')
-        ->tap(humanPace())->call('submit');
-
-    // 断言速率限制错误已添加（错误信息在 phone 字段）
-    $component->assertHasErrors(['phone']);
-
-    // 断言数据库仍只有 3 条记录（第 4 次未写入）
-    $this->assertDatabaseCount('site_contact_messages', 3);
-});
-
-/**
- * 蜜罐字段被填写时静默丢弃（C2）
- *
- * 关键在「静默」：回一个错误等于在教脚本怎么绕过，回成功则让它以为得手、
- * 不会换策略重试。所以断言的是「看起来成功了，但库里什么都没有」。
- */
-it('填了蜜罐字段的提交被静默丢弃', function () {
-    RateLimiter::clear(
-        'livewire-rate-limiter:'.sha1(ContactForm::class.'|submit|127.0.0.1')
-    );
-
-    Mail::fake();
-
-    Livewire::test(ContactForm::class)
-        ->set('name', '机器人')
-        ->set('phone', '13800138000')
-        ->set('website', 'http://spam.example.com')
-        ->tap(humanPace())->call('submit')
-        ->assertHasNoErrors()
-        ->assertSet('submitted', true);
-
-    $this->assertDatabaseCount('site_contact_messages', 0);
-    Mail::assertNothingQueued();
-});
-
-/**
- * 渲染到提交不足 3 秒判为机器（C2）
- *
- * 这里不调 humanPace()，模拟脚本秒填秒交。
- */
-it('提交过快的请求被静默丢弃', function () {
-    RateLimiter::clear(
-        'livewire-rate-limiter:'.sha1(ContactForm::class.'|submit|127.0.0.1')
-    );
-
-    Livewire::test(ContactForm::class)
-        ->set('name', '快枪手')
-        ->set('phone', '13800138000')
-        ->call('submit')
-        ->assertHasNoErrors()
-        ->assertSet('submitted', true);
-
-    $this->assertDatabaseCount('site_contact_messages', 0);
-});
-
-/**
- * 机器人提交不派发转化事件
- *
- * 否则投放后台的转化数会被灌水，比漏报更难排查。
- */
-it('机器人提交不上报转化事件', function () {
-    RateLimiter::clear(
-        'livewire-rate-limiter:'.sha1(ContactForm::class.'|submit|127.0.0.1')
-    );
-
-    Livewire::test(ContactForm::class)
-        ->set('name', '机器人')
-        ->set('phone', '13800138000')
-        ->set('website', 'spam')
-        ->tap(humanPace())->call('submit')
-        ->assertNotDispatched('site-contact-submitted');
-});
-
-/**
- * 机器人不消耗真实访客共享的 IP 限流额度
- *
- * 反刷判断放在 rateLimit() 之前，否则同一出口 IP 下的脚本三下就能把
- * 整个办公室/小区的访客一起锁在门外。
- */
-it('机器人提交不消耗限流额度', function () {
-    RateLimiter::clear(
-        'livewire-rate-limiter:'.sha1(ContactForm::class.'|submit|127.0.0.1')
-    );
-
-    // 先来 5 次机器人提交
-    for ($i = 0; $i < 5; $i++) {
-        Livewire::test(ContactForm::class)
-            ->set('name', "机器人{$i}")
-            ->set('phone', '13800138000')
-            ->set('website', 'spam')
-            ->tap(humanPace())->call('submit');
-    }
-
-    // 真实访客紧随其后仍应提交成功
-    Livewire::test(ContactForm::class)
-        ->set('name', '真实访客')
-        ->set('phone', '13900139000')
-        ->tap(humanPace())->call('submit')
-        ->assertHasNoErrors();
-
-    $this->assertDatabaseCount('site_contact_messages', 1);
-    $this->assertDatabaseHas('site_contact_messages', ['name' => '真实访客']);
-});
-
-/**
- * 蜜罐字段在 DOM 里但对读屏与键盘不可达
- *
- * 用屏外定位而非 display:none —— 后者是已知特征，成熟脚本会跳过。
- */
-it('蜜罐字段渲染为屏外且不可聚焦', function () {
-    $html = Livewire::test(ContactForm::class)->html();
-
-    expect($html)->toContain('id="contact-website"')
-        ->and($html)->toContain('left: -9999px')
-        ->and($html)->toContain('tabindex="-1"')
-        ->and($html)->toContain('aria-hidden="true"')
-        // display:none 会被脚本识别为蜜罐特征
-        ->and($html)->not->toContain('display: none; left: -9999px');
+    expect($response->headers->getCookies())->toBe([]);
 });

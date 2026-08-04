@@ -1,9 +1,9 @@
 <?php
 
-use Filamentboot\FilamentbootSite\Enums\PageStatus;
-use Filamentboot\FilamentbootSite\Models\SitePage;
-use Filamentboot\FilamentbootSite\Models\SitePageRevision;
-use Filamentboot\FilamentbootSite\Observers\SitePageObserver;
+use Filamentboot\FilamentbootSite\Cms\Enums\PageStatus;
+use Filamentboot\FilamentbootSite\Cms\Models\SitePage;
+use Filamentboot\FilamentbootSite\Cms\Models\SitePageRevision;
+use Filamentboot\FilamentbootSite\Cms\Observers\SitePageObserver;
 use Filamentboot\Models\AdminUser;
 
 /**

@@ -8,10 +8,27 @@
  * 期望变量：$record — ContactMessage 实例
  --}}
 @php
-    $rows = array_filter([
-        '姓名'       => $record->name,
-        '电话'       => $record->phone,
-        '留言'       => $record->message,
+    $contact = [
+        '姓名' => $record->name,
+        '电话' => $record->phone,
+        '留言' => $record->message,
+    ];
+
+    // 询盘表单区块配的额外问题，存的是有序列表 [{label, value}]（顺序即表单上的问题顺序，
+    // 映射形态会被 MySQL 的 JSON 规范化打乱）。撞名时保留固定字段——
+    // 一个叫「电话」的自定义问题不该顶掉真的电话号
+    $extra = [];
+
+    foreach ($record->extra ?? [] as $answer) {
+        $label = (string) ($answer['label'] ?? '');
+        $value = (string) ($answer['value'] ?? '');
+
+        if ($label !== '' && $value !== '' && ! array_key_exists($label, $contact)) {
+            $extra[$label] = $value;
+        }
+    }
+
+    $rows = array_filter($contact + $extra + [
         '转化入口'   => $record->sourceLabel(),
         '渠道来源'   => $record->utm_source,
         '渠道媒介'   => $record->utm_medium,

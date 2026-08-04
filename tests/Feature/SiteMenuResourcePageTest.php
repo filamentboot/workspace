@@ -1,12 +1,12 @@
 <?php
 
 use Filament\Facades\Filament;
-use Filamentboot\FilamentbootSite\Filament\Resources\SiteMenuItemResource;
-use Filamentboot\FilamentbootSite\Filament\Resources\SiteMenuItemResource\Pages\SiteMenuItemTree;
-use Filamentboot\FilamentbootSite\Filament\Resources\SiteMenuResource;
-use Filamentboot\FilamentbootSite\Filament\Resources\SiteMenuResource\Pages\ListSiteMenus;
-use Filamentboot\FilamentbootSite\Models\SiteMenu;
-use Filamentboot\FilamentbootSite\Models\SiteMenuItem;
+use Filamentboot\FilamentbootSite\Cms\Filament\Resources\SiteMenuItemResource;
+use Filamentboot\FilamentbootSite\Cms\Filament\Resources\SiteMenuItemResource\Pages\SiteMenuItemTree;
+use Filamentboot\FilamentbootSite\Cms\Filament\Resources\SiteMenuResource;
+use Filamentboot\FilamentbootSite\Cms\Filament\Resources\SiteMenuResource\Pages\ListSiteMenus;
+use Filamentboot\FilamentbootSite\Cms\Models\SiteMenu;
+use Filamentboot\FilamentbootSite\Cms\Models\SiteMenuItem;
 use Filamentboot\FilamentbootSite\SitePlugin;
 use Filamentboot\Models\AdminUser;
 use Livewire\Livewire;
@@ -149,6 +149,126 @@ it('无任何菜单时树页仍可打开', function () {
     loginMenuManager(['manage_site_menu']);
 
     Livewire::test(SiteMenuItemTree::class)->assertOk();
+});
+
+/**
+ * 树页的新建动作真正把菜单项写进库（#23）
+ *
+ * 这条是 #23 的验收硬要求。此前本文件只覆盖 collapseTarget / expandTarget 两个纯函数
+ * 与树的读取过滤，一条都没真正建出过菜单项——而「建菜单项」正好是坏的。
+ */
+it('树页新建动作真正建出菜单项', function () {
+    loginMenuManager(['manage_site_menu']);
+
+    $menu = SiteMenu::create(['key' => 'main', 'name' => '顶部导航']);
+
+    Livewire::test(SiteMenuItemTree::class, ['menu' => 'main'])
+        ->callAction('create', [
+            'label'         => '联系我们',
+            'type'          => 'anchor',
+            'target_anchor' => '#contact',
+            'sort'          => 3,
+        ])
+        ->assertHasNoActionErrors();
+
+    $item = SiteMenuItem::sole();
+
+    expect($item->menu_id)->toBe($menu->getKey())
+        ->and($item->parent_id)->toBe(SiteMenuItem::defaultParentKey())
+        ->and($item->type)->toBe('anchor')
+        ->and($item->label)->toBe('联系我们')
+        ->and($item->target)->toBe('#contact');
+});
+
+/**
+ * 新建时 menu_id 跟随 ?menu=，不会串到别的菜单下
+ */
+it('新建的菜单项归属当前 ?menu= 那条', function () {
+    loginMenuManager(['manage_site_menu']);
+
+    SiteMenu::create(['key' => 'main', 'name' => '顶部导航']);
+    $footer = SiteMenu::create(['key' => 'footer', 'name' => '页脚导航']);
+
+    Livewire::test(SiteMenuItemTree::class, ['menu' => 'footer'])
+        ->callAction('create', [
+            'label'        => '关于我们',
+            'type'         => 'route',
+            'target_route' => 'site.cases.index',
+            'sort'         => 0,
+        ])
+        ->assertHasNoActionErrors();
+
+    expect(SiteMenuItem::sole()->menu_id)->toBe($footer->getKey());
+});
+
+/**
+ * 树页的编辑动作回填 target 并写回
+ */
+it('树页编辑动作回填并写回 target', function () {
+    loginMenuManager(['manage_site_menu']);
+
+    $menu = SiteMenu::create(['key' => 'main', 'name' => '顶部导航']);
+    $item = SiteMenuItem::create([
+        'menu_id'   => $menu->getKey(),
+        'parent_id' => SiteMenuItem::defaultParentKey(),
+        'type'      => 'anchor',
+        'label'     => '原文字',
+        'target'    => '#old',
+        'sort'      => 0,
+    ]);
+
+    Livewire::test(SiteMenuItemTree::class, ['menu' => 'main'])
+        ->call('mountTreeAction', 'edit', (string) $item->getKey())
+        // 回填走 mutateRecordDataUsing → expandTarget，target 应已展开到 target_anchor
+        ->assertSet('mountedActions.0.data.target_anchor', '#old')
+        ->set('mountedActions.0.data.label', '改过的文字')
+        ->set('mountedActions.0.data.target_anchor', '#new')
+        ->call('callMountedAction')
+        ->assertHasNoActionErrors();
+
+    $item->refresh();
+
+    expect($item->label)->toBe('改过的文字')
+        ->and($item->target)->toBe('#new');
+});
+
+/**
+ * 模态表单的状态路径必须挂在 mountedActions 下（#23 回归护栏）
+ *
+ * 基类 TreePage::getFormSchema() 先把组件绑到一个 statePath 为空的临时 Schema 上，
+ * Filament 5 在那次解析里就把字段的绝对状态路径缓存成裸字段名。动作随后用
+ * mountedActions.0.data 重新收容这批组件时缓存不会重算，前端 @entangle 去找页面上
+ * 并不存在的 Livewire 属性 `type`，浏览器报 Entangle Error，弹窗根本显示不出来。
+ *
+ * 不断言渲染的 HTML：Filament 的模态体是客户端惰性渲染的，Livewire::test 拿到的
+ * action-modals 分区是空的，断言 HTML 会恒假。这里直接问服务端解析出的状态路径。
+ */
+it('模态表单字段绑到 mountedActions 状态路径', function () {
+    loginMenuManager(['manage_site_menu']);
+
+    SiteMenu::create(['key' => 'main', 'name' => '顶部导航']);
+
+    $schema = Livewire::test(SiteMenuItemTree::class, ['menu' => 'main'])
+        ->call('mountAction', 'create')
+        ->instance()
+        ->getSchema('mountedActionSchema0');
+
+    expect($schema)->not->toBeNull()
+        ->and($schema->getStatePath())->toBe('mountedActions.0.data');
+
+    $paths = [];
+
+    foreach ($schema->getComponents() as $component) {
+        if (method_exists($component, 'getName') && method_exists($component, 'getStatePath')) {
+            $paths[$component->getName()] = $component->getStatePath();
+        }
+    }
+
+    // 只断言默认可见的字段：四个 target_* 由 visible() 按 type 切换，
+    // type 默认是 page，此刻 target_anchor 不在组件列表里。
+    // type 本身正是当初报 Entangle Error 的那个字段，够用。
+    expect($paths['label'] ?? null)->toBe('mountedActions.0.data.label')
+        ->and($paths['type'] ?? null)->toBe('mountedActions.0.data.type');
 });
 
 /**

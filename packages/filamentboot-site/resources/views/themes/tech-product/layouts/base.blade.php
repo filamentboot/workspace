@@ -19,13 +19,16 @@
     {{-- 询盘面板全局 Store，须早于任何 CTA 渲染 --}}
     @include('filamentboot-site::components.contact-panel-store')
 
+    {{-- 首触渠道归因（客户端 localStorage，#29 起不再走 session） --}}
+    @include('filamentboot-site::components.attribution-store')
+
     {{-- Google Fonts --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Noto+Sans+SC:wght@400;500;700&display=swap" rel="stylesheet">
 
     {{-- tech-product 主题 CSS（入口路径由 ThemeAsset 按 Vite manifest 解析） --}}
-    @vite(\Filamentboot\FilamentbootSite\Support\ThemeAsset::viteEntry('tech-product'))
+    @vite(\Filamentboot\FilamentbootSite\Cms\Themes\ThemeAsset::viteEntries('tech-product'))
 
     {{-- 统计代码注入位（A3）：结构化 ID 生成的代码 + 自定义 head 代码块 --}}
     @include('filamentboot-site::components.analytics', ['position' => 'head'])
@@ -45,6 +48,7 @@
 
     {{-- 统计代码注入位（A3）：自定义 body 尾代码块 + 表单转化事件上报 --}}
     @include('filamentboot-site::components.analytics', ['position' => 'body'])
+    @include('filamentboot-site::components.live-chat')
 
     @stack('scripts')
 </body>

@@ -2,11 +2,16 @@
 
 namespace Filamentboot\FilamentbootSite\Http\Controllers;
 
+use Filamentboot\FilamentbootSite\Cms\Models\SitePage;
 use Filamentboot\FilamentbootSite\Cms\Rendering\BlockRenderer;
-use Filamentboot\FilamentbootSite\Models\SiteCase;
-use Filamentboot\FilamentbootSite\Models\SitePage;
-use Filamentboot\FilamentbootSite\Models\SiteProduct;
-use Filamentboot\FilamentbootSite\Models\SiteSolution;
+use Filamentboot\FilamentbootSite\Cms\Services\RelatedContent;
+use Filamentboot\FilamentbootSite\Cms\Services\SiteSearch;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Enums\CaseStyle;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Enums\HouseType;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Models\SiteCase;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Home\HomeSectionProvider;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Products\Models\SiteProduct;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Solutions\Models\SiteSolution;
 use Filamentboot\FilamentbootSite\Modules\News\Models\NewsArticle;
 use Filamentboot\FilamentbootSite\Modules\News\Models\NewsCategory;
 use Filamentboot\FilamentbootSite\Settings\SiteSettings;
@@ -38,50 +43,97 @@ class SiteFrontController extends Controller
     /**
      * 官网首页
      *
-     * 展示精选案例、精选方案、精选产品、业主见证，并传递全局 SEO 数据。
-     *
-     * 见证不取 featured 案例：置顶与否是编辑对案例本身的排期判断，
-     * 跟这条案例有没有配业主原话是两回事，用 featured 过滤会让大量见证白填。
+     * 各区块的数据由 Modules\Corporate\Home\HomeSectionProvider 提供（#27）：
+     * 首页展示什么是企业站模块的事，CMS 的通用控制器不该硬编码 SiteCase::featured()。
+     * 宿主换内容模块时 bind 掉那个类即可，控制器与路由都不用动。
      */
     public function home(): View
     {
-        $featuredCases     = SiteCase::published()->featured()->latest('published_at')->take(6)->get();
-        $featuredSolutions = SiteSolution::published()->featured()->latest('published_at')->take(4)->get();
-        $featuredProducts  = SiteProduct::published()->featured()->take(6)->get();
-
-        $testimonials = SiteCase::published()
-            ->whereNotNull('customer_name')
-            ->where('customer_name', '!=', '')
-            ->whereNotNull('customer_quote')
-            ->where('customer_quote', '!=', '')
-            ->latest('published_at')
-            ->take(6)
-            ->get();
-
         $seoData = $this->buildHomeSeo();
 
         // Organization 只在首页输出：品牌词知识面板锚在首页，详情页里它已经
         // 作为 publisher / author 嵌在 Article 与 Product 节点内部。
         $seoData['jsonLd'] = [$this->organizationSchema()];
 
-        return view('filamentboot-site::home', compact(
-            'featuredCases',
-            'featuredSolutions',
-            'featuredProducts',
-            'testimonials',
+        return view('filamentboot-site::home', [
+            ...app(HomeSectionProvider::class)->sections(),
+            'seoData' => $seoData,
+        ]);
+    }
+
+    /**
+     * 装修案例列表页
+     *
+     * 风格与户型筛选走查询参数而非 Livewire（#29）：每个筛选组合各自是一个可缓存的
+     * 静态 URL，而 Livewire 组件会把 livewire.js 拉进页面，那个 script 标签带 data-csrf
+     * → 起 session → 整页缓存失效。资讯列表早就是这个做法，这次把案例列表对齐。
+     *
+     * 兼容旧的 ?houseType=：Livewire 的 #[Url] 属性用的是驼峰名，改成查询参数后
+     * 规范是 house_type，但已被搜索引擎收录的旧地址不该静默丢掉筛选条件。
+     */
+    public function caseIndex(Request $request): View
+    {
+        $style     = $this->enumFilter($request->query('style'), CaseStyle::class);
+        $houseType = $this->enumFilter(
+            $request->query('house_type') ?? $request->query('houseType'),
+            HouseType::class
+        );
+
+        $records = SiteCase::published()
+            ->when($style !== null, fn (Builder $query): Builder => $query->where('style', $style))
+            ->when($houseType !== null, fn (Builder $query): Builder => $query->where('house_type', $houseType))
+            ->latest('published_at')
+            ->paginate(12)
+            ->withQueryString();
+
+        $styleOptions     = $this->enumOptions(CaseStyle::class);
+        $houseTypeOptions = $this->enumOptions(HouseType::class);
+
+        $seoData = $this->buildListSeo('装修案例');
+
+        return view('filamentboot-site::cases.index', compact(
+            'records',
+            'style',
+            'houseType',
+            'styleOptions',
+            'houseTypeOptions',
             'seoData'
         ));
     }
 
     /**
-     * 装修案例列表页
+     * 按枚举白名单过滤一个查询参数
+     *
+     * 不在白名单里就当没传，而不是拿它去查库——任意字符串进 where 虽然有参数绑定挡着
+     * 不会注入，但会让 ?style=<script> 这类地址渲染出一个「筛选中：<script>」的空结果页，
+     * 白送一个可被外部构造的 URL。
+     *
+     * @param  class-string<CaseStyle|HouseType>  $enum
      */
-    public function caseIndex(): View
+    protected function enumFilter(mixed $value, string $enum): ?string
     {
-        $records = SiteCase::published()->latest('published_at')->paginate(12);
-        $seoData = $this->buildListSeo('装修案例');
+        if (! is_scalar($value) || (string) $value === '') {
+            return null;
+        }
 
-        return view('filamentboot-site::cases.index', compact('records', 'seoData'));
+        return $enum::tryFrom((string) $value)?->value;
+    }
+
+    /**
+     * 枚举的「值 => 中文标签」映射，供筛选控件渲染
+     *
+     * @param  class-string<CaseStyle|HouseType>  $enum
+     * @return array<string, string>
+     */
+    protected function enumOptions(string $enum): array
+    {
+        $options = [];
+
+        foreach ($enum::cases() as $case) {
+            $options[$case->value] = $case->label();
+        }
+
+        return $options;
     }
 
     /**
@@ -94,6 +146,18 @@ class SiteFrontController extends Controller
         $record  = SiteCase::published()->where('slug', $slug)->firstOrFail();
         $seoData = $this->buildSeo($record);
 
+        // 案例的亲和维度按「看的人在意什么」排：同风格与同户型比同分类更能说明
+        // 「这就是我要的那种」，分类只是后台的归档口径
+        $related = app(RelatedContent::class)->for(
+            SiteCase::published()->latest('published_at'),
+            $record,
+            [
+                'style'       => $record->style,
+                'house_type'  => $record->house_type,
+                'category_id' => $record->category_id,
+            ]
+        );
+
         $breadcrumbs = $this->breadcrumbs([
             ['label' => '装修案例', 'url' => route('site.cases.index')],
             ['label' => $record->title_zh, 'url' => null],
@@ -104,7 +168,7 @@ class SiteFrontController extends Controller
             $this->breadcrumbSchema($breadcrumbs),
         ];
 
-        return view('filamentboot-site::cases.show', compact('record', 'breadcrumbs', 'seoData'));
+        return view('filamentboot-site::cases.show', compact('record', 'related', 'breadcrumbs', 'seoData'));
     }
 
     /**
@@ -128,6 +192,13 @@ class SiteFrontController extends Controller
         $record  = SiteSolution::published()->where('slug', $slug)->firstOrFail();
         $seoData = $this->buildSeo($record);
 
+        // 方案没有分类也没有枚举维度，唯一的亲和信号是标签（由服务自行读取）；
+        // 没打标签的方案就直接拿最新几条补齐，好过底部空一块
+        $related = app(RelatedContent::class)->for(
+            SiteSolution::published()->latest('published_at'),
+            $record
+        );
+
         $breadcrumbs = $this->breadcrumbs([
             ['label' => '智能方案', 'url' => route('site.solutions.index')],
             ['label' => $record->title_zh, 'url' => null],
@@ -135,7 +206,7 @@ class SiteFrontController extends Controller
 
         $seoData['jsonLd'] = [$this->breadcrumbSchema($breadcrumbs)];
 
-        return view('filamentboot-site::solutions.show', compact('record', 'breadcrumbs', 'seoData'));
+        return view('filamentboot-site::solutions.show', compact('record', 'related', 'breadcrumbs', 'seoData'));
     }
 
     /**
@@ -159,6 +230,17 @@ class SiteFrontController extends Controller
         $record  = SiteProduct::published()->where('slug', $slug)->firstOrFail();
         $seoData = $this->buildSeo($record);
 
+        // 产品没有 published_at，排序照列表页的口径走 sort，同 sort 再按新的在前。
+        // 同品牌也算相关：买智能开关的人多半在比同一个品牌的其它型号
+        $related = app(RelatedContent::class)->for(
+            SiteProduct::published()->orderBy('sort')->latest('id'),
+            $record,
+            [
+                'category_id' => $record->category_id,
+                'brand'       => $record->brand,
+            ]
+        );
+
         $breadcrumbs = $this->breadcrumbs([
             ['label' => '智能产品', 'url' => route('site.products.index')],
             ['label' => $record->title_zh, 'url' => null],
@@ -169,7 +251,7 @@ class SiteFrontController extends Controller
             $this->breadcrumbSchema($breadcrumbs),
         ];
 
-        return view('filamentboot-site::products.show', compact('record', 'breadcrumbs', 'seoData'));
+        return view('filamentboot-site::products.show', compact('record', 'related', 'breadcrumbs', 'seoData'));
     }
 
     /**
@@ -180,8 +262,11 @@ class SiteFrontController extends Controller
      */
     public function newsIndex(Request $request): View
     {
+        // 计数走 publishedArticles 关系而不是给 articles 套闭包：闭包参数只能被推成
+        // Builder<Model>，published() 作用域在那里"不存在"。别名保持 articles_count，
+        // 两套主题的 news/index 视图读的是这个名字。
         $categories = NewsCategory::query()
-            ->withCount(['articles' => fn (Builder $query): Builder => $query->published()])
+            ->withCount('publishedArticles as articles_count')
             ->orderBy('sort')
             ->get();
 
@@ -200,7 +285,8 @@ class SiteFrontController extends Controller
             ->withQueryString();
 
         $archiveMonths = $this->newsArchiveMonths();
-        $seoData       = $this->buildListSeo(($activeCategory?->name_zh ?? '') ?: '智能家居资讯');
+        // ?? 已经吞掉 null 基对象上的属性读取，再写 ?-> 是多余的（phpstan nullsafe.neverNull）
+        $seoData = $this->buildListSeo(($activeCategory->name_zh ?? '') ?: '智能家居资讯');
 
         return view('filamentboot-site::news.index', compact(
             'records',
@@ -220,6 +306,12 @@ class SiteFrontController extends Controller
     {
         $record = NewsArticle::published()->with(['category', 'tags'])->where('slug', $slug)->firstOrFail();
 
+        // ⚠️ 资讯**刻意不走 Cms\Services\RelatedContent**：那个服务会在亲和维度不足时
+        // 用最新内容补齐，而「相关阅读」是阅读推荐，跨分类补进来的文章会误导读者。
+        // 案例 / 方案 / 产品底部那三块是浏览出口，宁可给最新内容也不要断头路——
+        // 两种取舍不同是有意的，别再来统一一次（tests/Feature/SiteNewsTest.php
+        // 的「详情页相关阅读取同分类且排除自身」守着这条）。
+        //
         // 未归类的文章取全站最新几篇兜底，好过详情页底部空一块
         $related = NewsArticle::published()
             ->whereKeyNot($record->getKey())
@@ -290,7 +382,11 @@ class SiteFrontController extends Controller
      * 在 PHP 里分组而非交给数据库的日期函数：MySQL 的 DATE_FORMAT 与 SQLite 的
      * strftime 语法不同，宿主换驱动就会炸。取最近 500 篇封顶，够撑十几年的更新量。
      *
-     * @return Collection<string, int>
+     * 键类型写 array-key 而非 string：groupBy() 的键在类型系统里一律是 int|string，
+     * 即便回调声明了 : string 也收不窄。值写 int<0, max> 是因为 Collection 的 TValue
+     * 不是协变的，声明成 int 而实返 count() 的 int<0, max> 会被判为不兼容。
+     *
+     * @return Collection<array-key, int<0, max>>
      */
     protected function newsArchiveMonths(): Collection
     {
@@ -300,6 +396,39 @@ class SiteFrontController extends Controller
             ->get(['id', 'published_at'])
             ->groupBy(fn (NewsArticle $article): string => $article->published_at?->format('Y-m') ?? '')
             ->map(fn (Collection $group): int => $group->count());
+    }
+
+    /**
+     * 站内搜索结果页（/search?q=）
+     *
+     * 返回 Response 而非 View 只为一件事：打 `X-Robots-Tag: noindex`。
+     * 搜索页的 URL 空间是无限的（任意关键词 × 任意组合），被收录会产出成千上万
+     * 低价值页面稀释整站权重——这是站内搜索的经典坑。canonical 一并关掉：
+     * 已经 noindex 了，再自指一个规范地址是矛盾信号。
+     *
+     * 仍然可以被 CDN 缓存：q 是查询参数，每个关键词各自是一个静态 URL，
+     * 且本方法不起 session（走 PUBLIC_STACK，同其它内容页）。
+     */
+    public function search(Request $request): Response
+    {
+        $search = app(SiteSearch::class);
+
+        // 回显与查询用同一份归一结果，否则输入框里显示的词和实际搜的词会不一致
+        $term   = $search->normalize((string) $request->query('q', ''));
+        $groups = $search->search($term);
+
+        $resultCount = array_sum(array_map(
+            static fn (array $group): int => count($group['hits']),
+            $groups
+        ));
+
+        $seoData = $this->buildListSeo($term !== '' ? '搜索「'.$term.'」' : '站内搜索');
+        // 无限 URL 空间不该有自指 canonical
+        $seoData['canonical'] = false;
+
+        return response()
+            ->view('filamentboot-site::search', compact('term', 'groups', 'resultCount', 'seoData'))
+            ->header('X-Robots-Tag', 'noindex, follow');
     }
 
     /**

@@ -12,6 +12,7 @@ export default defineConfig({
                 'resources/css/filament/admin/theme.css',
                 'vendor/filamentboot/filamentboot-site/resources/css/themes/decoration.css',
                 'vendor/filamentboot/filamentboot-site/resources/css/themes/tech-product.css',
+                'vendor/filamentboot/filamentboot-site/resources/js/site.js',
             ],
             refresh: true,
             fonts: [

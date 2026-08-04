@@ -1,12 +1,18 @@
 <?php
 
-use Filamentboot\FilamentbootSite\Models\SiteCase;
-use Filamentboot\FilamentbootSite\Models\SitePage;
-use Filamentboot\FilamentbootSite\Models\SiteProduct;
+use Filamentboot\FilamentbootSite\Cms\Models\SiteMenu;
+use Filamentboot\FilamentbootSite\Cms\Models\SiteMenuItem;
+use Filamentboot\FilamentbootSite\Cms\Models\SitePage;
+use Filamentboot\FilamentbootSite\Cms\Services\MenuResolver;
+use Filamentboot\FilamentbootSite\Cms\Themes\ThemeManifest;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Models\SiteCase;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Home\HomeSectionProvider;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Products\Models\SiteProduct;
 use Filamentboot\FilamentbootSite\Modules\News\Models\NewsArticle;
 use Filamentboot\FilamentbootSite\Modules\News\Models\NewsCategory;
 use Filamentboot\FilamentbootSite\Settings\SiteSettings;
 use Filamentboot\FilamentbootSite\SiteServiceProvider;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -30,7 +36,7 @@ beforeEach(function () {
     // Livewire 命名空间（布局里的询盘表单）、$siteSettings composer、前台路由
     $provider = new SiteServiceProvider(app());
 
-    foreach (['registerLivewireComponents', 'shareSiteSettings'] as $method) {
+    foreach (['shareSiteSettings'] as $method) {
         (new ReflectionMethod(SiteServiceProvider::class, $method))->invoke($provider);
     }
 
@@ -507,4 +513,192 @@ it('未知区块在双主题下优雅降级', function (string $theme) {
 
     $this->assertStringContainsString('正常区块仍然渲染', $html, "{$theme} 主题下未知区块拖累了正常区块");
     $this->assertStringNotContainsString('不该出现的内容', $html, "{$theme} 主题渲染了未注册区块的内容");
+})->with('themes');
+
+/**
+ * 首页区块数据可通过替换 HomeSectionProvider 整体接管（#27）
+ *
+ * 抽出这个提供者的全部意义就是给宿主一个换内容源的接口——如果 bind 不生效，
+ * 那这次抽取只是把代码挪了个地方。用一个空提供者做最直接的判据：
+ * 换掉之后首页那批区块数据必须真的空掉。
+ */
+it('绑定自定义 HomeSectionProvider 后首页数据换源', function (string $theme) {
+    switchSiteTheme($theme);
+
+    SiteCase::factory()->create([
+        'title_zh'       => '会被换掉的案例',
+        'is_featured'    => true,
+        'published_at'   => now()->subDay(),
+        'customer_name'  => '张女士',
+        'customer_quote' => '很满意',
+    ]);
+
+    // 未替换时首页看得到它
+    $this->get('/')->assertOk()->assertSee('会被换掉的案例');
+
+    app()->bind(HomeSectionProvider::class, fn (): HomeSectionProvider => new class extends HomeSectionProvider
+    {
+        /**
+         * @return array<string, iterable<int, Model>>
+         */
+        public function sections(): array
+        {
+            return [
+                'featuredCases'     => SiteCase::query()->whereRaw('1 = 0')->get(),
+                'featuredSolutions' => SiteCase::query()->whereRaw('1 = 0')->get(),
+                'featuredProducts'  => SiteCase::query()->whereRaw('1 = 0')->get(),
+                'testimonials'      => SiteCase::query()->whereRaw('1 = 0')->get(),
+            ];
+        }
+    });
+
+    $this->get('/')->assertOk()->assertDontSee('会被换掉的案例');
+})->with('themes');
+
+/**
+ * 二级导航在双主题下都渲染出下拉与子项（#28）
+ *
+ * 两套主题各写了一份下拉版式，只测默认主题的话另一套写错要等手工切主题才暴露。
+ */
+it('二级导航在双主题下渲染子项', function (string $theme) {
+    switchSiteTheme($theme);
+
+    $menu = SiteMenu::create(['key' => 'main', 'name' => '顶部导航']);
+
+    $parent = SiteMenuItem::create([
+        'menu_id'   => $menu->getKey(),
+        'parent_id' => SiteMenuItem::defaultParentKey(),
+        'type'      => 'anchor',
+        'label'     => '关于我们',
+        'target'    => '#about',
+        'sort'      => 0,
+    ]);
+
+    SiteMenuItem::create([
+        'menu_id'   => $menu->getKey(),
+        'parent_id' => $parent->getKey(),
+        'type'      => 'anchor',
+        'label'     => '团队介绍',
+        'target'    => '#team',
+        'sort'      => 0,
+    ]);
+
+    MenuResolver::forget();
+    ThemeManifest::flush();
+
+    $html = $this->get('/')->assertOk()->getContent();
+
+    expect($html)->toContain('关于我们')
+        ->and($html)->toContain('团队介绍')
+        // 下拉开合按钮，两套主题都用同一段 aria-label 文案
+        ->and($html)->toContain('展开「关于我们」子菜单');
+})->with('themes');
+
+/**
+ * landing 版式在双主题下都不出主导航（#28）
+ *
+ * 落地页的全部意义是把出路收敛到一个转化动作，导航栏每个栏目链接都是一条岔路。
+ * 这条锁住「landing 不 extends layouts.app」这个决定不被后来的人顺手改回去。
+ */
+it('landing 版式在双主题下不渲染主导航', function (string $theme) {
+    switchSiteTheme($theme);
+
+    SitePage::factory()->create([
+        'slug'     => 'landing-uat',
+        'title_zh' => '落地页标题',
+        'template' => 'landing',
+        'blocks'   => [['type' => 'hero', 'data' => ['title' => '落地页区块标题']]],
+    ]);
+
+    $html = $this->get('/landing-uat')->assertOk()->getContent();
+
+    expect($html)->toContain('落地页标题')
+        // 区块照常渲染
+        ->and($html)->toContain('落地页区块标题')
+        // 没有主导航，也没有面包屑
+        ->and($html)->not->toContain('aria-label="主导航"')
+        // 唯一转化入口在头部
+        ->and($html)->toContain('landing-header');
+})->with('themes');
+
+/**
+ * 标准版式仍然带主导航（与上一条互为对照）
+ */
+it('标准版式仍渲染主导航', function (string $theme) {
+    switchSiteTheme($theme);
+
+    SitePage::factory()->create([
+        'slug'     => 'normal-uat',
+        'title_zh' => '标准页标题',
+        'template' => 'default',
+    ]);
+
+    expect($this->get('/normal-uat')->assertOk()->getContent())
+        ->toContain('aria-label="主导航"');
+})->with('themes');
+
+/**
+ * 地图区块在双主题下渲染 iframe 与文字地址
+ *
+ * 文字地址不是地图的说明而是它的降级路径：广告拦截插件、企业网络策略与爬虫
+ * 都会把 iframe 丢掉，那时候地址文字是唯一还看得到的信息，也是搜索引擎能读的那份。
+ */
+it('地图区块在双主题下渲染', function (string $theme) {
+    switchSiteTheme($theme);
+
+    config(['filamentboot-site.map.allowed_hosts' => ['map.baidu.com']]);
+
+    SitePage::factory()->create([
+        'slug'     => 'map-page',
+        'title_zh' => '联系我们',
+        'blocks'   => [[
+            'type' => 'map',
+            'data' => [
+                'title'     => '公司位置',
+                'embed_url' => 'https://map.baidu.com/?poi=demo',
+                'address'   => '武汉市洪山区某路 1 号',
+                'height'    => 560,
+            ],
+        ]],
+    ]);
+
+    $html = $this->get('/map-page')->assertOk()->getContent();
+
+    expect($html)->toContain('公司位置')
+        ->and($html)->toContain('武汉市洪山区某路 1 号')
+        ->and($html)->toContain('https://map.baidu.com/?poi=demo')
+        ->and($html)->toContain('height: 560px')
+        // 地图瓦片与脚本有几百 KB，联系页要滚下去才看到，不该参与首屏竞争
+        ->and($html)->toContain('loading="lazy"');
+})->with('themes');
+
+/**
+ * 白名单外的嵌入地址：整个 iframe 不渲染，只留文字地址
+ *
+ * 不降级成空框（同 SafeUrl 的契约）。库里可能躺着白名单收紧之前存下的地址，
+ * 所以渲染侧必须自己再过一遍，不能只靠保存时的校验。
+ */
+it('地图区块对白名单外地址只渲染文字地址', function (string $theme) {
+    switchSiteTheme($theme);
+
+    config(['filamentboot-site.map.allowed_hosts' => ['map.baidu.com']]);
+
+    SitePage::factory()->create([
+        'slug'     => 'map-blocked-page',
+        'title_zh' => '联系我们',
+        'blocks'   => [[
+            'type' => 'map',
+            'data' => [
+                'embed_url' => 'https://evil.example/map',
+                'address'   => '武汉市洪山区某路 2 号',
+                'height'    => 420,
+            ],
+        ]],
+    ]);
+
+    $html = $this->get('/map-blocked-page')->assertOk()->getContent();
+
+    expect($html)->toContain('武汉市洪山区某路 2 号')
+        ->and($html)->not->toContain('evil.example')
+        ->and($html)->not->toContain('<iframe');
 })->with('themes');

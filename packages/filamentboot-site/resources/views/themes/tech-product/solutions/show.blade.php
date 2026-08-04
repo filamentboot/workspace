@@ -61,6 +61,44 @@
             </button>
         </div>
 
+        {{-- 相关方案（同标签优先，不足由最新补齐）
+             方案没有卡片组件（列表页也是内联的），这里照本主题列表页的卡片版式压缩一版 --}}
+        @if($related->isNotEmpty())
+            <section class="mt-16 pt-12 border-t border-site" aria-labelledby="related-solutions-heading">
+                <h2 id="related-solutions-heading" class="text-site-primary text-xl font-semibold tracking-tight mb-6">相关方案</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    @foreach($related as $relatedSolution)
+                        @php
+                            $rTitle = $relatedSolution->title_zh ?? '';
+                            $rCover = $relatedSolution->coverUrl('card');
+                        @endphp
+                        <article class="bg-site-base rounded-xl overflow-hidden border border-site card-hover">
+                            <a href="{{ route('site.solutions.show', $relatedSolution->slug) }}"
+                               class="block focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:outline-none rounded-xl"
+                               aria-label="查看方案：{{ $rTitle }}">
+                                <div class="aspect-[4/3] overflow-hidden bg-site-elevated">
+                                    @if($rCover)
+                                        <img src="{{ $rCover }}" alt="{{ $rTitle }} — 智能方案"
+                                             class="w-full h-full object-cover img-blur-up"
+                                             loading="lazy" decoding="async" width="800" height="600"
+                                             x-on:load="$el.classList.add('loaded')">
+                                    @else
+                                        @include('filamentboot-site::components.image-placeholder', ['label' => '智能方案'])
+                                    @endif
+                                </div>
+                                <div class="p-5">
+                                    <h3 class="text-site-primary font-semibold text-base leading-snug">{{ $rTitle }}</h3>
+                                    @if($relatedSolution->price_range)
+                                        <p class="text-site-secondary text-xs mt-2">{{ $relatedSolution->price_range }}</p>
+                                    @endif
+                                </div>
+                            </a>
+                        </article>
+                    @endforeach
+                </div>
+            </section>
+        @endif
+
         <div class="mt-8">
             <a href="{{ route('site.solutions.index') }}"
                class="text-site-accent text-sm font-medium hover:underline focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:outline-none rounded-sm">

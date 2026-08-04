@@ -124,6 +124,18 @@
             </button>
         </div>
 
+        {{-- 相关案例（同风格 / 同户型 / 同分类优先，不足由最新补齐） --}}
+        @if($related->isNotEmpty())
+            <section class="mt-16 pt-12 border-t border-site" aria-labelledby="related-cases-heading">
+                <h2 id="related-cases-heading" class="text-site-primary text-xl font-semibold tracking-tight mb-6">相关案例</h2>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    @foreach($related as $relatedCase)
+                        @include('filamentboot-site::components.case-card', ['case' => $relatedCase])
+                    @endforeach
+                </div>
+            </section>
+        @endif
+
         <div class="mt-8">
             <a href="{{ route('site.cases.index') }}"
                class="text-site-accent text-sm font-medium hover:underline focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:outline-none rounded-sm">

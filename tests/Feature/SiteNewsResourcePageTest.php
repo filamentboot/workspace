@@ -1,10 +1,10 @@
 <?php
 
 use Filament\Facades\Filament;
-use Filamentboot\FilamentbootSite\Filament\Resources\SiteCaseResource\Pages\EditSiteCase;
-use Filamentboot\FilamentbootSite\Filament\Resources\SiteProductResource\Pages\EditSiteProduct;
-use Filamentboot\FilamentbootSite\Models\SiteCase;
-use Filamentboot\FilamentbootSite\Models\SiteProduct;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Filament\SiteCaseResource\Pages\EditSiteCase;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Models\SiteCase;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Products\Filament\SiteProductResource\Pages\EditSiteProduct;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Products\Models\SiteProduct;
 use Filamentboot\FilamentbootSite\Modules\News\Filament\NewsArticleResource\Pages\CreateNewsArticle;
 use Filamentboot\FilamentbootSite\Modules\News\Filament\NewsArticleResource\Pages\ListNewsArticles;
 use Filamentboot\FilamentbootSite\Modules\News\Filament\NewsCategoryResource\Pages\ListNewsCategories;

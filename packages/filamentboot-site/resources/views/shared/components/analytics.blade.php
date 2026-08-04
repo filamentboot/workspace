@@ -12,6 +12,8 @@
  * 约束见 SiteSettings 对应属性的注释：仅 manage_site_settings 权限可改，
  * 变更写操作日志，后台字段旁明示风险。
  *
+ * 在线客服代码不在这里——它有独立开关，见 shared/components/live-chat.blade.php。
+ *
  * 期望变量：
  *   $position     — 'head' 或 'body'
  *   $siteSettings — SiteSettings 实例（可为 null，由 shareSiteSettings() 注入）
@@ -61,8 +63,8 @@
 
 @if($position === 'body')
     {{-- 表单提交成功的转化事件上报（供广告投放侧回传）。
-         事件由 ContactForm::submit() 通过 $this->dispatch('site-contact-submitted') 派发，
-         Livewire 会把它转成同名 window 事件。--}}
+         事件由 shared/components/contact-form.blade.php 的 Alpine 提交逻辑
+         直接 window.dispatchEvent('site-contact-submitted')（#29 之前是 Livewire 转发的）。--}}
     <script>
         window.addEventListener('site-contact-submitted', function () {
             if (typeof window._hmt !== 'undefined') {

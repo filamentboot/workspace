@@ -1,14 +1,14 @@
 <?php
 
 use Filament\Facades\Filament;
-use Filamentboot\FilamentbootSite\Enums\PageStatus;
-use Filamentboot\FilamentbootSite\Filament\Resources\SitePageResource\Pages\CreateSitePage;
-use Filamentboot\FilamentbootSite\Filament\Resources\SitePageResource\Pages\EditSitePage;
-use Filamentboot\FilamentbootSite\Filament\Resources\SitePageResource\Pages\ListSitePages;
-use Filamentboot\FilamentbootSite\Filament\Resources\SitePageResource\RelationManagers\RevisionsRelationManager;
-use Filamentboot\FilamentbootSite\Models\SitePage;
-use Filamentboot\FilamentbootSite\Models\SitePageRevision;
-use Filamentboot\FilamentbootSite\Models\SiteRedirect;
+use Filamentboot\FilamentbootSite\Cms\Enums\PageStatus;
+use Filamentboot\FilamentbootSite\Cms\Filament\Resources\SitePageResource\Pages\CreateSitePage;
+use Filamentboot\FilamentbootSite\Cms\Filament\Resources\SitePageResource\Pages\EditSitePage;
+use Filamentboot\FilamentbootSite\Cms\Filament\Resources\SitePageResource\Pages\ListSitePages;
+use Filamentboot\FilamentbootSite\Cms\Filament\Resources\SitePageResource\RelationManagers\RevisionsRelationManager;
+use Filamentboot\FilamentbootSite\Cms\Models\SitePage;
+use Filamentboot\FilamentbootSite\Cms\Models\SitePageRevision;
+use Filamentboot\FilamentbootSite\Cms\Models\SiteRedirect;
 use Filamentboot\FilamentbootSite\SitePlugin;
 use Filamentboot\Models\AdminUser;
 use Livewire\Livewire;
@@ -426,6 +426,89 @@ it('版本历史列表渲染快照', function () {
         // 基线快照的变更摘要显示「初始版本」而不是罗列全部字段
         ->assertSee('初始版本')
         ->assertSee('标题');
+});
+
+/**
+ * 查看 Modal 真的渲染出字段对比表（#25）
+ *
+ * infolist 用 Text::make(fn (): HtmlString => …) 输出手拼的表格。风险是这段 HTML
+ * 被当成纯文本转义，Modal 里出现一堆 &lt;table&gt;——此前没有任何断言看过实际输出。
+ *
+ * ⚠️ 不能断言 Livewire::test() 的整页 HTML：Filament 5 的模态体是客户端惰性渲染的，
+ * mountTableAction 之后 `wire:partial="action-modals"` 那块仍然是空的，
+ * 断言 `assertSee` 会恒假（同一个坑在 SiteMenuResourcePageTest 的状态路径护栏上踩过）。
+ * 所以直接取挂载出来的 schema，渲染那个 Text 组件。
+ */
+it('版本对比 Modal 渲染出字段对比表', function () {
+    loginPageEditor([...editorPermissions(), 'rollback_site_page']);
+
+    $page = SitePage::factory()->draft()->create([
+        'title_zh' => '第一版标题',
+        'slug'     => 'compare-old',
+    ]);
+
+    $baseline = SitePageRevision::where('page_id', $page->getKey())->firstOrFail();
+
+    $page->update(['title_zh' => '第二版标题', 'slug' => 'compare-new']);
+
+    $schema = Livewire::test(RevisionsRelationManager::class, [
+        'ownerRecord' => $page,
+        'pageClass'   => EditSitePage::class,
+    ])
+        ->mountTableAction('view', $baseline)
+        ->instance()
+        ->getSchema('mountedActionSchema0');
+
+    expect($schema)->not->toBeNull();
+
+    $components = $schema->getComponents();
+
+    expect($components)->toHaveCount(1);
+
+    $rendered = (string) $components[0]->toHtml();
+
+    // 表格结构出来了，而不是被转义成文本
+    expect($rendered)->toContain('<table');
+    expect($rendered)->not->toContain('&lt;table');
+
+    // 表头三列与变更字段的中文标签
+    foreach (['字段', '该版本', '当前', '标题', 'URL Slug'] as $needle) {
+        $this->assertStringContainsString($needle, $rendered, "对比表应含「{$needle}」");
+    }
+
+    // 新旧两侧的值都在，且分别落在“旧值红、新值绿”两种色上
+    foreach (['第一版标题', '第二版标题', 'compare-old', 'compare-new'] as $needle) {
+        $this->assertStringContainsString($needle, $rendered, "对比表应含「{$needle}」");
+    }
+
+    expect($rendered)->toContain('text-danger-600')
+        ->and($rendered)->toContain('text-success-600');
+
+    // 没变的字段不进表：对比表只列差异，否则十三行字段每次都全列一遍
+    expect($rendered)->not->toContain('SEO 关键词');
+});
+
+/**
+ * 该版本与当前一致时给一句话而不是空表格（#25）
+ */
+it('版本与当前一致时对比 Modal 给提示而非空表', function () {
+    loginPageEditor([...editorPermissions(), 'rollback_site_page']);
+
+    $page     = SitePage::factory()->draft()->create(['title_zh' => '没改过']);
+    $baseline = SitePageRevision::where('page_id', $page->getKey())->firstOrFail();
+
+    $schema = Livewire::test(RevisionsRelationManager::class, [
+        'ownerRecord' => $page,
+        'pageClass'   => EditSitePage::class,
+    ])
+        ->mountTableAction('view', $baseline)
+        ->instance()
+        ->getSchema('mountedActionSchema0');
+
+    $rendered = (string) $schema->getComponents()[0]->toHtml();
+
+    expect($rendered)->toContain('该版本与当前内容一致')
+        ->and($rendered)->not->toContain('<table');
 });
 
 /**

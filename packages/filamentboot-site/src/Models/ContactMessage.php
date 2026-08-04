@@ -2,6 +2,7 @@
 
 namespace Filamentboot\FilamentbootSite\Models;
 
+use Filamentboot\FilamentbootSite\Database\Factories\ContactMessageFactory;
 use Filamentboot\FilamentbootSite\Enums\ContactMessageStatus;
 use Filamentboot\Models\AdminUser;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -20,6 +21,12 @@ use Illuminate\Support\Carbon;
  * @property string $name
  * @property string $phone
  * @property string $message
+ * @property array<int, mixed>|null $extra 自定义字段答案，有序列表 [{label, value}]
+ *
+ * extra 的类型刻意写宽（同 SitePage::$blocks）：写入侧的精确形状由
+ * Services\ContactSubmission::extraAnswers() 的返回类型保证，但读取侧拿到的是
+ * JSON 列的实际内容——seeder、tinker 与历史行都不受那条写入路径约束，
+ * 所以消费方（后台展示、导出、通知邮件）必须自己判形状。
  * @property ContactMessageStatus $status
  * @property int|null $assigned_to
  * @property string|null $ip
@@ -36,6 +43,7 @@ use Illuminate\Support\Carbon;
  */
 class ContactMessage extends Model
 {
+    /** @use HasFactory<ContactMessageFactory> */
     use HasFactory;
 
     /** @var string */
@@ -43,6 +51,14 @@ class ContactMessage extends Model
 
     /** @var list<string> */
     protected $guarded = [];
+
+    /**
+     * 解析对应的工厂（因命名空间非 Laravel 默认推导路径）
+     */
+    protected static function newFactory(): ContactMessageFactory
+    {
+        return ContactMessageFactory::new();
+    }
 
     /**
      * 属性类型转换
@@ -53,6 +69,7 @@ class ContactMessage extends Model
     {
         return [
             'status' => ContactMessageStatus::class,
+            'extra'  => 'array',
         ];
     }
 

@@ -33,7 +33,7 @@ beforeEach(function () {
 
     $provider = new SiteServiceProvider(app());
 
-    foreach (['registerLivewireComponents', 'registerThemeViews', 'shareSiteSettings', 'registerFrontend'] as $method) {
+    foreach (['registerThemeViews', 'shareSiteSettings', 'registerFrontend'] as $method) {
         $reflection = new ReflectionMethod($provider, $method);
         $reflection->setAccessible(true);
         $reflection->invoke($provider);
@@ -164,4 +164,102 @@ it('自定义代码变更写入操作日志', function () {
     expect($log->event)->toBe('update')
         ->and($log->properties['model'])->toBe('SiteSettings')
         ->and($log->properties['changed'])->toHaveKey('head_scripts');
+});
+
+/**
+ * 启用在线客服后代码输出到 </body> 前
+ */
+it('启用在线客服后前台输出客服代码', function () {
+    $settings                    = app(SiteSettings::class);
+    $settings->live_chat_enabled = true;
+    $settings->live_chat_script  = '<script src="https://chat.example/widget.js"></script>';
+    $settings->save();
+
+    $html = (string) $this->get('/')->assertOk()->getContent();
+
+    expect($html)->toContain('https://chat.example/widget.js');
+});
+
+/**
+ * 关掉开关后代码仍在库里，但不输出
+ *
+ * 这就是把开关与代码拆成两个设置项的全部理由：换供应商、临时无人值守时
+ * 运营要能一键停掉，而不是把一大段脚本剪出去存别处、回头再贴回来。
+ */
+it('关闭开关后客服代码保留但不输出', function () {
+    $settings                    = app(SiteSettings::class);
+    $settings->live_chat_enabled = false;
+    $settings->live_chat_script  = '<script src="https://chat.example/widget.js"></script>';
+    $settings->save();
+
+    $html = (string) $this->get('/')->assertOk()->getContent();
+
+    expect($html)->not->toContain('chat.example')
+        ->and(app(SiteSettings::class)->refresh()->live_chat_script)->toContain('chat.example');
+});
+
+/**
+ * 开着但代码为空时不输出空白
+ */
+it('客服代码只有空白时输出与关闭开关完全一致', function () {
+    $settings                    = app(SiteSettings::class);
+    $settings->live_chat_enabled = false;
+    $settings->live_chat_script  = '';
+    $settings->save();
+
+    $baseline = (string) $this->get('/')->assertOk()->getContent();
+
+    $settings->live_chat_enabled = true;
+    $settings->live_chat_script  = "   \n\t ";
+    $settings->save();
+
+    // 逐字节相同才说明 trim 之后真的什么都没输出——
+    // 光断言「页面 200」发现不了多出来的一段空白或空 script 标签
+    expect((string) $this->get('/')->assertOk()->getContent())->toBe($baseline);
+});
+
+/**
+ * 无 manage_site_settings 权限的用户保存设置后，已有客服代码不被抹空
+ */
+it('无权限用户保存设置不会抹掉客服代码', function () {
+    $settings                    = app(SiteSettings::class);
+    $settings->live_chat_enabled = true;
+    $settings->live_chat_script  = '<script src="https://chat.example/widget.js"></script>';
+    $settings->save();
+
+    $user = AdminUser::factory()->create();
+    $this->actingAs($user, 'admin');
+
+    Livewire::test(SiteSettingsPage::class)
+        ->fillForm(['company_name_zh' => '改了公司名'])
+        ->call('save');
+
+    $fresh = app(SiteSettings::class)->refresh();
+
+    expect($fresh->live_chat_script)->toContain('chat.example')
+        ->and($fresh->company_name_zh)->toBe('改了公司名');
+});
+
+/**
+ * 客服代码变更同样写入操作日志
+ *
+ * 它与 head_scripts 是同一类字段（原样输出、不过 purifier），审计清单漏掉它
+ * 就意味着「改了前台执行的代码但日志里查不到」。
+ */
+it('客服代码变更写入操作日志', function () {
+    $role = Role::create(['name' => 'site-manager-chat', 'guard_name' => 'admin']);
+    $role->givePermissionTo('manage_site_settings');
+
+    $user = AdminUser::factory()->create();
+    $user->assignRole($role);
+    $this->actingAs($user, 'admin');
+
+    Livewire::test(SiteSettingsPage::class)
+        ->fillForm(['live_chat_script' => '<script src="https://chat.example/new.js"></script>'])
+        ->call('save');
+
+    $log = Activity::latest('id')->first();
+
+    expect($log->event)->toBe('update')
+        ->and($log->properties['changed'])->toHaveKey('live_chat_script');
 });

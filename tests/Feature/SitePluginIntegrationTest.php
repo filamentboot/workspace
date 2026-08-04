@@ -1,11 +1,13 @@
 <?php
 
 use Filament\Panel;
+use Filamentboot\FilamentbootSite\Database\Seeders\SiteMenuSeeder;
 use Filamentboot\FilamentbootSite\Filament\Pages\SiteSettingsPage;
 use Filamentboot\FilamentbootSite\Filament\Resources\ContactMessageResource;
-use Filamentboot\FilamentbootSite\Filament\Resources\SiteCaseResource;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Filament\SiteCaseResource;
 use Filamentboot\FilamentbootSite\SitePlugin;
 use Filamentboot\FilamentbootSite\SiteServiceProvider;
+use Filamentboot\Models\Menu;
 use Illuminate\Support\Facades\Artisan;
 
 /**
@@ -65,4 +67,43 @@ it('插件启用时 SitePlugin 注册成功', function () {
     $resources = $panel->getResources();
     expect($resources)->toContain(SiteCaseResource::class);
     expect($resources)->toContain(ContactMessageResource::class);
+});
+
+/**
+ * 每个要进导航的官网资源都在 menus 表有登记行
+ *
+ * 后台侧边栏由 AdminNavigationBuilder 从主包 menus 表构建，Filament 基于 Resource
+ * 静态属性自动生成导航的机制被 Panel 的 ->navigation() 回调整体旁路。因此漏登记的
+ * 资源即使路由已注册，也只能靠直链访问——#17 的「导航菜单」与 #18 的「重定向」
+ * 就这样在侧边栏里隐身了一整轮，而当时的验证全走 Livewire::test()，看不到侧边栏。
+ *
+ * 这条是结构性护栏：以后新增资源忘了改 SiteMenuSeeder，这里就会红。
+ */
+it('要进导航的官网资源都在后台菜单表有登记行', function () {
+    (new SiteMenuSeeder)->run();
+
+    $panel = new Panel;
+    SitePlugin::make()->register($panel);
+
+    $missing = [];
+
+    foreach ($panel->getResources() as $resource) {
+        // 只管本包的资源；shouldRegisterNavigation() 为 false 的（如菜单项树页，
+        // 必须带 ?menu= 才有上下文）本就不该出现在侧边栏
+        if (! str_starts_with($resource, 'Filamentboot\\FilamentbootSite\\')) {
+            continue;
+        }
+
+        if (! $resource::shouldRegisterNavigation()) {
+            continue;
+        }
+
+        $routeName = $resource::getRouteBaseName().'.index';
+
+        if (! Menu::query()->where('route_name', $routeName)->exists()) {
+            $missing[] = $routeName;
+        }
+    }
+
+    expect($missing)->toBe([]);
 });

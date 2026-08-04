@@ -18,6 +18,9 @@
     {{-- 询盘面板全局 Store，须早于任何 CTA 渲染 --}}
     @include('filamentboot-site::components.contact-panel-store')
 
+    {{-- 首触渠道归因（客户端 localStorage，#29 起不再走 session） --}}
+    @include('filamentboot-site::components.attribution-store')
+
     {{-- Google Fonts：Inter（拉丁/数字）+ Noto Sans SC（中文） --}}
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -27,7 +30,7 @@
          入口路径由 ThemeAsset 按 Vite manifest 实际命中的候选解析，
          兼容真实安装、宿主发布资源与 monorepo 符号链接三种形态。
          宿主需在 vite.config.js 的 input 中声明该路径后执行 npm run build。 --}}
-    @vite(\Filamentboot\FilamentbootSite\Support\ThemeAsset::viteEntry('decoration'))
+    @vite(\Filamentboot\FilamentbootSite\Cms\Themes\ThemeAsset::viteEntries('decoration'))
 
     {{-- 统计代码注入位（A3）：结构化 ID 生成的代码 + 自定义 head 代码块 --}}
     @include('filamentboot-site::components.analytics', ['position' => 'head'])
@@ -49,6 +52,7 @@
 
     {{-- 统计代码注入位（A3）：自定义 body 尾代码块 + 表单转化事件上报 --}}
     @include('filamentboot-site::components.analytics', ['position' => 'body'])
+    @include('filamentboot-site::components.live-chat')
 
     @stack('scripts')
 </body>

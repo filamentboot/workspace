@@ -40,6 +40,8 @@ use UnitEnum;
  *
  * 发布态用 published_at 而非布尔：归档页按年月分组，且留空即草稿、
  * 填未来时间即定时发布，一个字段覆盖三种状态。
+ *
+ * @extends \Filament\Resources\Resource<NewsArticle>
  */
 class NewsArticleResource extends Resource
 {
