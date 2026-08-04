@@ -13,6 +13,8 @@
 @section('content')
     <div class="max-w-3xl mx-auto py-16 px-4 sm:px-6">
 
+        @include('filamentboot-site::components.breadcrumb')
+
         <h1 class="text-site-primary text-3xl font-bold mb-8 leading-tight">{{ $title }}</h1>
 
         {{-- 富文本内容（必须经 purifier 过滤，T-10-05-01 安全硬要求） --}}

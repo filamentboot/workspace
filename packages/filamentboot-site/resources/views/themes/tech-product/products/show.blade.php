@@ -25,6 +25,8 @@
 @section('content')
     <div class="max-w-5xl mx-auto py-16 px-4 sm:px-6 lg:px-8">
 
+        @include('filamentboot-site::components.breadcrumb')
+
         <div class="grid grid-cols-1 md:grid-cols-2 gap-10">
 
             @if($slides !== [])

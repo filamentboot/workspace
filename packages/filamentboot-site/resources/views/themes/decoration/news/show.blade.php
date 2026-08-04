@@ -21,6 +21,8 @@
 @section('content')
     <article class="max-w-3xl mx-auto py-12 px-4 sm:px-6">
 
+        @include('filamentboot-site::components.breadcrumb')
+
         {{-- 分类 + 发布日期 --}}
         <div class="flex flex-wrap items-center gap-3 mb-4 text-sm">
             @if($category)

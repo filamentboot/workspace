@@ -158,6 +158,32 @@ class SiteSettingsPage extends SettingsPage
                                         ->disk($defaultDisk)
                                         ->helperText('社交平台分享时的缩略图，建议 1200×630。未上传时前台不输出 og:image'),
                                 ]),
+                            Section::make('站长平台验证')
+                                ->description('各搜索引擎站长平台下发的验证串，填入后自动输出到全站 <head>，无需改模板。只填串本身，不要粘整段 meta 标签。')
+                                ->schema([
+                                    TextInput::make('baidu_verify_code')
+                                        ->label('百度站长验证串')
+                                        ->maxLength(128)
+                                        ->helperText('百度搜索资源平台「站点验证 - HTML 标签」给出的 content 值'),
+                                    TextInput::make('google_verify_code')
+                                        ->label('Google Search Console 验证串')
+                                        ->maxLength(128),
+                                    TextInput::make('bing_verify_code')
+                                        ->label('Bing 站长验证串')
+                                        ->maxLength(128),
+                                ]),
+                            Section::make('百度主动推送')
+                                ->description('新内容发布时主动推给百度，比等抓取快一个数量级。留空即关闭，不影响其它功能。')
+                                ->schema([
+                                    TextInput::make('baidu_push_token')
+                                        ->label('准入密钥 token')
+                                        ->maxLength(64)
+                                        ->helperText('百度搜索资源平台「普通收录 - API 提交」页获取'),
+                                    TextInput::make('baidu_push_site')
+                                        ->label('推送站点域名')
+                                        ->maxLength(255)
+                                        ->helperText('必须与站长平台登记的站点完全一致（含 www 与否），否则接口返回 not_same_site。留空则取 APP_URL 的主机名'),
+                                ]),
                         ]),
                     Tab::make('外观')
                         ->schema([

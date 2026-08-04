@@ -17,6 +17,8 @@
     <section class="py-16 bg-site-base" aria-labelledby="news-archive-heading">
         <div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
 
+            @include('filamentboot-site::components.breadcrumb')
+
             <div class="mb-10">
                 <p class="text-site-muted text-sm mb-2">资讯归档</p>
                 <h1 id="news-archive-heading" class="text-site-primary text-4xl font-bold">{{ $heading }}</h1>

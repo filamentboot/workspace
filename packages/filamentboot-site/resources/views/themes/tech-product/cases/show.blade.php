@@ -22,6 +22,8 @@
 @section('content')
     <div class="max-w-4xl mx-auto py-12 px-4 sm:px-6">
 
+        @include('filamentboot-site::components.breadcrumb')
+
         <h1 class="text-site-primary text-3xl md:text-4xl font-bold tracking-tight mb-6 leading-tight">{{ $title }}</h1>
 
         {{-- 参数表 --}}

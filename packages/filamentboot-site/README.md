@@ -46,7 +46,7 @@ php artisan vendor:publish --tag=filamentboot-site-config
 php artisan vendor:publish --tag=filamentboot-site-assets
 ```
 
-执行数据库迁移（14 张内容表）：
+执行数据库迁移（16 张内容表）：
 
 ```bash
 php artisan migrate
@@ -149,6 +149,22 @@ resources/views/vendor/filamentboot-site/themes/{theme}/   ← 宿主发布覆�
 ### 5. 发布前检查
 
 「网站设置」页与仪表盘会提示尚未配置的发布前必填项：联系电话、公司地址、ICP 备案号、隐私政策链接、默认 SEO 标题与描述、默认 Open Graph 图、公司 LOGO。未配置的项不会在前台渲染空栏目，但会在后台持续告警。
+
+### 6. 搜索引擎接入（可选）
+
+「网站设置 → SEO 默认值」下有两组选填项：
+
+- **站长平台验证**：填百度 / Google / Bing 下发的验证串（只填串本身，不要粘整段 `<meta>`），自动输出到全站 `<head>`。字符集非法时不输出，避免把半截标签打进文档。
+- **百度主动推送**：填 token 与站长平台登记的站点域名后，内容**首次进入已发布态**时自动把 URL 推给百度，比等抓取快一个数量级。只在发布状态变化时推，改正文不会烧配额（普通站 3000 条/天）。
+
+存量内容回推：
+
+```bash
+php artisan filamentboot-site:push-baidu          # 试运行，只报条数
+php artisan filamentboot-site:push-baidu --all    # 真正推送
+```
+
+未填 token 即视为关闭，不发请求也不占队列。
 
 ## 发布 Tag 一览
 

@@ -14,6 +14,8 @@
 @section('content')
     <div class="max-w-4xl mx-auto py-12 px-4 sm:px-6">
 
+        @include('filamentboot-site::components.breadcrumb')
+
         @if($record->price_range)
             <span class="inline-block bg-site-elevated text-site-secondary text-xs px-2.5 py-1 rounded-md mb-4">
                 预算区间 {{ $record->price_range }}

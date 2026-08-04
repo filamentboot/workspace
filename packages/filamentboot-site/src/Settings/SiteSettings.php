@@ -128,6 +128,44 @@ class SiteSettings extends Settings
     public string $body_end_scripts = '';
 
     /**
+     * 百度站长平台验证串（B4）
+     *
+     * 输出为 <meta name="baidu-site-verification">。做成设置项而非改模板，
+     * 换验证方式或换站点时不必发版。值会进 content 属性，输出前校验字符集。
+     */
+    public string $baidu_verify_code = '';
+
+    /**
+     * Google Search Console 验证串（B4）
+     *
+     * 输出为 <meta name="google-site-verification">，约束同上。
+     */
+    public string $google_verify_code = '';
+
+    /**
+     * Bing 网站管理员工具验证串（B4）
+     *
+     * 输出为 <meta name="msvalidate.01">，约束同上。
+     */
+    public string $bing_verify_code = '';
+
+    /**
+     * 百度主动推送准入密钥（B4）
+     *
+     * 在百度搜索资源平台「普通收录 - API 提交」页获取。留空即关闭推送：
+     * 推送服务直接返回，不排队也不报错——多数下游装了包并不会用百度推送。
+     */
+    public string $baidu_push_token = '';
+
+    /**
+     * 百度主动推送的站点域名（B4）
+     *
+     * 必须与站长平台登记的站点完全一致（含 www 与否），否则接口返回
+     * not_same_site。留空时退回 config('app.url') 的主机名。
+     */
+    public string $baidu_push_site = '';
+
+    /**
      * Settings 分组名
      */
     public static function group(): string

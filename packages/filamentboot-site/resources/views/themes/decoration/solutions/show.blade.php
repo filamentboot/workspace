@@ -33,6 +33,8 @@
     {{-- 正文区 --}}
     <div class="max-w-3xl mx-auto py-10 px-4 sm:px-6">
 
+        @include('filamentboot-site::components.breadcrumb')
+
         <h1 class="text-site-primary text-3xl font-bold mb-6 leading-tight">{{ $title }}</h1>
 
         @if($record->price_range)

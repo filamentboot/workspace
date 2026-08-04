@@ -56,6 +56,10 @@ class SiteFrontController extends Controller
 
         $seoData = $this->buildHomeSeo();
 
+        // Organization 只在首页输出：品牌词知识面板锚在首页，详情页里它已经
+        // 作为 publisher / author 嵌在 Article 与 Product 节点内部。
+        $seoData['jsonLd'] = [$this->organizationSchema()];
+
         return view('filamentboot-site::home', compact(
             'featuredCases',
             'featuredSolutions',
@@ -83,11 +87,20 @@ class SiteFrontController extends Controller
      */
     public function caseShow(string $slug): View
     {
-        $record            = SiteCase::published()->where('slug', $slug)->firstOrFail();
-        $seoData           = $this->buildSeo($record);
-        $seoData['jsonLd'] = $this->articleSchema($seoData, $record->published_at, $record->updated_at);
+        $record  = SiteCase::published()->where('slug', $slug)->firstOrFail();
+        $seoData = $this->buildSeo($record);
 
-        return view('filamentboot-site::cases.show', compact('record', 'seoData'));
+        $breadcrumbs = $this->breadcrumbs([
+            ['label' => '装修案例', 'url' => route('site.cases.index')],
+            ['label' => $record->title_zh, 'url' => null],
+        ]);
+
+        $seoData['jsonLd'] = [
+            $this->articleSchema($seoData, $record->published_at, $record->updated_at),
+            $this->breadcrumbSchema($breadcrumbs),
+        ];
+
+        return view('filamentboot-site::cases.show', compact('record', 'breadcrumbs', 'seoData'));
     }
 
     /**
@@ -111,7 +124,14 @@ class SiteFrontController extends Controller
         $record  = SiteSolution::published()->where('slug', $slug)->firstOrFail();
         $seoData = $this->buildSeo($record);
 
-        return view('filamentboot-site::solutions.show', compact('record', 'seoData'));
+        $breadcrumbs = $this->breadcrumbs([
+            ['label' => '智能方案', 'url' => route('site.solutions.index')],
+            ['label' => $record->title_zh, 'url' => null],
+        ]);
+
+        $seoData['jsonLd'] = [$this->breadcrumbSchema($breadcrumbs)];
+
+        return view('filamentboot-site::solutions.show', compact('record', 'breadcrumbs', 'seoData'));
     }
 
     /**
@@ -132,11 +152,20 @@ class SiteFrontController extends Controller
      */
     public function productShow(string $slug): View
     {
-        $record            = SiteProduct::published()->where('slug', $slug)->firstOrFail();
-        $seoData           = $this->buildSeo($record);
-        $seoData['jsonLd'] = $this->productSchema($seoData, $record);
+        $record  = SiteProduct::published()->where('slug', $slug)->firstOrFail();
+        $seoData = $this->buildSeo($record);
 
-        return view('filamentboot-site::products.show', compact('record', 'seoData'));
+        $breadcrumbs = $this->breadcrumbs([
+            ['label' => '智能产品', 'url' => route('site.products.index')],
+            ['label' => $record->title_zh, 'url' => null],
+        ]);
+
+        $seoData['jsonLd'] = [
+            $this->productSchema($seoData, $record),
+            $this->breadcrumbSchema($breadcrumbs),
+        ];
+
+        return view('filamentboot-site::products.show', compact('record', 'breadcrumbs', 'seoData'));
     }
 
     /**
@@ -199,10 +228,24 @@ class SiteFrontController extends Controller
             ->take(3)
             ->get();
 
-        $seoData           = $this->buildSeo($record);
-        $seoData['jsonLd'] = $this->articleSchema($seoData, $record->published_at, $record->updated_at);
+        $seoData = $this->buildSeo($record);
 
-        return view('filamentboot-site::news.show', compact('record', 'related', 'seoData'));
+        // 未归类文章跳过分类层，不留一个指向 /news?category= 的空链接
+        $breadcrumbs = $this->breadcrumbs(array_values(array_filter([
+            ['label' => '资讯中心', 'url' => route('site.news.index')],
+            $record->category !== null ? [
+                'label' => $record->category->name_zh,
+                'url'   => route('site.news.index', ['category' => $record->category->slug]),
+            ] : null,
+            ['label' => $record->title_zh, 'url' => null],
+        ])));
+
+        $seoData['jsonLd'] = [
+            $this->articleSchema($seoData, $record->published_at, $record->updated_at),
+            $this->breadcrumbSchema($breadcrumbs),
+        ];
+
+        return view('filamentboot-site::news.show', compact('record', 'related', 'breadcrumbs', 'seoData'));
     }
 
     /**
@@ -227,7 +270,14 @@ class SiteFrontController extends Controller
         $archiveMonths = $this->newsArchiveMonths();
         $seoData       = $this->buildListSeo($start->format('Y 年 n 月').'资讯归档');
 
-        return view('filamentboot-site::news.archive', compact('records', 'archiveMonths', 'start', 'seoData'));
+        $breadcrumbs = $this->breadcrumbs([
+            ['label' => '资讯中心', 'url' => route('site.news.index')],
+            ['label' => $start->format('Y 年 n 月'), 'url' => null],
+        ]);
+
+        $seoData['jsonLd'] = [$this->breadcrumbSchema($breadcrumbs)];
+
+        return view('filamentboot-site::news.archive', compact('records', 'archiveMonths', 'start', 'breadcrumbs', 'seoData'));
     }
 
     /**
@@ -258,7 +308,62 @@ class SiteFrontController extends Controller
         $record  = SitePage::published()->where('slug', $slug)->firstOrFail();
         $seoData = $this->buildSeo($record);
 
-        return view('filamentboot-site::pages.show', compact('record', 'seoData'));
+        $breadcrumbs = $this->breadcrumbs([
+            ['label' => $record->title_zh, 'url' => null],
+        ]);
+
+        $seoData['jsonLd'] = [$this->breadcrumbSchema($breadcrumbs)];
+
+        return view('filamentboot-site::pages.show', compact('record', 'breadcrumbs', 'seoData'));
+    }
+
+    /**
+     * 构建面包屑数组（B3）
+     *
+     * 统一在控制器建、视图只渲染：同一个数组同时喂给两套主题的面包屑组件和
+     * B1 的 BreadcrumbList 结构化数据，一次构建两处消费，不会出现「页面上显示
+     * 三级、结构化数据里只有两级」这类前后不一致。
+     *
+     * 首页由本方法统一补在最前，调用方只传首页之后的层级。
+     *
+     * @param  list<array{label: string, url: string|null}>  $trail  末项为当前页，url 传 null 表示不出链接
+     * @return list<array{label: string, url: string|null}>
+     */
+    protected function breadcrumbs(array $trail): array
+    {
+        return [
+            ['label' => '首页', 'url' => route('site.home')],
+            ...$trail,
+        ];
+    }
+
+    /**
+     * BreadcrumbList 结构化数据（B1，数据源即 breadcrumbs()）
+     *
+     * 末项当前页的 url 为 null，item 用当前 URL 补齐——BreadcrumbList 要求
+     * 每个 ListItem 都有 item，缺了整段会被判为无效。
+     *
+     * @param  list<array{label: string, url: string|null}>  $breadcrumbs
+     * @return array<string, mixed>
+     */
+    protected function breadcrumbSchema(array $breadcrumbs): array
+    {
+        $items = [];
+
+        foreach ($breadcrumbs as $index => $crumb) {
+            $items[] = [
+                '@type'    => 'ListItem',
+                'position' => $index + 1,
+                'name'     => $crumb['label'],
+                'item'     => $crumb['url'] ?? url()->current(),
+            ];
+        }
+
+        return [
+            '@context'        => 'https://schema.org',
+            '@type'           => 'BreadcrumbList',
+            'itemListElement' => $items,
+        ];
     }
 
     /**
@@ -419,6 +524,41 @@ class SiteFrontController extends Controller
             'image'       => $images !== [] ? $images : null,
             'brand'       => ($record->brand ?? '') !== '' ? ['@type' => 'Brand', 'name' => $record->brand] : null,
             'offers'      => $offers,
+        ], static fn (mixed $value): bool => $value !== null);
+    }
+
+    /**
+     * 完整的 Organization 结构化数据（B1，仅首页输出）
+     *
+     * 与 organizationNode() 的区别：那个是嵌在 Article / Product 里的 publisher
+     * 片段，不带 @context 也不带联系方式；这个是独立顶层节点，直接影响品牌词
+     * 搜索的知识面板，所以把电话与地址一并给出。
+     *
+     * 站点设置未填的字段一律不输出——结构化数据里出现空字符串比缺字段更糟。
+     *
+     * @return array<string, mixed>
+     */
+    protected function organizationSchema(): array
+    {
+        $settings = $this->resolveSettings();
+
+        // ?? 已经吞掉 null 上的属性读取，再写 ?-> 是多余的（phpstan nullsafe.neverNull）
+        $phone   = trim((string) ($settings->phone ?? ''));
+        $address = trim((string) ($settings->address_zh ?? ''));
+        $logo    = $settings?->logo;
+
+        return array_filter([
+            '@context'  => 'https://schema.org',
+            '@type'     => 'Organization',
+            'name'      => $this->defaultTitle(),
+            'url'       => route('site.home'),
+            'logo'      => ($logo !== null && $logo !== '') ? $logo : null,
+            'telephone' => $phone !== '' ? $phone : null,
+            'address'   => $address !== '' ? [
+                '@type'          => 'PostalAddress',
+                'streetAddress'  => $address,
+                'addressCountry' => 'CN',
+            ] : null,
         ], static fn (mixed $value): bool => $value !== null);
     }
 

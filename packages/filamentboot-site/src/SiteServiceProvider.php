@@ -10,6 +10,13 @@ use Filamentboot\FilamentbootSite\Cms\Blocks\FeatureGridBlock;
 use Filamentboot\FilamentbootSite\Cms\Blocks\HeroBlock;
 use Filamentboot\FilamentbootSite\Cms\Blocks\MediaTextBlock;
 use Filamentboot\FilamentbootSite\Cms\Blocks\RichContentBlock;
+use Filamentboot\FilamentbootSite\Console\Commands\PushBaiduCommand;
+use Filamentboot\FilamentbootSite\Models\SiteCase;
+use Filamentboot\FilamentbootSite\Models\SitePage;
+use Filamentboot\FilamentbootSite\Models\SiteProduct;
+use Filamentboot\FilamentbootSite\Models\SiteSolution;
+use Filamentboot\FilamentbootSite\Modules\News\Models\NewsArticle;
+use Filamentboot\FilamentbootSite\Observers\SearchPushObserver;
 use Filamentboot\FilamentbootSite\Settings\SiteSettings;
 use Illuminate\Contracts\View\View as ViewContract;
 use Illuminate\Support\Facades\Cache;
@@ -105,10 +112,43 @@ class SiteServiceProvider extends ServiceProvider
 
             // 注册前台路由（loadRoutesFrom site.php）
             $this->registerFrontend();
+
+            // 内容发布后主动推送搜索引擎（须后于路由：观察器要用 route() 生成 URL）
+            $this->registerSearchPushObserver();
         }
 
         // 无论启用与否，均注册迁移与视图发布
         $this->registerMigrationsAndViews();
+
+        // 控制台命令（存量内容回推）
+        $this->registerCommands();
+    }
+
+    /**
+     * 注册内容发布推送观察器（B4）
+     *
+     * 五类内容共用一个观察器：它只关心「发布状态变了没有」与「现在可见吗」，
+     * 后者回查各模型自己的 published() 作用域，不需要按模型分支。
+     */
+    protected function registerSearchPushObserver(): void
+    {
+        foreach ([SiteCase::class, SiteSolution::class, SiteProduct::class, SitePage::class, NewsArticle::class] as $model) {
+            $model::observe(SearchPushObserver::class);
+        }
+    }
+
+    /**
+     * 注册控制台命令
+     */
+    protected function registerCommands(): void
+    {
+        if (! $this->app->runningInConsole()) {
+            return;
+        }
+
+        $this->commands([
+            PushBaiduCommand::class,
+        ]);
     }
 
     /**

@@ -69,10 +69,39 @@
 {{-- Canonical URL（防重复内容） --}}
 <link rel="canonical" href="{{ $canonical }}">
 
-{{-- 结构化数据（详情页由控制器构建：资讯与案例为 Article，产品为 Product）
+{{-- 站长平台验证 meta（B4）
+
+     值来自站点设置，会直接进 content 属性，因此照 analytics 组件的纪律
+     先校验字符集再输出：验证串一律是字母数字与 -_，出现别的字符说明填的人
+     把整段 <meta> 标签粘进来了，此时宁可不输出也不要把半截标签打进 head。 --}}
+@php
+    $verificationMetas = [
+        'baidu-site-verification'  => trim((string) ($siteSettings->baidu_verify_code ?? '')),
+        'google-site-verification' => trim((string) ($siteSettings->google_verify_code ?? '')),
+        'msvalidate.01'            => trim((string) ($siteSettings->bing_verify_code ?? '')),
+    ];
+@endphp
+@foreach($verificationMetas as $verifyName => $verifyCode)
+@if($verifyCode !== '' && preg_match('/^[A-Za-z0-9_\-]{8,128}$/', $verifyCode))
+<meta name="{{ $verifyName }}" content="{{ $verifyCode }}">
+@endif
+@endforeach
+
+{{-- 结构化数据（由控制器构建：首页 Organization，详情页 Article / Product，各页 BreadcrumbList）
+
+     $seoData['jsonLd'] 可以是单个节点，也可以是节点列表——一个页面同时要
+     Article 与 BreadcrumbList，单节点装不下。用 array_is_list() 区分，
+     单节点写法保持可用，宿主已有的调用点不必跟着改。
 
      JSON_HEX_TAG 不可省：内容里出现 </script> 字面量时，不转义 < > 会提前闭合
      script 标签，把后续正文当 HTML 执行。转义后仍是合法 JSON-LD，解析不受影响。 --}}
 @if(! empty($seoData['jsonLd']))
-<script type="application/ld+json">{!! json_encode($seoData['jsonLd'], JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) !!}</script>
+@php
+    $jsonLdNodes = array_is_list($seoData['jsonLd']) ? $seoData['jsonLd'] : [$seoData['jsonLd']];
+@endphp
+@foreach($jsonLdNodes as $jsonLdNode)
+@if(! empty($jsonLdNode))
+<script type="application/ld+json">{!! json_encode($jsonLdNode, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES | JSON_HEX_TAG) !!}</script>
+@endif
+@endforeach
 @endif

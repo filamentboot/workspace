@@ -2,6 +2,7 @@
 
 use Filamentboot\FilamentbootSite\Models\SiteCase;
 use Filamentboot\FilamentbootSite\Models\SiteProduct;
+use Filamentboot\FilamentbootSite\Modules\News\Models\NewsArticle;
 use Filamentboot\FilamentbootSite\Settings\SiteSettings;
 use Filamentboot\FilamentbootSite\SiteServiceProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -243,6 +244,32 @@ function extractJsonLd(string $html): ?array
 }
 
 /**
+ * 提取页面上全部 JSON-LD 节点，按 @type 归档
+ *
+ * B1 之后一个页面可以有多个节点（详情页 = Article/Product + BreadcrumbList），
+ * extractJsonLd() 只取第一个，断言第二个节点时用这个。
+ *
+ * @return array<string, array<string, mixed>>
+ */
+function extractJsonLdByType(string $html): array
+{
+    preg_match_all('#<script type="application/ld\+json">(.*?)</script>#s', $html, $matches);
+
+    $nodes = [];
+
+    foreach ($matches[1] as $raw) {
+        /** @var array<string, mixed>|null $decoded */
+        $decoded = json_decode($raw, true);
+
+        if (is_array($decoded) && isset($decoded['@type'])) {
+            $nodes[(string) $decoded['@type']] = $decoded;
+        }
+    }
+
+    return $nodes;
+}
+
+/**
  * 案例详情页输出 Article 结构化数据
  */
 it('案例详情页输出 Article JSON-LD', function () {
@@ -308,16 +335,107 @@ it('无价格产品不输出 offers 节点', function () {
 });
 
 /**
- * 列表页与首页不输出 JSON-LD
+ * 列表页不输出 JSON-LD
  *
- * 结构化数据只在有具体实体的详情页才有意义。
+ * 结构化数据只在有具体实体的详情页才有意义。首页是例外——它承载
+ * Organization（见下一例），列表页仍然什么都不输出。
  */
 it('列表页不输出 JSON-LD', function () {
-    foreach (['/', '/cases', '/products'] as $path) {
+    foreach (['/cases', '/products', '/solutions', '/news'] as $path) {
         $html = (string) $this->get($path)->assertOk()->getContent();
 
         expect($html)->not->toContain('application/ld+json');
     }
+});
+
+/**
+ * 首页输出 Organization 结构化数据（B1）
+ *
+ * 品牌词搜索的知识面板锚在首页，所以顶层 Organization 只在这里出一次；
+ * 详情页里它已经作为 publisher / author 嵌在 Article 与 Product 内部。
+ */
+it('首页输出 Organization JSON-LD', function () {
+    app(SiteSettings::class)->fill([
+        'company_name_zh' => '湖北晴空妙享科技有限公司',
+        'phone'           => '027-88889999',
+        'address_zh'      => '武汉市洪山区光谷大道 3 号',
+    ])->save();
+
+    $schema = extractJsonLd((string) $this->get('/')->assertOk()->getContent());
+
+    expect($schema)->not->toBeNull()
+        ->and($schema['@type'])->toBe('Organization')
+        ->and($schema['name'])->toBe('湖北晴空妙享科技有限公司')
+        ->and($schema['telephone'])->toBe('027-88889999')
+        ->and($schema['address']['streetAddress'])->toBe('武汉市洪山区光谷大道 3 号')
+        ->and($schema)->toHaveKey('url');
+});
+
+/**
+ * 站点设置留空的字段不进 Organization
+ *
+ * 结构化数据里出现空字符串比缺字段更糟，会被判为无效值。
+ */
+it('Organization 不输出未填写的字段', function () {
+    app(SiteSettings::class)->fill([
+        'phone'      => '',
+        'address_zh' => '',
+    ])->save();
+
+    $schema = extractJsonLd((string) $this->get('/')->assertOk()->getContent());
+
+    expect($schema['@type'])->toBe('Organization')
+        ->and($schema)->not->toHaveKey('telephone')
+        ->and($schema)->not->toHaveKey('address');
+});
+
+/**
+ * 详情页同时输出实体节点与 BreadcrumbList（B1 + B3）
+ *
+ * 这一例同时锁住 seo-meta 的多节点输出：改回单节点写法后，
+ * BreadcrumbList 会被静默丢掉而 Product 仍在，只断言 Product 是发现不了的。
+ */
+it('产品详情页同时输出 Product 与 BreadcrumbList', function () {
+    SiteProduct::factory()->create([
+        'title_zh'     => '智能中控面板 S1',
+        'slug'         => 'json-ld-breadcrumb',
+        'is_published' => true,
+    ]);
+
+    $nodes = extractJsonLdByType((string) $this->get('/products/json-ld-breadcrumb')->assertOk()->getContent());
+
+    expect($nodes)->toHaveKeys(['Product', 'BreadcrumbList']);
+
+    $items = $nodes['BreadcrumbList']['itemListElement'];
+
+    expect($items)->toHaveCount(3)
+        ->and($items[0]['name'])->toBe('首页')
+        ->and($items[0]['position'])->toBe(1)
+        ->and($items[1]['name'])->toBe('智能产品')
+        ->and($items[2]['name'])->toBe('智能中控面板 S1')
+        ->and($items[2]['position'])->toBe(3)
+        // 当前页 url 为 null，item 必须由当前 URL 补齐，否则整段判无效
+        ->and($items[2]['item'])->toContain('/products/json-ld-breadcrumb');
+});
+
+/**
+ * 未归类资讯的面包屑跳过分类层
+ *
+ * 否则会留一个指向 /news?category= 的空链接。
+ */
+it('未归类资讯的面包屑只有三级', function () {
+    NewsArticle::factory()->create([
+        'title_zh'     => '无分类资讯',
+        'slug'         => 'json-ld-uncategorised',
+        'category_id'  => null,
+        'published_at' => now()->subDay(),
+    ]);
+
+    $nodes = extractJsonLdByType((string) $this->get('/news/json-ld-uncategorised')->assertOk()->getContent());
+
+    $names = array_column($nodes['BreadcrumbList']['itemListElement'], 'name');
+
+    expect($names)->toBe(['首页', '资讯中心', '无分类资讯']);
 });
 
 /**
