@@ -97,6 +97,11 @@ class FilamentbootPlugin implements Plugin
         // 用本地首字头像替换官方默认的 UiAvatarsProvider（后者每次渲染都请求 ui-avatars.com）。
         // 用户如需自定义，在 ->plugin() 之后再调一次 ->defaultAvatarProvider() 即可覆盖。
         $panel->defaultAvatarProvider(InitialsAvatarProvider::class);
+
+        // 侧栏宽度 20rem(320px) → 14rem(224px)，对齐国内后台惯用的 208-256px 区间
+        // （Filament 把 --sidebar-width 内联写在 <html> 上，CSS 覆盖层改不动，只能走此 API）。
+        // 用户如需自定义，在 ->plugin() 之后再调一次 ->sidebarWidth() 即可覆盖。
+        $panel->sidebarWidth('14rem');
     }
 
     public function boot(Panel $panel): void

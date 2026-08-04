@@ -2,7 +2,7 @@
  * Filamentboot Admin Theme — 后台观感国产化覆盖层
  *
  * 目标：对标若依 / Element Admin / Ant Design Pro 的国内后台观感——
- * 高信息密度、小圆角、边框明显、中文系统字体。
+ * 高信息密度、小圆角、边框明显、灰底白卡、中文系统字体。
  *
  * 加载方式：由 FilamentbootServiceProvider 通过 FilamentAsset::register() 注入，
  * 经 `php artisan filament:assets` 拷贝到 public/css/filamentboot/。
@@ -14,98 +14,127 @@
  *
  * 关闭方式：.env 设置 FILAMENTBOOT_THEME=false
  *
- * 注意：本文件不含侧边栏配色规则，侧栏深浅完全交由 Filament 明暗主题切换控制。
+ * ── 改法约定 ─────────────────────────────────────────────────────────
+ * 所有可调数值收敛在下方「变量层」。要调观感优先改变量，不要动选择器规则；
+ * 下游二次定制同理——在自己的样式表里重定义 --fb-* 即可，无需读懂每条规则。
+ * 改造背景、逐项依据与国内规范对照见 docs/dev/后台样式改造说明.md。
+ *
+ * 侧栏宽度不在本文件：Filament 把 --sidebar-width 内联写在 <html> 上
+ * （layout/base.blade.php），内联样式优先级高于本文件，无法用 CSS 覆盖。
+ * 它由 FilamentbootPlugin::register() 调用 $panel->sidebarWidth() 设置。
+ *
+ * 本文件不含侧边栏配色规则，侧栏深浅完全交由 Filament 明暗主题切换控制。
  */
 
-/* ------------------------------------------------------------------ */
-/* 圆角：4-6px（Filament 出厂 8-12px 偏大）                             */
-/* Filament 全量样式仅用到 rounded-md/lg/xl/full 四档，改 token 即全站生效 */
-/* rounded-full（头像、Badge 胶囊）不动                                  */
-/* ------------------------------------------------------------------ */
+/* ================================================================== */
+/* 变量层——要调观感，改这里                                            */
+/* ================================================================== */
 
 :root {
+    /* —— 配色：灰底白卡 + 可见边框，国内后台层次感的来源 —— */
+    /* Filament 出厂页面底色近乎纯白（gray-50），白卡片浮不出来 */
+    --fb-page-bg: #f0f2f5; /* 若依 / Ant Design Pro 惯用页面底色 */
+    --fb-card-bg: #fff;
+    --fb-border-color: #dcdfe6; /* Element Plus $border-color，比 Filament 的 ring 明显 */
+    --fb-table-head-bg: #fafafa; /* Ant Design 表头底色 */
+    --fb-table-row-hover-bg: #f5f7fa; /* Element Plus 行 hover 底色 */
+
+    /* —— 控件高度：Ant controlHeight 与 Element $component-size 均为 32px —— */
+    --fb-control-height: 32px;
+
+    /* —— 表单卡片内边距（Ant Card bodyPadding = 24px，后台紧凑取 20px） —— */
+    --fb-form-card-padding: 20px;
+
+    /* —— 排版 —— */
+    /* 正文字号与行高都不动，原因见 docs/dev/后台样式改造说明.md：
+       Filament 正文走 text-sm，在 16px 根字号下已是 14px（= Ant fontSize /
+       Element $font-size-base）；其行高 20px 比 Ant 的 22px 更紧，正合密度目标，
+       调高反而会把按钮、行高、侧栏项一起顶大 */
+    --fb-page-title-size: 20px; /* Ant fontSizeHeading4；出厂 text-3xl = 30px 偏大 */
+    --fb-page-title-line-height: 28px;
+    --fb-page-title-weight: 600;
+
+    /* —— 骨架尺寸 —— */
+    --fb-topbar-height: 56px; /* 出厂 64px */
+    --fb-page-header-padding-y: 14px;
+    --fb-main-padding-x: 16px;
+
+    /* —— 表格密度 —— */
+    --fb-table-cell-padding-y: 8px; /* Element $table-padding default = 8px 0 */
+
+    /* —— 侧栏 —— */
+    --fb-sidebar-icon-size: 20px; /* 分组图标与顶级项图标出厂都是 24px，收到 20px */
+    --fb-sidebar-nav-padding: 1rem 0.75rem;
+    /* 子菜单前的小圆点 + 竖线（Filament 的树形指示器）。国内后台惯例是纯文字缩进，
+       故默认隐藏；想恢复 Filament 原样把本变量改成 block 即可 */
+    --fb-sidebar-item-marker-display: none;
+
+    /* —— 圆角：4-6px（Filament 出厂 8-12px 偏大） —— */
+    /* Filament 全量样式仅用到 rounded-md/lg/xl/full 四档，改 token 即全站生效 */
+    /* rounded-full（头像、Badge 胶囊）不动 */
     --radius-sm: 3px;
     --radius-md: 4px;
     --radius-lg: 4px;
     --radius-xl: 6px;
     --radius-2xl: 8px;
     --radius-3xl: 10px;
-}
 
-/* ------------------------------------------------------------------ */
-/* 字体：中文系统字体栈，不依赖任何外网字体服务                          */
-/* 配合 Panel 的 ->font('system-ui', provider: LocalFontProvider::class) */
-/* ------------------------------------------------------------------ */
-
-:root {
+    /* —— 字体：中文系统字体栈，不依赖任何外网字体服务 —— */
+    /* 配合 Panel 的 ->font('system-ui', provider: LocalFontProvider::class) */
     --default-font-family:
         system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB',
         'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif, 'Apple Color Emoji',
         'Segoe UI Emoji', 'Segoe UI Symbol';
 }
 
+/* 暗色只需重定义配色变量，下方规则无需为暗色重复书写 */
+.dark {
+    --fb-page-bg: var(--gray-950);
+    --fb-card-bg: var(--gray-900);
+    --fb-border-color: rgb(255 255 255 / 0.1);
+    --fb-table-head-bg: rgb(255 255 255 / 0.03);
+    --fb-table-row-hover-bg: rgb(255 255 255 / 0.02);
+}
+
+/* ================================================================== */
+/* 字体与行高                                                          */
+/* ================================================================== */
+
 html.fi {
     font-family: var(--default-font-family);
 }
 
-/* ------------------------------------------------------------------ */
-/* 表格密度：行高从 py-4 (16px) 压到 8px，一屏多显示约 30% 行数           */
-/* ------------------------------------------------------------------ */
+/* ================================================================== */
+/* 骨架：页面底色、顶栏、页头、主内容区                                  */
+/* ================================================================== */
 
-.fi-ta-header-cell {
-    padding-block: 0.5rem;
+/* 灰底——灰底与白卡的对比是国内后台最强识别信号 */
+.fi-body {
+    background-color: var(--fb-page-bg);
 }
 
-.fi-ta-text:not(.fi-inline) {
-    padding-block: 0.5rem;
-}
-
-.fi-ta-cell:has(.fi-ta-actions),
-.fi-ta-cell:has(.fi-ta-record-checkbox),
-.fi-ta-cell.fi-ta-selection-cell {
-    padding-block: 0.5rem;
-}
-
-/* 表头浅灰底，与数据行拉开层次（国内后台惯例） */
-.fi-ta-table > thead {
-    background-color: var(--gray-50);
-}
-
-.dark .fi-ta-table > thead {
-    background-color: rgb(255 255 255 / 0.03);
-}
-
-/* ------------------------------------------------------------------ */
-/* 边框：Filament 用 ring-gray-950/5 描边几乎不可见，改 1px 实线          */
-/* ------------------------------------------------------------------ */
-
-.fi-ta-ctn,
-.fi-section:not(.fi-section-not-contained) {
-    box-shadow: none;
-    border: 1px solid var(--gray-200);
-}
-
-.dark .fi-ta-ctn,
-.dark .fi-section:not(.fi-section-not-contained) {
-    border-color: rgb(255 255 255 / 0.1);
-}
-
-/* 顶栏白底 + 底部分割线 */
+/* 顶栏白底 + 底部分割线，高度 64px → 56px */
 .fi-topbar {
+    min-height: var(--fb-topbar-height);
     box-shadow: none;
-    border-bottom: 1px solid var(--gray-200);
+    border-bottom: 1px solid var(--fb-border-color);
 }
 
-.dark .fi-topbar {
-    border-bottom-color: rgb(255 255 255 / 0.1);
+/* 顶栏矮 8px 后同步收紧主内容区最小高度，避免多出无用滚动条 */
+.fi-main-ctn {
+    min-height: calc(100dvh - var(--fb-topbar-height));
 }
 
-/* ------------------------------------------------------------------ */
-/* 页面留白压缩                                                         */
-/* ------------------------------------------------------------------ */
+/* 页面标题：出厂 text-3xl(30px)/700 偏大，收到 Ant fontSizeHeading4 的 20px */
+.fi-header-heading {
+    font-size: var(--fb-page-title-size);
+    line-height: var(--fb-page-title-line-height);
+    font-weight: var(--fb-page-title-weight);
+}
 
+/* 页面留白压缩 */
 .fi-page-header-main-ctn {
-    padding-block: 1.25rem;
+    padding-block: var(--fb-page-header-padding-y);
 }
 
 .fi-page-content {
@@ -113,10 +142,116 @@ html.fi {
 }
 
 .fi-main {
-    padding-inline: 1rem;
+    padding-inline: var(--fb-main-padding-x);
 }
 
-/* 仅调内边距，不改任何侧栏配色 */
+/* ================================================================== */
+/* 卡片与边框                                                          */
+/* ================================================================== */
+
+/* Filament 用 ring-gray-950/5 描边几乎不可见，改 1px 实线 */
+.fi-ta-ctn,
+.fi-section:not(.fi-section-not-contained) {
+    box-shadow: none;
+    border: 1px solid var(--fb-border-color);
+}
+
+/* 表单卡片
+ *
+ * Filament 的表单默认直接铺在页面底色上（不套卡片）。出厂底色近乎纯白时看不出来，
+ * 换成灰底后字段就会像"裸浮"在灰面上，所以补一层白卡——这也是若依 / Ant Pro 的惯例。
+ *
+ * 两处防御：
+ * - :not(:has(.fi-section)) —— 表单自己用了 Section 时不再套外层卡，避免卡中卡
+ * - :not(:where(.fi-modal *)) —— 模态框内的表单不套卡，模态框本身已是卡片
+ *   （:where 不贡献特异性，保证这条规则不会因防御条件而变得难以覆盖）
+ * 登录/注册等页面走 .fi-simple-main 而非 .fi-main，天然不受影响。
+ */
+.fi-main form.fi-sc-form:not(:has(.fi-section)):not(:where(.fi-modal *)) {
+    background-color: var(--fb-card-bg);
+    border: 1px solid var(--fb-border-color);
+    border-radius: var(--radius-xl);
+    padding: var(--fb-form-card-padding);
+}
+
+/* ================================================================== */
+/* 控件：按钮 / 输入框统一 32px（Ant + Element 共识值）                  */
+/* ================================================================== */
+
+/* 出厂 36px = padding-block 8px ×2 + line-height 20px；只收默认尺寸，
+   fi-size-sm / fi-size-lg 保持 Filament 原有比例 */
+.fi-btn.fi-size-md {
+    min-height: var(--fb-control-height);
+    padding-block: 6px;
+}
+
+.fi-icon-btn.fi-size-md {
+    min-height: var(--fb-control-height);
+}
+
+/* 出厂 36px 的成因：.fi-input 字号被改成 14px，但 line-height 仍取自
+   --text-base--line-height(24px)，行高与字号不匹配才撑高 */
+.fi-input {
+    line-height: 20px;
+    padding-block: 6px;
+}
+
+.fi-input-wrp {
+    min-height: var(--fb-control-height);
+}
+
+/* ================================================================== */
+/* 表格密度                                                            */
+/* ================================================================== */
+
+/* 行高从 py-4(16px) 压到 8px，一屏多显示约 30% 行数 */
+.fi-ta-header-cell {
+    padding-block: var(--fb-table-cell-padding-y);
+}
+
+.fi-ta-text:not(.fi-inline) {
+    padding-block: var(--fb-table-cell-padding-y);
+}
+
+.fi-ta-cell:has(.fi-ta-actions),
+.fi-ta-cell:has(.fi-ta-record-checkbox),
+.fi-ta-cell.fi-ta-selection-cell {
+    padding-block: var(--fb-table-cell-padding-y);
+}
+
+/* 表头浅灰底，与数据行拉开层次（国内后台惯例） */
+.fi-ta-table > thead {
+    background-color: var(--fb-table-head-bg);
+}
+
+/* 行 hover 反馈（Element 惯例，Filament 出厂无底色变化） */
+.fi-ta-table > tbody > tr:hover {
+    background-color: var(--fb-table-row-hover-bg);
+}
+
+/* 数字等宽，金额 / ID / 计数列纵向对齐 */
+.fi-ta-text {
+    font-variant-numeric: tabular-nums;
+}
+
+/* ================================================================== */
+/* 侧边栏（仅尺寸，不含配色）                                            */
+/* ================================================================== */
+
 .fi-sidebar-nav {
-    padding: 1rem 0.75rem;
+    padding: var(--fb-sidebar-nav-padding);
+}
+
+/* 分组图标与顶级项图标出厂均为 24px（IconSize::Large），偏大且与 14px 文字不协调 */
+.fi-sidebar-group-btn > svg,
+.fi-sidebar-group-dropdown-trigger-btn > svg,
+.fi-sidebar-item-btn > svg,
+.fi-sidebar-item-icon {
+    width: var(--fb-sidebar-icon-size);
+    height: var(--fb-sidebar-icon-size);
+}
+
+/* 子菜单项前的小圆点与竖线：保留 24px 缩进占位，只隐藏视觉标记 */
+.fi-sidebar-item-grouped-border > * {
+    display: var(--fb-sidebar-item-marker-display);
 }
