@@ -4,7 +4,7 @@
 >
 > 还没做的见 [未完成 tasks](未完成tasks.md)。
 >
-> 更新时间：2026-08-04（第四轮 B/C 组交付后）
+> 更新时间：2026-08-04（第五轮阶段 2 收口后）
 >
 > 上游规划：[基于装修网站官网优化 CMS](基于装修网站官网优化cms.md)
 
@@ -18,16 +18,17 @@
 | 第 2 轮 | B2 分页 canonical、A 组线索链路、#11 页面数据模型、#12 区块契约 | `1e7aca4` `8278942` `3b0ebc8` `bf4ca87` `88c8be0` |
 | 第 3 轮 | 内容承载扩容 + 资讯模块 + 富文本渲染修复 + CC0 封面图 | `f6a49bd`…`a42c959`（10 个提交） |
 | 第 4 轮 | B 组 SEO 基建、C 组转化与防刷 | `73f927b` `ee3fbfb` |
+| 第 5 轮 | 阶段 2 收口：#13–#21（区块出口、发布流转、版本回滚、草稿预览、导航、301、三层角色、SEO） | 未提交 |
 
 当前累计验证状态：
 
 ```
-composer test        561 通过 / 2026 断言
+composer test        717 通过 / 2585 断言
 composer pint:test   通过
 composer phpstan     0 告警（根项目，扫 app + database）
 主包 composer test    83 通过 / 250 断言
 站点包元数据测试      9 通过
-站点包 level 6       10 个存量告警（见文末「已知存量问题」）
+站点包 level 6       10 个存量告警（见文末「已知存量问题」，第 5 轮未新增）
 ```
 
 ---
@@ -242,6 +243,147 @@ composer phpstan     0 告警（根项目，扫 app + database）
 
 ---
 
+## 第 5 轮 · 阶段 2 收口（#13–#21）
+
+未提交（用户未要求 commit）。验证：717 通过 / 2585 断言（本轮前 561）；Pint 通过；根 PHPStan 0；站点包 level 6 仍是 10 个存量告警；主包 83；站点包元数据 9。
+
+**本轮把 CMS 第一次做到可用**：#11 的 `blocks` 列与 #12 的区块契约此前**没有任何出口**——七个区块类的唯一调用方是 `SiteServiceProvider::registerBlockRegistry()`，既没有前台视图也没有后台表单。同样，版本快照表 / 前台菜单表 / 重定向表三张表建好后一直零读写。
+
+### ✅ #13 · 区块前台渲染与安全过滤
+
+- **`src/Cms/Rendering/BlockRenderer.php`**：`render()` 逐条处理 `[{type, data}]`，未注册 key 与缺视图两种情况都**跳过并 `Log::warning`**，不抛异常。`structuredData()` 扫 `faq` 区块产出 FAQPage 节点（从 B1 移交）。
+- **`src/Cms/Rendering/BlockSanitizer.php`**：保存侧对 `rich-content.content` 跑 `RichText::purify()`。
+- **14 个区块视图**：`themes/{decoration,tech-product}/blocks/{hero,rich-content,media-text,feature-grid,cta,faq,contact-form}.blade.php`，两套主题各一份完整副本。
+- 接入 `SiteFrontController::page()`（抽出 `pageViewData()` 供 #16 预览共用）+ 两套 `pages/show.blade.php` 在正文**之后**输出区块。
+
+与原计划的差异与开工后才定的细节：
+
+- **`safeUrl()` 改成独立的 `src/Support/SafeUrl.php` 静态工具**（原计划写的是 BlockRenderer 上的 protected 方法）。#17 的 `url` 型菜单项、#18 的 `to_path` 都要用同一份白名单，protected 拿不到。放行清单只有 `/` `#` `http(s)` `tel:` `mailto:`，另外拦掉**协议相对 URL（`//evil.com`）**与**含控制字符的混淆**（`java\0script:`）——这两条是写测试时补的。
+- **`BlockContract` 加了 `withDefaults()` 与 `disk()` 两个方法**。渲染器每条都要调 `withDefaults()`，只存在于 `AbstractBlock` 上会让静态分析看不见，且宿主自定义区块若不继承基类会在渲染时炸。`disk()` 是视图解析图片 URL 所必需（`image` 存的只是磁盘内相对路径）。
+- **`BlockRenderer` 向视图传 `index`**，视图用它拼 `aria-labelledby` 的稳定 DOM id。原本用 `uniqid()`，同一份内容每次请求产出不同 HTML，断言无从下手，也让 #29 的整页缓存无法验证。
+- **`feature-grid` 的图标名先过字符集校验再交给 `svg()`**：blade-icons 按名称拼文件路径，带 `..` 或 `/` 的名字能读到图标集目录外的任意 `.svg` 并原样输出到页面。外面再套 `rescue()`，打错的图标名不该让整页 500。
+- **`ContactForm` 加了 `$tracksPanelSource`**。原本组件根元素无条件 `x-effect` 从 `$store.contactPanel.source` 同步 source，内联的 `contact-form` 区块会被它把后台配好的 source 覆盖成空串；访客点一下悬浮按钮更会把内联表单的来源改成 `floating`，落地页归因彻底失效。区块传 `source` 挂载参数时该同步关闭。
+- `cta` 区块留空 `button_url` 时按钮改为打开询盘面板（来源 `page-cta`，已登记进 `config` 的 `contact.sources`）；但**填了却被 SafeUrl 拦下时什么都不渲染**，不降级成询盘面板——那会让作者以为链接生效了，点出来是另一个东西。
+- `faq` 用原生 `<details>/<summary>` 而非 Alpine 手写折叠：键盘操作、读屏语义、Ctrl+F 命中折叠内容全部免费，且不依赖 JS（利好 #29）。
+- `SitePage` 的 `@property array<string, mixed>|null $blocks` 改成 `array<int, mixed>|null`——Builder 存的是列表，原标注是错的。
+
+### ✅ #14 · 页面编辑与发布流转
+
+- `SitePageResource`：「内容」Tab 富文本之后加 `Builder::make('blocks')`（从 `BlockRegistry` 动态装配，宿主注册自定义区块后后台自动出现），加 `template` Select（读 config 新增的 `page_templates`）。
+- **状态机写在 `PageStatus` 上**（`allowedTransitions()` / `canTransitionTo()`），脱离 Filament 可单测；`tests/Unit/Cms/PageStatusTest.php` 跑 5×5 全矩阵。
+- `EditSitePage::getHeaderActions()`：`预览`（#16）、`提交审核`、`发布`、`定时发布`、`退回草稿`、`归档`。`visible()` 查 `canTransitionTo()`，发布类额外 `authorize('publish')`。
+- `ListSitePages::getTabs()` 按 `PageStatus::cases()` 生成，各带计数 badge。
+- 保存侧 `mutateFormDataBeforeCreate/Save` 跑 `BlockSanitizer`。
+
+开工后才定的细节：
+
+- **纠正了原计划的依赖倒挂**：`publish_site_page` 原定在 #19 建、而 #19 又阻塞于 #14。改为**权限点由第一个需要它的任务创建**。同时 `SitePagePolicy` 必须补 `publish()` 方法——BasePolicy 没有它，Gate 对任何非超管一律拒绝，发布按钮会永远点不动。
+- **`Filament\Forms\Components\Builder` 必须 `as BuilderField` 导入**：`SitePageResource` 里已有 `Illuminate\Database\Eloquent\Builder`，同名会 fatal。
+- **`publish` Action 会把未来的 `published_at` 拉回当下**。定时排期后又点立即发布时，`published_at` 若留在未来，`scopePublished()` 判为未到期，前台仍然看不到——正是「点了发布前台看不到」那类故障的来源。
+- 状态流转走 `$record->update()` 而不是改属性再 save，这样 #15 的 Observer 能吃到。
+- Action 的 `->action(fn (): void => ...)` 写法是 PHP fatal（箭头函数隐式 return，与 `: void` 冲突），必须用普通闭包。
+
+### ✅ #15 · 版本快照与回滚
+
+- **`src/Observers/SitePageObserver.php`**，在 `SiteServiceProvider::boot()` 注册（**不放在插件启用分支里**：版本历史与前台无关，插件禁用时后台仍在用）。
+- `SitePageResource/RelationManagers/RevisionsRelationManager.php`：时间 / 操作人 / 变更字段摘要三列，`查看`（字段级新旧对比 Modal）+ `回滚`（`authorize('rollback')`）。
+- config 新增 `revisions_keep`（默认 50），超出即裁剪。权限点 `rollback_site_page`。
+
+与原计划的差异：
+
+- **改用 `created` 写基线 + `updated` 按 `wasChanged()` 写增量，而不是 `saved` + `wasChanged()`**。Laravel 的 `performInsert()` 不调 `syncChanges()`，新建记录在 `saved` 里 `wasChanged()` 恒为 false——按原计划写，首版永远没有快照，回滚回不到最初那一版。
+- `TRACKED` 与 `RESTORABLE` 两个常量分开：快照**记录** `status` / `published_at`（否则历史里看不出状态怎么变的），但回滚**不恢复**它们——回滚一篇已归档页的旧版本不该把它偷偷重新发布。`SitePageRevisionTest` 有一条结构断言固化这个区别，防日后误把 status 加进 RESTORABLE。
+- payload 里 enum 存标量值、时间存字符串：payload 是 JSON，存实例会让两次读出来类型不一致。
+- `blocks` 的对比只列区块 type 序列（`hero → faq → cta`），不做全文 diff——那是过度设计，而「加了哪几个区块、顺序变没变」才是回滚决策要的信息。
+- 顺带改了 `SitePageStatusTest` 两条 #11 时期的用例：它们断言的是快照表的硬编码条数，观察器上线后自然多一条基线。改成断言关联包含目标记录 / 以删除前实际条数为基准。
+
+### ✅ #16 · 草稿预览授权
+
+- 路由 `/preview/{page}`（`->where('page', '[0-9]+')`），注册在 `/{slug}` 之前；`preview` 早已在 `reserved_slugs` 里。
+- **双通道**：`URL::hasValidSignature()` **或** 已登录管理员且 `can('view', $page)`。只挂 `signed` 中间件会把已登录管理员挡在门外，所以签名在控制器里手工校验。
+- 响应带 `X-Robots-Tag: noindex, nofollow`；`EditSitePage` 的 `预览` Action 用 15 分钟 `temporarySignedRoute` + 新标签打开。
+- 不走 `scopePublished()`（这是它存在的理由），但保留软删除全局作用域——隐式绑定让已删页面直接 404。
+
+开工后才定的细节：
+
+- **`seo-meta.blade.php` 加了 `$seoData['canonical'] === false` 开关**，预览页同时跳过 `<link rel="canonical">` 与 `og:url`。两者都是对外声明「这页的正式地址」，与 noindex 矛盾，签名 URL 更不该被当作规范地址。
+- 预览与正式渲染共用 `pageViewData()`：否则「预览看到的」和「发布后看到的」会不是一回事。
+- 页面不存在返回 404 而不是 403（隐式绑定先于授权执行）——「链接错了」与「权限不够」是两件事，混成一个状态码编辑分不清。
+
+### ✅ #17 · 菜单管理与前台接入
+
+- `SiteMenuResource`（菜单本体，列表页主要动作是「管理菜单项」）+ `SiteMenuItemResource`（**不进导航**）+ `SiteMenuItemResource/Pages/SiteMenuItemTree`（filament-tree 树页）。
+- `src/Cms/Services/MenuResolver.php`：`resolve(string $key): ?array`，四种 type 解析，`rememberForever` 缓存 + 模型事件失效。
+- 四个 blade 接入：`themes/{decoration,tech-product}/components/{nav,footer}.blade.php`，**硬编码兜底数组原样留在各主题的 blade 里**（抽到 PHP 会把两个主题的导航结构焊死）。
+- 权限点 `manage_site_menu`，config 新增 `menu.allowed_routes` 白名单。
+
+与原计划的差异与开工后才定的细节：
+
+- **树页做成「一个树页 + `?menu={key}` 查询串」，不是 `SiteMenuResource` 的 `/{record}/items` 记录页**。`TreePage` 继承的是 Filament 普通 Page，没有记录绑定；硬塞 `InteractsWithRecord` 之后 `getModel()` / `getFormSchema()` / 三个 `configure*Action()` 全得改指向另一个模型和另一份表单。查询串方案只需覆写库里现成的 `getTreeQuery()` 钩子。
+- **`MenuResolver` 返回平铺列表，树页 `maxDepth = 1`**（原计划是嵌套两层）。两套主题的导航与页脚都没有二级下拉的版式，返回嵌套结构等于允许后台配出前台静默丢弃的层级。「后台配得出来的，前台一定显示得出来」这条比数据模型的表达力更重要；二级导航挪到 #28 主题契约，届时连版式一起放开。
+- **表单里 `target` 拆成 `target_page` / `target_route` / `target_url` / `target_anchor` 四个字段**，存取时由 `SiteMenuItemResource::collapseTarget()` / `expandTarget()` 互转。同一个 schema 里四个控件都叫 `target` 时，状态绑定行为依赖 Filament 内部实现，升级即可能静默失效——那会表现为「填了链接存进去是空的」。
+- **解析不出地址的菜单项整条不渲染**：页面被删 / 未发布（走 `published()`，草稿不泄露）、路由不在白名单、外链被 SafeUrl 拦下。渲染一个无处可去的链接比少一项更糟。
+- 白名单是必需的而非可选：`route()` 对未知名称会抛异常，而导航在每个页面都渲染——一个填错的路由名会让全站白屏。
+- `SiteMenuPolicy` / `SiteMenuItemPolicy` 共用 `manage_site_menu`，且**不继承 BasePolicy**：菜单只有「能不能管」一档，拆成五个权限点只会给角色配置添麻烦，还会造出「能建菜单但改不了菜单项」的死角。
+- `SiteMenu` 改 `key` 时连旧键缓存一起清：不清会留一条永不过期的孤儿缓存，日后又建同名菜单会读到旧结构。
+
+### ✅ #18 · 301 重定向
+
+- **`src/Http/Middleware/SiteRedirectMiddleware.php`**，由 `SiteServiceProvider` 在插件启用时 `pushMiddleware()` 注册（全局中间件是唯一可行方案：旧 URL 已匹配不到任何路由，路由中间件跑不到；`Route::fallback()` 会顶掉宿主自己的 404 处理；接管 404 异常渲染要求下游手工改 `bootstrap/app.php`）。
+- `SiteRedirectResource`（CRUD + `hits` 只读可排序列）+ `SiteRedirectPolicy`（`manage_site_redirect`）。
+- `EditSitePage::afterSave()` 在 slug 变更时**自动建 301 + 通知里给撤销按钮**（原计划写的是弹确认框；自动创建默认永不丢旧 URL，少一次点击也少一次误关）。
+
+开工后才定的细节：
+
+- **`targetUrl()` 的判据必须是「有没有 scheme」而不是「有没有 `://`」**。这是写测试时抓到的真 bug：`javascript:alert(1)` 不含 `://`，按 `://` 判会被补成 `/javascript:alert(1)`，于是变成一个"站内路径"直接通过 SafeUrl——伪协议就这样绕了过去。
+- `to_path` 被白名单拦下时**当作没配、请求继续走正常路由**：跳到一个不安全地址比 404 严重得多。
+- 只处理 GET/HEAD：POST 跳转会丢请求体。
+- `isSitePath()` 早退按三种挂载模式分别判断；root 模式额外排除 `reserved_slugs`——后台每个 Livewire 轮询都会打到 `/livewire/update`，让它们也过一次重定向查询纯属浪费。测试用「hits 是否递增」而不是状态码来验证早退（范围外的路径会被官网自己的 `/{slug}` 兜底路由接走并 404，那个 404 不能证明中间件放行了）。
+- slug 连改两次时用 `updateOrCreate` 让第一条旧地址**直指最终地址**，不留 a→b、b→c 两跳；改回原 slug 时删掉反向链，避免新旧地址互指成死循环。
+
+### ✅ #19 · 三层角色
+
+- `SitePagePolicy` 补 `publish()` / `rollback()`（实际在 #14 / #15 就已补上——权限点与 Policy 方法都由第一个需要它的任务创建）。
+- **`database/seeders/SiteRoleSeeder.php`**：内容编辑 / 内容发布 / 站点管理三档，注册进 `composer.json` 的 `post_install.seeders`，README 补了权限对照表与安装步骤。
+
+开工后才定的细节：
+
+- **用 `syncPermissions` 而非 `givePermissionTo`**：角色定义以代码为准，否则升级后各站权限各不相同没法支持。有一条测试固化这个语义（重跑会刷掉手工加的权限），防日后有人「顺手」改回去。
+- **权限点缺失时过滤掉而不是报错**：下游可能只装了部分功能，给 `syncPermissions` 传不存在的权限名会抛 `PermissionDoesNotExist` 中断整个安装流程。
+- **媒体没有独立权限点**：图片是通过各内容资源的 FileUpload 字段上传的，有 create/update 内容的权限就能传图。另立一个只会造出「能编辑但传不了图」这种没人想要的组合。原计划表格里的「+ 媒体」因此落空——不是漏做，是确认不需要。
+
+### ✅ #20 · SEO 收口
+
+- **修掉 `seo_og_image` 被完全忽略的缺陷**：`buildSeo()` 原先只在 `method_exists($record, 'ogImageUrl')` 时取封面，而 `SitePage` 不是 media-library 模型没有该方法，于是后台「SEO」Tab 里填的「社交分享图 URL」**从来没进过 `og:image`**。回退链改为 `seo_og_image` → 封面 → 全局默认。
+- canonical 三项复核全部补了断言：归档页自指、`category` 参数保留（含一条「`category` 不在剥离清单里」的结构约束）、预览页不出 canonical。
+- ⚠️ `seo_og_image` 列**只在 `site_pages` 上**（D-10-16 起页面无封面图，靠这一列承载分享图）；案例 / 方案 / 产品走 `HasCoverImage::ogImageUrl()`。写测试时误以为 `site_cases` 也有这列，撞了 `Unknown column`。
+
+### ✅ #21 · 测试与验收
+
+新增 8 个测试文件、扩了 3 个：
+
+| 文件 | 覆盖 |
+|------|------|
+| `tests/Unit/Cms/SafeUrlTest.php` | scheme 白名单（放行 8 例 / 拦下 12 例 + 控制字符混淆） |
+| `tests/Unit/Cms/BlockRendererTest.php` | 未知 key / 缺视图降级、脏 payload、FAQPage、保存侧净化、双主题 14 视图齐备 |
+| `tests/Unit/Cms/PageStatusTest.php` | 状态机 5×5 全矩阵 + 无自环 + 无死角 |
+| `tests/Feature/SitePageResourcePageTest.php` | Builder 存取、状态流转 Action 显隐与授权、Tab 计数、版本历史、slug 改名建 301 |
+| `tests/Feature/SitePageRevisionTest.php` | 基线快照、增量、裁剪、回滚不改 status、回滚产生新版本 |
+| `tests/Feature/SitePagePreviewTest.php` | 双通道授权、过期 / 篡改签名、noindex、无 canonical、四种未发布态可预览、软删除不可预览 |
+| `tests/Feature/SiteMenuTest.php` | 四种 type 解析、不可用项不渲染、null 回退、缓存失效、双主题前台同步 |
+| `tests/Feature/SiteMenuResourcePageTest.php` | 菜单列表、树页按菜单过滤、target 字段互转 |
+| `tests/Feature/SiteRedirectTest.php` | 301/302、hits 递增、路径归一、三种挂载模式的早退、伪协议不跳 |
+| `tests/Feature/SiteRoleSeederTest.php` | 三层权限递增、内容编辑不能发布、幂等、权限缺失不报错 |
+| 扩 `SiteContentRenderTest.php` | 区块双主题渲染、区块富文本剥离脚本、未知区块优雅降级（各 `->with('themes')`） |
+| 扩 `SiteSeoMetaTest.php` | `seo_og_image` 优先级、归档页自指 canonical、`category` 参数保留 |
+| 扩 `SitePageStatusTest.php` | 两条 #11 期用例适配观察器 |
+
+E2E：`tests/e2e/uat-phase12.spec.cjs`（建页 → 拖区块 → 提交审核 → 发布 → 前台可见；双主题区块渲染；草稿预览 noindex + 未登录 403；改 slug 建 301；菜单同步与删空回退）。不进 CI，由本人手跑。
+
+**无新建表迁移**：四张表都在 #11 建好了，所以 README 的「16 张内容表」计数不变，`SitePackageMetadataTest` 仍是 9 通过。
+
+---
+
 ## 已知存量问题
 
 ### 站点包 PHPStan level 6 的 10 个告警
@@ -254,7 +396,11 @@ composer phpstan     0 告警（根项目，扫 app + database）
 | `ContactMessage` / `SiteTag` | `HasFactory` 泛型未声明 ×2 |
 | `SiteFrontController` | `newsIndex` 的 `published()`、`newsArchiveMonths()` 返回类型、`?->name_zh` 多余的 nullsafe ×3 |
 
-按仓库约定「无关问题提及但不处理」，未修。**新增代码不应让这个数字变大。**
+按仓库约定「无关问题提及但不处理」，未修。**新增代码不应让这个数字变大**——第 5 轮新增约 20 个文件，这个数字仍是 10。
+
+> 第 5 轮踩到的两次「新增告警」都是真类型问题，就地修了而不是放进这份清单：
+> `BlockContract` 缺 `withDefaults()` 声明（渲染器依赖一个契约里没有的方法）、
+> `SitePage::$blocks` 的 `@property` 写成了关联数组而实际是列表。
 
 ### 素材空缺
 

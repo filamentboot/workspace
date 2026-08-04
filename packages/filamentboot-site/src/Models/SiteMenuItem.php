@@ -2,6 +2,7 @@
 
 namespace Filamentboot\FilamentbootSite\Models;
 
+use Filamentboot\FilamentbootSite\Cms\Services\MenuResolver;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Support\Carbon;
@@ -49,6 +50,26 @@ class SiteMenuItem extends Model
         'sort',
         'open_in_new',
     ];
+
+    /**
+     * 模型事件注册
+     *
+     * 任一菜单项变动（含拖拽排序、改父级）都清掉全部菜单缓存。
+     *
+     * 不按 menu_id 精确清：菜单总共两条（main / footer），全清多花的代价是
+     * 一次 pluck 加两次 Cache::forget，都在后台侧；而精确清要处理「菜单项被
+     * 移到另一条菜单下」这种情况——旧菜单也得清，很容易漏。
+     */
+    protected static function booted(): void
+    {
+        static::saved(function (): void {
+            MenuResolver::forget();
+        });
+
+        static::deleted(function (): void {
+            MenuResolver::forget();
+        });
+    }
 
     /**
      * 属性类型转换

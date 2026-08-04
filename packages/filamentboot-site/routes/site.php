@@ -92,6 +92,14 @@ $applyMode(Route::middleware(['web', CaptureVisitorAttribution::class])->control
             ->where(['year' => '[0-9]{4}', 'month' => '0[1-9]|1[0-2]']);
         Route::get('/news/{slug}', 'newsShow')->name('site.news.show');
 
+        // 草稿预览（#16）：必须先于 /{slug} 注册。preview 已在 reserved_slugs 里，
+        // 所以 /{slug} 不会吞掉它，但顺序仍按「越具体越靠前」保持。
+        // 授权在控制器里做（签名 或 已登录管理员），不挂 signed 中间件——
+        // 那会把已登录管理员挡在门外。
+        Route::get('/preview/{page}', 'preview')
+            ->name('site.page.preview')
+            ->where('page', '[0-9]+');
+
         // 静态页面（必须最后注册，slug 已排除保留路径，T-10-04-03 参数绑定防注入）
         Route::get('/{slug}', 'page')
             ->name('site.page')

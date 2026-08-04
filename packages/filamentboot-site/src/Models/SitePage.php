@@ -30,7 +30,7 @@ use Illuminate\Support\Carbon;
  * @property string $template
  * @property string|null $content_zh
  * @property string|null $content_en
- * @property array<string, mixed>|null $blocks
+ * @property array<int, mixed>|null $blocks 区块 payload 列表 [{type, data}, ...]（Filament Builder 存的就是列表）
  * @property string|null $seo_title
  * @property string|null $seo_description
  * @property string|null $seo_keywords

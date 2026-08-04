@@ -60,4 +60,26 @@ interface BlockContract
      * @return array<string, mixed>
      */
     public function defaults(): array;
+
+    /**
+     * 用默认值补齐 payload 缺失的字段
+     *
+     * 渲染层（Cms\Rendering\BlockRenderer）每渲染一条都要调它，所以必须由契约
+     * 声明而不是只存在于 AbstractBlock 上——否则渲染层拿着 BlockContract
+     * 却调得到一个契约里没有的方法，静态分析看不见，宿主自定义区块
+     * 若不继承 AbstractBlock 就会在渲染时炸。
+     *
+     * @param  array<string, mixed>  $data  区块 data 部分
+     * @return array<string, mixed>
+     */
+    public function withDefaults(array $data): array;
+
+    /**
+     * 上传字段使用的磁盘名
+     *
+     * 前台视图拿到的 image 字段只是磁盘内相对路径，必须知道磁盘名才能
+     * Storage::disk($disk)->url()。表单侧与渲染侧走同一个方法，
+     * 后台改了默认磁盘不会出现「上传到 A、前台从 B 读」的错位。
+     */
+    public function disk(): string;
 }

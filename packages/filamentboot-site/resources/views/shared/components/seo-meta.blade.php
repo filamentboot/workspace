@@ -14,6 +14,7 @@
  *   $seoData['title'] / ['description'] / ['keywords']
  *   $seoData['ogTitle'] / ['ogDescription'] / ['ogImage'] / ['ogType']
  *   $seoData['jsonLd'] — 可选，结构化数据数组（详情页才有，列表页不输出）
+ *   $seoData['canonical'] — 可选，传 false 则不输出 canonical（草稿预览页用，#16）
  *   $siteSettings — SiteSettings 实例（可为 null）
  --}}
 @php
@@ -46,6 +47,11 @@
 
     $canonical = url()->current()
         . ($canonicalQuery === [] ? '' : '?' . http_build_query($canonicalQuery));
+
+    // 草稿预览页显式关掉 canonical（#16）：该页已带 X-Robots-Tag: noindex，
+    // 再自指一个 canonical 是矛盾信号，且签名 URL 本身不该被当作规范地址。
+    // og:url 同样跳过——它也是对外声明「这个页面的正式地址」。
+    $showCanonical = ($seoData['canonical'] ?? true) !== false;
 @endphp
 
 <title>{{ $fullTitle }}</title>
@@ -61,13 +67,17 @@
 <meta property="og:image" content="{{ $ogImage }}">
 @endif
 <meta property="og:type" content="{{ $ogType }}">
+@if($showCanonical)
 <meta property="og:url" content="{{ $canonical }}">
+@endif
 @if($siteName !== '')
 <meta property="og:site_name" content="{{ $siteName }}">
 @endif
 
-{{-- Canonical URL（防重复内容） --}}
+{{-- Canonical URL（防重复内容），草稿预览页不输出 --}}
+@if($showCanonical)
 <link rel="canonical" href="{{ $canonical }}">
+@endif
 
 {{-- 站长平台验证 meta（B4）
 

@@ -72,6 +72,7 @@
                 "run_migrations": true,
                 "seeders": [
                     "Filamentboot\\FilamentbootSite\\Database\\Seeders\\SitePermissionSeeder",
+                    "Filamentboot\\FilamentbootSite\\Database\\Seeders\\SiteRoleSeeder",
                     "Filamentboot\\FilamentbootSite\\Database\\Seeders\\SiteMenuSeeder",
                     "Filamentboot\\FilamentbootSite\\Database\\Seeders\\SiteDemoSeeder",
                     "Filamentboot\\FilamentbootSite\\Database\\Seeders\\SiteNewsSeeder"

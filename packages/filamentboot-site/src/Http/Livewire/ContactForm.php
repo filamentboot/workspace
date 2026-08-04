@@ -61,6 +61,18 @@ class ContactForm extends Component
     public string $source = '';
 
     /**
+     * 是否跟随悬浮面板的 store 同步 source（#13）
+     *
+     * 悬浮面板里的实例为 true：访客可能先点导航 CTA 再点悬浮按钮，
+     * source 必须跟着最后一次点击变。
+     *
+     * contact-form 区块内联渲染的实例为 false：它的 source 由内容编辑在后台配好，
+     * 页面上任何 CTA 点击都不该改写它——否则同页放了内联表单又有悬浮按钮时，
+     * 两个入口的线索会被记成同一个来源，落地页归因就没了意义。
+     */
+    public bool $tracksPanelSource = true;
+
+    /**
      * 提交成功标志（切换视图为感谢提示）
      */
     public bool $submitted = false;
@@ -90,10 +102,17 @@ class ContactForm extends Component
 
     /**
      * 组件挂载
+     *
+     * @param  string  $source  区块配置的来源标识（#13），传了就固定用它、不再跟随面板 store
      */
-    public function mount(): void
+    public function mount(string $source = ''): void
     {
         $this->renderedAt = now()->getTimestamp();
+
+        if ($source !== '') {
+            $this->source            = $source;
+            $this->tracksPanelSource = false;
+        }
     }
 
     /**

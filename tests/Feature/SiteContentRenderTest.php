@@ -1,6 +1,7 @@
 <?php
 
 use Filamentboot\FilamentbootSite\Models\SiteCase;
+use Filamentboot\FilamentbootSite\Models\SitePage;
 use Filamentboot\FilamentbootSite\Models\SiteProduct;
 use Filamentboot\FilamentbootSite\Modules\News\Models\NewsArticle;
 use Filamentboot\FilamentbootSite\Modules\News\Models\NewsCategory;
@@ -405,4 +406,105 @@ it('移动端隐藏悬浮气泡', function (string $theme) {
     // 气泡按钮本体带 hidden sm:inline-flex；滑入面板不受影响，两者共用同一 Store
     $this->assertStringContainsString('hidden sm:inline-flex', $html, "{$theme} 主题的悬浮气泡未在移动端隐藏");
     $this->assertStringContainsString('id="contact-panel"', $html, "{$theme} 主题的滑入面板不该被一起隐藏");
+})->with('themes');
+
+/**
+ * 页面区块在两套主题下都真实渲染（#13）
+ *
+ * 区块视图各主题一份完整副本（§0.3 第 1 条），必须两套都跑：
+ * 只测默认主题时，另一套缺一份视图会一路静默降级到「区块不显示」，
+ * 而 BlockRenderer 的降级是有意设计，日志里也只是 warning。
+ */
+it('页面区块在双主题下渲染', function (string $theme) {
+    switchSiteTheme($theme);
+
+    SitePage::factory()->create([
+        'slug'       => 'blocks-render-check',
+        'title_zh'   => '区块渲染检查页',
+        'content_zh' => '<p>这是原有富文本正文</p>',
+        'blocks'     => [
+            ['type' => 'hero', 'data' => ['title' => '区块首屏标题', 'subtitle' => '区块副标题']],
+            ['type' => 'feature-grid', 'data' => [
+                'title'   => '区块特性网格',
+                'columns' => 3,
+                'items'   => [['title' => '特性一', 'description' => '描述一']],
+            ]],
+            ['type' => 'faq', 'data' => [
+                'title' => '区块常见问题',
+                'items' => [['question' => '区块问题一', 'answer' => '区块答案一']],
+            ]],
+            ['type' => 'cta', 'data' => ['title' => '区块转化点', 'button_label' => '区块按钮', 'button_url' => '']],
+        ],
+    ]);
+
+    $html = $this->get('/blocks-render-check')->assertOk()->content();
+
+    foreach ([
+        '区块首屏标题',
+        '区块副标题',
+        '区块特性网格',
+        '特性一',
+        '区块常见问题',
+        '区块问题一',
+        '区块转化点',
+        '区块按钮',
+    ] as $needle) {
+        $this->assertStringContainsString($needle, $html, "{$theme} 主题未渲染区块内容「{$needle}」");
+    }
+
+    // 正文与区块并存，不是二选一
+    $this->assertStringContainsString('这是原有富文本正文', $html, "{$theme} 主题丢了富文本正文");
+
+    // CTA 空链接改为打开询盘面板，来源标识可归因
+    $this->assertStringContainsString('data-contact-trigger="page-cta"', $html, "{$theme} 主题的 CTA 未接询盘面板");
+
+    // FAQ 区块同时产出 FAQPage 结构化数据
+    $this->assertStringContainsString('FAQPage', $html, "{$theme} 主题未输出 FAQPage 结构化数据");
+})->with('themes');
+
+/**
+ * 区块里的富文本经白名单过滤，脚本不落地（#13 安全要点）
+ */
+it('区块富文本在双主题下都剥离脚本', function (string $theme) {
+    switchSiteTheme($theme);
+
+    SitePage::factory()->create([
+        'slug'   => 'blocks-xss-check',
+        'blocks' => [
+            ['type' => 'rich-content', 'data' => [
+                'title'   => '富文本区块标题',
+                'content' => '<h3>三级标题</h3><p>正常段落</p><script>alert(1)</script><img src=x onerror=alert(2)>',
+            ]],
+        ],
+    ]);
+
+    $html = $this->get('/blocks-xss-check')->assertOk()->content();
+
+    // 结构保住：h3 与段落都还在（RichText 的白名单与编辑器工具栏对齐）
+    $this->assertStringContainsString('三级标题', $html, "{$theme} 主题丢了区块富文本的标题结构");
+    $this->assertStringContainsString('正常段落', $html, "{$theme} 主题丢了区块富文本的段落");
+
+    // 脚本与事件处理器一个不剩
+    $this->assertStringNotContainsString('<script>alert', $html, "{$theme} 主题未剥离区块内的 script");
+    $this->assertStringNotContainsString('onerror', $html, "{$theme} 主题未剥离区块内的 onerror");
+})->with('themes');
+
+/**
+ * 未注册的区块 key 不把整页打成 500（#13 降级契约）
+ */
+it('未知区块在双主题下优雅降级', function (string $theme) {
+    switchSiteTheme($theme);
+
+    SitePage::factory()->create([
+        'slug'   => 'blocks-unknown-check',
+        'blocks' => [
+            ['type' => 'no-such-block', 'data' => ['title' => '不该出现的内容']],
+            ['type' => 'hero', 'data' => ['title' => '正常区块仍然渲染']],
+        ],
+    ]);
+
+    $html = $this->get('/blocks-unknown-check')->assertOk()->content();
+
+    $this->assertStringContainsString('正常区块仍然渲染', $html, "{$theme} 主题下未知区块拖累了正常区块");
+    $this->assertStringNotContainsString('不该出现的内容', $html, "{$theme} 主题渲染了未注册区块的内容");
 })->with('themes');

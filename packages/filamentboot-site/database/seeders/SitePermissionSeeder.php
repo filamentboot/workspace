@@ -88,6 +88,21 @@ class SitePermissionSeeder extends Seeder
             // 设置页（Shield 由页面类名推导，带 _page 后缀）
             'view_site_settings_page',
 
+            // 页面发布（#14）：与 update_site_page 分开，内容编辑只能提交审核。
+            // 权限点由第一个需要它的任务创建——#19 只做三层角色组装，不再负责建点，
+            // 否则 #14 的「编辑者不能直接发布」就得等 #19 才能生效。
+            'publish_site_page',
+
+            // 页面版本回滚（#15）：整体改写正文，不等同于普通编辑
+            'rollback_site_page',
+
+            // 前台导航（#17）：菜单与菜单项共用一个权限点——能改导航结构的人
+            // 一定也能新建删除菜单项，拆开只是给角色配置添麻烦
+            'manage_site_menu',
+
+            // URL 重定向（#18）：能改跳转规则等于能把任意旧地址导去别处，独立授权
+            'manage_site_redirect',
+
             // 站点管理（A3 的自定义前台代码块等高风险配置）
             'manage_site_settings',
         ];

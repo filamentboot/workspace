@@ -2,6 +2,7 @@
 
 namespace Filamentboot\FilamentbootSite\Http\Controllers;
 
+use Filamentboot\FilamentbootSite\Cms\Rendering\BlockRenderer;
 use Filamentboot\FilamentbootSite\Models\SiteCase;
 use Filamentboot\FilamentbootSite\Models\SitePage;
 use Filamentboot\FilamentbootSite\Models\SiteProduct;
@@ -11,9 +12,12 @@ use Filamentboot\FilamentbootSite\Modules\News\Models\NewsCategory;
 use Filamentboot\FilamentbootSite\Settings\SiteSettings;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\URL;
+use Illuminate\Support\Facades\View as ViewFacade;
 use Illuminate\View\View;
 
 /**
@@ -305,16 +309,95 @@ class SiteFrontController extends Controller
      */
     public function page(string $slug): View
     {
-        $record  = SitePage::published()->where('slug', $slug)->firstOrFail();
+        $record = SitePage::published()->where('slug', $slug)->firstOrFail();
+
+        return view($this->pageTemplate($record), $this->pageViewData($record));
+    }
+
+    /**
+     * 草稿预览（/preview/{page}，#16）
+     *
+     * 这是全站唯一**不走 scopePublished()** 的内容读取入口——它存在的理由
+     * 就是让编辑在发布前看到草稿。软删除全局作用域保留：隐式绑定让已删除的
+     * 页面直接 404，删掉的东西不该还能预览。
+     *
+     * 双通道授权，两条都不满足才 403：
+     *   1. 带有效签名（后台生成的 15 分钟临时链接，可发给不登录后台的人过目）
+     *   2. 已登录管理员且对该页面有 view 权限（编辑自己点进来不必先要签名）
+     *
+     * 只挂 signed 中间件会把已登录管理员挡在门外，所以签名校验在这里手工做。
+     */
+    public function preview(Request $request, SitePage $page): Response
+    {
+        $viaSignature = URL::hasValidSignature($request);
+        $viaAdmin     = auth('admin')->check() && auth('admin')->user()?->can('view', $page);
+
+        abort_unless($viaSignature || $viaAdmin, 403);
+
+        $data = $this->pageViewData($page);
+
+        // 预览页不输出 canonical / og:url：已经 noindex，再自指规范地址是矛盾信号
+        $data['seoData']['canonical'] = false;
+
+        return response()
+            ->view($this->pageTemplate($page), $data)
+            // 签名 URL 一旦外泄被抓取，草稿就进了搜索结果
+            ->header('X-Robots-Tag', 'noindex, nofollow');
+    }
+
+    /**
+     * 组装静态页视图数据（#13 区块渲染 + B1/B3 面包屑与结构化数据）
+     *
+     * 抽成独立方法供 page() 与 preview()（#16）共用：预览与正式渲染必须
+     * 走同一套数据组装，否则预览看到的和发布后看到的会不是一回事。
+     *
+     * @return array<string, mixed>
+     */
+    protected function pageViewData(SitePage $record): array
+    {
         $seoData = $this->buildSeo($record);
 
         $breadcrumbs = $this->breadcrumbs([
             ['label' => $record->title_zh, 'url' => null],
         ]);
 
-        $seoData['jsonLd'] = [$this->breadcrumbSchema($breadcrumbs)];
+        $renderer = app(BlockRenderer::class);
 
-        return view('filamentboot-site::pages.show', compact('record', 'breadcrumbs', 'seoData'));
+        // 区块贡献的结构化数据（目前是 faq → FAQPage）并入面包屑之后，
+        // seo-meta 组件已支持节点列表，会逐个输出成独立的 ld+json 脚本
+        $seoData['jsonLd'] = [
+            $this->breadcrumbSchema($breadcrumbs),
+            ...$renderer->structuredData($record->blocks),
+        ];
+
+        return [
+            'record'      => $record,
+            'breadcrumbs' => $breadcrumbs,
+            'seoData'     => $seoData,
+            'blocksHtml'  => $renderer->render($record->blocks),
+        ];
+    }
+
+    /**
+     * 解析页面模板视图名（#14）
+     *
+     * template 列的取值来自后台 Select（config 的 page_templates），但库里可能
+     * 留着已被下架的模板标识，或宿主换了主题而新主题没提供那份视图。
+     * 两种情况都回退 pages.show——一个模板缺失不该让已发布页面 404。
+     */
+    protected function pageTemplate(SitePage $record): string
+    {
+        $template = (string) ($record->template ?? '');
+
+        // 字符集先卡一道：template 会拼进视图名，放宽等于给视图路径解析
+        // 留下可被内容侧影响的入口（与 BlockRegistry 对 key 的约束同源）
+        if (preg_match('/^[a-z0-9]+(-[a-z0-9]+)*$/', $template) !== 1 || $template === 'default') {
+            return 'filamentboot-site::pages.show';
+        }
+
+        $candidate = 'filamentboot-site::pages.templates.'.$template;
+
+        return ViewFacade::exists($candidate) ? $candidate : 'filamentboot-site::pages.show';
     }
 
     /**
@@ -371,6 +454,7 @@ class SiteFrontController extends Controller
      *
      * 标题：记录 seo_title → 记录 title_zh → 全局默认标题 → app.name
      * 描述：记录 seo_description → 记录 description_zh → 全局默认描述 → config 兜底文案
+     * OG 图：记录 seo_og_image → 记录封面（ogImageUrl）→ 全局默认 OG 图（#20）
      *
      * @param  object  $record  内容记录（含 seo_title/seo_description/seo_keywords 字段）
      * @return array{title: string, description: string, keywords: string, ogTitle: string, ogDescription: string, ogImage: string|null, ogType: string}
@@ -395,10 +479,19 @@ class SiteFrontController extends Controller
             ?: $descFallback
             ?: $this->defaultDescription();
 
-        // 内容页优先使用自身封面作为 OG 图，无封面时回退全局默认
-        $ogImage = method_exists($record, 'ogImageUrl')
-            ? ($record->ogImageUrl() ?: $this->defaultOgImage())
-            : $this->defaultOgImage();
+        // OG 图回退链（#20）：记录自填的 seo_og_image → 自身封面 → 全局默认
+        //
+        // seo_og_image 此前被完全忽略：这里只在 method_exists('ogImageUrl') 时取封面，
+        // 而 SitePage 不是 media-library 模型没有该方法，于是后台「SEO」Tab 里填的
+        // 「社交分享图 URL」从来没进过 og:image。页面级设置必须排在最前——
+        // 它是作者对这一页的显式指定，优先级高于任何自动推导。
+        $ogImage = (isset($record->seo_og_image) ? ($record->seo_og_image ?: '') : '') ?: null;
+
+        if ($ogImage === null && method_exists($record, 'ogImageUrl')) {
+            $ogImage = $record->ogImageUrl() ?: null;
+        }
+
+        $ogImage ??= $this->defaultOgImage();
 
         return [
             'title'         => $title,

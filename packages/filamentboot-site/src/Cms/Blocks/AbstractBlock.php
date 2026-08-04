@@ -44,6 +44,18 @@ abstract class AbstractBlock implements BlockContract
     }
 
     /**
+     * 上传字段使用的磁盘（供前台视图解析图片 URL，#13）
+     *
+     * 视图拿到的 image 字段只是磁盘内的相对路径，必须知道磁盘名才能
+     * Storage::disk($disk)->url()。表单侧与渲染侧走同一个方法，
+     * 后台改了默认磁盘不会出现「上传到 A、前台从 B 读」的错位。
+     */
+    public function disk(): string
+    {
+        return $this->defaultDisk();
+    }
+
+    /**
      * 上传字段使用的磁盘
      *
      * 与 SiteSettingsPage 同源读 UploadSettings.default_disk，

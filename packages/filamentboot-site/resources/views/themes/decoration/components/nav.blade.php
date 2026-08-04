@@ -11,7 +11,10 @@
     $companyName = ($siteSettings?->company_name_zh ?: '') ?: config('app.name', '');
     $logoPath    = $siteSettings?->logo;
 
-    $navLinks = [
+    // 后台配了 main 菜单就用它，没配则回退下面这份硬编码列表（#17）。
+    // 兜底数组留在各主题的 blade 里而不是抽进 PHP：抽出去会把两个主题的
+    // 导航结构焊死。删光菜单必须回退而不是白屏，这是升级安全的硬要求。
+    $navLinks = app(\Filamentboot\FilamentbootSite\Cms\Services\MenuResolver::class)->resolve('main') ?? [
         ['href' => route('site.cases.index'),     'label' => '装修案例'],
         ['href' => route('site.solutions.index'), 'label' => '智能方案'],
         ['href' => route('site.products.index'),  'label' => '智能产品'],
@@ -44,6 +47,7 @@
         <nav class="hidden md:flex items-center gap-1" aria-label="主导航">
             @foreach($navLinks as $link)
                 <a href="{{ $link['href'] }}"
+                   @if($link['target'] ?? null) target="{{ $link['target'] }}" rel="noopener noreferrer" @endif
                    class="inline-flex items-center min-h-[44px] px-3 text-sm text-site-secondary hover:text-site-accent transition-colors duration-200
                           focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:ring-offset-2 focus-visible:ring-offset-[--color-bg-base] focus-visible:outline-none rounded-sm
                           {{ request()->is(ltrim(parse_url($link['href'], PHP_URL_PATH) ?? '', '/') . '*') ? 'text-site-accent border-b-2 border-[--color-primary]' : '' }}">
@@ -114,6 +118,7 @@
         <nav class="px-4 py-6 space-y-1">
             @foreach($navLinks as $link)
                 <a href="{{ $link['href'] }}"
+                   @if($link['target'] ?? null) target="{{ $link['target'] }}" rel="noopener noreferrer" @endif
                    class="flex items-center min-h-[44px] px-3 rounded-xl text-site-secondary hover:text-site-accent hover:bg-site-elevated transition-colors duration-200"
                    @click="mobileNavOpen = false">
                     {{ $link['label'] }}

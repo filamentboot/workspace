@@ -52,6 +52,13 @@ php artisan vendor:publish --tag=filamentboot-site-assets
 php artisan migrate
 ```
 
+写入权限点与三层角色（**必需**，否则除超管外无人能进官网管理）：
+
+```bash
+php artisan db:seed --class="Filamentboot\FilamentbootSite\Database\Seeders\SitePermissionSeeder"
+php artisan db:seed --class="Filamentboot\FilamentbootSite\Database\Seeders\SiteRoleSeeder"
+```
+
 运行初始化种子数据（可选）：
 
 ```bash
@@ -150,7 +157,23 @@ resources/views/vendor/filamentboot-site/themes/{theme}/   ← 宿主发布覆�
 
 「网站设置」页与仪表盘会提示尚未配置的发布前必填项：联系电话、公司地址、ICP 备案号、隐私政策链接、默认 SEO 标题与描述、默认 Open Graph 图、公司 LOGO。未配置的项不会在前台渲染空栏目，但会在后台持续告警。
 
-### 6. 搜索引擎接入（可选）
+### 6. 三层角色
+
+`SiteRoleSeeder` 建好三个开箱可用的角色，在「角色管理」里直接分配给管理员即可：
+
+| 角色 | 五类内容读写 | 发布 / 定时发布 | 删除与版本回滚 | 站点设置 / 导航 / 重定向 | 询盘查看与导出 |
+|------|------|------|------|------|------|
+| **内容编辑** | ✅ | ❌ 只能提交审核 | ❌ | ❌ | ❌ |
+| **内容发布** | ✅ | ✅ | ✅ | ❌ | ❌ |
+| **站点管理** | ✅ | ✅ | ✅ | ✅ | ✅ |
+
+分层的实际意义在「内容编辑不能发布」这一条：写文案的人和对外发声负责的人往往不是同一个，`publish_site_page` 就是那道闸门。内容编辑在编辑页只看到「提交审核」，看不到「发布」与「定时发布」。
+
+角色定义以代码为准：`SiteRoleSeeder` 用 `syncPermissions`，重跑会把手工加到这三个角色上的权限刷掉。要给某人额外权限，新建角色或直接授予用户，不要改这三个。
+
+超级管理员沿用主包的 `Gate::before()` 放行，不需要（也不应该）授予上述任何权限点。
+
+### 7. 搜索引擎接入（可选）
 
 「网站设置 → SEO 默认值」下有两组选填项：
 

@@ -6,6 +6,7 @@ use BackedEnum;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\RestoreAction;
+use Filament\Forms\Components\Builder as BuilderField;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\RichEditor as RichEditorField;
 use Filament\Forms\Components\Select;
@@ -20,10 +21,12 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Filamentboot\FilamentbootSite\Cms\Blocks\BlockRegistry;
 use Filamentboot\FilamentbootSite\Enums\PageStatus;
 use Filamentboot\FilamentbootSite\Filament\Resources\SitePageResource\Pages\CreateSitePage;
 use Filamentboot\FilamentbootSite\Filament\Resources\SitePageResource\Pages\EditSitePage;
 use Filamentboot\FilamentbootSite\Filament\Resources\SitePageResource\Pages\ListSitePages;
+use Filamentboot\FilamentbootSite\Filament\Resources\SitePageResource\RelationManagers\RevisionsRelationManager;
 use Filamentboot\FilamentbootSite\Models\SitePage;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -39,8 +42,12 @@ use UnitEnum;
  * 前台可见性由 SitePage::scopePublished() 判定 status + published_at，
  * 表单必须跟着改，否则「点了发布前台看不到」。
  *
- * 完整的状态流转 Action（编辑者只能提交审核、发布者才能发布）与按状态分 Tab
- * 属于 #14，本资源当前只提供状态下拉与定时发布时间。
+ * 状态流转 Action（编辑者只能提交审核、发布者才能发布）在 EditSitePage，
+ * 按状态分 Tab 在 ListSitePages，转移规则在 PageStatus 枚举上（#14）。
+ *
+ * 页面区块用 Filament Builder 承载（#14）：它存的正是 [{type, data}, ...]，
+ * 与 Cms\Blocks 的区块契约天然一致，不需要转换层。保存侧经 BlockSanitizer
+ * 过一遍富文本白名单（#13）。
  */
 class SitePageResource extends Resource
 {
@@ -85,12 +92,26 @@ class SitePageResource extends Resource
                             ->seconds(false)
                             ->helperText('留空表示立即生效。「定时发布」状态下必须填写未来时间。')
                             ->required(fn (Get $get): bool => $get('status') === PageStatus::SCHEDULED->value),
+                        Select::make('template')
+                            ->label('页面版式')
+                            ->options(fn (): array => (array) config('filamentboot-site.page_templates', ['default' => '标准页面']))
+                            ->default('default')
+                            ->required()
+                            ->native(false)
+                            ->helperText('当前主题没有对应版式视图时自动回退标准页面，不会 404'),
                         TextInput::make('title_zh')
                             ->label('标题')
                             ->required()
                             ->maxLength(255),
                         RichEditorField::make('content_zh')
                             ->label('正文'),
+                        BuilderField::make('blocks')
+                            ->label('页面区块')
+                            ->helperText('区块渲染在正文之后，两者可以并存')
+                            ->blocks(static::blockComponents())
+                            ->collapsible()
+                            ->cloneable()
+                            ->columnSpanFull(),
                     ]),
                     Tab::make('SEO')->schema([
                         TextInput::make('seo_title')
@@ -112,6 +133,31 @@ class SitePageResource extends Resource
                 ])
                 ->columnSpanFull(),
         ]);
+    }
+
+    /**
+     * 把注册表里的区块装配成 Builder 的 Block 组件（#14）
+     *
+     * Filament Builder 存的正是 [{type, data}, ...]，与区块契约天然一致，
+     * 不需要任何转换层——SitePage.blocks 已 cast 为 array，前台
+     * Cms\Rendering\BlockRenderer 直接读同一份结构。
+     *
+     * 从注册表动态取而非写死清单：宿主在自己的 ServiceProvider 里
+     * app(BlockRegistry::class)->register(new MyBlock) 之后，后台表单自动出现该区块。
+     *
+     * @return list<BuilderField\Block>
+     */
+    protected static function blockComponents(): array
+    {
+        $blocks = [];
+
+        foreach (app(BlockRegistry::class)->all() as $block) {
+            $blocks[] = BuilderField\Block::make($block->key())
+                ->label($block->label())
+                ->schema($block->schema());
+        }
+
+        return $blocks;
     }
 
     /**
@@ -170,6 +216,18 @@ class SitePageResource extends Resource
     {
         return parent::getEloquentQuery()
             ->withoutGlobalScopes([SoftDeletingScope::class]);
+    }
+
+    /**
+     * 关系管理器（#15 版本历史）
+     *
+     * @return array<int, mixed>
+     */
+    public static function getRelations(): array
+    {
+        return [
+            RevisionsRelationManager::class,
+        ];
     }
 
     /**

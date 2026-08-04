@@ -11,13 +11,16 @@ use Filamentboot\FilamentbootSite\Cms\Blocks\HeroBlock;
 use Filamentboot\FilamentbootSite\Cms\Blocks\MediaTextBlock;
 use Filamentboot\FilamentbootSite\Cms\Blocks\RichContentBlock;
 use Filamentboot\FilamentbootSite\Console\Commands\PushBaiduCommand;
+use Filamentboot\FilamentbootSite\Http\Middleware\SiteRedirectMiddleware;
 use Filamentboot\FilamentbootSite\Models\SiteCase;
 use Filamentboot\FilamentbootSite\Models\SitePage;
 use Filamentboot\FilamentbootSite\Models\SiteProduct;
 use Filamentboot\FilamentbootSite\Models\SiteSolution;
 use Filamentboot\FilamentbootSite\Modules\News\Models\NewsArticle;
 use Filamentboot\FilamentbootSite\Observers\SearchPushObserver;
+use Filamentboot\FilamentbootSite\Observers\SitePageObserver;
 use Filamentboot\FilamentbootSite\Settings\SiteSettings;
+use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Contracts\View\View as ViewContract;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -115,7 +118,14 @@ class SiteServiceProvider extends ServiceProvider
 
             // 内容发布后主动推送搜索引擎（须后于路由：观察器要用 route() 生成 URL）
             $this->registerSearchPushObserver();
+
+            // 旧 URL 301 重定向（#18）：必须是全局中间件——旧 URL 已经匹配不到
+            // 任何路由，路由中间件跑不到
+            $this->registerRedirectMiddleware();
         }
+
+        // 页面版本快照（#15）：与前台无关，插件禁用时后台仍在用，故不放进上面的分支
+        $this->registerPageRevisionObserver();
 
         // 无论启用与否，均注册迁移与视图发布
         $this->registerMigrationsAndViews();
@@ -135,6 +145,34 @@ class SiteServiceProvider extends ServiceProvider
         foreach ([SiteCase::class, SiteSolution::class, SiteProduct::class, SitePage::class, NewsArticle::class] as $model) {
             $model::observe(SearchPushObserver::class);
         }
+    }
+
+    /**
+     * 注册旧 URL 重定向中间件（#18）
+     *
+     * pushMiddleware 而不是 prependMiddleware：让它排在宿主自己的全局中间件
+     * 之后，宿主若有维护模式、IP 黑名单一类的拦截，那些应当先生效。
+     *
+     * 中间件自身第一件事是挂载路径早退，所以「全局」的代价对宿主路由是零查询。
+     * 表未迁移时 DB 查询会抛，但 boot 阶段不查表——真正查表时表必然已存在
+     * （迁移没跑的项目连官网前台都打不开）。
+     */
+    protected function registerRedirectMiddleware(): void
+    {
+        $this->callAfterResolving(Kernel::class, function (Kernel $kernel): void {
+            $kernel->pushMiddleware(SiteRedirectMiddleware::class);
+        });
+    }
+
+    /**
+     * 注册页面版本快照观察器（#15）
+     *
+     * 走 Observer 而不是 Filament 钩子：钩子只覆盖后台表单，Observer 连 seeder、
+     * tinker、状态流转 Action 与未来的 API 一起覆盖。
+     */
+    protected function registerPageRevisionObserver(): void
+    {
+        SitePage::observe(SitePageObserver::class);
     }
 
     /**

@@ -9,8 +9,11 @@
  * $wire.set 第三参数 false 表示只改客户端、不发网络请求，值随下一次
  * submit 一并提交，避免每次点开面板都多打一个来回。
  * $store.contactPanel 用可选链取值——表单若脱离悬浮面板单独渲染，该 store 不存在。
+ *
+ * contact-form 区块内联渲染时 $tracksPanelSource 为 false，此处不挂 x-effect：
+ * 区块的 source 由内容编辑配好，页面上任何 CTA 点击都不该改写它（#13）。
  --}}
-<div x-data x-effect="$wire.set('source', $store.contactPanel?.source ?? '', false)">
+<div x-data @if($tracksPanelSource) x-effect="$wire.set('source', $store.contactPanel?.source ?? '', false)" @endif>
     @if($submitted)
         {{-- 成功状态：check-circle + 感谢文案 --}}
         <div class="flex flex-col items-center justify-center py-12 text-center">

@@ -63,6 +63,45 @@ enum PageStatus: string
     }
 
     /**
+     * 本状态允许直接转移到的目标状态（#14）
+     *
+     * 转移规则写在枚举上而不是 Filament Action 里，这样状态机能脱离 Filament
+     * 单测，且 seeder / tinker / 未来的 API 走同一套判据。
+     *
+     * 几条不明显的边：
+     * - draft 可直接到 published：小站没有强制审核流程的必要，
+     *   「只能提交审核」这条约束由 publish_site_page 权限点管，不由状态机管。
+     * - scheduled 不能回 review：定时发布是审核通过后的排期动作，
+     *   要改内容应先退回草稿。
+     * - published 不能直接到 scheduled：给已发布页面排个未来时间等于悄悄下线它，
+     *   要下线就走 archived。
+     * - archived 只能回 draft：归档页重新上线必须过一遍编辑，不能一键复活。
+     *
+     * @return list<self>
+     */
+    public function allowedTransitions(): array
+    {
+        return match ($this) {
+            self::DRAFT     => [self::REVIEW, self::SCHEDULED, self::PUBLISHED],
+            self::REVIEW    => [self::DRAFT, self::SCHEDULED, self::PUBLISHED],
+            self::SCHEDULED => [self::DRAFT, self::PUBLISHED],
+            self::PUBLISHED => [self::DRAFT, self::ARCHIVED],
+            self::ARCHIVED  => [self::DRAFT],
+        };
+    }
+
+    /**
+     * 能否从本状态转移到目标状态
+     *
+     * 同状态返回 false：转移到自己不是一个动作，后台 Action 据此隐藏，
+     * 避免出现「当前已是草稿」却还显示「退回草稿」按钮。
+     */
+    public function canTransitionTo(self $to): bool
+    {
+        return in_array($to, $this->allowedTransitions(), true);
+    }
+
+    /**
      * 键值对形式的全部选项（后台 Select / Filter 用）
      *
      * @return array<string, string>

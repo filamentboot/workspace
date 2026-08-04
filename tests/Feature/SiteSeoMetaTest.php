@@ -1,6 +1,7 @@
 <?php
 
 use Filamentboot\FilamentbootSite\Models\SiteCase;
+use Filamentboot\FilamentbootSite\Models\SitePage;
 use Filamentboot\FilamentbootSite\Models\SiteProduct;
 use Filamentboot\FilamentbootSite\Modules\News\Models\NewsArticle;
 use Filamentboot\FilamentbootSite\Settings\SiteSettings;
@@ -477,4 +478,117 @@ it('未发布案例不被前台展示', function () {
 
     $this->get('/cases/published-case-visible')->assertOk();
     $this->get('/cases/draft-case-should-not-appear')->assertNotFound();
+});
+
+/**
+ * 页面级 seo_og_image 进 og:image（#20）
+ *
+ * 此前 buildSeo() 只在 method_exists($record, 'ogImageUrl') 时取封面，
+ * 而 SitePage 不是 media-library 模型没有该方法，于是后台「SEO」Tab 里填的
+ * 「社交分享图 URL」从来没进过 og:image——填了等于没填。
+ */
+it('页面级 seo_og_image 进 og:image', function () {
+    $settings                   = app(SiteSettings::class);
+    $settings->og_default_image = 'https://cdn.test/global-default.jpg';
+    $settings->save();
+
+    SitePage::factory()->create([
+        'slug'         => 'og-image-page',
+        'seo_og_image' => 'https://cdn.test/page-specific.jpg',
+    ]);
+
+    $html = (string) $this->get('/og-image-page')->assertOk()->getContent();
+
+    expect($html)->toContain('https://cdn.test/page-specific.jpg')
+        // 页面级设置优先于全局默认
+        ->and($html)->not->toContain('global-default.jpg');
+});
+
+/**
+ * 页面未填 seo_og_image 时回退全局默认（#20）
+ */
+it('页面未填 og 图时回退全局默认', function () {
+    $settings                   = app(SiteSettings::class);
+    $settings->og_default_image = 'https://cdn.test/global-default.jpg';
+    $settings->save();
+
+    SitePage::factory()->create(['slug' => 'no-og-page', 'seo_og_image' => null]);
+
+    $html = (string) $this->get('/no-og-page')->assertOk()->getContent();
+
+    expect($html)->toContain('global-default.jpg');
+});
+
+/**
+ * media-library 模型的回退链不受 #20 改动影响
+ *
+ * seo_og_image 只在 site_pages 上（D-10-16 起页面无封面图，靠这一列承载分享图）；
+ * 案例 / 方案 / 产品走 HasCoverImage::ogImageUrl()。无封面时应回退全局默认，
+ * 这条确认新加的 seo_og_image 分支没把 media-library 那条路截断。
+ */
+it('无封面案例回退全局默认 og 图', function () {
+    $settings                   = app(SiteSettings::class);
+    $settings->og_default_image = 'https://cdn.test/global-default.jpg';
+    $settings->save();
+
+    SiteCase::factory()->create([
+        'slug'         => 'no-cover-case',
+        'published_at' => now()->subDay(),
+    ]);
+
+    $html = (string) $this->get('/cases/no-cover-case')->assertOk()->getContent();
+
+    expect($html)->toContain('global-default.jpg');
+});
+
+/**
+ * 资讯归档页 canonical 自指，不指向 /news（#20 复核项）
+ *
+ * 归档页有独立内容（某个月的文章列表），canonical 指向 /news 等于告诉
+ * 搜索引擎这些月份页都是资讯首页的副本，深层内容不会被索引。
+ */
+it('资讯归档页 canonical 自指', function () {
+    NewsArticle::factory()->create([
+        'slug'         => 'archive-canonical-article',
+        'published_at' => now()->subDays(2),
+    ]);
+
+    $month = now()->subDays(2)->format('m');
+    $year  = now()->subDays(2)->format('Y');
+
+    $html = (string) $this->get("/news/archive/{$year}/{$month}")->assertOk()->getContent();
+
+    preg_match('/<link rel="canonical" href="([^"]*)"/', $html, $matches);
+    $canonical = $matches[1] ?? '';
+
+    expect($canonical)->toContain("/news/archive/{$year}/{$month}")
+        ->and($canonical)->not->toEndWith('/news');
+});
+
+/**
+ * 资讯列表页的 category 参数保留在 canonical 里（#20 复核项）
+ *
+ * category 真正区分内容（不同分类是不同的文章集合），剥掉它会让所有分类页
+ * 的 canonical 都指向 /news，分类页从此不被索引。
+ */
+it('canonical 保留 category 参数', function () {
+    $html = (string) $this->get('/news?category=smart-home')->assertOk()->getContent();
+
+    preg_match('/<link rel="canonical" href="([^"]*)"/', $html, $matches);
+    $canonical = $matches[1] ?? '';
+
+    expect($canonical)->toContain('category=smart-home');
+});
+
+/**
+ * category 不在 canonical 剥离清单里（结构约束，防日后误加）
+ */
+it('category 不在 canonical 剥离清单中', function () {
+    $ignored = (array) config('filamentboot-site.seo.canonical_ignored_params', []);
+
+    expect($ignored)->not->toContain('category')
+        ->and($ignored)->not->toContain('page')
+        // 追踪参数必须在清单里
+        ->and($ignored)->toContain('utm_source')
+        ->and($ignored)->toContain('gclid');
 });

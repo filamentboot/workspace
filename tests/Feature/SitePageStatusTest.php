@@ -156,6 +156,10 @@ it('blocks 列以数组读写', function () {
 
 /**
  * 版本快照表可写入并关联页面与操作人，快照无 updated_at
+ *
+ * ⚠️ #15 之后 SitePageObserver 会在新建页面时自动写一条基线快照，
+ * 所以这里断言「关联里含这条手工快照」而不是断言总数——
+ * 总数属于观察器的行为，由 SitePageRevisionTest 覆盖。
  */
 it('版本快照可写入并关联页面与操作人', function () {
     $page   = SitePage::factory()->create(['slug' => 'revision-page']);
@@ -167,7 +171,7 @@ it('版本快照可写入并关联页面与操作人', function () {
         'created_by' => $author->getKey(),
     ]);
 
-    expect($page->refresh()->revisions)->toHaveCount(1)
+    expect($page->refresh()->revisions->pluck('id'))->toContain($revision->getKey())
         ->and($revision->payload['title_zh'])->toBe('快照标题')
         ->and($revision->author->getKey())->toBe($author->getKey())
         ->and($revision->getAttributes())->not->toHaveKey('updated_at');
@@ -175,15 +179,22 @@ it('版本快照可写入并关联页面与操作人', function () {
 
 /**
  * 页面删除时版本快照级联清理
+ *
+ * 计数用「删除前的实际条数」作基准，不写死数字：#15 的观察器让新建页面
+ * 自带一条基线快照，写死数字会随观察器行为变化而假红。
  */
 it('页面删除时版本快照级联清理', function () {
     $page = SitePage::factory()->create(['slug' => 'revision-cascade-page']);
 
     SitePageRevision::create(['page_id' => $page->getKey(), 'payload' => []]);
 
+    $before = SitePageRevision::count();
+
+    expect($before)->toBeGreaterThan(0);
+
     // 软删除不清理快照（内容还能恢复）
     $page->delete();
-    expect(SitePageRevision::count())->toBe(1);
+    expect(SitePageRevision::count())->toBe($before);
 
     // 彻底删除才级联
     $page->forceDelete();

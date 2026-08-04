@@ -7,8 +7,11 @@ use Filament\Panel;
 use Filamentboot\FilamentbootSite\Filament\Pages\SiteSettingsPage;
 use Filamentboot\FilamentbootSite\Filament\Resources\ContactMessageResource;
 use Filamentboot\FilamentbootSite\Filament\Resources\SiteCaseResource;
+use Filamentboot\FilamentbootSite\Filament\Resources\SiteMenuItemResource;
+use Filamentboot\FilamentbootSite\Filament\Resources\SiteMenuResource;
 use Filamentboot\FilamentbootSite\Filament\Resources\SitePageResource;
 use Filamentboot\FilamentbootSite\Filament\Resources\SiteProductResource;
+use Filamentboot\FilamentbootSite\Filament\Resources\SiteRedirectResource;
 use Filamentboot\FilamentbootSite\Filament\Resources\SiteSolutionResource;
 use Filamentboot\FilamentbootSite\Filament\Widgets\UnreadContactMessagesWidget;
 use Filamentboot\FilamentbootSite\Modules\News\Filament\NewsArticleResource;
@@ -50,6 +53,9 @@ class SitePlugin implements Plugin
      * - NewsArticleResource / NewsCategoryResource：资讯 CRUD
      * - SitePageResource：静态页面 CRUD（SITE-01）
      * - ContactMessageResource：询盘只读 + 状态流转（D-10-15）
+     * - SiteMenuResource / SiteMenuItemResource：前台导航与菜单项树（#17，
+     *   后者不进导航，入口是菜单列表的「管理菜单项」动作）
+     * - SiteRedirectResource：URL 重定向 CRUD（#18）
      * - UnreadContactMessagesWidget：未读询盘 StatsWidget（D-10-15）
      *
      * @param  Panel  $panel  当前 Filament 面板实例
@@ -66,6 +72,9 @@ class SitePlugin implements Plugin
                 NewsCategoryResource::class,
                 SitePageResource::class,
                 ContactMessageResource::class,
+                SiteMenuResource::class,
+                SiteMenuItemResource::class,
+                SiteRedirectResource::class,
             ])
             ->widgets([
                 UnreadContactMessagesWidget::class,
