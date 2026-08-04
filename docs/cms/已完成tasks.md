@@ -4,7 +4,7 @@
 >
 > 还没做的见 [未完成 tasks](未完成tasks.md)。
 >
-> 更新时间：2026-08-04（第五轮阶段 2 收口后）
+> 更新时间：2026-08-04（第 7 轮收口后；§二 那批「暂不排期的缺口」已全部交付）
 >
 > 上游规划：[基于装修网站官网优化 CMS](基于装修网站官网优化cms.md)
 
@@ -18,17 +18,20 @@
 | 第 2 轮 | B2 分页 canonical、A 组线索链路、#11 页面数据模型、#12 区块契约 | `1e7aca4` `8278942` `3b0ebc8` `bf4ca87` `88c8be0` |
 | 第 3 轮 | 内容承载扩容 + 资讯模块 + 富文本渲染修复 + CC0 封面图 | `f6a49bd`…`a42c959`（10 个提交） |
 | 第 4 轮 | B 组 SEO 基建、C 组转化与防刷 | `73f927b` `ee3fbfb` |
-| 第 5 轮 | 阶段 2 收口：#13–#21（区块出口、发布流转、版本回滚、草稿预览、导航、301、三层角色、SEO） | 未提交 |
+| 第 5 轮 | 阶段 2 收口：#13–#21（区块出口、发布流转、版本回滚、草稿预览、导航、301、三层角色、SEO） | `02e87a0` |
+| 第 6 轮 | 第五轮遗留 #22–#26 收口（含一个真 bug）+ 阶段 3 目录重构 #27 + 主题契约 #28 + 缓存边界 #29 | 未提交 |
+| 第 7 轮 | 原「暂不排期的缺口」全清：相关内容推荐、客服脚本位与地图区块、站内搜索、可配置表单字段、资料索取 | 未提交 |
 
 当前累计验证状态：
 
 ```
-composer test        717 通过 / 2585 断言
+composer test        881 通过 / 3092 断言
 composer pint:test   通过
 composer phpstan     0 告警（根项目，扫 app + database）
 主包 composer test    83 通过 / 250 断言
 站点包元数据测试      9 通过
-站点包 level 6       10 个存量告警（见文末「已知存量问题」，第 5 轮未新增）
+站点包 level 6       0 告警（第 6 轮清零；⚠️ 插件禁用时会多报 13 条，见文末）
+Playwright uat-phase12  真机 8/8（第 6 轮首次真机跑通）
 ```
 
 ---
@@ -245,7 +248,11 @@ composer phpstan     0 告警（根项目，扫 app + database）
 
 ## 第 5 轮 · 阶段 2 收口（#13–#21）
 
-未提交（用户未要求 commit）。验证：717 通过 / 2585 断言（本轮前 561）；Pint 通过；根 PHPStan 0；站点包 level 6 仍是 10 个存量告警；主包 83；站点包元数据 9。
+提交 `02e87a0`（78 个文件，+6868 / -300），未 push。验证：717 通过 / 2585 断言（本轮前 561）；Pint 通过；根 PHPStan 0；站点包 level 6 仍是 10 个存量告警；主包 83；站点包元数据 9。
+
+> ⚠️ **后台验证全部经 `Livewire::test()`，未经过真实面板**——开发库的 `plugins` 表缺
+> `filamentboot-site` 行，官网资源路由从头到尾是 0 条（详见未完成 tasks 的 #22）。
+> 本轮遗留 5 项，见本节末尾。
 
 **本轮把 CMS 第一次做到可用**：#11 的 `blocks` 列与 #12 的区块契约此前**没有任何出口**——七个区块类的唯一调用方是 `SiteServiceProvider::registerBlockRegistry()`，既没有前台视图也没有后台表单。同样，版本快照表 / 前台菜单表 / 重定向表三张表建好后一直零读写。
 
@@ -382,25 +389,351 @@ E2E：`tests/e2e/uat-phase12.spec.cjs`（建页 → 拖区块 → 提交审核 �
 
 **无新建表迁移**：四张表都在 #11 建好了，所以 README 的「16 张内容表」计数不变，`SitePackageMetadataTest` 仍是 9 通过。
 
+### ⚠️ 本轮遗留（#22–#26，**已于第 6 轮全部收口**）
+
+收工复盘查出 5 项。保留这张表是为了别让上面那些小节读起来像当时就全绿了——**#17 的「建/改菜单项」在第 5 轮结束时其实是坏的**，第 6 轮才修好。回查 #17 的实现请连着第 6 轮的 #23 一起看。
+
+| # | 遗留 | 严重度 |
+|---|---|---|
+| #22 | 开发库 `plugins` 表缺 `filamentboot-site` 行 → 官网资源路由 0 条、前台 404。本轮所有后台验证因此只经 `Livewire::test()` | 高（阻塞一切手验） |
+| #23 | `SiteMenuItemTree` 的 create／edit action 收不到表单数据（三种标准测试手法全失败），#17 的建/改菜单项**可能真的不能用**；已提交的测试只覆盖了 `collapseTarget()`／`expandTarget()` 纯函数与树的读取过滤，**没有一条真正建出过菜单项** | 高 |
+| #24 | `tests/e2e/uat-phase12.spec.cjs` 从未真机跑过，选择器按惯例猜；且头注释指向未提交的 `playwright.config.cjs`，clone 下来跑不了 | 中 |
+| #25 | `RevisionsRelationManager` 对比表的 `HtmlString` 渲染无断言（`Text` 接受 `Htmlable`、`e()` 不转义，理论可行但没看过实际输出） | 低 |
+| #26 | 站点包 10 个 PHPStan 存量告警（非本轮引入，可选） | 低 |
+
+> 第 6 轮逐条收口结果：#22 真因是孤儿行 + 24h 缓存；**#23 确认是真 bug 并已修**；#24 选择器全部重写；#25 补了断言；#26 直接清到 0。详见下一节。
+
+---
+
+## 第 6 轮 · 遗留收口 + 阶段 3 + 阶段 4（#22–#29）
+
+未提交。验证：**766 通过 / 2795 断言**（本轮前 717 / 2585）；Pint 通过；根 PHPStan 0；
+**站点包 PHPStan 0**（本轮前记载为 10）；主包 83；站点包元数据 9；
+**Playwright `uat-phase12` 真机 8/8 全绿**——这是第一次有后台交互经过真实浏览器。
+
+至此**阶段 1–4 全部交付**（#30 用户明确不做）。
+
+**本轮的真正价值是把「验证过」这件事落实了。** 第 5 轮所有后台验证只经 `Livewire::test()`，
+而 #22 一恢复环境就露出两个 `Livewire::test()` 永远看不到的问题：菜单项弹窗因 JS 错误
+根本打不开，两个新资源在侧边栏里隐身。
+
+### ✅ #22 · 恢复插件启用状态
+
+`plugins` 表只有一行 `corporate-site-suite`（改名取消前的孤儿行），没有 `filamentboot-site`，
+所以 `SitePlugin` 没进面板、前台路由整份不加载。被 `pluginIsEnabled()` 外面那个
+`Cache::remember(..., 24h)` 掩盖了很久。
+
+- `php artisan plugin:scan` 一次建出 **9** 行（除官网插件外还有主包与 5 个编辑器/存储插件，全部 `is_enabled=0`）
+- 走 `PluginManager::enable()` 而不是直接 update：它会连带 `Cache::forget('plugins.enabled_list')` 与 `{slug}:is_enabled`
+- 孤儿行 `corporate-site-suite` 已按用户决定删除
+- 顺带补种 `SitePermissionSeeder` / `SiteMenuSeeder` / `SiteRoleSeeder`——开发库里 `manage_site_menu` 等权限点根本不存在（超管靠 `Gate::before` 绕过，所以一直没暴露）
+
+⚠️ **`plugin:scan` 写进 `plugins.post_install_data` 的是 `vendor/composer/installed.json` 里的旧元数据**
+（`post_install.seeders` 只有已删除的 `SiteSeeder`，描述还写着「五类内容、双语」）。
+path 仓库的 installed.json 不随包内 composer.json 自动刷新。这是 #30 的隐患。
+
+### ✅ #23 · 菜单项树表单绑定（**第 5 轮的真 bug，已修**）
+
+真机点「New 菜单项」时浏览器控制台报：
+
+```
+Livewire Entangle Error: Livewire property ['type'] cannot be found on component: [...SiteMenuItemTree]
+```
+
+**根因**：基类 `SolutionForest\FilamentTree\Resources\Pages\TreePage::getFormSchema()` 的实现是
+`static::getResource()::form(Schema::make($this))->getComponents()`——先把组件绑到一个临时的、
+statePath 为空的 Schema 上，Filament 5 在那次解析里就把每个字段的**绝对状态路径缓存成了裸字段名**。
+之后 `CreateAction` 用 `mountedActions.0.data` 重新收容这批组件，缓存值不会重算，
+前端 `@entangle` 去找页面上并不存在的 Livewire 属性，弹窗连显示都完不成。
+
+**修法**（落点两处，共约 20 行）：
+
+- `SiteMenuItemResource::formComponents()`：把组件列表从 `form()` 里拆出来，返回**没被容器绑过**的新实例；`form()` 变成 `$schema->components(static::formComponents())`
+- `SiteMenuItemTree::getFormSchema()`：覆写基类，直接返回 `SiteMenuItemResource::formComponents()`，让动作自己的 Schema 成为这批组件的第一个容器
+
+真机复验：新建落库（`menu_id/parent_id/type/target` 全对）、编辑弹窗回填 `#probe`、改完保存生效、前台导航同步出现。
+
+测试（`tests/Feature/SiteMenuResourcePageTest.php` +4 条）：真正建出菜单项并断言 `menu_id`/`target`；
+`?menu=` 归属；编辑回填与写回；**状态路径回归护栏**。
+
+> ⚠️ **护栏不能断言渲染的 HTML**：Filament 5 的模态体是客户端惰性渲染的，`Livewire::test()`
+> 拿到的 `wire:partial="action-modals"` 分区永远是空的，`assertSeeHtml` 会恒假。
+> 改为取 `getSchema('mountedActionSchema0')` 断言字段的绝对状态路径。同一个坑在 #25 上又踩了一次。
+
+> ⚠️ **主包的 `Filamentboot\Filament\Resources\Menus\Pages\MenuTree` 同样没覆写 `getFormSchema()`，
+> 应当有同一个 bug**（后台「菜单规则」的建/改弹窗）。按仓库约定「无关问题提及但不处理」未修——
+> 它属于主包，另一条任务链。修法照上面抄即可。
+
+### ✅ #23 顺带 · 两个资源在侧边栏里隐身
+
+后台侧边栏由 `AdminNavigationBuilder` 从主包 `menus` 表构建，Filament 基于 Resource 静态属性
+自动生成导航的机制被 Panel 的 `->navigation()` 回调整体旁路。#17 的「导航菜单」与 #18 的「重定向」
+交付时没在 `SiteMenuSeeder` 里登记，**只能靠直链访问**。
+
+- `SiteMenuSeeder::menus()` 补两行（权限点是自定义的 `manage_site_menu` / `manage_site_redirect`，不走 BasePolicy 推导）
+- `tests/Feature/SitePluginIntegrationTest.php` 加**结构性护栏**：遍历 `SitePlugin` 注册的资源，凡 `shouldRegisterNavigation()` 为真就必须在 `menus` 表有 `{routeBaseName}.index` 行。以后新增资源忘了改种子就会红。
+
+### ✅ #24 · E2E 真机跑通
+
+`tests/e2e/uat-phase12.spec.cjs` 从未真机跑过，选择器基本全错。校准后 8/8 绿（含 #25 那条）。
+
+- 新增**已跟踪**的 `playwright.config.uat.cjs`（`testMatch: 'uat-*.spec.cjs'` + `globalSetup` + `workers: 1`）。此前 spec 头注释指向未跟踪的 `playwright.config.cjs`；仓库里已跟踪的是 `playwright.config.site.cjs`，但它只匹配 `site-*` 且没有登录 setup
+- **面板语言是 en**：Filament 自带文案是 `Create` / `Save changes` / `Confirm` / `Add to :label` / `New :modelLabel`，只有本包自己写的动作标签是中文。原 spec 通篇按中文写
+- **表单控件 id 是 `form.<path>`**，`wire:model` 才是 `data.<path>`。原 spec 写 `input[id="data.slug"]`，一个都选不中
+- `native(false)` 的 Select 不是 `<select>`：触发器 `.fi-select-input-btn`，选项 `li[role=option][data-value=…]`
+- 模态里的提交必须限定在 `.fi-modal-window` 内——树页工具栏也有一个 `Save`（保存拖拽顺序）
+- Tabs 的 ARIA role 是 `tab` 不是 `button`
+- 重定向列表那条断言原来是**假绿**：`from_path` 存的是 `normalizePath()` 去掉两端斜杠的值，列上用 `->prefix('/')` 补回来；模糊匹配 `/${slug}` 会命中 `to_path` 那格（`/旧slug-moved`），整行缺失也照样过。改成带斜杠的精确匹配
+
+### ✅ #25 · 版本对比 Modal 渲染断言
+
+`tests/Feature/SitePageResourcePageTest.php` +2 条：`mountTableAction('view', $revision)` 后取
+`getSchema('mountedActionSchema0')`，断言渲染出的 `Text` 组件含 `<table` 而非 `&lt;table`、
+含三列表头与新旧两侧的值、不含未变字段；另一条覆盖「与当前一致」时给一句话而非空表格。
+E2E 里另有一条在真浏览器里断言表头是真的 `<th>`。
+
+> ⚠️ E2E 那条要点**最后一行**的「查看」：列表按 id 倒序，第一行是最新快照，它与当前内容一致，
+> 点开只会得到「该版本与当前内容一致」，看不到表格。
+
+### ✅ #26 · 站点包 PHPStan 清零（23 → 0）
+
+- `getEloquentQuery()` ×5：`Filament\Resources\Resource` 是泛型类，子类补 `@extends \Filament\Resources\Resource<SiteCase>`。**不能**改成从具体模型 `query()`——那会丢掉父类的 tenant 作用域处理
+- ⚠️ **Pint 的 `phpdoc_types` 会把 `@extends Resource<X>` 里的 `Resource` 小写成 `resource`**（当成 PHP 伪类型）。虽然 PHP 类名大小写不敏感、PHPStan 仍能解析，但形式很脆——写**全限定名** `\Filament\Resources\Resource<X>` 两边就不打架了
+- `newsIndex` 的 `published()`：新增 `NewsCategory::publishedArticles()` 关系，`withCount('publishedArticles as articles_count')`。给 `articles` 套闭包时参数只能被推成 `Builder<Model>`，而把判据在闭包里重写一遍等于让「已发布」有两份定义
+- `newsArchiveMonths()` 返回类型：键写 `array-key`（`groupBy()` 的键在类型系统里一律 `int|string`），值写 `int<0, max>`（Collection 的 TValue 不协变）
+- `HasFactory` 泛型 ×2：新增 `ContactMessageFactory` / `SiteTagFactory` + 模型的 `newFactory()`。比删 trait 好——删了是拿掉下游的公开 API
+- 13 条 `view-string` 随 #22 一起消失（见上一节）
+
+### ✅ #27 · 目录重构 + 删 is_published
+
+48 个文件 `git mv`（history 保住），171 个引用点跟随。**只移动不改名。**
+
+```
+src/Cms/          Models Enums Filament/Resources Policies Observers Routing Themes
+                  （Blocks / Rendering / Services 原本就在位）
+src/Modules/Corporate/  Cases/{Models,Filament,Policies,Enums}  Products/…  Solutions/…  Home/
+src/Http/         Controllers Livewire Middleware        ← 留顶层
+src/{Models,Policies,Filament,Services,…}/               ← 询盘、标签、设置页等跨模块件留顶层
+```
+
+- `Cms/Routing/SiteRedirectMiddleware`（301 是路由层能力）、`Cms/Themes/ThemeAsset`（从 `Support/` 搬来，给 #28 腾位置）
+- `Modules/Corporate/Home/HomeSectionProvider`：首页聚合从 `SiteFrontController::home()` 抽出。宿主 `bind()` 掉这个类就能整体换掉首页内容源，控制器与路由都不用动（有测试锁这个替换点真的生效）
+- 删 `site_pages.is_published`（迁移 `2026_08_04_100001_…`，`down()` 会按 status 重新派生）+ 模型的 saving 镜像钩子、`casts`、`@property`。**`site_products.is_published` 是产品自己的发布列，没动**；`SearchPushObserver::PUBLISH_COLUMNS` 是跨模型并集，也保留该项
+
+⚠️ **PHPStan 抓出 36 处断链，全是一类问题**：`SiteTag` 与三个内容模型原本同处 `Models` 命名空间，
+互相引用不带 `use`，拆开后静默失效。补 6 条导入解决。**这类断链 `php -l` 查不出来，
+只有静态分析或运行到那行才会暴露**——搬动同命名空间的一组类之后必须跑一遍 PHPStan。
+
+⚠️ **Policy 约定发现**逐个核对过：`Cms\Models\SitePage` → `Cms\Policies\SitePagePolicy`、
+`Modules\Corporate\Cases\Models\SiteCase` → `…\Cases\Policies\SiteCasePolicy`，10 个模型全部解析到位
+（Laravel 逐级回退 `\Policies\` 前缀，各模块保持 `Models/` 与 `Policies/` 同级即可）。
+权限点名取自 `BasePolicy::resourceName()` 的**短类名**，不受移动影响。
+
+### ✅ #28 · 主题契约与切换预检查
+
+- **`Cms/Themes/ThemeContract`** + 每主题 `resources/views/themes/{theme}/theme.php` 清单（`label` / `templates` / `blocks` / `features`）
+- **`ThemeManifest`**：清单缺失时**扫目录推断**（`blocks/*.blade.php`、`pages/templates/*.blade.php`），但 `features` 一律按不支持——文件系统看不出一个 nav 有没有下拉版式。宿主发布的覆盖优先，与视图解析同源
+- **`ThemeSwitchCheck`**：算出切到目标主题后哪些**已发布**页面会掉版式/区块。与 `BlockRenderer` 的运行时兜底是两回事，那个是事后降级（缺视图跳过 + warning），页面上悄悄少一块没人收到通知
+- **设置页门禁**：`active_theme` 改 `live()`，下面挂受影响页面清单与「仍要切换」确认开关；未勾就在 `mutateFormDataBeforeSave` 里 `throw new Halt` ——**整份设置都不保存**，而不是只忽略主题这一项
+  > 没用 `requiresConfirmation()` 的模态：`SettingsPage::getSaveFormAction()` 走的是原生表单 `submit()`，绕过动作模态机制。而且把受影响页面**在点保存之前**就列出来，比弹窗更有用
+- **放开二级导航**：`SiteMenuItemTree::$maxDepth` 1 → 2；`MenuResolver` 改返回嵌套（每项带 `children`），缓存里存**嵌套**结构、摊平放读取侧做（形状取决于主题，而嵌套本身与主题无关）
+  - 清单未声明 `nested_menu` 时**摊平而不是丢弃**子项——丢弃等于后台配好的入口在前台静默消失
+  - 父项解析不出地址时子项一并不渲染：把子项提上来会改变导航语义
+  - 页脚改用新增的 `resolveFlat()`：页脚是一列快捷链接，不该跟着主题的 nested_menu 变形状
+  - 两套主题的 `components/nav.blade.php` 各加一份下拉版式（桌面 hover+点击开合、移动端缩进平铺）。父项本身仍可点——既是栏目页又有子项的入口若只能开合，桌面端就进不去那一页
+- **`landing` 落地页版式**：config 加一项，两套主题各一份 `pages/templates/landing.blade.php`。**刻意不 extends `layouts.app`**（那份带完整导航与页脚），改 extends `layouts.base` 自搭极简头部 + 法定信息页脚；仍 include `floating-contact`，因为询盘面板本体在那里
+- 新增 `tests/Feature/SiteThemeContractTest.php`（15 条）：清单与实际视图文件**对账**、无清单推断、预检查列页面/忽略草稿、设置页拒绝与放行、嵌套/摊平/页脚三种解析、父项不可用
+
+> ⚠️ 别复用 `SiteContentRenderTest.php` 里的 `dataset('themes')`：那份定义只在该文件被加载时注册，
+> 单跑另一个文件时不存在，`->with('themes')` 会让 Pest 报 failed 但列不出失败用例。用行内数据集。
+
+### ✅ #29 · 缓存边界：公开页零 session
+
+**实测结果**：内容页从 `Cache-Control: no-store, private` + 两个 `Set-Cookie`
+（`XSRF-TOKEN` / `filamentboot-session`）变成 **`Cache-Control: public, max-age=600`，零 Set-Cookie**。
+
+开工前先撞上一个拦路点，是这条真正的难点：
+
+> **公开页的 Alpine 原来是 Livewire 注入的 `livewire.js` 捎带进来的**，而那个 script 标签带
+> `data-csrf`，渲染时调 `csrf_token()` → 起 session。也就是说「公开页零 Livewire」一旦做完，
+> Alpine 随之消失，悬浮询盘面板、移动端抽屉、二级导航下拉、图集轮播会一起失效。
+> 包自己的 `resources/` 下没有 js，`vite.config.js` 的 input 只有两份主题 CSS，
+> `node_modules` 里也没有 `alpinejs`。
+
+用户在三条路（npm 依赖 + Vite 入口 / vendor 静态产物 / CDN）里选了第一条。
+
+**Alpine 的独立交付**
+
+- 新增 `packages/filamentboot-site/resources/js/site.js`（`import Alpine` → `window.Alpine` → `Alpine.start()`）
+- `ThemeAsset::viteEntries($theme)`：返回主题 CSS + 前台脚本两个入口，布局改用它；
+  脚本候选路径在 config 的 `assets.script_entries`（与 CSS 同一套「真实安装 / 宿主发布 / monorepo 符号链接」三形态机制）
+- `SiteServiceProvider` 增加 `resources/js` 的发布，落在 `resources/js/vendor/filamentboot-site/`
+- 宿主 `vite.config.js` 的 input 加一项，`npm i -D alpinejs`（3.15.12），构建产物 45.25 kB / gzip 16.11 kB
+- ⚠️ **各处的 `alpine:init` 监听器必须先注册**（`contact-panel-store`、新增的 `attribution-store` 都在 `<head>` 的内联 script 里），而 `@vite` 产出的是 `type="module"`（天然 defer），顺序有保证
+
+**询盘改无状态端点**
+
+- `Services\ContactSubmission`：唯一一份「收到一次询盘该做什么」——机器人识别 → IP 限流 → 校验 → 入库 → 通知。`WithRateLimiting` 是 Livewire 专用，换成 `RateLimiter`
+- `Enums\ContactSubmissionResult`（created / discarded / throttled）；校验失败仍走 `ValidationException`
+- `Http\Controllers\ContactSubmissionController` + 路由 `POST /contact-submissions`，**不挂 `web` 组**（没有 session 就发不出 CSRF token），另挂 `throttle:30,1` 做粗粒度兜底
+- 控制器**自己拼 JSON**（`{ok, errors?}`）而不依赖异常渲染器：宿主的 `bootstrap/app.php` 可能（本仓库就）把 `ValidationException` 改成了自己的 API 信封，包内脚本不能假设那个形状
+- `shared/components/contact-form.blade.php` 改纯 Alpine + `fetch`；提交成功后 `window.dispatchEvent(new Event('site-contact-submitted'))`，A3 的统计监听不变
+
+**归因搬客户端**
+
+- `CaptureVisitorAttribution` 中间件退役（类已删）；新增 `shared/components/attribution-store.blade.php`：Alpine store + localStorage，**只在 key 不存在时写一次**（首触语义不变），localStorage 不可用时降级为内存
+- 服务端从**请求体**逐键取白名单字段（`landing_url` / `referer` / 5 个 `utm_*`），按列宽截断。⚠️ 不整段展开——`ContactMessage` 的 `$guarded` 为空，摊进 `create()` 等于给任意请求字段开批量赋值入口（有测试锁这条）
+- 真机验过：带外部 referer + UTM 落地 → 跳页 → 打开面板提交，`source=nav-desktop`、`utm_source=baidu`、`landing_url` 与 `referer` 全部正确入库
+
+**`case-filter` 改查询串**
+
+- 筛选逻辑进 `SiteFrontController::caseIndex()`，`enumFilter()` 按 `CaseStyle` / `HouseType` 白名单过滤（不在白名单就当没传，避免 `?style=<script>` 渲染出「筛选中：…」的空结果页）
+- 兼容旧的 `?houseType=`：Livewire `#[Url]` 用驼峰，改查询串后规范是 `house_type`，但已收录的旧地址不该静默丢掉筛选条件
+- ⚠️ 原先筛选 pills + 卡片网格 + 分页整块在 `resources/views/livewire/case-filter.blade.php` 里，是一份**跨主题共享的视觉视图**，本来就违反「双主题完全独立」。这次拆成两套主题各一份，顺带修掉
+
+**响应头与中间件分档**
+
+- `Cms\Routing\SiteCacheHeaders`：只在「安全方法 + 200 + **响应没有 Cookie**」时打 `public, max-age`。第三个条件最关键——把带会话 Cookie 的响应标成公共可缓存，共享缓存会把一个访客的会话发给另一个
+- 404 与 301 不缓存：一次误发布导致的 404 被 CDN 缓存住，等于把事故延长到缓存过期
+- 内容路由中间件从 `web` 换成 `[SubstituteBindings, SiteCacheHeaders]`；**`/preview/{page}` 单独留在 `web` 组**，它靠 `auth('admin')` 判权
+
+**退役的东西**（0.5.x 的公开 API 移除，下游若用过要注意）
+
+- `Http\Livewire\ContactForm` 与 `Http\Livewire\CaseFilter` 两个组件及其视图
+- `Http\Middleware\CaptureVisitorAttribution`
+- `SiteServiceProvider::registerLivewireComponents()`——包内已无 Livewire 组件，命名空间不再注册。这让「公开页零 Livewire」从约定变成结构事实
+- 连带改了 10 个测试文件 `beforeEach` 里的反射方法列表
+
+**取舍：耗时校验降级**
+
+`MIN_FILL_SECONDS = 3` 原先靠 Livewire 对 `renderedAt` 的 checksum 保护。整页缓存之后服务端渲染的
+时间戳会被冻结在缓存里（缓存 10 分钟，所有人拿到的都是 10 分钟前的值），这道校验在服务端已无从锚定。
+改为客户端上报「表单可交互到提交」的秒数，服务端只做宽松下限判断——**它降级为可被脚本伪造的
+低成本启发式**，蜜罐与 IP 限流仍是真防线。这是「整页缓存」与「服务端可信时间戳」的固有矛盾。
+
+**测试**
+
+- `ContactFormTest` 整份重写（17 条）：改测无状态端点，`humanPace()` 辅助随之删除（耗时改由请求体给）
+- `SiteAttributionTest` 重写（7 条）：改验归因脚本注入 + 首触语义写在里面 + **服务端不再往 session 写归因**（回归护栏）+ 中间件类已删
+- 新增 `SiteCacheBoundaryTest`（14 条）：内容页无 Set-Cookie / 无 `wire:snapshot` / 带 `public max-age`（7 条路径逐一）、带筛选参数的列表页同样可缓存、404 与 301 不缓存、**草稿预览带 session 且绝不打 public**（若被标 public，草稿会经共享缓存泄露给公众）、签名预览可用、`public_max_age=0` 时不打头
+
+---
+
+## 第 7 轮 · 原「暂不排期的缺口」全清
+
+未提交。`未完成tasks.md` §二 那张表里的 7 条，其中 **2 条其实已在第 6 轮交付**（落地页极简版式、二级导航——#28 做的，文档忘了挪），剩下 5 条本轮全做完。
+
+> 本轮所有前台可见改动都遵守 §0.3 第 1 条（双主题各一份完整副本）与第 5 条（零 Livewire、零 session）。
+
+### ✅ 相关内容推荐（案例 / 方案 / 产品详情页底部）
+
+- 新增 `src/Cms/Services/RelatedContent.php`：两趟查询——第一趟命中**任一**亲和维度（OR），第二趟不够 `LIMIT`（3）时用最新补齐并排除已出现的
+- 亲和维度由调用方传，各类不同：案例 `style` / `house_type` / `category_id`，产品 `category_id` / `brand`，方案只有标签（服务自己从记录上读 `tags`）
+- 查询由**调用方用具体模型类构造并传入**（已套 `published()` 与排序）。服务不自己调 `published()`：那是局部作用域，在泛型 Builder 上静态分析解析不出来，且各模型判据不同（产品用 `is_published` 布尔列，其余用 `published_at`）
+- 两套主题 6 个视图各加一段：`cases/show`（复用 `case-card`）、`products/show`（复用 `product-card`）、`solutions/show`（方案没有卡片组件，各主题按自己列表页的版式压缩一版）
+- 新增 `tests/Feature/SiteRelatedContentTest.php`（17 条）
+
+**⚠️ 资讯刻意不用这个服务。** 一开始把 `newsShow()` 也并了过来，`SiteNewsTest` 的「详情页相关阅读取同分类且排除自身」立刻红——那条测试锁的是「相关阅读不跨分类补齐」，是已落地的产品决定。已回退，并在 `newsShow()` 与服务类注释里双向写明分歧理由：**相关阅读是阅读推荐，跨分类会误导；三类详情页底部是浏览出口，断头路比不够精准更糟。**
+
+### ✅ 在线客服脚本位 + 联系页地图嵌入
+
+**客服脚本位**（`live_chat_enabled` + `live_chat_script` 两个设置项 + 迁移 `2026_08_04_200001` + `shared/components/live-chat.blade.php`）
+
+- 开关与代码分开是全部理由所在：换供应商、临时无人值守时运营要能一键停掉，而不是把一大段脚本剪出去存别处
+- 与 `head_scripts` 同一套信任模型（原样输出、不过 purifier、仅 `manage_site_settings` 可改、变更写操作日志）
+- `SiteSettingsPage` 的高风险字段清单抽成 `SCRIPT_FIELDS` 常量：快照与审计两处都读它，分开写死迟早漏一个，漏掉的那个就是「改了前台执行的代码但日志里查不到」
+- 后台字段旁明示：移动端底部已有操作条，多数客服气泡会与它重叠
+
+**地图区块**（`map`，第 8 个内置区块）
+
+- 作者只填**嵌入地址**，`<iframe>` 由视图自己拼。不接受整段 iframe HTML——那等于在页面里开任意标签入口，而 iframe 能加载任何东西并全屏覆盖页面
+- 新增 `src/Support/MapEmbed.php`：只放行 https + host **精确**命中 `config` 白名单。用精确匹配而不是「以某域名结尾」：后者会被 `map.baidu.com.evil.com` 绕过，写 `.baidu.com` 又把整棵域名树放进来
+- 只放行 https 的理由：http 的 iframe 在 https 页面上被当混合内容直接拦掉，放行等于放行一个必然不显示的地图，作者只会以为是我们的 bug
+- 保存时就拦（区块 `rules()` 里一条闭包规则）+ 渲染时再过一遍（库里可能躺着白名单收紧之前存的地址）
+- 文字地址不是地图的说明而是它的**降级路径**：拦截插件、企业网络策略与爬虫都会丢掉 iframe
+- 顺手改掉 `analytics.blade.php` 里一句过期注释（还写着事件由 Livewire 的 `ContactForm::submit()` 转发，#29 之后是 Alpine 直接 `dispatchEvent`）
+
+### ✅ 站内搜索（前台跨模块）
+
+- 新增 `src/Cms/Services/SiteSearch.php` + `search()` 控制器动作 + 路由 `/search`（已列入 `reserved_slugs`）+ 两套主题各一份 `search.blade.php` + 两套主题导航（桌面图标 + 抽屉条目）
+- 五类内容各查一次、各限 5 条，多取一条判「还有更多」比再发一次 `count()` 便宜
+- 表单是 `method="get"`：**不能**改 POST 或加 `@csrf`，那会起 session 让整页缓存静默失效；GET 也让每个关键词各自成为可缓存、可分享的 URL
+- **`noindex, follow`**：搜索页 URL 空间无限（任意关键词 × 组合），被收录会产出成千上万低价值页面稀释整站权重。canonical 一并关掉——已经 noindex，再自指是矛盾信号
+- LIKE 转义符用 `!` 而不是默认的反斜杠：`ESCAPE '\'` 在 MySQL 里是未闭合字符串，写成两个反斜杠在 SQLite / Postgres 里又变成两个字符。换一个不会被任何一方二次处理的字符，三种驱动行为一致
+- 摘要不做关键词高亮：高亮要输出 `<mark>` 就得让视图 `{!! !!}`，而那段文本混着作者写的富文本
+- 无结果页给一个登记过的询盘出口（`search-empty`），不做成死路
+- 新增 `tests/Feature/SiteSearchTest.php`（26 条）
+
+**⚠️ 区块正文搜不到，这是存储格式决定的。** `site_pages.blocks` 是 JSON 列，Eloquent 存入时非 ASCII 字符被 `json_encode` 转成 Unicode 转义序列（实测「中文」落库后是 `u4e2d` / `u6587` 那种六字符转义写法），`LIKE '%中文%'` 永远不可能命中。页面只按 `title_zh` / `content_zh` / `seo_description` 匹配——纯区块搭的页面只能靠标题被搜到。要覆盖区块正文得加一列由观察器维护的 `search_text`（渲染后的纯文本），是独立的一次改动。
+
+也**没有相关度排序**：排序按各类型自己的自然顺序。要按相关度排必须先有全文索引的评分（中文还需 `WITH PARSER ngram`）。
+
+### ✅ 表单字段可配置（不同活动问不同问题）
+
+- `ContactFormBlock` 加 `fields` Repeater（最多 6 个，类型 text / textarea / select）+ `normalizedFields()`（解析「一行一个」选项、丢弃重名与空下拉、截断上限）
+- 答案落 `site_contact_messages.extra`（迁移 `2026_08_04_200002`），后台详情（`KeyValueEntry`）、CSV 导出、通知邮件三处都能看到
+- 提交侧只做**边界**约束（`MAX_EXTRA_ANSWERS` / `EXTRA_LABEL_LENGTH` / `EXTRA_VALUE_LENGTH`、非标量丢弃、控制字符清除）
+- 新增 `tests/Feature/SiteContactExtraFieldsTest.php`（22 条）
+
+**⚠️ 必填只在浏览器里生效，这是有意的取舍。** 端点是无状态的（#29），收到的只是一份键值对，无从知道是哪份区块配置渲染出来的表单——除非把配置连签名一起随请求发出，而那要么引入随机数（毁掉整页缓存的确定性），要么再加一套 HMAC 校验。绕过必填的代价是收到一条答得不全的线索，不是数据被污染；而每在提交链路上多加一个环节，就多一处可能静默丢线索的地方。同 #29 对耗时校验的处理方式。
+
+**⚠️ 开工后才发现：MySQL 的 JSON 对象不保留键顺序。** 最初存 `{问题: 答案}` 映射，测试直接红——两个答案读出来顺序被重排了（MySQL 规范化 JSON 对象）。而答案顺序就是表单上问题的先后，属于有意义的信息。改存**有序列表 `[{label, value}]`**（JSON 数组的顺序 MySQL 会保留），展示层再拼回映射。`ContactMessage::$extra` 的 `@property` 刻意写宽成 `array<int, mixed>`（同 `SitePage::$blocks`）：精确形状只在写入侧保证，读取侧拿到的是 JSON 列的实际内容，seeder / tinker / 历史行都不受那条写入路径约束。
+
+### ✅ 资料索取 / gated content（手册换联系方式）
+
+第 9 个内置区块 `gated-download` + `src/Cms/Services/GatedAssetRegistry.php` + `src/Http/Controllers/GatedDownloadController.php` + 路由 `/downloads/{asset}`（已列入 `reserved_slugs`）+ 两套主题各一份区块视图。
+
+**门由四条共同关住，缺一条整个功能就变成「多点了一次鼠标的公开下载」：**
+
+1. **前台 HTML 里没有文件路径**，只有一个不透明 key（路径的 sha1 前 16 位）
+2. 下载链接必须带**有效签名**且有时限（默认 30 分钟，`config` 的 `gated.link_ttl`）
+3. key 必须在登记表里，而登记表只收**已发布**页面声明的资料——草稿页的资料下不到
+4. 判为机器人时对外回成功但**不放资料**，否则蜜罐就成了「不留真联系方式也能拿手册」的后门
+
+- 文件存 `config` 的 `gated.disk`（默认 `local` = `storage/app`，**Web 根之外**）。⚠️ 宿主改成 `public` 这道门就形同虚设，且不会有任何报错，表现只是「留资率莫名很低」
+- key 取 sha1 前缀而不是随机 token：**确定性**的，同一文件每次渲染同一个 key，页面 HTML 才能整页缓存（#29）
+- 路由参数是 key 而不是路径：接受路径就等于把任意文件读取挂到公开端点上
+- 上传白名单不含 html / svg：它们会被浏览器当页面渲染，等于在自己域名下托管别人的 HTML
+- 「索取了哪份资料」复用 `extra` 记录（`索取资料 => 资料名`），不新加列——`extra` 已经会出现在后台详情、导出与通知邮件三处
+- 登记表缓存照 `MenuResolver` 的做法（`rememberForever` + 模型事件失效）：`SitePage::booted()` 在 `saved` / `deleted` 时整表 `forget()`。不精确清是因为精确清要判断「这次改动有没有动到 gated-download 区块」，判断写错的后果是「资料下不了」或更糟的「下线了还能下」
+- 新增 `tests/Feature/SiteGatedDownloadTest.php`（24 条）
+
+**真机验过整条链路**（`php artisan serve`，非 fake 磁盘）：页面 HTML 里路径出现 0 次、key 出现 1 次；提交后拿到带 `expires` + `signature` 的链接；下载得 200 + `Cache-Control: max-age=0, no-store, private` + 真实文件内容；改签名与不带签名都是 403；线索里 `extra` 记着 `[{"label":"索取资料","value":"冒烟手册"}]`。冒烟数据已清。
+
+### 本轮的验证数字
+
+```
+composer test        881 通过 / 3092 断言（本轮开工时 766 / 2795）
+composer pint:test   通过
+composer phpstan     0（根项目）
+站点包 level 6       0
+主包 composer test    83 通过
+站点包元数据测试      9 通过（本轮只加列不加表，README 的「16 张内容表」不变）
+```
+
+真机 `curl` 复核：`/search?q=智能` 得 200 + `public, max-age=600` + `noindex, follow` + 零 Set-Cookie，五类内容共 23 条命中；案例 / 方案 / 产品三个详情页的相关推荐都渲染出来了。
+
 ---
 
 ## 已知存量问题
 
-### 站点包 PHPStan level 6 的 10 个告警
+### 站点包 PHPStan level 6：已清零（第 6 轮）
 
-**不是老文档写的 6 个**——多出的 4 个来自第 3 轮的资讯模块。根 `phpstan.neon` 只扫 `app` 与 `database`，所以 `composer phpstan` 一直是绿的。
+`vendor/bin/phpstan analyse --level=6 packages/filamentboot-site/src` 现在是 **0 告警**，此前记载的「10 个存量告警」已全部修掉（第 6 轮 #26）。修法见下一节。
 
-| 文件 | 告警 |
-|------|------|
-| `SiteCaseResource` / `SitePageResource` / `SiteProductResource` / `SiteSolutionResource` / `NewsArticleResource` | `getEloquentQuery()` 返回类型 ×5 |
-| `ContactMessage` / `SiteTag` | `HasFactory` 泛型未声明 ×2 |
-| `SiteFrontController` | `newsIndex` 的 `published()`、`newsArchiveMonths()` 返回类型、`?->name_zh` 多余的 nullsafe ×3 |
+> 顺带查清了一件长期误会的事：那条命令在**插件被禁用**时会多报 13 条 `view()` 的
+> `argument.type`。原因是 `filamentboot-site::` 视图命名空间由 `SiteServiceProvider::boot()`
+> 在启用分支里注册，插件禁用时 larastan 解析不到任何包内视图。所以「23 条」与「10 条」
+> 是同一份代码在两种插件状态下的读数，不是谁数错了。**跑静态分析前先确认插件是启用的。**
 
-按仓库约定「无关问题提及但不处理」，未修。**新增代码不应让这个数字变大**——第 5 轮新增约 20 个文件，这个数字仍是 10。
+### ⚠️ site-contact-cta.spec.cjs 的 3 条 mobile 用例是红的
 
-> 第 5 轮踩到的两次「新增告警」都是真类型问题，就地修了而不是放进这份清单：
-> `BlockContract` 缺 `withDefaults()` 声明（渲染器依赖一个契约里没有的方法）、
-> `SitePage::$blocks` 的 `@property` 写成了关联数组而实际是列表。
+存量矛盾，非第 6 轮引入。那 3 条断言悬浮气泡在移动端可见（`boundingBox()` 不为 null），
+而气泡本体带 `hidden sm:inline-flex`——按设计移动端由底部三段式操作条取代气泡、两者互斥，
+`SiteContentRenderTest` 里还有一条 `移动端隐藏悬浮气泡` 断言的正是相反的事。
+
+要么把那 3 条限定成 desktop project，要么改设计让移动端也出气泡。这是个产品选择，没动。
+其余 18 条通过。
 
 ### 素材空缺
 
@@ -413,4 +746,4 @@ E2E：`tests/e2e/uat-phase12.spec.cjs`（建页 → 拖区块 → 提交审核 �
 
 沿用 `filamentboot-site` 包名与 `Filamentboot\FilamentbootSite\` 命名空间，新增代码不做任何改名预留。
 
-> 副作用：`is_published` 旧列原定「随包重命名一起删」，锚点没了，已改挂到阶段 3 目录重构的破坏性变更批次。
+> 副作用：`is_published` 旧列原定「随包重命名一起删」，锚点没了，改挂到阶段 3 目录重构的破坏性变更批次——**已于第 6 轮 #27 删除**（迁移 `2026_08_04_100001_drop_is_published_from_site_pages_table`）。`site_products.is_published` 是产品自己的发布列，仍在用。

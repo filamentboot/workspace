@@ -4,7 +4,7 @@
 >
 > 只列还没做的。已交付的见 [已完成 tasks](已完成tasks.md)——那份逐项记了落点文件、与原计划的差异、开工后才踩到的坑，**改动现有代码前先查它**。
 >
-> 更新时间：2026-08-04（第五轮阶段 2 收口后，#13–#21 已交付）
+> 更新时间：2026-08-04（第七轮收口后；原 §二 那批缺口已全部交付。本文档现在只剩**用户本人做**的手工项）
 >
 > 上游规划：[基于装修网站官网优化 CMS](基于装修网站官网优化cms.md)
 
@@ -37,18 +37,21 @@
 数据库连接看 `.env`（MySQL，`127.0.0.1:3380`，库名 `filamentboot`）；测试库是 `filamentboot_test`，配置在 `phpunit.xml`。
 
 ```bash
-# 起前台
+# 起前台（插件已启用，前台六类页面均 200；若全站 404 先查 plugins.is_enabled 与 cache:clear）
 php artisan serve --port=8123        # 然后 http://localhost:8123/
 
 # 全量验证（每个任务收工前都要过）
-composer test                        # 当前基线：717 通过 / 2585 断言
+composer test                        # 当前基线：881 通过 / 3092 断言
 composer pint:test                   # 格式，失败就跑 composer pint 自动修
 composer phpstan                     # 根项目，必须 0 告警
 
 # 主包（改到 packages/filamentboot/ 才需要）
 cd packages/filamentboot && composer test    # 83 通过
 
-# 站点包静态分析：当前 10 个存量告警，见 §0.6，不应增加
+# 站点包静态分析：当前 0 告警，不应增加
+# ⚠️ 插件禁用时这条会多报 13 条 view() 的 argument.type——filamentboot-site:: 视图命名空间
+#    由 SiteServiceProvider::boot() 在启用分支里注册，禁用时 larastan 解析不到包内视图。
+#    跑之前先确认 plugins.is_enabled = 1。
 vendor/bin/phpstan analyse --level=6 packages/filamentboot-site/src
 
 # 站点包没有独立 vendor/（monorepo path 仓库），元数据测试只能直接指文件
@@ -57,6 +60,16 @@ vendor/bin/phpunit --bootstrap vendor/autoload.php --no-configuration \
 ```
 
 > `SitePackageMetadataTest` 会断言 `packages/filamentboot-site/README.md` 里写的「执行数据库迁移（N 张内容表）」与迁移里 `Schema::create` 的实际条数一致。**每次新增建表迁移都要同步改 README**，否则它会红——而且它不在 `composer test` 里，红了不会被发现。当前是 16 张。
+
+后台 UAT（真机，需先起 serve）：
+
+```bash
+BASE_URL=http://localhost:8123 npx playwright test uat-phase12 --config=playwright.config.uat.cjs
+```
+
+> 选择器约定见该 spec 的头注释——**面板语言是 en**，表单控件 id 是 `form.<path>` 而非 `data.<path>`，
+> `native(false)` 的 Select 不是 `<select>`。照 Filament 文档想当然写会一个都选不中。
+> 跑完会在开发库留下 `uat12-*` 前缀的页面 / 重定向 / 菜单项，记得清。
 
 改了视图或配置没生效，先 `php artisan view:clear && php artisan config:clear`。
 
@@ -72,7 +85,9 @@ vendor/bin/phpunit --bootstrap vendor/autoload.php --no-configuration \
 
 4. **slug 参数走 Eloquent `where()` 参数绑定**（T-10-04-03），不要拼字符串。
 
-5. **公开页只用 Alpine，不新增 Livewire。** 阶段 4（#29）要把公开页做成可整页缓存，每加一个 Livewire 组件就多一处会话 Cookie 与 `Cache-Control: private, no-store`。
+5. **公开页零 Livewire、零 session**（#29 已落地，见 §一 的新硬约束）。加一个 Livewire 组件就会把 `livewire.js` 拉进页面，那个 script 标签带 `data-csrf` → 起 session → 整页缓存全面失效，且**不会有任何报错**。有交互需求就用 Alpine（已由 `resources/js/site.js` 独立交付）+ 无状态端点。
+   > 连带约束：**公开页的 HTML 必须是确定性的**。任何随机数（token、`Str::random()`、`uniqid()`）都会让
+   > 同一份内容每次请求产出不同 HTML。这也是资料索取的 key 取路径 sha1 前缀而不是随机 token 的原因。
 
 6. **未经明确要求不 commit、不 push。** 删除、覆盖、force push、改全局配置等不可逆操作同理，要做先确认。
 
@@ -82,38 +97,59 @@ vendor/bin/phpunit --bootstrap vendor/autoload.php --no-configuration \
 
 ```
 packages/filamentboot-site/
-├── config/filamentboot-site.php     路由模式、保留 slug、主题白名单、询盘来源、SEO、purifier 画像
+├── config/filamentboot-site.php     路由模式、保留 slug、主题白名单、页面版式、询盘来源、SEO、
+│                                   缓存、地图 host 白名单、资料索取磁盘与链接时限、purifier 画像
 ├── database/
 │   ├── migrations/                  16 张内容表
-│   ├── settings/                    Spatie settings 迁移（站点设置字段）
-│   ├── factories/  seeders/
+│   ├── settings/  factories/  seeders/
 ├── resources/
 │   ├── css/themes/{decoration,tech-product}.css    各含一份手写 .prose（未装 typography 插件）
 │   └── views/
 │       ├── themes/{decoration,tech-product}/       ← 视觉层，两份完整副本
+│       │   ├── theme.php                           主题清单（#28：templates / blocks / features）
 │       │   ├── layouts/{base,app}.blade.php
 │       │   ├── components/                         nav footer hero *-card breadcrumb mobile-action-bar
-│       │   ├── blocks/                             7 个区块视图（#13）
-│       │   ├── {cases,solutions,products,news,pages}/
-│       ├── shared/components/                      跨主题共享的非视觉件
-│       └── livewire/contact-form.blade.php
+│       │   ├── blocks/                             9 个区块视图（含 map / gated-download）
+│       │   ├── pages/show.blade.php  pages/templates/landing.blade.php
+│       │   ├── {cases,solutions,products,news}/  search.blade.php
+│       ├── shared/components/                      跨主题共享的非视觉件（seo-meta analytics live-chat
+│       │                                           contact-form contact-panel-store attribution-store
+│       │                                           floating-contact image-placeholder）
+│       └── mail/new-contact-message.blade.php      新询盘通知邮件正文
+│                                                   （#29 起包内没有 livewire/ 目录了）
 └── src/
-    ├── Cms/Blocks/                  区块契约 + 注册表 + 7 个内置区块
-    ├── Cms/Rendering/               BlockRenderer（渲染 + FAQPage）+ BlockSanitizer（保存侧净化）
-    ├── Cms/Services/MenuResolver.php  前台导航解析（平铺 + rememberForever 缓存）
-    ├── Enums/PageStatus.php         状态机：allowedTransitions() / canTransitionTo()
-    ├── Filament/                    Resources/ Pages/ Exporters/ RelationManagers/
-    ├── Http/{Controllers,Livewire,Middleware}/    含 SiteRedirectMiddleware（全局，301）
-    ├── Models/                      SiteCase SiteSolution SiteProduct SitePage
-    │                                SitePageRevision SiteMenu SiteMenuItem SiteRedirect
-    │                                ContactMessage SiteTag …
-    ├── Modules/News/                资讯模块（已按阶段 3 的目标路径建，重构时不用搬）
-    ├── Observers/                   SearchPushObserver（百度推送）+ SitePageObserver（版本快照）
-    ├── Policies/                    五类内容 + SiteMenu / SiteMenuItem / SiteRedirect
-    ├── Services/  Settings/  Jobs/  Console/Commands/
-    ├── Support/                     RichText（富文本白名单）+ SafeUrl（链接 scheme 白名单）+ ThemeAsset
+    ├── Cms/                         CMS 核心（与行业内容无关）
+    │   ├── Blocks/                  区块契约 + 注册表 + 9 个内置区块
+    │   ├── Rendering/               BlockRenderer（渲染 + FAQPage）+ BlockSanitizer（保存侧净化）
+    │   ├── Services/               MenuResolver（导航解析，嵌套 + rememberForever）
+    │   │                           RelatedContent（详情页相关推荐）
+    │   │                           SiteSearch（跨模块搜索）
+    │   │                           GatedAssetRegistry（可索取资料登记表，rememberForever）
+    │   ├── Models/                  SitePage SitePageRevision SiteMenu SiteMenuItem SiteRedirect
+    │   ├── Enums/PageStatus         状态机：allowedTransitions() / canTransitionTo()
+    │   ├── Filament/Resources/      SitePage / SiteMenu / SiteMenuItem / SiteRedirect
+    │   ├── Policies/                上面四类的 Policy
+    │   ├── Observers/SitePageObserver   版本快照
+    │   ├── Routing/SiteRedirectMiddleware   全局 301
+    │   └── Themes/                  ThemeContract + ThemeManifest + ThemeSwitchCheck + ThemeAsset
+    ├── Modules/
+    │   ├── Corporate/
+    │   │   ├── Cases/{Models,Filament,Policies,Enums}
+    │   │   ├── Products/{Models,Filament,Policies}
+    │   │   ├── Solutions/{Models,Filament,Policies}
+    │   │   └── Home/HomeSectionProvider     首页聚合（宿主可 bind 替换）
+    │   └── News/                    资讯模块
+    ├── Http/Controllers/            SiteFront / Sitemap / ContactSubmission / GatedDownload
+    │                                （#29 起没有 Livewire/ 与 Middleware/）
+    ├── Models/                      ContactMessage ContactMessageNote SiteTag（跨模块，留顶层）
+    ├── Policies/ContactMessagePolicy
+    ├── Filament/                    ContactMessageResource / SiteSettingsPage / Exporters / Widgets
+    ├── Observers/SearchPushObserver     百度推送
+    ├── Services/  Settings/  Jobs/  Mail/  Console/Commands/
+    ├── Support/                     RichText（富文本白名单）+ SafeUrl（链接 scheme 白名单）
+    │                                + MapEmbed（地图 iframe host 白名单）
     ├── SitePlugin.php               向 Filament 面板注册 10 个 Resource + 设置页
-    └── SiteServiceProvider.php      条件注册前台路由/视图/Livewire/观察器/中间件/命令
+    └── SiteServiceProvider.php      条件注册前台路由/视图/区块注册表/观察器/中间件/命令
 ```
 
 **视图解析优先级**（`SiteServiceProvider::registerThemeViews()` 用 `replaceNamespace()` 实现）：
@@ -127,7 +163,7 @@ resources/views/vendor/filamentboot-site/themes/{theme}/    ← 宿主发布覆�
 
 所以 `view('filamentboot-site::cases.show')` 会自动落到当前主题那一份。当前主题读 `SiteSettings.active_theme`，非法值按 `config('filamentboot-site.themes')` 白名单强制回退（防目录穿越）。
 
-**前台路由**在 `routes/site.php`，**仅在 `plugins.is_enabled = true` 时**由 `SiteServiceProvider::registerFrontend()` 加载。`/{slug}` 静态页兜底必须最后注册，并用负向预查排除 `config` 里的 `reserved_slugs`（已含 `admin`、`api`、`livewire`、`storage`、`sitemap.xml`、`robots.txt`、`preview`、`login`、`logout`）。
+**前台路由**在 `routes/site.php`，**仅在 `plugins.is_enabled = true` 时**由 `SiteServiceProvider::registerFrontend()` 加载。`/{slug}` 静态页兜底必须最后注册，并用负向预查排除 `config` 里的 `reserved_slugs`（已含 `admin`、`api`、`livewire`、`storage`、`sitemap.xml`、`robots.txt`、`preview`、`login`、`logout`、`search`、`downloads`）。
 
 ## 0.5 已有的可复用件（别重造）
 
@@ -136,7 +172,14 @@ resources/views/vendor/filamentboot-site/themes/{theme}/    ← 宿主发布覆�
 | 输出富文本 | `Support\RichText::purify($html)` |
 | 输出作者填的链接 | `Support\SafeUrl::sanitize($url)`——放行 `/` `#` `http(s)` `tel:` `mailto:`，其余返回 null，调用方据此**不渲染**（不要降级成 `#`） |
 | 渲染页面区块 | `Cms\Rendering\BlockRenderer`（`render()` / `structuredData()`）；保存侧过 `BlockSanitizer` |
-| 读前台导航 | `Cms\Services\MenuResolver::resolve('main'\|'footer')`，返回 null 时各主题 blade 用硬编码数组兜底 |
+| 读前台导航（带层级） | `Cms\Services\MenuResolver::resolve('main')`，每项带 `children`；主题清单未声明 `nested_menu` 时自动摊平。返回 null 时各主题 blade 用硬编码数组兜底 |
+| 读页脚快捷链接（强制平铺） | `MenuResolver::resolveFlat('footer')`——页脚不该跟着主题的 nested_menu 变形状 |
+| 问某个主题支持什么 | `Cms\Themes\ThemeManifest::for($theme)` / `::active()`（`templates()` `blocks()` `supports('nested_menu')`）；清单缺失时扫目录推断，features 一律按不支持 |
+| 切主题前检查内容兼容性 | `Cms\Themes\ThemeSwitchCheck::inspect($theme)` / `passes($theme)`，只查已发布页面 |
+| 详情页底部「相关内容」 | `Cms\Services\RelatedContent::for($query, $record, $affinities)`——查询由调用方用**具体模型类**构造并套好 `published()` 与排序（局部作用域在泛型 Builder 上解析不出来）。⚠️ 资讯不用它，见其类注释 |
+| 跨模块检索内容 | `Cms\Services\SiteSearch::search($term)`，按类型分组。区块正文搜不到（JSON 列的中文是 Unicode 转义），见其类注释 |
+| 输出地图 iframe | `Support\MapEmbed::sanitize($url)`——只放行 https + host 精确命中 config 白名单，不通过返回 null，调用方据此**不渲染 iframe** |
+| 放一份要留资才能下的资料 | `gated-download` 区块 + `Cms\Services\GatedAssetRegistry`。文件放非公开磁盘，前台只出不透明 key，链接由提交端点现签 |
 | 页面状态流转 | `Enums\PageStatus::canTransitionTo()`；发布类动作要 `authorize('publish')` |
 | 内容没有封面图 | `@include('filamentboot-site::components.image-placeholder', [...])`，不要出破图 |
 | 封面图 / 图集 / 三档转换 | `src/Concerns/HasCoverImage.php`（`coverUrl()` `galleryUrls()` `ogImageUrl()`；`thumb` 400×300、`card` 800×600、`og` 1200×630） |
@@ -164,132 +207,128 @@ resources/views/vendor/filamentboot-site/themes/{theme}/    ← 宿主发布覆�
 | 导航菜单 | `SiteMenuTest.php` |
 | 301 重定向 | `SiteRedirectTest.php` |
 | 三层角色 | `SiteRoleSeederTest.php` |
+| 详情页相关推荐 | `SiteRelatedContentTest.php`——⚠️ 资讯不走那个服务，改资讯的相关阅读要看 `SiteNewsTest` |
+| 站内搜索 | `SiteSearchTest.php`（取数 + noindex/缓存边界 + 双主题渲染） |
+| 询盘自定义字段 | `SiteContactExtraFieldsTest.php` |
+| 资料索取 gated content | `SiteGatedDownloadTest.php`——四道闸各有用例，动这块前先读它的文件头注释 |
+| 客服脚本位与统计注入 | `SiteAnalyticsInjectionTest.php` |
+| 地图区块与 host 白名单 | `tests/Unit/Cms/MapEmbedTest.php` |
 | 区块 / 状态机 / 链接白名单（纯逻辑） | `tests/Unit/Cms/{BlockRegistry,BlockRenderer,PageStatus,SafeUrl}Test.php` |
 
 > **后台页面测试的关键手法**：官网插件的 Filament 资源路由在应用 boot 时注册，而插件启用状态来自 `plugins` 表，测试库那时还没数据，所以后台页默认渲染不出来。做法是**手工把插件注册进面板 → 重跑 `vendor/filament/filament/routes/web.php` → 刷新路由名查找表**，现成模板见 `SitePageResourcePageTest.php` 的 `beforeEach`。后台交互别留给手工点击。
 
 > **全局中间件在测试里不会自动挂上**（`SiteServiceProvider` 用 `callAfterResolving(Kernel::class)`，而测试启动时 Kernel 早已解析完）。要测 `SiteRedirectMiddleware` 得显式 `app(Kernel::class)->pushMiddleware(...)`，见 `SiteRedirectTest.php`。
 
+> ⚠️ **Filament 5 的模态体是客户端惰性渲染的**：`mountAction()` / `mountTableAction()` 之后，
+> `Livewire::test()` 拿到的 `wire:partial="action-modals"` 分区仍然是空的，
+> 断言模态里的 HTML（`assertSee` / `assertSeeHtml`）会**恒假**。要验模态内容就取
+> `->instance()->getSchema('mountedActionSchema0')` 再断言组件的状态路径或渲染结果，
+> 现成范例见 `SiteMenuResourcePageTest` 的状态路径护栏与 `SitePageResourcePageTest` 的版本对比断言。
+> 真要看浏览器里的样子只能进 Playwright。
+
+> ⚠️ **filament-tree 的树页动作曾经完全驱动不起来**，根因是基类 `getFormSchema()` 把组件绑到了
+> 一个 statePath 为空的临时 Schema 上（#23 已修，覆写 `getFormSchema()` 返回未绑定的新组件）。
+> 新增树页时照 `SiteMenuItemTree` 抄那个覆写，否则弹窗会因 Entangle Error 打不开。
+
+> ⚠️ **别复用别的测试文件里 `dataset()` 定义的数据集**：Pest 的 `dataset('themes')` 只在定义它的
+> 文件被加载时注册，单跑另一个文件时 `->with('themes')` 会让 Pest 报 failed 却列不出失败用例
+> （`SiteContentRenderTest` 里有一份 `themes`）。跨文件要双主题就用行内数据集
+> `->with(['decoration', 'tech-product'])`。
+
 > **前台测试**同理要手工调 `SiteServiceProvider` 的 `registerLivewireComponents` / `registerThemeViews` / `shareSiteSettings` / `registerFrontend`，再 `refreshNameLookups()`。现成模板见 `SiteSeoMetaTest.php` 的 `beforeEach`。
+
+> ⚠️ **别复用别的测试文件里定义的辅助函数**：和 `dataset()` 一样，Pest 测试文件里的 `function`
+> 声明是全局的——重名会在两文件同时加载时直接 fatal，单跑另一个文件时又找不到。
+> 现在有五份各自命名的主题切换辅助（`switchSiteTheme` / `switchThemeForRelated` /
+> `switchThemeForSearch` / `switchThemeForGated` / `switchThemeForExtraFields`），
+> 要共用得先搬进 `tests/Pest.php`。
+
+> ⚠️ **MySQL 的 JSON 对象不保留键顺序。** 存 `{键: 值}` 映射再读出来，顺序会被 MySQL 规范化打乱
+> （`site_contact_messages.extra` 就因此改成了有序列表 `[{label, value}]`）。
+> 顺序有意义的数据一律存 JSON **数组**。同理，JSON 列里的中文是 Unicode 转义序列，
+> `LIKE '%中文%'` 匹配不到——站内搜索因此搜不到区块正文。
 
 Pest 断言注意：`toContain($needle, $message)` 会把第二个参数当成**另一个 needle**，要带失败说明就用 `$this->assertStringContainsString($needle, $haystack, $message)`。
 
 ## 0.7 已知存量问题（不是你引入的，别去修）
 
-**站点包 PHPStan level 6 有 10 个存量告警**，根 `phpstan.neon` 只扫 `app` 与 `database` 所以 `composer phpstan` 是绿的。按仓库约定「无关问题提及但不处理」，未修——**但新增代码不应让这个数字变大**。
+> ⚠️ **开工前先确认插件是启用的**：`plugins` 表要有 `filamentboot-site` 且 `is_enabled = 1`。
+> 禁用时前台全站 404、后台官网资源路由 0 条、站点包 PHPStan 多报 13 条 view-string 告警。
+> `pluginIsEnabled()` 外面套着 24h 缓存，改了 DB 记得 `php artisan cache:clear`。
 
-| 文件 | 告警 |
-|---|---|
-| `SiteCaseResource` / `SitePageResource` / `SiteProductResource` / `SiteSolutionResource` / `NewsArticleResource` | `getEloquentQuery()` 返回类型 ×5 |
-| `ContactMessage` / `SiteTag` | `HasFactory` 泛型未声明 ×2 |
-| `SiteFrontController` | `newsIndex` 的 `published()`、`newsArchiveMonths()` 返回类型、`?->name_zh` 多余 nullsafe ×3 |
+**主包的 `MenuTree` 应当有 #23 那个 bug。** `Filamentboot\Filament\Resources\Menus\Pages\MenuTree`
+同样继承 filament-tree 的 `TreePage` 且没覆写 `getFormSchema()`，后台「菜单规则」的建/改弹窗
+大概率同样打不开。按仓库约定「无关问题提及但不处理」未修——它属于主包，另一条任务链。
+修法照 `SiteMenuItemTree::getFormSchema()` 抄即可（另外驱动它时还会先撞上
+`Cannot access protected property MenuTree::$title`，页面的 `$title` 属性与表单字段名撞车）。
 
-> 踩过的坑：模型作用域经 `class-string` 变量或 `Builder<Model>` 调用时，PHPStan 看不见它（`method.notFound`）。写成具体类调用即可，既保住类型又仍复用各模型自己的判据——`Observers/SearchPushObserver.php` 的 `isVisible()` 是现成范例。
+**`plugins.post_install_data` 里存的是过期元数据。** `plugin:scan` 读
+`vendor/composer/installed.json`，而 path 仓库的 installed.json 不随包内 `composer.json`
+自动刷新——当前库里那行的 `post_install.seeders` 只有已删除的 `SiteSeeder`，描述还写着
+「五类内容、双语」。属 #30 的隐患，#30 已确认不做，留个记录。
 
-**素材空缺**：18 个产品封面全部没有，`news/is-voice-control-useful` 也没有。原因见 §四。前台会走 `image-placeholder` 降级，不影响开发。
+**`tests/e2e/site-contact-cta.spec.cjs` 的 3 条 `[mobile]` 用例是红的**（存量矛盾，非 #29 引入）。
+它们断言悬浮气泡在移动端可见，而气泡本体带 `hidden sm:inline-flex`——按设计移动端由底部操作条
+取代气泡，两者互斥，`SiteContentRenderTest` 里还有一条 `移动端隐藏悬浮气泡` 断言的正是相反的事。
+要么把那 3 条限定成 desktop project，要么改设计让移动端也出气泡；这是个产品选择，没动。
 
-**工作树里有 5 个不属于本任务链的未跟踪文件**（`docs/cms/02-自身官网.md`、两个 `playwright.config*.cjs`、`tests/e2e/uat-phase03.spec.cjs`、`tests/e2e/uat-phase11.spec.cjs`）。**不要动、不要提交它们。**（`tests/e2e/uat-phase12.spec.cjs` 是第五轮新增的，属本任务链。）
+**`shared/components/contact-form.blade.php` 的 `$formKey` 有一个非确定性兜底。**
+不传 `formKey` 时它落到 `Str::random(6)`，同一份内容每次请求产出不同 HTML，
+会毁掉整页缓存的确定性（也让 ETag 无从谈起）。当前所有调用点都传了 formKey，
+`SiteAnalyticsInjectionTest` 里有一条「输出与关闭开关逐字节相同」的断言会在有人漏传时变红。
+新增表单实例时记得传。
 
-**第五轮的改动尚未提交**：#13–#21 的全部代码与测试都在工作树里未 commit（按硬约束第 6 条，未经明确要求不 commit）。
+**素材空缺**：18 个产品封面全部没有，`news/is-voice-control-useful` 也没有。原因见 §二 的 #11。
+前台会走 `image-placeholder` 降级，不影响开发。
+
+**工作树里有 5 个不属于本任务链的未跟踪文件**（`docs/cms/02-自身官网.md`、
+`playwright.config.cjs`、`playwright.config.phase11.cjs`、`tests/e2e/uat-phase03.spec.cjs`、
+`tests/e2e/uat-phase11.spec.cjs`）。**不要动、不要提交它们。**
+（`tests/e2e/uat-phase12.spec.cjs` 与 `playwright.config.uat.cjs` 属本任务链。）
+
+**第六轮未提交**：#22–#29 的代码与测试还在工作树里。
 
 ---
 
 # 一、任务一览
 
-| 批次 | 内容 | 估时 | 阻塞于 |
-|------|------|------|--------|
-| **阶段 3** | #27 目录重构 | 10h | 无 ← **建议起点** |
-| 阶段 4 | #28 主题契约 | 5h | 无（可与 #27 并行） |
-| 阶段 4 | #29 缓存边界 | 5h | 无（可与 #27 并行） |
-| 阶段 4 | #30 v1.0.0 发布验证 | 4h | #27–#29 |
-| — | **合计** | **≈24h** | 按 4h/周约 6 周 |
+**阶段 1、2、3、4 全部已交付，原「暂不排期的缺口」也已全部交付。** #30 v1.0.0 发布验证用户明确不做。
 
-另有 6 条暂不排期的缺口（§三）和 4 条**用户本人做**的手工项（§四），都不计入上面的工时。
+**剩下的只有 4 条用户本人做的手工项（§二）。** 代码侧没有已识别、待开发的功能了。
 
-```
-#27 目录重构 ─┐
-#28 主题契约 ─┼─→ #30 v1.0.0 发布验证
-#29 缓存边界 ─┘
-```
+> 第 6 轮（#22–#29）的落点、与原计划的差异、开工后才踩到的坑全部记在
+> [已完成 tasks](已完成tasks.md) 的「第 6 轮」一节——**动这批代码前先查它**，尤其是：
+> `SiteMenuItemTree::getFormSchema()` 那个必须覆写的理由（filament-tree 把状态路径缓存成裸字段名）、
+> Filament 5 模态体是客户端惰性渲染因此 `Livewire::test()` 断言 HTML 恒假、
+> Pint 会把 `@extends Resource<X>` 小写掉所以要写全限定名、
+> `MenuResolver` 缓存嵌套结构而摊平放读取侧的理由、
+> **公开页零 session 之后哪些事再也不能做**（见下）。
 
-> **阶段 2 已于 2026-08-04 全部收口**（#13–#21，第五轮）。落点、与原计划的差异、开工后才踩到的坑全部记在
-> [已完成 tasks](已完成tasks.md) 的「第 5 轮」一节——**动这批代码前先查它**，尤其是
-> `BlockRenderer` 的降级契约、`SitePageObserver` 的 `created`/`updated` 分工、
-> `MenuResolver` 只返回平铺列表的理由，以及 `SiteRedirectMiddleware::targetUrl()` 里
-> 那个「按 scheme 判而非按 `://` 判」的伪协议绕过。
+## ⚠️ 公开页的新硬约束（#29 之后）
 
-**从 #27 开始。** 它是 #30 的前置里工作量最大的一项，且属破坏性变更，越早做越少返工。
+这三条一旦违反，症状都是「CDN 命中率一直是 0」或「草稿经共享缓存泄露」——**不会有任何报错**：
 
----
-
-# 二、阶段 3 与阶段 4
-
-## #27 目录重构（≈10h，无阻塞）
-
-```
-src/Cms/{Blocks,Filament,Models,Rendering,Routing,Services,Themes}/
-src/Modules/Corporate/{Cases,Products,Solutions}/
-```
-
-第五轮新建的 `src/Cms/Rendering/`（BlockRenderer / BlockSanitizer）与 `src/Cms/Services/`（MenuResolver）已在目标位置，不用搬。`src/Modules/News/` 当初就是按这个目标路径建的，也不用搬。
-
-- ⚠️ **只移动不改名。** `BasePolicy` 从**短类名**推导权限点，`SiteCase` → `CorporateCase` 会静默改掉 `view_any_site_case` 并让现有角色权限全部失效。确需改名必须在 Policy 显式覆盖权限前缀。**`SiteRoleSeeder` 里硬编码了那批权限点名**，改名要同步改它，否则三层角色会全部授不上权。
-- 首页聚合从 `SiteFrontController::home()` 抽成模块提供的 `HomeSectionProvider`，通用控制器不再硬编码 `SiteCase::featured()`。
-- 路由 URL 与数据表名**全部不变**。
-- **顺带删 `site_pages.is_published` 旧列**：它由 `SitePage::booted()` 的 saving 钩子镜像维护，原定「随包重命名一起删」，改名取消后锚点没了，挪到这里的破坏性变更批次。删列时同步删钩子与 `casts` 里的 `'is_published' => 'boolean'`。
-- 改完必须同步：`composer.json` 的 PSR-4 autoload、`SitePlugin` 的 Resource 注册（现在是 10 个）、`SiteServiceProvider` 的 Observer / 中间件 / 迁移路径注册、所有 `use` 语句。`composer dump-autoload` 后跑全量测试。
-- ⚠️ **Policy 靠 Laravel 的约定发现解析**（`Models\X` → `Policies\XPolicy`），没有一处显式 `Gate::policy()` 登记。搬动 `Models/` 或 `Policies/` 的相对位置会让约定失效，且**不报错**——只会静默变成「所有人都没权限」。搬完必须跑一遍带权限断言的用例（`SitePageResourcePageTest` / `SiteMenuResourcePageTest` / `SiteRoleSeederTest`）。
-
-## #28 主题契约与切换预检查（≈5h）
-
-`ThemeContract` + 每主题 `theme.php` manifest（声明支持的 template 与 block key）。切换主题前校验已发布页面用到的 template/block 是否被目标主题支持，不支持则列出受影响页面并要求确认。
-
-`BlockRenderer` 已做了运行时兜底（缺视图跳过 + 记 warning），这里补的是**切换前的预检查**。
-
-顺带在这里放开两处被刻意压住的能力（都是为了守住「后台配得出来的，前台一定显示得出来」）：
-
-- **二级导航**：`SiteMenuItemTree::$maxDepth` 现在是 1，`MenuResolver` 只返回平铺列表，因为两套主题都没有下拉版式。manifest 里声明支持二级的主题才放开。
-- **`page_templates`**：config 里目前只有 `default`。落地页极简版式（无导航干扰、单一转化目标）在这里连版式一起做，控制器的 `pageTemplate()` 已留好 `pages.templates.{key}` 解析与回退。
-
-## #29 缓存边界（≈5h）
-
-面板骨架改纯 Alpine，Livewire 组件用 `<template x-if>` 延迟挂载，公开页响应头改 `public, max-age=…`。
-
-当前每个公开页都无条件 `@include` 含 `@livewire` 的 `floating-contact`，导致会话 Cookie + `Cache-Control: private, no-store`。**要一起改的有三处**：`floating-contact`、移动端操作条、以及 #13 的 `contact-form` 区块（它同样内联 `@livewire('filamentboot-site::contact-form')`）。
-
-延迟挂载时注意 `ContactForm` 的两个属性：`$renderedAt`（C2 的提交耗时校验基准，必须是**真实渲染时刻**，`<template x-if>` 推迟挂载会让它变成"点开表单的时刻"，那正是想要的语义，不要改回页面加载时刻）与 `$tracksPanelSource`（#13 加的，区块内联实例靠它不被面板 store 覆盖 source）。
-
-## #30 v1.0.0 发布验证（≈4h，阻塞于 #27–#29）
-
-干净的独立 Laravel 13 项目 `composer require` 验证，走一遍安装 → 迁移 → seed → 登录 → 建页面 → 前台可见。
-
-seed 一步现在有两个**必需**的种子（少跑就是「除超管外无人能进官网管理」）：`SitePermissionSeeder` 建权限点，`SiteRoleSeeder` 建三层角色。两者都已登记进 `composer.json` 的 `extra.filamentboot.post_install.seeders`，README 的安装章节也写了，验证时要确认那条自动化真的跑了。
+1. **公开页不许起 session。** 不许出现 Livewire 组件（它注入的脚本带 `data-csrf`，
+   渲染时调 `csrf_token()`）、不许在前台视图里调 `csrf_token()` / `@csrf`、
+   不许往内容路由挂 `web` 中间件组。
+   护栏：`tests/Feature/SiteCacheBoundaryTest.php` 断言内容页响应**无 Set-Cookie**、
+   HTML 里无 `wire:snapshot`。
+2. **`/preview/{page}` 必须留在 `web` 组，且绝不能被打上 `public`。** 它是全站唯一读未发布
+   内容的入口，靠 `auth('admin')` 判权。同一份护栏里锁住了这条。
+3. **Alpine 由 `resources/js/site.js` 经 Vite 交付，不再是 Livewire 捎带的。**
+   宿主必须 `npm i alpinejs` 并把命中的入口路径加进 `vite.config.js` 的 `input`，
+   否则前台所有 `x-data` 都不工作（导航抽屉、询盘面板、二级下拉、图集轮播）。
+   候选路径见 config 的 `assets.script_entries`。
 
 ---
 
-# 三、暂不排期，但已识别的缺口
-
-以下功能确认缺失，因依赖阶段 2/4 的能力或工作量较大，不进上面的批次。**排期前先确认前置是否已就位。**
-
-| 缺口 | 归属 | 原因 |
-|------|------|------|
-| 站内搜索（前台跨模块） | 阶段 4 后 | 内容模型已随阶段 2 定型，前置已就位 |
-| 相关内容推荐（详情页底部） | 阶段 4 后 | 资讯详情页已有同分类 `$related` 兜底，案例/方案/产品还没有 |
-| 落地页极简版式（无导航干扰、单一转化目标） | 阶段 4 | 依赖 #28 主题契约；`template` 字段与控制器的 `pageTemplate()` 解析已就位，只缺 config 里加一项 + 两套主题各一份 `pages/templates/{key}.blade.php` |
-| 二级导航（下拉菜单） | 阶段 4（#28） | 后台与数据层都支持（`site_menu_items.parent_id`），但树页 `maxDepth=1`、`MenuResolver` 返平铺，因为两套主题没有下拉版式 |
-| 资料索取 / gated content（手册换联系方式） | 阶段 4 后 | 依赖 A1 的线索链路（已就位） |
-| 在线客服脚本位、联系页地图嵌入 | 阶段 4 后 | A3 的注入位已做完，成本很低 |
-| 表单字段可配置（不同活动问不同问题） | 阶段 4 后 | 区块 Schema 机制已随 #13/#14 就位 |
-
----
-
-# 四、用户本人做的四条（不要代劳）
+# 二、用户本人做的四条（不要代劳）
 
 | # | 内容 | 说明 |
 |---|---|---|
 | #31 | 隐私政策页补访客数据收集范围 | **优先级比看起来高。** A1 已在收集 source / landing_url / referer / UTM 五项，而页脚隐私链接读 `SiteSettings.privacy_url`，未配置时整个链接不渲染——也就是说线上目前**没有隐私政策入口**，数据却已经在收了。 |
-| #32 | 生产收尾 | qkznj.com 后台填电话 / 地址 / ICP 备案号 / 隐私链接 / 默认 SEO 标题与描述 / OG 图 / logo / 微信二维码，直到设置页健康检查无告警。部署后 `php artisan view:clear && config:clear`、`npm run build`，确认生产 `.env` 有 `SITE_ROUTE_MODE=root`。 |
-| #10 | 手动验收 | 双主题手点 + Playwright。移动端操作条与微信弹层只有单元级断言，没在真机视口跑过。第五轮新增 `tests/e2e/uat-phase12.spec.cjs`（建页 → 拖区块 → 发布 → 前台可见、改 slug 建 301、菜单同步、草稿预览），**从未真机跑过，选择器多半要现场调**。 |
+| #32 | 生产收尾 | qkznj.com 后台填电话 / 地址 / ICP 备案号 / 隐私链接 / 默认 SEO 标题与描述 / OG 图 / logo / 微信二维码，直到设置页健康检查无告警。部署后 `php artisan view:clear && config:clear`、`npm run build`，确认生产 `.env` 有 `SITE_ROUTE_MODE=root`。⚠️ 若用了资料索取，确认 `SITE_GATED_DISK` **不是** public——指到公开磁盘那道门就形同虚设，且不会报错。 |
+| #10 | 手动验收 | 双主题手点。移动端操作条与微信弹层只有单元级断言，没在真机视口跑过。`uat-phase12` 已于第 6 轮真机跑通（8/8），但第 7 轮新增的东西还没有 E2E 覆盖：站内搜索、地图区块、可配置字段的下拉、资料索取（后者用 `curl` 验过整条链路，没在浏览器里点过）。 |
 | #11 | 产品封面图 | 18 张产品图空缺，等品牌方渠道商素材包。CC0 图库里没有对应 SKU 的白底图，硬凑等于挂着别人的产品当自己的。详见 [cc0-assets](cc0-assets/README.md)。 |
 
 > 素材使用边界（用户已定）：✅ 品牌官方产品图、参数/型号/价格带、详情页版式结构；❌ 店铺自制促销长图（带旗舰店角标，放自己站上穿帮）、买家秀（真实用户自家环境，含人脸，属个人信息）。抓来的文案只做结构参考 + 批量改写，**不原样入库**。
