@@ -308,3 +308,101 @@ it('资讯详情页保留编辑器排的版式', function (string $theme) {
         $this->assertStringContainsString($tag, $html, "{$theme} 主题的正文丢了 {$tag}");
     }
 })->with('themes');
+
+/**
+ * 面包屑在两套主题下都渲染，且当前页不出链接（B3）
+ *
+ * 两套主题各持一份 breadcrumb.blade.php，只测默认主题的话另一套写错变量名
+ * 要等手工切主题才暴露。当前页用 aria-current 而非 <a>：给读屏用户一个
+ * 「你在这」的锚点，也避免一个指向自身的无意义链接。
+ */
+it('详情页在两套主题下都渲染面包屑', function (string $theme) {
+    switchSiteTheme($theme);
+
+    $case = SiteCase::factory()->create([
+        'title_zh'     => '面包屑校验案例',
+        'slug'         => 'breadcrumb-visible',
+        'published_at' => now()->subDay(),
+    ]);
+
+    $html = $this->get(route('site.cases.show', $case->slug))->assertOk()->content();
+
+    foreach (['aria-label="面包屑"', 'aria-current="page"', '装修案例', '面包屑校验案例'] as $needle) {
+        $this->assertStringContainsString($needle, $html, "{$theme} 主题的面包屑缺了「{$needle}」");
+    }
+})->with('themes');
+
+/**
+ * 列表页不出面包屑
+ *
+ * 只有「首页 › 装修案例」两级，没有信息量，白占一行。
+ */
+it('列表页不渲染面包屑', function (string $theme) {
+    switchSiteTheme($theme);
+
+    $this->get(route('site.cases.index'))
+        ->assertOk()
+        ->assertDontSee('aria-label="面包屑"', false);
+})->with('themes');
+
+/**
+ * 移动端底部三段式操作条（C1）
+ *
+ * 国内营销站的标准转化形态。此前移动端只有一个悬浮气泡，tel: 链接埋在页脚，
+ * 等于把最短的转化路径藏起来。
+ */
+it('两套主题都渲染移动端三段式操作条', function (string $theme) {
+    switchSiteTheme($theme);
+
+    $settings                = app(SiteSettings::class);
+    $settings->phone         = '027-8888 9999';
+    $settings->wechat_qrcode = 'https://cdn.example.com/qr.png';
+    $settings->save();
+
+    $html = $this->get(route('site.home'))->assertOk()->content();
+
+    foreach ([
+        'aria-label="快捷联系"',
+        // tel: 里必须是纯号码，带空格和横杠在部分安卓拨号盘上解析失败
+        'href="tel:02788889999"',
+        'https://cdn.example.com/qr.png',
+        'data-contact-trigger="mobile-bar"',
+        "\$store.contactPanel.show('mobile-bar')",
+    ] as $needle) {
+        $this->assertStringContainsString($needle, $html, "{$theme} 主题的操作条缺了「{$needle}」");
+    }
+})->with('themes');
+
+/**
+ * 缺数据的段落整段不渲染，不留死按钮
+ */
+it('未配置联系方式时操作条只剩留言段', function (string $theme) {
+    switchSiteTheme($theme);
+
+    $settings                = app(SiteSettings::class);
+    $settings->phone         = '';
+    $settings->wechat_qrcode = null;
+    $settings->save();
+
+    $html = $this->get(route('site.home'))->assertOk()->content();
+
+    expect($html)->not->toContain('href="tel:')
+        ->and($html)->not->toContain('打开微信咨询二维码')
+        // 留言段不依赖任何设置，永远在
+        ->and($html)->toContain('data-contact-trigger="mobile-bar"');
+})->with('themes');
+
+/**
+ * 悬浮气泡在移动端让位给操作条
+ *
+ * 两个入口同屏是重复噪音，气泡还会压在操作条上。
+ */
+it('移动端隐藏悬浮气泡', function (string $theme) {
+    switchSiteTheme($theme);
+
+    $html = $this->get(route('site.home'))->assertOk()->content();
+
+    // 气泡按钮本体带 hidden sm:inline-flex；滑入面板不受影响，两者共用同一 Store
+    $this->assertStringContainsString('hidden sm:inline-flex', $html, "{$theme} 主题的悬浮气泡未在移动端隐藏");
+    $this->assertStringContainsString('id="contact-panel"', $html, "{$theme} 主题的滑入面板不该被一起隐藏");
+})->with('themes');

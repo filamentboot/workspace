@@ -31,6 +31,20 @@
         {{-- 表单 --}}
         <form wire:submit.prevent="submit" novalidate>
 
+            {{-- 蜜罐字段（C2）：人类看不见也 Tab 不到，只有按 name 盲填的脚本会写进来。
+                 用屏外定位而非 display:none —— 后者是已知特征，成熟脚本会跳过。
+                 name="website" 取常见诱饵名；aria-hidden + tabindex="-1" 让读屏与键盘都绕开。 --}}
+            <div aria-hidden="true" style="position: absolute; left: -9999px; top: auto; width: 1px; height: 1px; overflow: hidden;">
+                <label for="contact-website">请留空</label>
+                <input
+                    id="contact-website"
+                    name="website"
+                    type="text"
+                    wire:model="website"
+                    tabindex="-1"
+                    autocomplete="off">
+            </div>
+
             {{-- 姓名 --}}
             <div class="mb-6">
                 <label for="contact-name"

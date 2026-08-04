@@ -4,8 +4,12 @@
  * 开合状态由全局 $store.contactPanel 管理（见 contact-panel-store.blade.php），
  * 导航栏、移动菜单、列表页和详情页的 CTA 共用同一个打开动作。
  *
- * 移动端：悬浮按钮加入 safe-area-inset-bottom 安全间距，避免在带手势条的
- * 机型上贴住屏幕底部；页面内容区由各主题预留 pb-24 滚动避让。
+ * 移动端（sm 以下）**不出悬浮按钮**：那里改由底部三段式操作条承接（C1），
+ * 两个入口同屏是重复噪音，气泡还会压在操作条上。滑入面板本身仍然共用——
+ * 操作条的「在线留言」调的就是同一个 $store.contactPanel.show()。
+ *
+ * 桌面端悬浮按钮仍带 safe-area-inset-bottom 安全间距；页面内容区避让由各主题
+ * 的 layouts/app.blade.php 提供（移动端 pb-32、桌面端 pb-24）。
  --}}
 @php
     $triggerLabel = '打开询盘表单';
@@ -23,7 +27,7 @@
         data-contact-trigger="floating"
         type="button"
         class="btn-site-primary fixed right-4 sm:right-6 lg:right-8 z-50
-               w-14 h-14 rounded-full shadow-lg inline-flex items-center justify-center
+               w-14 h-14 rounded-full shadow-lg hidden sm:inline-flex items-center justify-center
                focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:ring-offset-2 focus-visible:ring-offset-[--color-bg-base] focus-visible:outline-none"
         style="bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));"
         {{-- 面板打开时隐藏，避免悬浮气泡压在表单上 --}}

@@ -66,6 +66,37 @@ class ContactForm extends Component
     public bool $submitted = false;
 
     /**
+     * 蜜罐字段（C2）
+     *
+     * 人类看不见也 Tab 不到，只有按 name 盲填的脚本会写进来。
+     * 视图里用屏外定位而非 display:none —— 后者是已知特征，成熟脚本会跳过。
+     */
+    public string $website = '';
+
+    /**
+     * 表单渲染时刻的 Unix 时间戳（C2）
+     *
+     * 与提交时刻的间隔小于阈值即判为机器。Livewire 对公开属性做 checksum 校验，
+     * 客户端改不动这个值，不需要额外签名。
+     */
+    public int $renderedAt = 0;
+
+    /**
+     * 最短合理填表耗时（秒）
+     *
+     * 三秒连姓名带电话都敲不完。定得再高会误伤用浏览器自动填充的真实访客。
+     */
+    protected const MIN_FILL_SECONDS = 3;
+
+    /**
+     * 组件挂载
+     */
+    public function mount(): void
+    {
+        $this->renderedAt = now()->getTimestamp();
+    }
+
+    /**
      * 提交询盘表单
      *
      * 1. 速率限制校验（每 IP 5 分钟最多 3 次）
@@ -75,6 +106,13 @@ class ContactForm extends Component
      */
     public function submit(): void
     {
+        // 机器人识别放在限流之前：不让脚本消耗真实访客共享的那点 IP 限流额度（C2）
+        if ($this->looksAutomated()) {
+            $this->markSubmitted();
+
+            return;
+        }
+
         // 速率限制：每 IP 5 分钟（300 秒）最多 3 次（D-10-15，T-10-04-02）
         try {
             $this->rateLimit(3, 300);
@@ -101,14 +139,46 @@ class ContactForm extends Component
         // 通知走队列且内部吞掉全部异常，不会影响下面的成功态（A2）
         app(ContactMessageNotifier::class)->notify($record);
 
-        // 标记提交成功，重置输入
+        $this->markSubmitted();
+
+        // 通知前端上报转化事件（A3：百度统计 / GA 由 analytics 组件监听）
+        // 只在真正入库时派发：机器人提交若也上报，投放后台的转化数会被灌水
+        $this->dispatch('site-contact-submitted');
+    }
+
+    /**
+     * 这次提交看起来像机器人吗（C2）
+     *
+     * 两个零摩擦信号，不给真实访客加验证码负担：
+     * - 蜜罐字段被填了（人类看不见也 Tab 不到）
+     * - 从渲染到提交不足 MIN_FILL_SECONDS 秒
+     *
+     * renderedAt 为 0 说明组件没走 mount()（例如宿主自行实例化），
+     * 此时不做耗时判断，宁可放过也不误杀。
+     */
+    protected function looksAutomated(): bool
+    {
+        if (trim($this->website) !== '') {
+            return true;
+        }
+
+        return $this->renderedAt > 0
+            && (now()->getTimestamp() - $this->renderedAt) < self::MIN_FILL_SECONDS;
+    }
+
+    /**
+     * 切到成功态并清空输入
+     *
+     * 机器人命中时走的也是这里——**不告诉它失败了**。回一个错误等于在教脚本
+     * 怎么绕过；回成功则让它以为得手，不会换策略重试。
+     */
+    protected function markSubmitted(): void
+    {
         $this->submitted = true;
         $this->name      = '';
         $this->phone     = '';
         $this->message   = null;
-
-        // 通知前端上报转化事件（A3：百度统计 / GA 由 analytics 组件监听）
-        $this->dispatch('site-contact-submitted');
+        $this->website   = '';
     }
 
     /**

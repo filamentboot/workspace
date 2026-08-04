@@ -112,6 +112,7 @@ return [
         */
         'sources' => [
             'floating'        => '悬浮按钮',
+            'mobile-bar'      => '移动端操作条',
             'hero'            => '首屏 Banner',
             'nav-desktop'     => '导航栏',
             'nav-mobile'      => '移动端菜单',
