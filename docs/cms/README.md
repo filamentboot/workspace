@@ -1,35 +1,38 @@
-# 官网 CMS 文档
+# 官网 CMS 文档 —— 已迁走
 
-> 文档定位：Filamentboot 官网与 CMS 插件的产品、架构和实施规划。
+> 2026-08-05 起，官网/CMS 插件的全部文档搬到了 **`~/src/personal/qkznj/docs/cms/`**（Gitee 私有仓库 `johncaptain/qkznj`）。
 >
-> 更新时间：2026-08-04
->
-> 当前状态：**阶段 1–4 全部已交付**（含 #11 #12、营销获客 A/B/C 三组、#13–#21、第五轮遗留 #22–#26、目录重构 #27、主题契约 #28、缓存边界 #29）；#30 v1.0.0 发布验证用户明确不做。剩下的只有 7 条暂不排期的缺口与 4 条手工项
+> 本目录不再维护，只留这一页指路。
 
----
+## 为什么搬
 
-## 文档索引
+qkznj 站点（<https://www.qkznj.com>）在 2026-08-05 上线，它的 `packages/` 下带着 7 个包的完整副本。CMS 后续开发都在那边做——有真实站点可以立刻验证，比在 workspace 里改完再想办法看效果快得多。文档跟着开发地走。
 
-| 文档 | 状态 | 说明 |
-|------|------|------|
-| [未完成 tasks](未完成tasks.md) | 进行中 | **只列还没做的**：现在只剩 4 条手工项。另含开工须知、代码地图与**公开页零 session 之后的新硬约束** |
-| [已完成 tasks](已完成tasks.md) | 持续追加 | **只记已交付的**：按七轮交付分组，逐项写清落点文件、与原计划的差异、开工后才确定的细节；文末列已知存量问题 |
-| [qkznj 站点独立](03-qkznj站点独立.md) | 未开工 | **另一条任务链**：把 www.qkznj.com 拆成独立薄壳项目走 Packagist 装包。四期里程碑（打地基 → 分家 → 装修 → 回流），含 7 条待确认项 |
-| [基于装修网站官网优化 CMS](基于装修网站官网优化cms.md) | 规划中 | 技术路线、当前状态、目标架构、阶段计划和验收标准 |
-| [CC0 封面图流水线](cc0-assets/README.md) | 已交付 | 案例/方案/资讯 20 张封面的采集脚本与出处台账；产品图仍空缺 |
-| [京东素材调研产物](jd-assets/README.md) | 已交付 | 20 个 SKU 的素材与竞品结构调研；含给 UI 的挑图纵览表 `contact-sheet.html`、客户洞察与采集脚本 |
+## 这期间 workspace 是什么状态
 
-**开工看[未完成 tasks](未完成tasks.md)，排查或回查实现细节看[已完成 tasks](已完成tasks.md)。** 一项做完，就把它从前者挪进后者，并补上落点与开工后才确定的细节。
+**整个冻结。** 具体说：
 
-开发项已全部收口——原「暂不排期的 7 条缺口」也在第 7 轮清完（其中 2 条其实第 6 轮就交付了，文档漏挪）。下一步是**你本人的四条手工项**（见[未完成 tasks](未完成tasks.md) §二），其中 **#31 隐私政策页优先级最高**：A1 已在收集 source／landing_url／referer／UTM 五项，而页脚隐私链接读 `SiteSettings.privacy_url`，未配置时整个链接不渲染——线上目前没有隐私政策入口，数据却已经在收了。
+- **`packages/` 下 7 个包不要在这边改。** 这边的副本会越来越旧，qkznj 那边才是最新的。
+- **不从这边发版。** 中途不做 subtree split、不发 patch 版本。
+- 包源码改动**攒到 qkznj 三期开工前一次性整体覆盖回来**，届时一个大 commit。这是明确选择的方案，代价（历史粒度丢失、中途无法发版）已经知道。
 
-⚠️ 动前台代码前先看 §一 的「公开页的新硬约束」：#29 之后公开页零 session、零 Livewire，Alpine 由 `resources/js/site.js` 经 Vite 独立交付。违反这三条不会报错，只会表现为缓存命中率归零或草稿泄露。
+`docs/prd/`、`docs/dev/` 讲的是主包，不属于 CMS，没有搬走，仍在本目录同级。
 
----
+## 去哪儿找什么
 
-## 维护规则
+| 找什么 | 去哪 |
+|---|---|
+| CMS 插件的任务清单（未完成 / 已完成） | `qkznj/docs/cms/未完成tasks.md`、`已完成tasks.md` |
+| CMS 技术路线与目标架构 | `qkznj/docs/cms/基于装修网站官网优化cms.md` |
+| qkznj 站点独立的四期里程碑 | `qkznj/docs/cms/03-qkznj站点独立.md` |
+| 上线时哪些配置必须手工改（包缺口台账） | `qkznj/docs/上线账本.md` |
+| 素材流水线（CC0 封面、京东调研） | `qkznj/docs/cms/cc0-assets/`、`jd-assets/` |
 
-- 本目录只记录官网/CMS 插件的目标边界、架构决策和实施计划。
-- 必须区分“已完成”“已铺垫”“待开发”；规划不能写成已交付能力。
-- 代码、迁移、测试和使用文档全部落地后，才能把事项标记为“已完成”。
-- 对外安装和使用说明写在 `packages/filamentboot-site/README.md` 或 `wiki/`；本目录不替代用户文档。（包重命名为 `filamentboot-cms` 的计划已于 2026-08-03 取消，沿用 `filamentboot-site`。）
+## 一条待办：留在本仓库的缺陷
+
+目录重构（#27）把 CMS 模型挪了命名空间，但没配套数据迁移改写 `media.model_type`，**案例与方案的封面图全部不渲染**（资讯的正常，它命名空间没变）：
+
+- `Filamentboot\FilamentbootSite\Models\SiteCase` → `...\Modules\Corporate\Cases\Models\SiteCase`
+- `...\Models\SiteSolution` → `...\Modules\Corporate\Solutions\Models\SiteSolution`
+
+qkznj 线上和本地都复现，**`demo.xitongapp.com` 大概率同样中招**。正解是在 site 包里补一条改写 `media.model_type` 的迁移——任何装过旧版本的下游升级时都需要它。详见 `qkznj/docs/上线账本.md`。
