@@ -4,8 +4,8 @@ use Filamentboot\FilamentbootSite\Cms\Enums\PageStatus;
 use Filamentboot\FilamentbootSite\Cms\Models\SiteMenu;
 use Filamentboot\FilamentbootSite\Cms\Models\SiteMenuItem;
 use Filamentboot\FilamentbootSite\Cms\Models\SitePage;
-use Filamentboot\FilamentbootSite\Cms\Models\SitePageRevision;
 use Filamentboot\FilamentbootSite\Cms\Models\SiteRedirect;
+use Filamentboot\FilamentbootSite\Cms\Models\SiteRevision;
 use Filamentboot\FilamentbootSite\SiteServiceProvider;
 use Filamentboot\Models\AdminUser;
 use Illuminate\Database\QueryException;
@@ -28,7 +28,7 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     config([
         'filamentboot-site.route.mode'    => 'root',
-        'filamentboot-site.themes'        => ['decoration' => '科技装修（深色）'],
+        'filamentboot-site.themes'        => ['decoration' => '科技装修（浅色）'],
         'filamentboot-site.default_theme' => 'decoration',
     ]);
 
@@ -77,7 +77,8 @@ it('未发布的四态均不进站点地图', function () {
         SitePage::factory()->{$state}()->create(['slug' => "hidden-{$state}"]);
     }
 
-    $xml = (string) $this->get('/sitemap.xml')->assertOk()->getContent();
+    // 三期批次 4 起 /sitemap.xml 是**索引**，内容条目在 content 分片里
+    $xml = (string) $this->get('/sitemap-content.xml')->assertOk()->getContent();
 
     expect($xml)->toContain('visible-in-sitemap');
 
@@ -148,10 +149,11 @@ it('版本快照可写入并关联页面与操作人', function () {
     $page   = SitePage::factory()->create(['slug' => 'revision-page']);
     $author = AdminUser::factory()->create();
 
-    $revision = SitePageRevision::create([
-        'page_id'    => $page->getKey(),
-        'payload'    => ['title_zh' => '快照标题', 'blocks' => []],
-        'created_by' => $author->getKey(),
+    $revision = SiteRevision::create([
+        'revisionable_type' => SitePage::class,
+        'revisionable_id'   => $page->getKey(),
+        'payload'           => ['title_zh' => '快照标题', 'blocks' => []],
+        'created_by'        => $author->getKey(),
     ]);
 
     expect($page->refresh()->revisions->pluck('id'))->toContain($revision->getKey())
@@ -165,23 +167,27 @@ it('版本快照可写入并关联页面与操作人', function () {
  *
  * 计数用「删除前的实际条数」作基准，不写死数字：#15 的观察器让新建页面
  * 自带一条基线快照，写死数字会随观察器行为变化而假红。
+ *
+ * ⚠️ 批次 1.5c 起多态列没有数据库外键可用，级联改由
+ * ContentRevisionObserver::forceDeleted() 手动实现（旧表靠 page_id 的
+ * cascadeOnDelete() 免费获得这个行为）。
  */
 it('页面删除时版本快照级联清理', function () {
     $page = SitePage::factory()->create(['slug' => 'revision-cascade-page']);
 
-    SitePageRevision::create(['page_id' => $page->getKey(), 'payload' => []]);
+    SiteRevision::create(['revisionable_type' => SitePage::class, 'revisionable_id' => $page->getKey(), 'payload' => []]);
 
-    $before = SitePageRevision::count();
+    $before = SiteRevision::count();
 
     expect($before)->toBeGreaterThan(0);
 
     // 软删除不清理快照（内容还能恢复）
     $page->delete();
-    expect(SitePageRevision::count())->toBe($before);
+    expect(SiteRevision::count())->toBe($before);
 
     // 彻底删除才级联
     $page->forceDelete();
-    expect(SitePageRevision::count())->toBe(0);
+    expect(SiteRevision::count())->toBe(0);
 });
 
 /**
@@ -254,4 +260,28 @@ it('重定向默认 301 且源路径唯一', function () {
 
     expect(fn () => SiteRedirect::create(['from_path' => '/old-about', 'to_path' => '/elsewhere']))
         ->toThrow(QueryException::class);
+});
+
+/**
+ * 隐私政策页必须能从公开 URL 打开
+ *
+ * 这不是普通静态页：询盘表除访客自填内容外还会自动记 ip / source / landing_url /
+ * referer（`2026_08_03_100001_add_attribution_to_site_contact_messages_table`），
+ * 收了这些就必须有告知入口。页脚的链接由 SiteSettings.privacy_url 控制，
+ * 指向的页面若打不开，页脚那个链接就是死链——比不放还糟。
+ *
+ * 正文与章节完整性在 SiteSeederTest 里断言，这里只管「路由通不通」。
+ */
+it('隐私政策页可通过公开 URL 访问', function () {
+    SitePage::create([
+        'title_zh'     => '隐私政策',
+        'slug'         => 'privacy',
+        'content_zh'   => '<p>测试正文</p>',
+        'status'       => PageStatus::PUBLISHED,
+        'published_at' => now(),
+    ]);
+
+    $this->get('/privacy')
+        ->assertOk()
+        ->assertSee('隐私政策');
 });

@@ -154,7 +154,8 @@
         ],
         "test": [
             "@php artisan config:clear --ansi @no_additional_args",
-            "@php artisan test"
+            "@php artisan test --testsuite=Unit,Feature",
+            "@php artisan test --testsuite=PackageUnit,PackageFeature,OssUnit,CosUnit"
         ],
         "phpstan": "vendor/bin/phpstan analyse",
         "pint": "vendor/bin/pint",

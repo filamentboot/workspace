@@ -25,9 +25,14 @@ uses(RefreshDatabase::class);
  * @group site
  */
 beforeEach(function () {
+    // 公司名称在设置表单里是 required，而包的默认值是空串（不该把首个接入站点的
+    // 公司名塞给下游）。本文件多处 Livewire::test(SiteSettingsPage)->call('save')
+    // 只填自己关心的那几个字段，不给基线就会卡在这一项的校验上、save 静默不生效。
+    app(SiteSettings::class)->fill(['company_name_zh' => '测试科技有限公司'])->save();
+
     config([
         'filamentboot-site.route.mode'    => 'root',
-        'filamentboot-site.themes'        => ['decoration' => '科技装修（深色）'],
+        'filamentboot-site.themes'        => ['decoration' => '科技装修（浅色）'],
         'filamentboot-site.default_theme' => 'decoration',
     ]);
 

@@ -18,10 +18,10 @@ use Illuminate\Support\Facades\View;
 
 /**
  * 目标可观测信号：设置 active_theme='decoration' 后前台视图解析 themes/decoration 目录；
- * 切换为 'tech-product' 后解析 themes/tech-product 目录（SITE-03 主题切换可观测）
+ * 切换为 'software' 后解析 themes/software 目录（SITE-03 主题切换可观测）
  */
 it('active_theme 切换后视图解析到对应主题目录', function () {
-    $packageBase = realpath(__DIR__.'/../../packages/filamentboot-site');
+    $packageBase = base_path('vendor/filamentboot/filamentboot-site');
 
     /**
      * 测试 decoration 主题路径注册
@@ -41,24 +41,24 @@ it('active_theme 切换后视图解析到对应主题目录', function () {
         ->and(file_exists($decorationPath.'/layouts/base.blade.php'))->toBeTrue();
 
     /**
-     * 测试 tech-product 主题路径注册
+     * 测试 software 主题路径注册
      */
-    $techProductPath = $packageBase.'/resources/views/themes/tech-product';
-    app('view')->addNamespace('filamentboot-site-test-tech-product', $techProductPath);
+    $softwarePath = $packageBase.'/resources/views/themes/software';
+    app('view')->addNamespace('filamentboot-site-test-software', $softwarePath);
 
-    // 验证 tech-product 路径存在并包含 home.blade.php
-    expect(file_exists($techProductPath))->toBeTrue()
-        ->and(file_exists($techProductPath.'/home.blade.php'))->toBeTrue()
-        ->and(file_exists($techProductPath.'/layouts/base.blade.php'))->toBeTrue();
+    // 验证 software 路径存在并包含 home.blade.php
+    expect(file_exists($softwarePath))->toBeTrue()
+        ->and(file_exists($softwarePath.'/home.blade.php'))->toBeTrue()
+        ->and(file_exists($softwarePath.'/layouts/base.blade.php'))->toBeTrue();
 
     /**
      * 验证 SiteServiceProvider::registerThemeViews() 按 active_theme 指向不同目录
      *
      * 通过反射提取 registerThemeViews 中读取 active_theme 并生成 loadViewsFrom 路径的逻辑：
      * - 对 'decoration' 应生成 themes/decoration 路径
-     * - 对 'tech-product' 应生成 themes/tech-product 路径
+     * - 对 'software' 应生成 themes/software 路径
      */
-    $allowedThemes = ['decoration', 'tech-product'];
+    $allowedThemes = ['decoration', 'software'];
 
     foreach ($allowedThemes as $theme) {
         $expectedPath = $packageBase.'/resources/views/themes/'.$theme;
@@ -74,9 +74,9 @@ it('active_theme 切换后视图解析到对应主题目录', function () {
     }
 
     /**
-     * 验证 decoration 主题目录比 tech-product 路径不同（两个主题目录互相区分）
+     * 验证 decoration 主题目录比 software 路径不同（两个主题目录互相区分）
      */
-    expect($decorationPath)->not->toBe($techProductPath);
+    expect($decorationPath)->not->toBe($softwarePath);
 
     /**
      * 验证 SiteServiceProvider 内路径拼接逻辑与磁盘一致

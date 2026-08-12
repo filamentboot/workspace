@@ -267,9 +267,9 @@ class SiteProductResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListSiteProducts::route('/'),
+            'index'  => ListSiteProducts::route('/'),
             'create' => CreateSiteProduct::route('/create'),
-            'edit' => EditSiteProduct::route('/{record}/edit'),
+            'edit'   => EditSiteProduct::route('/{record}/edit'),
         ];
     }
 

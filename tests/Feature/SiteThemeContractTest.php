@@ -1,6 +1,7 @@
 <?php
 
 use Filament\Facades\Filament;
+use Filamentboot\FilamentbootSite\Cms\Blocks\BlockRegistry;
 use Filamentboot\FilamentbootSite\Cms\Enums\PageStatus;
 use Filamentboot\FilamentbootSite\Cms\Models\SiteMenu;
 use Filamentboot\FilamentbootSite\Cms\Models\SiteMenuItem;
@@ -33,6 +34,11 @@ uses(RefreshDatabase::class);
  */
 beforeEach(function () {
     ThemeManifest::flush();
+
+    // 公司名称在设置表单里是 required，而包的默认值是空串（不该把首个接入站点的
+    // 公司名塞给下游）。本文件多处 Livewire::test(SiteSettingsPage)->call('save')
+    // 只填自己关心的那几个字段，不给基线就会卡在这一项的校验上、save 静默不生效。
+    app(SiteSettings::class)->fill(['company_name_zh' => '测试科技有限公司'])->save();
 });
 
 afterEach(function () {
@@ -52,26 +58,48 @@ it('两套主题的清单与实际视图文件一致', function (string $theme) 
         ->and($manifest->key())->toBe($theme)
         ->and($manifest->label())->not->toBe('');
 
-    $base = base_path("packages/filamentboot-site/resources/views/themes/{$theme}");
+    $base   = base_path("vendor/filamentboot/filamentboot-site/resources/views/themes/{$theme}");
+    $shared = base_path('vendor/filamentboot/filamentboot-site/resources/views/shared');
 
+    // 七期批次 1 起，两套主题字节相同的区块视图下沉到 shared/blocks/——
+    // 一个区块的 blade 文件可能落在「本主题目录」或「两套主题共用的 shared/」，
+    // 对账要两处都扫，只扫主题目录会把下沉过的区块误判成"清单声明了但没视图"。
     $blockFiles = collect(glob($base.'/blocks/*.blade.php') ?: [])
+        ->merge(glob($shared.'/blocks/*.blade.php') ?: [])
         ->map(fn (string $path): string => basename($path, '.blade.php'))
+        ->unique()
         ->sort()
         ->values()
         ->all();
 
     expect(collect($manifest->blocks())->sort()->values()->all())->toBe($blockFiles);
 
-    // templates 里除 default 之外的每一项都要有对应视图（default 走 pages/show）
+    // 七期批次 1 补的第三条对账：BlockRegistry（运行时真正认识哪些区块）
+    // 与 theme.php 的 blocks[] 也要一致。此前只有「theme.php ↔ blade 文件」
+    // 与「BlockRegistry ↔ 硬编码在 BlockRegistryTest 里的 10 个 key」两条链，
+    // 两条链从没在同一处交叉过——注册了区块但漏改 theme.php（或反过来）
+    // 都不会被现有测试拦住，只会在后台表单或预检查里表现成静默的"少一个选项"。
+    $registeredKeys = collect(app(BlockRegistry::class)->keys())->sort()->values()->all();
+
+    expect(collect($manifest->blocks())->sort()->values()->all())->toBe(
+        $registeredKeys,
+        "主题 {$theme} 的 theme.php blocks[] 与 BlockRegistry 实际注册的区块不一致"
+    );
+
+    // templates 里除 default 之外的每一项都要有对应视图（default 走 pages/show）。
+    // 同样要两处都查：landing 版式的视图（两套主题字节相同）已下沉到 shared/。
     foreach ($manifest->templates() as $template) {
         if ($template === 'default') {
             continue;
         }
 
-        expect(is_file($base."/pages/templates/{$template}.blade.php"))
+        $existsInTheme  = is_file($base."/pages/templates/{$template}.blade.php");
+        $existsInShared = is_file($shared."/pages/templates/{$template}.blade.php");
+
+        expect($existsInTheme || $existsInShared)
             ->toBeTrue("主题 {$theme} 声明了版式 {$template} 但没有对应视图");
     }
-})->with(['decoration', 'tech-product']);
+})->with(['decoration', 'software']);
 
 /**
  * 清单缺失时按目录推断，且不敢声明任何 feature
@@ -155,7 +183,7 @@ it('内容全被支持时预检查放行', function (string $theme) {
     ]);
 
     expect(app(ThemeSwitchCheck::class)->passes($theme))->toBeTrue();
-})->with(['decoration', 'tech-product']);
+})->with(['decoration', 'software']);
 
 /**
  * 登录一个能改设置的管理员并把插件注册进面板
@@ -199,7 +227,7 @@ it('未确认时主题切换被拒且设置不保存', function () {
     ]);
 
     Livewire::test(SiteSettingsPage::class)
-        ->set('data.active_theme', 'tech-product')
+        ->set('data.active_theme', 'software')
         ->set('data.company_name_zh', '改过的公司名')
         ->set('data.confirm_theme_switch', false)
         ->call('save');
@@ -223,11 +251,11 @@ it('勾了确认后主题切换放行', function () {
     ]);
 
     Livewire::test(SiteSettingsPage::class)
-        ->set('data.active_theme', 'tech-product')
+        ->set('data.active_theme', 'software')
         ->set('data.confirm_theme_switch', true)
         ->call('save');
 
-    expect(app(SiteSettings::class)->active_theme)->toBe('tech-product');
+    expect(app(SiteSettings::class)->active_theme)->toBe('software');
 });
 
 /**
@@ -244,10 +272,10 @@ it('目标主题完全支持时无需确认即可切换', function () {
     ]);
 
     Livewire::test(SiteSettingsPage::class)
-        ->set('data.active_theme', 'tech-product')
+        ->set('data.active_theme', 'software')
         ->call('save');
 
-    expect(app(SiteSettings::class)->active_theme)->toBe('tech-product');
+    expect(app(SiteSettings::class)->active_theme)->toBe('software');
 });
 
 /**

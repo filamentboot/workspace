@@ -314,9 +314,9 @@ class SiteCaseResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListSiteCases::route('/'),
+            'index'  => ListSiteCases::route('/'),
             'create' => CreateSiteCase::route('/create'),
-            'edit' => EditSiteCase::route('/{record}/edit'),
+            'edit'   => EditSiteCase::route('/{record}/edit'),
         ];
     }
 

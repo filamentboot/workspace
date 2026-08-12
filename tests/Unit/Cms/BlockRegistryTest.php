@@ -12,13 +12,14 @@ use Filamentboot\FilamentbootSite\Cms\Blocks\HeroBlock;
 use Filamentboot\FilamentbootSite\Cms\Blocks\MapBlock;
 use Filamentboot\FilamentbootSite\Cms\Blocks\MediaTextBlock;
 use Filamentboot\FilamentbootSite\Cms\Blocks\RichContentBlock;
+use Filamentboot\FilamentbootSite\Cms\Blocks\RoadmapBlock;
 
 /**
  * 区块注册表与内置区块测试（#12）
  *
  * 覆盖场景：
  * - 注册表作为安全白名单：未知 key 查不到、非法 key 与重复 key 被拒
- * - 9 个内置区块均已注册且 key 唯一
+ * - 10 个内置区块均已注册且 key 唯一
  * - 各区块 rules() 能挡住缺字段与超长输入
  * - 有图必须有 alt
  *
@@ -28,12 +29,12 @@ use Filamentboot\FilamentbootSite\Cms\Blocks\RichContentBlock;
  */
 
 /**
- * 9 个内置区块全部注册到容器单例
+ * 10 个内置区块全部注册到容器单例
  */
-it('容器中注册了 9 个内置区块', function () {
+it('容器中注册了 10 个内置区块', function () {
     $registry = app(BlockRegistry::class);
 
-    expect($registry->keys())->toHaveCount(9)
+    expect($registry->keys())->toHaveCount(10)
         ->and($registry->keys())->toContain(
             'hero',
             'rich-content',
@@ -44,6 +45,7 @@ it('容器中注册了 9 个内置区块', function () {
             'contact-form',
             'map',
             'gated-download',
+            'roadmap',
         );
 });
 
@@ -136,6 +138,7 @@ it('内置区块契约完整', function (string $class) {
     ContactFormBlock::class,
     MapBlock::class,
     GatedDownloadBlock::class,
+    RoadmapBlock::class,
 ]);
 
 /**
@@ -258,6 +261,33 @@ it('cta 区块必填与样式校验', function () {
         'button_label' => '预约咨询',
         'style'        => 'rainbow',
     ]))->toHaveKey('style');
+});
+
+/**
+ * roadmap 区块：条目为空被拒，条目内标题与状态必填
+ */
+it('roadmap 区块条目校验', function () {
+    $block = new RoadmapBlock;
+
+    expect($block->validate(['items' => []]))->toHaveKey('items');
+
+    expect($block->validate([
+        'items' => [['status' => 'available', 'description' => '缺标题']],
+    ]))->toHaveKey('items.0.title');
+});
+
+/**
+ * roadmap 区块：状态只允许 available / in_progress / planned
+ *
+ * 三档是四期已拍板的固定分类，不开放自定义状态字符串——开放了就会有人
+ * 悄悄多出第四档，Roadmap 页「只分三档」的纪律就管不住了。
+ */
+it('roadmap 区块状态取值受限', function () {
+    $errors = (new RoadmapBlock)->validate([
+        'items' => [['status' => 'shipped', 'title' => '已发布']],
+    ]);
+
+    expect($errors)->toHaveKey('items.0.status');
 });
 
 /**

@@ -1,7 +1,10 @@
 <?php
 
+use Filamentboot\FilamentbootSite\Cms\Enums\PageStatus;
 use Filamentboot\FilamentbootSite\Jobs\PushUrlsToBaidu;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Models\SiteCase;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Cities\Models\SiteCityPage;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Cities\Models\SiteRegion;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Products\Models\SiteProduct;
 use Filamentboot\FilamentbootSite\Observers\SearchPushObserver;
 use Filamentboot\FilamentbootSite\Services\BaiduPushService;
@@ -25,7 +28,7 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     config([
         'filamentboot-site.route.mode'    => 'root',
-        'filamentboot-site.themes'        => ['decoration' => '科技装修（深色）'],
+        'filamentboot-site.themes'        => ['decoration' => '科技装修（浅色）'],
         'filamentboot-site.default_theme' => 'decoration',
     ]);
 
@@ -43,11 +46,13 @@ beforeEach(function () {
     // 观察器在 provider 的 pluginIsEnabled 分支里注册，测试里手工挂
     SiteCase::observe(SearchPushObserver::class);
     SiteProduct::observe(SearchPushObserver::class);
+    SiteCityPage::observe(SearchPushObserver::class);
 });
 
 afterEach(function () {
     SiteCase::flushEventListeners();
     SiteProduct::flushEventListeners();
+    SiteCityPage::flushEventListeners();
 });
 
 /**
@@ -199,12 +204,12 @@ it('取消发布不派发推送任务', function () {
 
     $product = SiteProduct::factory()->create([
         'slug'         => 'push-unpublish',
-        'is_published' => true,
+        'published_at' => now(),
     ]);
 
     Queue::fake();
 
-    $product->update(['is_published' => false]);
+    $product->update(['published_at' => null]);
 
     Queue::assertNothingPushed();
 });
@@ -239,6 +244,52 @@ it('回推命令默认只试运行不发请求', function () {
     Http::assertNothingSent();
 });
 
+/**
+ * 城市页没有 slug 列，URL 由 region 关联拼出——这是 2026-08-11 补上的分支，
+ * 单独钉住「province/city 两段式」这个与其余六类不同的 URL 形状不会拼错。
+ */
+it('城市页首次发布时按省市两段式 URL 派发推送任务', function () {
+    enableBaiduPush();
+
+    // 不 fake 队列：QUEUE_CONNECTION=sync（phpunit.xml），
+    // dispatch 会同步跑到 BaiduPushService::push()，fake Http 断言实际 URL 更直接
+    // ——PushUrlsToBaidu::$urls 是 protected，测试闭包访问不到，没有更省事的路。
+    Http::fake([
+        'data.zz.baidu.com/*' => Http::response(['remain' => 2999, 'success' => 1]),
+    ]);
+
+    $province = SiteRegion::factory()->province()->create(['slug' => 'hubei']);
+    $city     = SiteRegion::factory()->childOf($province)->create(['slug' => 'wuhan']);
+    $cityPage = SiteCityPage::factory()->forRegion($city)->draft()->create();
+
+    Http::assertNothingSent();
+
+    $cityPage->update(['status' => PageStatus::PUBLISHED, 'published_at' => now()->subMinute()]);
+
+    Http::assertSent(fn ($request) => str_contains($request->body(), '/city/hubei/wuhan'));
+});
+
+/**
+ * 城市页没有 slug 列，allPublishedUrls() 的 pluck('slug') 那条通用路径吃不了它，
+ * 必须走单独分支——这里钉住 --all 回推命令不会因为多了城市页就崩掉。
+ */
+it('回推命令 --all 能带上城市页且不因缺 slug 列崩掉', function () {
+    enableBaiduPush();
+
+    Http::fake([
+        'data.zz.baidu.com/*' => Http::response(['remain' => 2990, 'success' => 1]),
+    ]);
+
+    $province = SiteRegion::factory()->province()->create(['slug' => 'jiangsu']);
+    $city     = SiteRegion::factory()->childOf($province)->create(['slug' => 'nanjing']);
+    SiteCityPage::factory()->forRegion($city)->create(['published_at' => now()->subDay()]);
+
+    $this->artisan('filamentboot-site:push-baidu', ['--all' => true])
+        ->assertExitCode(0);
+
+    Http::assertSent(fn ($request) => str_contains($request->body(), '/city/jiangsu/nanjing'));
+});
+
 it('回推命令加 --all 时推送全部已发布内容', function () {
     enableBaiduPush();
 
@@ -248,7 +299,7 @@ it('回推命令加 --all 时推送全部已发布内容', function () {
 
     SiteCase::factory()->create(['slug' => 'pushed-a', 'published_at' => now()->subDay()]);
     SiteCase::factory()->create(['slug' => 'pushed-draft', 'published_at' => null]);
-    SiteProduct::factory()->create(['slug' => 'pushed-b', 'is_published' => true]);
+    SiteProduct::factory()->create(['slug' => 'pushed-b', 'published_at' => now()]);
 
     $this->artisan('filamentboot-site:push-baidu', ['--all' => true])
         ->assertExitCode(0);

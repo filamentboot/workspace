@@ -4,6 +4,7 @@ use Filamentboot\FilamentbootSite\Cms\Blocks\AbstractBlock;
 use Filamentboot\FilamentbootSite\Cms\Blocks\BlockRegistry;
 use Filamentboot\FilamentbootSite\Cms\Rendering\BlockRenderer;
 use Filamentboot\FilamentbootSite\Cms\Rendering\BlockSanitizer;
+use Filamentboot\FilamentbootSite\Settings\SiteSettings;
 use Filamentboot\FilamentbootSite\SiteServiceProvider;
 use Illuminate\Support\Facades\Log;
 
@@ -17,7 +18,7 @@ use Illuminate\Support\Facades\Log;
  * - withDefaults() 补齐历史 payload 缺失字段后再渲染
  * - faq 区块转 FAQPage 结构化数据；空问答不产出无效节点
  * - BlockSanitizer 只净化 rich-content.content，其余字段原样保留
- * - 两套主题各 9 个区块视图文件齐备（§0.3 第 1 条）
+ * - 两套主题各 10 个区块视图文件齐备（§0.3 第 1 条）
  *
  * 视图解析需要主题命名空间就位，因此手工调 registerThemeViews()——
  * 单测不经 HTTP，SiteServiceProvider::boot() 里那段只在插件启用时跑。
@@ -251,19 +252,27 @@ it('保存侧净化不改动其它区块', function () {
 });
 
 /**
- * 两套主题各 9 个区块视图文件齐备
+ * 两套主题都能解析出全部 10 个区块视图
  *
- * 任何新增视觉视图必须在两个主题目录各存一份完整副本（§0.3 第 1 条）：
- * 客户装上后可能只想保留一套，两份互不依赖才删得干净。
+ * 每个已注册区块，两套主题各自都要能渲染得出来——不是「文件必须物理放在
+ * 主题目录里」。七期批次 1 起，两套主题字节相同的区块视图已下沉到
+ * resources/views/shared/blocks/，按视图解析链找而不是硬编码主题目录，
+ * 既不会把合法下沉的文件误判成缺失，真分岔出自己版本的区块（放回主题
+ * 目录）也照样测得到——两种情况对客户来说都是"这个主题渲染得出这个区块"。
  */
-it('两套主题的 9 个区块视图都存在', function () {
-    $base = realpath(__DIR__.'/../../../packages/filamentboot-site/resources/views/themes');
+it('两套主题都能解析出全部 10 个区块视图', function (string $theme) {
+    $settings               = app(SiteSettings::class);
+    $settings->active_theme = $theme;
+    app()->instance(SiteSettings::class, $settings);
 
-    foreach (['decoration', 'tech-product'] as $theme) {
-        foreach (app(BlockRegistry::class)->keys() as $key) {
-            $path = $base.'/'.$theme.'/blocks/'.$key.'.blade.php';
+    (new ReflectionMethod(SiteServiceProvider::class, 'registerThemeViews'))
+        ->invoke(new SiteServiceProvider(app()));
 
-            $this->assertFileExists($path, "主题 {$theme} 缺少区块视图 {$key}.blade.php");
-        }
+    app('view')->flushFinderCache();
+
+    foreach (app(BlockRegistry::class)->keys() as $key) {
+        expect(view()->exists("filamentboot-site::blocks.{$key}"))->toBeTrue(
+            "主题 {$theme} 解析不到区块视图 {$key}"
+        );
     }
-});
+})->with(['decoration', 'software']);

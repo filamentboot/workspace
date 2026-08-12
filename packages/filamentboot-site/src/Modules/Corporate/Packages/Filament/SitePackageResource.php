@@ -332,9 +332,9 @@ class SitePackageResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListSitePackages::route('/'),
+            'index'  => ListSitePackages::route('/'),
             'create' => CreateSitePackage::route('/create'),
-            'edit' => EditSitePackage::route('/{record}/edit'),
+            'edit'   => EditSitePackage::route('/{record}/edit'),
         ];
     }
 

@@ -208,7 +208,7 @@ it('同品牌的产品被认作相关', function () {
 it('未发布产品不会进入推荐', function () {
     $record = SiteProduct::factory()->create(['brand' => '晴空智能']);
 
-    SiteProduct::factory()->count(3)->unpublished()->create(['brand' => '晴空智能']);
+    SiteProduct::factory()->count(3)->draft()->create(['brand' => '晴空智能']);
 
     $related = app(RelatedContent::class)->for(
         SiteProduct::published()->orderBy('sort')->latest('id'),
@@ -233,7 +233,7 @@ it('案例详情页渲染相关案例', function (string $theme) {
         ->assertOk()
         ->assertSee('相关案例')
         ->assertSee('邻居家案例');
-})->with(['decoration', 'tech-product']);
+})->with(['decoration', 'software']);
 
 it('方案详情页渲染相关方案', function (string $theme) {
     switchThemeForRelated($theme);
@@ -245,7 +245,7 @@ it('方案详情页渲染相关方案', function (string $theme) {
         ->assertOk()
         ->assertSee('相关方案')
         ->assertSee('全屋照明方案');
-})->with(['decoration', 'tech-product']);
+})->with(['decoration', 'software']);
 
 it('产品详情页渲染相关产品', function (string $theme) {
     switchThemeForRelated($theme);
@@ -257,7 +257,7 @@ it('产品详情页渲染相关产品', function (string $theme) {
         ->assertOk()
         ->assertSee('相关产品')
         ->assertSee('智能门锁 Pro');
-})->with(['decoration', 'tech-product']);
+})->with(['decoration', 'software']);
 
 it('只有一条内容时详情页不渲染相关区块', function (string $theme) {
     switchThemeForRelated($theme);
@@ -267,4 +267,4 @@ it('只有一条内容时详情页不渲染相关区块', function (string $them
     $this->get('/cases/'.$record->slug)
         ->assertOk()
         ->assertDontSee('相关案例');
-})->with(['decoration', 'tech-product']);
+})->with(['decoration', 'software']);

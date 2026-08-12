@@ -12,6 +12,7 @@ use Filamentboot\FilamentbootSite\Modules\News\Models\NewsArticle;
 use Filamentboot\FilamentbootSite\Modules\News\Models\NewsCategory;
 use Filamentboot\FilamentbootSite\Settings\SiteSettings;
 use Filamentboot\FilamentbootSite\SiteServiceProvider;
+use Filamentboot\FilamentbootSite\Support\ContentTypeLabels;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
@@ -40,7 +41,7 @@ beforeEach(function () {
         (new ReflectionMethod(SiteServiceProvider::class, $method))->invoke($provider);
     }
 
-    require base_path('packages/filamentboot-site/routes/site.php');
+    require base_path('vendor/filamentboot/filamentboot-site/routes/site.php');
 
     app('router')->getRoutes()->refreshNameLookups();
     app('router')->getRoutes()->refreshActionLookups();
@@ -72,7 +73,7 @@ function switchSiteTheme(string $theme): void
     app('view')->flushFinderCache();
 }
 
-dataset('themes', ['decoration', 'tech-product']);
+dataset('themes', ['decoration', 'software']);
 
 /**
  * 产品详情页渲染图集轮播：每张图都在 DOM 里，缩略图按钮可切换
@@ -83,7 +84,7 @@ it('产品详情页渲染图集轮播', function (string $theme) {
     $product = SiteProduct::factory()->create([
         'slug'         => 'zhi-neng-mian-ban',
         'title_zh'     => '智能面板',
-        'is_published' => true,
+        'published_at' => now(),
         'content_zh'   => '<p>支持米家与 HomeKit 双生态。</p>',
     ]);
 
@@ -111,13 +112,13 @@ it('产品无任何图片时降级到占位组件', function (string $theme) {
     $product = SiteProduct::factory()->create([
         'slug'         => 'wu-tu-chan-pin',
         'title_zh'     => '无图产品',
-        'is_published' => true,
+        'published_at' => now(),
     ]);
 
     $response = $this->get(route('site.products.show', $product->slug))
         ->assertOk()
-        // 占位组件的无障碍标签，与导航里的「智能产品」字样区分开
-        ->assertSee('智能产品（暂无图片）');
+        // 占位组件的无障碍标签，与导航里的内容类型词区分开
+        ->assertSee(ContentTypeLabels::product().'（暂无图片）');
 
     // 不产生空 src 的破图，也不渲染轮播控件
     expect($response->content())
@@ -170,9 +171,13 @@ it('业主见证信息不全时不渲染卡片', function (string $theme) {
 
 /**
  * 首页见证轮播只收录填齐了姓名与引言的案例
+ *
+ * 只测 decoration：业主见证轮播是它的业务概念，software 主题的首页自五期批次
+ * 4c 起改成七屏结构（《官网对标》§5.1），不再有这一屏——软件产品官网没有
+ * 「业主见证」这个概念，见 SoftwareHomeSectionProvider 类注释。
  */
-it('首页见证轮播过滤未配置见证的案例', function (string $theme) {
-    switchSiteTheme($theme);
+it('首页见证轮播过滤未配置见证的案例', function () {
+    switchSiteTheme('decoration');
 
     SiteCase::factory()->create([
         'slug'           => 'you-jian-zheng',
@@ -194,7 +199,7 @@ it('首页见证轮播过滤未配置见证的案例', function (string $theme) 
         ->assertSee('业主说')
         ->assertSee('王先生')
         ->assertSee('施工干净，收尾没让我操心。');
-})->with('themes');
+});
 
 /**
  * 资讯三个页面在两套主题下都能渲染
@@ -262,7 +267,7 @@ it('资讯无封面时降级到占位组件', function (string $theme) {
 
     $response = $this->get(route('site.news.index'))
         ->assertOk()
-        ->assertSee('智能家居资讯（暂无图片）');
+        ->assertSee(ContentTypeLabels::news().'（暂无图片）');
 
     expect($response->content())->not->toContain('<img src=""');
 })->with('themes');
@@ -334,7 +339,7 @@ it('详情页在两套主题下都渲染面包屑', function (string $theme) {
 
     $html = $this->get(route('site.cases.show', $case->slug))->assertOk()->content();
 
-    foreach (['aria-label="面包屑"', 'aria-current="page"', '装修案例', '面包屑校验案例'] as $needle) {
+    foreach (['aria-label="面包屑"', 'aria-current="page"', ContentTypeLabels::case(), '面包屑校验案例'] as $needle) {
         $this->assertStringContainsString($needle, $html, "{$theme} 主题的面包屑缺了「{$needle}」");
     }
 })->with('themes');
@@ -521,9 +526,14 @@ it('未知区块在双主题下优雅降级', function (string $theme) {
  * 抽出这个提供者的全部意义就是给宿主一个换内容源的接口——如果 bind 不生效，
  * 那这次抽取只是把代码挪了个地方。用一个空提供者做最直接的判据：
  * 换掉之后首页那批区块数据必须真的空掉。
+ *
+ * 只测 decoration：这里用 featuredCases 类内容验证换源机制，software 主题
+ * 的首页自五期批次 4c 起不再展示 featuredCases（见上一条同理）——换源机制
+ * 本身在 software 下由本站真实的 SoftwareHomeSectionProvider 验证过，
+ * 不需要再拿这条装修业务形状的用例重复一遍。
  */
-it('绑定自定义 HomeSectionProvider 后首页数据换源', function (string $theme) {
-    switchSiteTheme($theme);
+it('绑定自定义 HomeSectionProvider 后首页数据换源', function () {
+    switchSiteTheme('decoration');
 
     SiteCase::factory()->create([
         'title_zh'       => '会被换掉的案例',
@@ -553,7 +563,7 @@ it('绑定自定义 HomeSectionProvider 后首页数据换源', function (string
     });
 
     $this->get('/')->assertOk()->assertDontSee('会被换掉的案例');
-})->with('themes');
+});
 
 /**
  * 二级导航在双主题下都渲染出下拉与子项（#28）
@@ -701,4 +711,117 @@ it('地图区块对白名单外地址只渲染文字地址', function (string $t
     expect($html)->toContain('武汉市洪山区某路 2 号')
         ->and($html)->not->toContain('evil.example')
         ->and($html)->not->toContain('<iframe');
+})->with('themes');
+
+/**
+ * 智能亮点（3.5 期 A 段补的展示）
+ *
+ * `site_cases.smart_features` 后台一直有输入框、12 条案例全填了内容，
+ * 而**两套主题、控制器、搜索、结构化数据一处都不碰它**——典型的「填了没用」。
+ * 补上渲染之后要守两件事：内容真的出得来，以及分隔符三种写法都吃得下
+ * （顿号是运营的默认习惯，逗号与换行是实际数据里出现过的另两种）。
+ */
+it('案例详情页把智能亮点渲染出来', function (string $theme) {
+    switchSiteTheme($theme);
+
+    SiteCase::factory()->create([
+        'slug'           => 'smart-features-case',
+        'title_zh'       => '智能亮点渲染',
+        'smart_features' => "全屋灯光分路、电动窗帘，可视门铃\n中央空调温控",
+        'published_at'   => now()->subDay(),
+    ]);
+
+    $html = $this->get('/cases/smart-features-case')->assertOk()->getContent();
+
+    expect($html)->toContain('这套做了什么')
+        ->and($html)->toContain('全屋灯光分路')
+        ->and($html)->toContain('电动窗帘')
+        ->and($html)->toContain('可视门铃')
+        ->and($html)->toContain('中央空调温控');
+})->with('themes');
+
+/**
+ * 留空时整块不渲染，不留空标题
+ */
+it('案例没填智能亮点时不渲染那一段', function (string $theme) {
+    switchSiteTheme($theme);
+
+    SiteCase::factory()->create([
+        'slug'           => 'no-smart-features-case',
+        'title_zh'       => '没有智能亮点',
+        'smart_features' => null,
+        'published_at'   => now()->subDay(),
+    ]);
+
+    expect($this->get('/cases/no-smart-features-case')->assertOk()->getContent())
+        ->not->toContain('这套做了什么');
+})->with('themes');
+
+/*
+|--------------------------------------------------------------------------
+| 页脚简介与列表页导语（3.5 期 A 段修复六）
+|--------------------------------------------------------------------------
+|
+| 这 6 段文案此前写死在两套主题的 blade 里，后台一个字都改不了。改成站点设置
+| 之后**没有视图侧兜底**：设置空着前台就整段不渲染。下面两条一正一反锁这件事。
+*/
+
+/** 列表页地址 => 对应的设置属性名 */
+dataset('listIntros', [
+    '/cases'     => ['/cases', 'list_intro_cases_zh'],
+    '/solutions' => ['/solutions', 'list_intro_solutions_zh'],
+    '/products'  => ['/products', 'list_intro_products_zh'],
+    '/packages'  => ['/packages', 'list_intro_packages_zh'],
+    '/news'      => ['/news', 'list_intro_news_zh'],
+]);
+
+/**
+ * 五个列表页的导语都读站点设置，两套主题各跑一遍
+ */
+it('列表页导语来自站点设置', function (string $path, string $property) {
+    foreach (['decoration', 'software'] as $theme) {
+        switchSiteTheme($theme);
+
+        $settings              = app(SiteSettings::class);
+        $settings->{$property} = "「{$theme}」这段导语来自后台";
+        app()->instance(SiteSettings::class, $settings);
+
+        expect($this->get($path)->assertOk()->getContent())
+            ->toContain("「{$theme}」这段导语来自后台");
+    }
+})->with('listIntros');
+
+/**
+ * 设置留空时整段不渲染，且页面本身照常出（不是白屏也不是留个空 p）
+ */
+it('导语留空时列表页不渲染导语段', function (string $path, string $property) {
+    switchSiteTheme('decoration');
+
+    $settings              = app(SiteSettings::class);
+    $settings->{$property} = '';
+    app()->instance(SiteSettings::class, $settings);
+
+    $html = $this->get($path)->assertOk()->getContent();
+
+    // 标题还在，说明页面正常渲染；导语那一段整个消失
+    expect($html)->toContain('-heading')
+        ->and($html)->not->toContain('这段导语来自后台');
+})->with('listIntros');
+
+/**
+ * 页脚简介同样来自站点设置，留空则整段不渲染
+ */
+it('页脚简介来自站点设置', function (string $theme) {
+    switchSiteTheme($theme);
+
+    $settings                  = app(SiteSettings::class);
+    $settings->footer_intro_zh = '页脚这段话也是后台填的';
+    app()->instance(SiteSettings::class, $settings);
+
+    expect($this->get('/')->assertOk()->getContent())->toContain('页脚这段话也是后台填的');
+
+    $settings->footer_intro_zh = '';
+    app()->instance(SiteSettings::class, $settings);
+
+    expect($this->get('/')->assertOk()->getContent())->not->toContain('页脚这段话也是后台填的');
 })->with('themes');

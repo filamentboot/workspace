@@ -61,10 +61,60 @@ it('演示种子灌入预期数量的内容', function () {
 
     expect(SiteCase::count())->toBe(6)
         ->and(SiteProduct::count())->toBe(18)
-        ->and(SitePage::count())->toBe(4)
+        // about / contact / services / faq / privacy —— privacy 是二期收尾补的合规页
+        ->and(SitePage::count())->toBe(5)
         // 11 篇里有 1 篇草稿
         ->and(NewsArticle::count())->toBe(11)
         ->and(NewsArticle::published()->count())->toBe(10);
+});
+
+/**
+ * 隐私政策页是合规要件，不是普通演示页
+ *
+ * 询盘表除访客填写的内容外，还会自动记 ip / source / landing_url / referer
+ * （见 2026_08_03_100001_add_attribution_to_site_contact_messages_table）。
+ * 收了这些就必须有告知入口——这一条锁住「页在、已发布、能访问」，
+ * 免得哪次改种子把它顺手删了却没人发现。
+ */
+it('隐私政策页存在、已发布且十章骨架完整', function () {
+    $this->seed(SiteDemoSeeder::class);
+
+    $privacy = SitePage::where('slug', 'privacy')->first();
+
+    expect($privacy)->not->toBeNull()
+        ->and($privacy->status)->toBe(PageStatus::PUBLISHED);
+
+    // 十章骨架照《个保法》催生的通行版式排（小米、华为的隐私政策同一套结构），
+    // 缺哪一章都是实质缺口。前台可达性由 SitePageStatusTest 覆盖——那边才装了前台路由。
+    foreach ([
+        '我们如何收集和使用您的个人信息',
+        '我们如何使用 Cookie 和同类技术',
+        '我们如何共享、转让、公开披露您的个人信息',
+        '我们如何保存和保护您的个人信息',
+        '您如何管理您的个人信息',
+        '我们如何处理未成年人的个人信息',
+        '第三方链接及其产品与服务',
+        '您的个人信息如何在全球范围内传输',
+        '本政策如何更新',
+        '如何联系我们',
+    ] as $heading) {
+        expect($privacy->content_zh)->toContain($heading);
+    }
+});
+
+it('隐私政策页不写死运营主体信息', function () {
+    $this->seed(SiteDemoSeeder::class);
+
+    // 正文要能原样回流开源仓库：主体信息由页脚的 SiteSettings 渲染，
+    // 写进正文就成了只对本站成立的假设（CLAUDE.md 的包内红线）。
+    $content = SitePage::where('slug', 'privacy')->value('content_zh');
+
+    expect($content)
+        ->not->toContain('示例装修')
+        ->not->toContain('晴空妙享')
+        ->not->toContain('qkznj')
+        ->not->toContain('400-800-6688')
+        ->not->toContain('027-');
 });
 
 it('种子重复执行不产生重复数据', function () {
@@ -84,10 +134,45 @@ it('每个产品都有详情正文且处于已发布状态', function () {
     $this->seed(SiteDemoSeeder::class);
 
     SiteProduct::all()->each(function (SiteProduct $product): void {
-        expect($product->is_published)->toBeTrue()
+        expect($product->published_at)->not->toBeNull()
             ->and($product->content_zh)->not->toBeEmpty()
-            ->and($product->description_zh)->not->toBeEmpty()
-            ->and($product->price)->not->toBeNull();
+            ->and($product->description_zh)->not->toBeEmpty();
+    });
+});
+
+/**
+ * 产品是渠道商口径：不报价、品牌不是站点公司名
+ *
+ * 这两条都是二期 C 段刻意定的，且都属于「破坏了不报错」的那类：
+ *
+ * 1. `price` 一律 null —— 不上第三方价格，那是别人的经营数据、会过期。前台在 price
+ *    为空时渲染「咨询价格」，填了价反而是回归。本测试原先断言的是 `price` **不为**
+ *    null，正好锁的是改之前那套自有品牌口径。
+ * 2. `brand` 不能是公司名 —— 示例装修有限公司是装修公司，卖各品牌智能产品 + 装修服务 +
+ *    装修方案，公司名不是产品品牌。`SiteFrontController::productSchema()` 会把 brand
+ *    当 `schema.org/Brand` 输出，填错等于对外声明这些产品是自有品牌。
+ */
+it('产品不报价且品牌不是站点公司名', function () {
+    $this->seed(SiteDemoSeeder::class);
+
+    SiteProduct::all()->each(function (SiteProduct $product): void {
+        expect($product->price)->toBeNull()
+            ->and($product->brand)->not->toBe('示例装修有限公司');
+    });
+});
+
+/**
+ * 产品正文里不出现自拟的「型号」
+ *
+ * QK- 是本文件自拟的编号，真实品牌的产品不会有本公司型号，所以正文里它只能叫
+ * 「选配编号」（装修方案的选配项编号）。存量数据由宿主迁移
+ * `2026_08_05_110000_fix_demo_product_brand_and_price.php` 同步改写。
+ */
+it('产品正文不把自拟编号写成型号', function () {
+    $this->seed(SiteDemoSeeder::class);
+
+    SiteProduct::all()->each(function (SiteProduct $product): void {
+        expect($product->content_zh)->not->toContain('型号 QK-');
     });
 });
 

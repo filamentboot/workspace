@@ -2,12 +2,11 @@
 
 use Filamentboot\FilamentbootSite\Cms\Enums\PageStatus;
 use Filamentboot\FilamentbootSite\Cms\Models\SitePage;
-use Filamentboot\FilamentbootSite\Cms\Models\SitePageRevision;
-use Filamentboot\FilamentbootSite\Cms\Observers\SitePageObserver;
+use Filamentboot\FilamentbootSite\Cms\Models\SiteRevision;
 use Filamentboot\Models\AdminUser;
 
 /**
- * 页面版本快照与回滚测试（#15）
+ * 内容版本快照与回滚测试（#15，深度场景以 SitePage 为代表）
  *
  * 覆盖场景：
  * - 新建写基线快照（没有基线就回不到最初那一版）
@@ -17,8 +16,10 @@ use Filamentboot\Models\AdminUser;
  * - 回滚恢复内容但**不动 status / published_at**
  * - 回滚本身产生新快照而不是删除历史
  *
- * 观察器由 SiteServiceProvider::boot() 无条件注册（与插件启用状态无关），
- * 所以这里不需要手工挂载。
+ * 观察器（ContentRevisionObserver）由 SiteServiceProvider::boot() 无条件注册
+ * 给全部 7 类内容（与插件启用状态无关），所以这里不需要手工挂载。共享逻辑
+ * 只在 SitePage 这一个类型上深度验证，其余 6 类的接线覆盖见
+ * SiteContentRevisionTest；泛化前的行为基线不变。
  *
  * @group site
  */
@@ -29,7 +30,9 @@ use Filamentboot\Models\AdminUser;
 it('新建页面写入基线快照', function () {
     $page = SitePage::factory()->draft()->create(['title_zh' => '初版标题']);
 
-    $revisions = SitePageRevision::where('page_id', $page->getKey())->get();
+    $revisions = SiteRevision::where('revisionable_type', SitePage::class)
+        ->where('revisionable_id', $page->getKey())
+        ->get();
 
     expect($revisions)->toHaveCount(1)
         ->and($revisions[0]->payload['title_zh'])->toBe('初版标题')
@@ -46,9 +49,7 @@ it('内容变更写入新快照', function () {
     $page->update(['title_zh' => '第二版']);
     $page->update(['content_zh' => '<p>新正文</p>']);
 
-    $payloads = SitePageRevision::where('page_id', $page->getKey())
-        ->orderBy('id')
-        ->pluck('payload');
+    $payloads = $page->revisions()->reorder('id')->pluck('payload');
 
     expect($payloads)->toHaveCount(3)
         ->and($payloads[0]['title_zh'])->toBe('第一版')
@@ -66,7 +67,7 @@ it('未跟踪字段变更不写快照', function () {
 
     $page->update(['sort' => 999]);
 
-    expect(SitePageRevision::where('page_id', $page->getKey())->count())->toBe(1);
+    expect($page->revisions()->count())->toBe(1);
 });
 
 /**
@@ -77,9 +78,9 @@ it('状态变更写入快照', function () {
 
     $page->update(['status' => PageStatus::PUBLISHED]);
 
-    $latest = SitePageRevision::where('page_id', $page->getKey())->orderByDesc('id')->first();
+    $latest = $page->revisions()->first();
 
-    expect(SitePageRevision::where('page_id', $page->getKey())->count())->toBe(2)
+    expect($page->revisions()->count())->toBe(2)
         ->and($latest->payload['status'])->toBe('published');
 });
 
@@ -92,8 +93,7 @@ it('快照记录操作人', function () {
 
     $page = SitePage::factory()->draft()->create();
 
-    expect(SitePageRevision::where('page_id', $page->getKey())->first()->created_by)
-        ->toBe($user->getKey());
+    expect($page->revisions()->first()->created_by)->toBe($user->getKey());
 });
 
 /**
@@ -102,7 +102,7 @@ it('快照记录操作人', function () {
 it('CLI 场景操作人为空', function () {
     $page = SitePage::factory()->draft()->create();
 
-    expect(SitePageRevision::where('page_id', $page->getKey())->first()->created_by)->toBeNull();
+    expect($page->revisions()->first()->created_by)->toBeNull();
 });
 
 /**
@@ -117,8 +117,7 @@ it('超过上限的旧快照被裁剪', function () {
         $page->update(['title_zh' => 'v'.$i]);
     }
 
-    $titles = SitePageRevision::where('page_id', $page->getKey())
-        ->orderBy('id')
+    $titles = $page->revisions()->reorder('id')
         ->pluck('payload')
         ->map(fn (array $payload): string => $payload['title_zh'])
         ->all();
@@ -139,7 +138,7 @@ it('上限为零时不裁剪', function () {
         $page->update(['title_zh' => 'v'.$i]);
     }
 
-    expect(SitePageRevision::where('page_id', $page->getKey())->count())->toBe(5);
+    expect($page->revisions()->count())->toBe(5);
 });
 
 /**
@@ -152,7 +151,7 @@ it('回滚恢复内容字段', function () {
         'blocks'     => [['type' => 'hero', 'data' => ['title' => '原区块']]],
     ]);
 
-    $baseline = SitePageRevision::where('page_id', $page->getKey())->firstOrFail();
+    $baseline = $page->revisions()->firstOrFail();
 
     $page->update([
         'title_zh'   => '改后标题',
@@ -162,7 +161,7 @@ it('回滚恢复内容字段', function () {
 
     // 模拟 RevisionsRelationManager::rollbackTo() 的恢复集合
     $restore = [];
-    foreach (SitePageObserver::RESTORABLE as $field) {
+    foreach (SitePage::revisionRestorableFields() as $field) {
         if (array_key_exists($field, $baseline->payload)) {
             $restore[$field] = $baseline->payload[$field];
         }
@@ -182,7 +181,7 @@ it('回滚恢复内容字段', function () {
 it('回滚不恢复发布状态', function () {
     $page = SitePage::factory()->create(['title_zh' => '发布时的标题']);
 
-    $publishedRevision = SitePageRevision::where('page_id', $page->getKey())->firstOrFail();
+    $publishedRevision = $page->revisions()->firstOrFail();
 
     expect($publishedRevision->payload['status'])->toBe('published');
 
@@ -190,7 +189,7 @@ it('回滚不恢复发布状态', function () {
     $page->update(['status' => PageStatus::ARCHIVED, 'title_zh' => '归档后的标题']);
 
     $restore = [];
-    foreach (SitePageObserver::RESTORABLE as $field) {
+    foreach (SitePage::revisionRestorableFields() as $field) {
         if (array_key_exists($field, $publishedRevision->payload)) {
             $restore[$field] = $publishedRevision->payload[$field];
         }
@@ -209,11 +208,64 @@ it('回滚不恢复发布状态', function () {
  * RESTORABLE 不含 status 与 published_at（结构约束，防日后误加）
  */
 it('可恢复字段集合不含发布状态', function () {
-    expect(SitePageObserver::RESTORABLE)->not->toContain('status')
-        ->and(SitePageObserver::RESTORABLE)->not->toContain('published_at')
+    expect(SitePage::revisionRestorableFields())->not->toContain('status')
+        ->and(SitePage::revisionRestorableFields())->not->toContain('published_at')
         // 但快照本身要记录它们，否则历史里看不到状态怎么变的
-        ->and(SitePageObserver::TRACKED)->toContain('status')
-        ->and(SitePageObserver::TRACKED)->toContain('published_at');
+        ->and(SitePage::revisionTrackedFields())->toContain('status')
+        ->and(SitePage::revisionTrackedFields())->toContain('published_at');
+});
+
+/**
+ * 回滚一条「删列之前」写下的快照
+ *
+ * 2026-08-08 删掉了全套 `_en` 列，但**历史快照的 payload 有意没有改写**
+ * ——快照是审计链路，SiteRevision 连 updated_at 都没有。于是库里长期
+ * 存在一批 payload 带 title_en / content_en 而列已经不存在的旧快照。
+ *
+ * 回滚遍历的是 revisionRestorableFields() 而非 payload 的键，所以这批遗留键
+ * 天然被滤掉。这条用例锁的就是这个滤除：**日后谁把 `_en` 加回该方法，或者把
+ * 遍历改成按 payload 的键来，回滚这批旧快照就会 update 一个不存在的列，
+ * 当场 500**。
+ */
+it('回滚带 _en 遗留键的旧快照不打不存在的列', function () {
+    $page = SitePage::factory()->draft()->create([
+        'title_zh'   => '现标题',
+        'content_zh' => '<p>现正文</p>',
+    ]);
+
+    // 手工造一条删列之前的快照：payload 形状与当年一致
+    $legacy = SiteRevision::create([
+        'revisionable_type' => SitePage::class,
+        'revisionable_id'   => $page->getKey(),
+        'payload'           => [
+            'title_zh'   => '旧标题',
+            'title_en'   => 'Legacy Title',
+            'slug'       => $page->slug,
+            'template'   => $page->template,
+            'content_zh' => '<p>旧正文</p>',
+            'content_en' => '<p>Legacy body</p>',
+            'blocks'     => null,
+            'status'     => 'draft',
+        ],
+    ]);
+
+    // 模拟 RevisionsRelationManager::rollbackTo() 的恢复集合
+    $restore = [];
+    foreach (SitePage::revisionRestorableFields() as $field) {
+        if (array_key_exists($field, $legacy->payload)) {
+            $restore[$field] = $legacy->payload[$field];
+        }
+    }
+
+    expect($restore)->not->toHaveKey('title_en')
+        ->and($restore)->not->toHaveKey('content_en');
+
+    // 真的写一次：列不存在时这里会抛 SQL 异常，用例即失败
+    $page->update($restore);
+    $page->refresh();
+
+    expect($page->title_zh)->toBe('旧标题')
+        ->and($page->content_zh)->toBe('<p>旧正文</p>');
 });
 
 /**
@@ -224,23 +276,23 @@ it('回滚产生新版本', function () {
     $page->update(['title_zh' => 'B']);
     $page->update(['title_zh' => 'C']);
 
-    expect(SitePageRevision::where('page_id', $page->getKey())->count())->toBe(3);
+    expect($page->revisions()->count())->toBe(3);
 
-    $first = SitePageRevision::where('page_id', $page->getKey())->orderBy('id')->firstOrFail();
+    $first = $page->revisions()->reorder('id')->firstOrFail();
     $page->update(['title_zh' => $first->payload['title_zh']]);
 
-    expect(SitePageRevision::where('page_id', $page->getKey())->count())->toBe(4)
+    expect($page->revisions()->count())->toBe(4)
         ->and($page->refresh()->title_zh)->toBe('A');
 });
 
 /**
- * 快照挂在 revisions 关联上，按 id 倒序（模型已声明 latest('id')）
+ * 快照挂在 revisions 关联上，按 id 倒序（trait 已声明 latest('id')）
  */
 it('版本关联按时间倒序', function () {
     $page = SitePage::factory()->draft()->create(['title_zh' => '一']);
     $page->update(['title_zh' => '二']);
 
-    $titles = $page->revisions()->get()->map(fn (SitePageRevision $r): string => $r->payload['title_zh'])->all();
+    $titles = $page->revisions()->get()->map(fn (SiteRevision $r): string => $r->payload['title_zh'])->all();
 
     expect($titles)->toBe(['二', '一']);
 });

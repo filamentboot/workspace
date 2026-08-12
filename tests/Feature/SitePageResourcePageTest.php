@@ -2,14 +2,14 @@
 
 use Filament\Facades\Filament;
 use Filamentboot\FilamentbootSite\Cms\Enums\PageStatus;
+use Filamentboot\FilamentbootSite\Cms\Filament\RelationManagers\RevisionsRelationManager;
 use Filamentboot\FilamentbootSite\Cms\Filament\Resources\SitePageResource\Pages\CreateSitePage;
 use Filamentboot\FilamentbootSite\Cms\Filament\Resources\SitePageResource\Pages\EditSitePage;
 use Filamentboot\FilamentbootSite\Cms\Filament\Resources\SitePageResource\Pages\ListSitePages;
-use Filamentboot\FilamentbootSite\Cms\Filament\Resources\SitePageResource\RelationManagers\RevisionsRelationManager;
 use Filamentboot\FilamentbootSite\Cms\Models\SitePage;
-use Filamentboot\FilamentbootSite\Cms\Models\SitePageRevision;
 use Filamentboot\FilamentbootSite\Cms\Models\SiteRedirect;
 use Filamentboot\FilamentbootSite\SitePlugin;
+use Filamentboot\FilamentbootSite\SiteServiceProvider;
 use Filamentboot\Models\AdminUser;
 use Livewire\Livewire;
 use Spatie\Permission\Models\Permission;
@@ -31,9 +31,18 @@ use Spatie\Permission\PermissionRegistrar;
  * 于是资源路由缺失。手法与 SiteContactResourcePageTest 同源：手工把插件注册进面板，
  * 再重跑一次 Filament 的路由文件并刷新名称查找表。
  *
+ * 前台路由（routes/site.php）同样要手工注册：CreatesRedirectOnSlugChange
+ * 用命名路由 site.page 取新旧地址（3.5 期 B 段起改的，此前是直接拼裸 slug），
+ * 不注册就会在 afterSave() 里报 RouteNotFoundException。
+ *
  * @group site
  */
 beforeEach(function () {
+    config(['filamentboot-site.route.mode' => 'root']);
+
+    $frontend = new SiteServiceProvider(app());
+    (new ReflectionMethod($frontend, 'registerFrontend'))->invoke($frontend);
+
     $panel = Filament::getPanel('admin');
     $panel->plugin(SitePlugin::make());
 
@@ -422,7 +431,7 @@ it('版本历史列表渲染快照', function () {
         'pageClass'   => EditSitePage::class,
     ])
         ->assertOk()
-        ->assertCanSeeTableRecords(SitePageRevision::where('page_id', $page->getKey())->get())
+        ->assertCanSeeTableRecords($page->revisions()->get())
         // 基线快照的变更摘要显示「初始版本」而不是罗列全部字段
         ->assertSee('初始版本')
         ->assertSee('标题');
@@ -447,7 +456,7 @@ it('版本对比 Modal 渲染出字段对比表', function () {
         'slug'     => 'compare-old',
     ]);
 
-    $baseline = SitePageRevision::where('page_id', $page->getKey())->firstOrFail();
+    $baseline = $page->revisions()->firstOrFail();
 
     $page->update(['title_zh' => '第二版标题', 'slug' => 'compare-new']);
 
@@ -495,7 +504,7 @@ it('版本与当前一致时对比 Modal 给提示而非空表', function () {
     loginPageEditor([...editorPermissions(), 'rollback_site_page']);
 
     $page     = SitePage::factory()->draft()->create(['title_zh' => '没改过']);
-    $baseline = SitePageRevision::where('page_id', $page->getKey())->firstOrFail();
+    $baseline = $page->revisions()->firstOrFail();
 
     $schema = Livewire::test(RevisionsRelationManager::class, [
         'ownerRecord' => $page,
@@ -518,7 +527,7 @@ it('从版本历史回滚只恢复内容', function () {
     loginPageEditor([...editorPermissions(), 'rollback_site_page']);
 
     $page     = SitePage::factory()->create(['title_zh' => '发布时的标题']);
-    $baseline = SitePageRevision::where('page_id', $page->getKey())->firstOrFail();
+    $baseline = $page->revisions()->firstOrFail();
 
     $page->update(['status' => PageStatus::ARCHIVED, 'title_zh' => '归档后的标题']);
 
@@ -531,7 +540,7 @@ it('从版本历史回滚只恢复内容', function () {
 
     expect($page->title_zh)->toBe('发布时的标题')
         ->and($page->status)->toBe(PageStatus::ARCHIVED)
-        ->and(SitePageRevision::where('page_id', $page->getKey())->count())->toBe(3);
+        ->and($page->revisions()->count())->toBe(3);
 });
 
 /**
@@ -541,7 +550,7 @@ it('无回滚权限时看不到回滚按钮', function () {
     loginPageEditor(editorPermissions());
 
     $page     = SitePage::factory()->draft()->create();
-    $baseline = SitePageRevision::where('page_id', $page->getKey())->firstOrFail();
+    $baseline = $page->revisions()->firstOrFail();
 
     Livewire::test(RevisionsRelationManager::class, [
         'ownerRecord' => $page,

@@ -31,7 +31,7 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     config([
         'filamentboot-site.route.mode'    => 'root',
-        'filamentboot-site.themes'        => ['decoration' => '科技装修（深色）'],
+        'filamentboot-site.themes'        => ['decoration' => '科技装修（浅色）'],
         'filamentboot-site.default_theme' => 'decoration',
     ]);
 
@@ -71,7 +71,7 @@ function adminWithPageView(): AdminUser
 it('带有效签名可预览草稿', function () {
     $page = SitePage::factory()->draft()->create(['title_zh' => '未发布的草稿标题']);
 
-    $url = URL::temporarySignedRoute('site.page.preview', now()->addMinutes(15), ['page' => $page->getKey()]);
+    $url = URL::temporarySignedRoute('site.preview', now()->addMinutes(15), ['type' => 'site_page', 'id' => $page->getKey()]);
 
     $this->get($url)
         ->assertOk()
@@ -84,7 +84,7 @@ it('带有效签名可预览草稿', function () {
 it('预览响应带 noindex 头', function () {
     $page = SitePage::factory()->draft()->create();
 
-    $url = URL::temporarySignedRoute('site.page.preview', now()->addMinutes(15), ['page' => $page->getKey()]);
+    $url = URL::temporarySignedRoute('site.preview', now()->addMinutes(15), ['type' => 'site_page', 'id' => $page->getKey()]);
 
     $this->get($url)
         ->assertOk()
@@ -99,7 +99,7 @@ it('预览响应带 noindex 头', function () {
 it('预览页不输出 canonical', function () {
     $page = SitePage::factory()->draft()->create();
 
-    $url  = URL::temporarySignedRoute('site.page.preview', now()->addMinutes(15), ['page' => $page->getKey()]);
+    $url  = URL::temporarySignedRoute('site.preview', now()->addMinutes(15), ['type' => 'site_page', 'id' => $page->getKey()]);
     $html = $this->get($url)->assertOk()->getContent();
 
     expect($html)->not->toContain('rel="canonical"')
@@ -123,7 +123,7 @@ it('正式页面仍输出 canonical', function () {
 it('无签名未登录访问预览被拒', function () {
     $page = SitePage::factory()->draft()->create();
 
-    $this->get('/preview/'.$page->getKey())->assertForbidden();
+    $this->get('/preview/site_page/'.$page->getKey())->assertForbidden();
 });
 
 /**
@@ -132,7 +132,7 @@ it('无签名未登录访问预览被拒', function () {
 it('签名过期后预览被拒', function () {
     $page = SitePage::factory()->draft()->create();
 
-    $url = URL::temporarySignedRoute('site.page.preview', now()->addMinutes(15), ['page' => $page->getKey()]);
+    $url = URL::temporarySignedRoute('site.preview', now()->addMinutes(15), ['type' => 'site_page', 'id' => $page->getKey()]);
 
     $this->travel(16)->minutes();
 
@@ -146,9 +146,9 @@ it('篡改签名后预览被拒', function () {
     $page  = SitePage::factory()->draft()->create();
     $other = SitePage::factory()->draft()->create();
 
-    $url = URL::temporarySignedRoute('site.page.preview', now()->addMinutes(15), ['page' => $page->getKey()]);
+    $url = URL::temporarySignedRoute('site.preview', now()->addMinutes(15), ['type' => 'site_page', 'id' => $page->getKey()]);
 
-    $tampered = str_replace('/preview/'.$page->getKey(), '/preview/'.$other->getKey(), $url);
+    $tampered = str_replace('/preview/site_page/'.$page->getKey(), '/preview/site_page/'.$other->getKey(), $url);
 
     $this->get($tampered)->assertForbidden();
 });
@@ -162,7 +162,7 @@ it('已登录管理员无需签名即可预览', function () {
     $page = SitePage::factory()->draft()->create(['title_zh' => '管理员直看的草稿']);
 
     $this->actingAs(adminWithPageView(), 'admin')
-        ->get('/preview/'.$page->getKey())
+        ->get('/preview/site_page/'.$page->getKey())
         ->assertOk()
         ->assertSee('管理员直看的草稿', escape: false);
 });
@@ -178,7 +178,7 @@ it('无查看权限的管理员预览被拒', function () {
     $user->assignRole($role);
 
     $this->actingAs($user, 'admin')
-        ->get('/preview/'.$page->getKey())
+        ->get('/preview/site_page/'.$page->getKey())
         ->assertForbidden();
 });
 
@@ -188,7 +188,7 @@ it('无查看权限的管理员预览被拒', function () {
 it('四种未发布状态都可预览', function (string $state) {
     $page = SitePage::factory()->{$state}()->create(['title_zh' => '状态 '.$state]);
 
-    $url = URL::temporarySignedRoute('site.page.preview', now()->addMinutes(15), ['page' => $page->getKey()]);
+    $url = URL::temporarySignedRoute('site.preview', now()->addMinutes(15), ['type' => 'site_page', 'id' => $page->getKey()]);
 
     $this->get($url)->assertOk()->assertSee('状态 '.$state, escape: false);
 })->with(['draft', 'review', 'scheduled', 'archived']);
@@ -201,7 +201,7 @@ it('四种未发布状态都可预览', function (string $state) {
 it('已删除页面不可预览', function () {
     $page = SitePage::factory()->draft()->create();
 
-    $url = URL::temporarySignedRoute('site.page.preview', now()->addMinutes(15), ['page' => $page->getKey()]);
+    $url = URL::temporarySignedRoute('site.preview', now()->addMinutes(15), ['type' => 'site_page', 'id' => $page->getKey()]);
 
     $page->delete();
 
@@ -219,7 +219,7 @@ it('预览渲染页面区块', function () {
         ],
     ]);
 
-    $url  = URL::temporarySignedRoute('site.page.preview', now()->addMinutes(15), ['page' => $page->getKey()]);
+    $url  = URL::temporarySignedRoute('site.preview', now()->addMinutes(15), ['type' => 'site_page', 'id' => $page->getKey()]);
     $html = $this->get($url)->assertOk()->getContent();
 
     expect($html)->toContain('草稿里的首屏标题')
@@ -239,10 +239,10 @@ it('preview 路径解析到预览路由', function () {
     $page = SitePage::factory()->draft()->create();
 
     $route = app('router')->getRoutes()->match(
-        Request::create('/preview/'.$page->getKey(), 'GET')
+        Request::create('/preview/site_page/'.$page->getKey(), 'GET')
     );
 
-    expect($route->getName())->toBe('site.page.preview');
+    expect($route->getName())->toBe('site.preview');
 });
 
 /**
@@ -252,7 +252,19 @@ it('preview 路径解析到预览路由', function () {
  * 是两件事，混成同一个状态码会让编辑分不清是链接错了还是权限不够。
  */
 it('不存在的页面预览返回 404', function () {
-    $url = URL::temporarySignedRoute('site.page.preview', now()->addMinutes(15), ['page' => 999999]);
+    $url = URL::temporarySignedRoute('site.preview', now()->addMinutes(15), ['type' => 'site_page', 'id' => 999999]);
+
+    $this->get($url)->assertNotFound();
+});
+
+/**
+ * 不存在的预览类型返回 404
+ *
+ * $type 只认 SiteFrontController::PREVIEW_TYPES 里的键，不能让任意字符串
+ * 探测出「这个类型存在与否」之外的信息。
+ */
+it('不存在的预览类型返回 404', function () {
+    $url = URL::temporarySignedRoute('site.preview', now()->addMinutes(15), ['type' => 'not_a_real_type', 'id' => 1]);
 
     $this->get($url)->assertNotFound();
 });

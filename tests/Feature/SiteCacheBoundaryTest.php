@@ -31,7 +31,7 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     config([
         'filamentboot-site.route.mode'    => 'root',
-        'filamentboot-site.themes'        => ['decoration' => '科技装修（深色）'],
+        'filamentboot-site.themes'        => ['decoration' => '科技装修（浅色）'],
         'filamentboot-site.default_theme' => 'decoration',
     ]);
 
@@ -61,7 +61,28 @@ it('内容页不起 session 且可被公共缓存', function (string $path) {
 
     expect($html)->not->toContain('wire:snapshot')
         ->and($html)->not->toContain('livewire.js');
-})->with(['/', '/cases', '/solutions', '/products', '/news', '/sitemap.xml', '/robots.txt']);
+})->with(['/', '/cases', '/solutions', '/products', '/news']);
+
+/**
+ * 机器读的三个端点用自己的 TTL，不被中间件的默认值顶掉
+ *
+ * **这三条原先和内容页混在一组，断言的是 max-age=600——而它们的控制器里写的是 3600。**
+ * 当时能通过恰恰是因为 SiteCacheHeaders 无条件覆盖，控制器那行等于死代码：
+ * 代码写着一小时，发出去的一直是十分钟。三期批次 2 让中间件尊重显式声明之后，
+ * 这三条才真正按自己写的走，所以拆出来单独断言。
+ *
+ * 一小时是合适的：站点地图与 robots 的变化频率远低于内容页，
+ * 而爬虫拉它们的频率不低。
+ */
+it('sitemap / robots / llms 保留控制器自己声明的 TTL', function (string $path) {
+    $response = $this->get($path)->assertOk();
+
+    expect($response->headers->getCookies())->toBe([]);
+
+    expect($response->headers->get('Cache-Control'))
+        ->toContain('public')
+        ->toContain('max-age=3600');
+})->with(['/sitemap.xml', '/robots.txt', '/llms.txt']);
 
 /**
  * 带筛选参数的列表页同样可缓存
@@ -125,7 +146,7 @@ it('重定向不打 public 缓存头', function () {
 });
 
 /**
- * /preview/{page} 仍在 web 组：靠 session 认管理员，且**不能**被公共缓存
+ * /preview/{type}/{id} 仍在 web 组：靠 session 认管理员，且**不能**被公共缓存
  *
  * 它是全站唯一读未发布内容的入口。若被标成 public，草稿就会经由共享缓存泄露给公众——
  * 比不缓存严重得多。
@@ -141,7 +162,7 @@ it('草稿预览带 session 且绝不打 public 缓存头', function () {
         ])
     );
 
-    $response = $this->actingAs($user, 'admin')->get('/preview/'.$page->getKey());
+    $response = $this->actingAs($user, 'admin')->get('/preview/site_page/'.$page->getKey());
 
     expect($response->getStatusCode())->toBe(200)
         ->and($response->headers->get('X-Robots-Tag'))->toContain('noindex')
@@ -154,7 +175,7 @@ it('草稿预览带 session 且绝不打 public 缓存头', function () {
 it('签名预览链接仍可访问', function () {
     $page = SitePage::factory()->draft()->create(['slug' => 'signed-preview-page']);
 
-    $url = URL::temporarySignedRoute('site.page.preview', now()->addMinutes(15), ['page' => $page->getKey()]);
+    $url = URL::temporarySignedRoute('site.preview', now()->addMinutes(15), ['type' => 'site_page', 'id' => $page->getKey()]);
 
     $this->get($url)->assertOk();
 });

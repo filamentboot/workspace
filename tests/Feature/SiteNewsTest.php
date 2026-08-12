@@ -25,7 +25,7 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     config([
         'filamentboot-site.route.mode'    => 'root',
-        'filamentboot-site.themes'        => ['decoration' => '科技装修（深色）'],
+        'filamentboot-site.themes'        => ['decoration' => '科技装修（浅色）'],
         'filamentboot-site.default_theme' => 'decoration',
     ]);
 
@@ -236,7 +236,8 @@ it('站点地图收录资讯文章', function () {
     ]);
     NewsArticle::factory()->draft()->create(['slug' => 'sitemap-cao-gao']);
 
-    $xml = (string) $this->get('/sitemap.xml')->assertOk()->getContent();
+    // 三期批次 4 起 /sitemap.xml 是**索引**，内容条目在 content 分片里
+    $xml = (string) $this->get('/sitemap-content.xml')->assertOk()->getContent();
 
     expect($xml)->toContain('/news/sitemap-shou-lu')
         ->and($xml)->toContain('<loc>'.route('site.news.index').'</loc>')

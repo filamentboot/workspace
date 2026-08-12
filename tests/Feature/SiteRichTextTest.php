@@ -115,14 +115,26 @@ it('配置了画像名时改用宿主的 purifier 画像', function () {
 /**
  * 详情页把正文包在 .prose 里，样式全靠这个类
  *
- * 项目没装 @tailwindcss/typography，.prose 是两套主题各自手写的。
+ * 项目没装 @tailwindcss/typography，.prose 定义原本两套主题各写一份；
+ * 七期批次 1 起 token / 语义类 / .prose 合并进共享的 shared.css，
+ * decoration.css / software.css 各自只剩 `@import './shared.css'`。
+ * 这里跟着入口文件的 @import 走一层，而不是硬编码直接读 shared.css——
+ * 万一将来某个主题真的分岔出自己的 .prose（不再 @import 共享文件），
+ * 这条测试要能测到它自己的入口文件，不能变成只测 shared.css 那一份。
+ *
  * 漏了任何一套，那个主题的富文本就退回 preflight 后的裸样式：
  * 标题与正文等大、列表没符号、段落无间距。
  */
 it('两套主题都定义了 .prose 富文本样式', function (string $theme) {
-    $css = file_get_contents(base_path(
-        "packages/filamentboot-site/resources/css/themes/{$theme}.css"
-    ));
+    $themeDir = base_path('vendor/filamentboot/filamentboot-site/resources/css/themes');
+    $css      = file_get_contents("{$themeDir}/{$theme}.css");
+
+    // 入口文件里的相对 @import 展开一层（当前只有这一层嵌套）
+    if (preg_match_all("/@import\s+['\"](\.\/[^'\"]+)['\"]/", $css, $matches)) {
+        foreach ($matches[1] as $importPath) {
+            $css .= file_get_contents($themeDir.'/'.basename($importPath));
+        }
+    }
 
     expect($css)->toContain('.prose');
 
@@ -130,4 +142,4 @@ it('两套主题都定义了 .prose 富文本样式', function (string $theme) {
     foreach (['h2', 'h3', 'ul', 'ol', 'li', 'blockquote', 'pre', 'code', 'table', 'th', 'td', 'hr', 'sup', 'sub'] as $tag) {
         $this->assertStringContainsString(".prose {$tag}", $css, "{$theme} 主题缺少 .prose {$tag} 的样式");
     }
-})->with(['decoration', 'tech-product']);
+})->with(['decoration', 'software']);

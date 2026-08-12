@@ -1,12 +1,16 @@
 <?php
 
 use Filamentboot\FilamentbootSite\Cms\Models\SitePage;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Banners\Models\SiteBanner;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Models\SiteCase;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Cities\Models\SiteCityPage;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Cities\Models\SiteRegion;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Products\Models\SiteProduct;
 use Filamentboot\FilamentbootSite\Modules\News\Models\NewsArticle;
 use Filamentboot\FilamentbootSite\Settings\SiteSettings;
 use Filamentboot\FilamentbootSite\SiteServiceProvider;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Storage;
 
 uses(RefreshDatabase::class);
 
@@ -34,7 +38,7 @@ uses(RefreshDatabase::class);
 beforeEach(function () {
     config([
         'filamentboot-site.route.mode'    => 'root',
-        'filamentboot-site.themes'        => ['decoration' => '科技装修（深色）'],
+        'filamentboot-site.themes'        => ['decoration' => '科技装修（浅色）'],
         'filamentboot-site.default_theme' => 'decoration',
     ]);
 
@@ -111,6 +115,73 @@ it('列表页 meta description 不为空', function () {
 
         expect($matches[1] ?? '')->not->toBe('', "页面 {$path} 的 meta description 不应为空");
     }
+});
+
+/**
+ * 首页与列表页输出全局默认关键词
+ *
+ * 这两类页面没有对应内容记录，控制器此前给 keywords 写死空串，
+ * meta 关键词标签从来没在承载站点主词的页面上出现过。
+ */
+it('首页与列表页输出全局默认关键词', function () {
+    $settings                          = app(SiteSettings::class);
+    $settings->seo_default_keywords_zh = '全屋智能家居 智能开关 智能窗帘';
+    $settings->save();
+
+    foreach (['/', '/cases', '/solutions', '/products', '/news'] as $path) {
+        $this->get($path)->assertOk()
+            ->assertSee('<meta name="keywords" content="全屋智能家居 智能开关 智能窗帘">', escape: false);
+    }
+});
+
+/**
+ * 记录自身关键词优先于全局默认
+ */
+it('记录自填关键词不被全局默认覆盖', function () {
+    $settings                          = app(SiteSettings::class);
+    $settings->seo_default_keywords_zh = '全局默认词';
+    $settings->save();
+
+    SiteCase::factory()->create([
+        'title_zh'     => '带关键词的案例',
+        'slug'         => 'case-with-keywords',
+        'seo_keywords' => '案例自填词',
+        'published_at' => now()->subDay(),
+    ]);
+
+    $this->get('/cases/case-with-keywords')->assertOk()
+        ->assertSee('<meta name="keywords" content="案例自填词">', escape: false)
+        ->assertDontSee('全局默认词', escape: false);
+});
+
+/**
+ * 记录未填关键词时回退到全局默认
+ */
+it('记录未填关键词时回退到全局默认', function () {
+    $settings                          = app(SiteSettings::class);
+    $settings->seo_default_keywords_zh = '全局默认词';
+    $settings->save();
+
+    SiteCase::factory()->create([
+        'title_zh'     => '无关键词的案例',
+        'slug'         => 'case-without-keywords',
+        'seo_keywords' => '',
+        'published_at' => now()->subDay(),
+    ]);
+
+    $this->get('/cases/case-without-keywords')->assertOk()
+        ->assertSee('<meta name="keywords" content="全局默认词">', escape: false);
+});
+
+/**
+ * 默认关键词留空时整条 meta 不输出（与新增该字段之前的行为一致）
+ */
+it('未配置默认关键词时不输出 keywords 标签', function () {
+    $settings                          = app(SiteSettings::class);
+    $settings->seo_default_keywords_zh = '';
+    $settings->save();
+
+    $this->get('/')->assertOk()->assertDontSee('<meta name="keywords"', escape: false);
 });
 
 /**
@@ -301,7 +372,7 @@ it('产品详情页输出 Product JSON-LD', function () {
         'seo_title'    => '',
         'brand'        => '晴空妙享',
         'price'        => 899.00,
-        'is_published' => true,
+        'published_at' => now(),
     ]);
 
     $schema = extractJsonLd((string) $this->get('/products/json-ld-product')->assertOk()->getContent());
@@ -325,7 +396,7 @@ it('无价格产品不输出 offers 节点', function () {
         'title_zh'     => '定制中控屏',
         'slug'         => 'json-ld-no-price',
         'price'        => null,
-        'is_published' => true,
+        'published_at' => now(),
     ]);
 
     $schema = extractJsonLd((string) $this->get('/products/json-ld-no-price')->assertOk()->getContent());
@@ -336,17 +407,45 @@ it('无价格产品不输出 offers 节点', function () {
 });
 
 /**
- * 列表页不输出 JSON-LD
+ * 列表页输出 CollectionPage 结构化数据
  *
- * 结构化数据只在有具体实体的详情页才有意义。首页是例外——它承载
- * Organization（见下一例），列表页仍然什么都不输出。
+ * **这条原先断言的是「列表页什么都不输出」，三期批次 2 改了。** 当时的理由是
+ * 「结构化数据只在有具体实体的详情页才有意义」，但 CollectionPage 恰恰是
+ * schema.org 为列表页准备的类型，声明它比留白更能让搜索引擎理解站点结构。
+ *
+ * isPartOf 指回首页 WebSite 节点的 @id，几个顶层节点因此连成一张图。
+ *
+ * ⚠️ 有意不输出 url：列表页带筛选参数时 canonical 指向带参地址，而控制器
+ * 能拿到的只有不含查询串的路由地址，两者对不上就是自相矛盾的信号。
  */
-it('列表页不输出 JSON-LD', function () {
-    foreach (['/cases', '/products', '/solutions', '/news'] as $path) {
-        $html = (string) $this->get($path)->assertOk()->getContent();
+it('列表页输出 CollectionPage JSON-LD', function () {
+    foreach (['/cases', '/products', '/solutions', '/news', '/packages'] as $path) {
+        $nodes = extractJsonLdByType((string) $this->get($path)->assertOk()->getContent());
 
-        expect($html)->not->toContain('application/ld+json');
+        // 断言前先自证：缺了直接 fail 并带上是哪一页，比 undefined key 好查
+        expect(array_keys($nodes))->toContain('CollectionPage');
+
+        $schema = $nodes['CollectionPage'];
+
+        expect($schema['name'])->not->toBeEmpty()
+            ->and($schema['description'])->not->toBeEmpty()
+            ->and($schema['inLanguage'])->toBe('zh-CN')
+            ->and($schema['isPartOf']['@id'])->toBe(route('site.home').'#website')
+            ->and($schema)->not->toHaveKey('url');
     }
+});
+
+/**
+ * 站内搜索页不输出 CollectionPage
+ *
+ * 搜索页也走 buildListSeo()，但它是 noindex 且 URL 空间无限的（任意关键词
+ * × 任意组合），给它声明 CollectionPage 只会制造成千上万个低价值实体声明。
+ * 这是 buildListSeo() 的 $collection 参数默认关闭的原因。
+ */
+it('搜索页不输出 CollectionPage', function () {
+    $nodes = extractJsonLdByType((string) $this->get('/search?q=灯')->assertOk()->getContent());
+
+    expect($nodes)->not->toHaveKey('CollectionPage');
 });
 
 /**
@@ -400,7 +499,7 @@ it('产品详情页同时输出 Product 与 BreadcrumbList', function () {
     SiteProduct::factory()->create([
         'title_zh'     => '智能中控面板 S1',
         'slug'         => 'json-ld-breadcrumb',
-        'is_published' => true,
+        'published_at' => now(),
     ]);
 
     $nodes = extractJsonLdByType((string) $this->get('/products/json-ld-breadcrumb')->assertOk()->getContent());
@@ -591,4 +690,251 @@ it('category 不在 canonical 剥离清单中', function () {
         // 追踪参数必须在清单里
         ->and($ignored)->toContain('utm_source')
         ->and($ignored)->toContain('gclid');
+});
+
+/**
+ * 后台上传的媒体字段归一成完整 URL
+ *
+ * logo / wechat_qrcode / og_default_image 有两种取值来源：后台 FileUpload 存的是
+ * 相对磁盘根的路径，而直接写库配置时填的是完整 URL。视图此前不加区分地塞进 src，
+ * 拿到相对路径时浏览器按当前页面路径解析——详情页上的 LOGO 请求打到
+ * /cases/xxx.png，404。只在有人从后台传过图的站点上出现，是典型的静默失效。
+ */
+it('后台上传的相对路径归一成完整 URL', function () {
+    $settings                   = app(SiteSettings::class);
+    $settings->logo             = 'uploaded-logo.png';
+    $settings->wechat_qrcode    = 'uploaded-qr.png';
+    $settings->og_default_image = 'uploaded-og.jpg';
+    $settings->save();
+
+    $html = (string) $this->get('/')->assertOk()->getContent();
+
+    foreach (['uploaded-logo.png', 'uploaded-qr.png', 'uploaded-og.jpg'] as $file) {
+        expect($html)->toContain(Storage::disk('public')->url($file));
+    }
+
+    // 相对路径不能原样出现在任何 src / content 属性里
+    expect($html)->not->toContain('"uploaded-logo.png"')
+        ->and($html)->not->toContain('"uploaded-qr.png"')
+        ->and($html)->not->toContain('"uploaded-og.jpg"');
+});
+
+/**
+ * 已经是完整 URL 的值原样输出，不被再套一层磁盘前缀
+ */
+it('完整 URL 的媒体字段原样输出', function () {
+    $settings                = app(SiteSettings::class);
+    $settings->wechat_qrcode = 'https://cdn.test/qr.png';
+    $settings->save();
+
+    $this->get('/')->assertOk()->assertSee('https://cdn.test/qr.png', escape: false);
+
+    expect(app(SiteSettings::class)->wechatQrcodeUrl())->toBe('https://cdn.test/qr.png');
+});
+
+/*
+|--------------------------------------------------------------------------
+| 三期批次 9：全站 SEO 收口
+|--------------------------------------------------------------------------
+|
+| 加了 337 个城市页之后，「无重复 title / 无空 description / 分页 canonical
+| 不指错 / 正文在首字节 HTML 里」这四条**人肉查不过来**。它们全是静默失效：
+| 页面照常 200，只是在搜索引擎眼里互相稀释。
+|
+| 与这批测试配套的是 `tools/site-audit/audit.py`——那个跑的是真实爬取（本地或
+| 生产），能抓到测试造不出来的组合；这里锁的是**机制**，改坏了当场红。
+| 两者不重复：测试保证代码对，体检保证数据也对。
+*/
+
+/**
+ * ?page=1 的 canonical 归并回不带参数的地址
+ *
+ * page=1 与不带参数渲染的是同一批记录。分页器的「上一页 / 首页」链接会真的
+ * 生成 ?page=1，所以它是站内可达地址；自指 canonical 等于主动声明
+ * 「这是两个页面」，两边平分权重。page=2 起必须保留（上面那条测的就是它）。
+ */
+it('第一页的 canonical 不带 page 参数', function () {
+    $html = (string) $this->get('/solutions?page=1')->assertOk()->getContent();
+
+    preg_match('/<link rel="canonical" href="([^"]*)"/', $html, $matches);
+
+    expect($matches[1] ?? '')->not->toContain('page=');
+});
+
+/**
+ * 第 2 页起标题带页码
+ *
+ * 分页地址是自指 canonical 的，各自是独立的索引对象。共用一个 title 就是
+ * 几十个同名页面——加在 buildListSeo() 而不是各调用点，是因为每个列表页
+ * 都分页，漏一个不报错、只是静默重复。
+ */
+it('分页列表页标题带页码', function () {
+    $first  = (string) $this->get('/solutions')->assertOk()->getContent();
+    $second = (string) $this->get('/solutions?page=2')->assertOk()->getContent();
+
+    preg_match('#<title>(.*?)</title>#s', $first, $a);
+    preg_match('#<title>(.*?)</title>#s', $second, $b);
+
+    expect($b[1] ?? '')->toContain('第 2 页')
+        ->and($b[1] ?? '')->not->toBe($a[1] ?? '');
+});
+
+/**
+ * 筛选后的案例列表标题跟着筛选条件走
+ *
+ * 5 种风格 × 7 种户型，每个组合都是一个自指 canonical 的地址。标题不跟着变
+ * 就是几十个「装修案例」互相稀释——套餐列表（?layout=）早就是这个做法。
+ */
+it('筛选后的案例列表标题带上筛选条件', function () {
+    SiteCase::factory()->create(['published_at' => now()->subDay(), 'style' => 'modern']);
+
+    $plain    = (string) $this->get('/cases')->assertOk()->getContent();
+    $filtered = (string) $this->get('/cases?style=modern')->assertOk()->getContent();
+
+    preg_match('#<title>(.*?)</title>#s', $plain, $a);
+    preg_match('#<title>(.*?)</title>#s', $filtered, $b);
+
+    expect($b[1] ?? '')->not->toBe($a[1] ?? '')
+        ->and($b[1] ?? '')->toContain('装修案例');
+});
+
+/**
+ * 六类页面加城市页，title 互不重复且 description 都非空
+ *
+ * 一条用例同时锁两件事是有意的：它们的失败模式相同（模板里少插一个变量），
+ * 而分成两条要把同一批记录造两遍。
+ */
+it('各类页面的 title 互不重复且 description 非空', function () {
+    SiteCase::factory()->create(['published_at' => now()->subDay()]);
+    SiteProduct::factory()->create(['published_at' => now()]);
+    NewsArticle::factory()->create(['published_at' => now()->subDay()]);
+
+    $province = SiteRegion::factory()->province()->create(['slug' => 'hubei-seo', 'name' => '湖北省']);
+    $city     = SiteRegion::factory()->childOf($province)->create(['slug' => 'wuhan-seo', 'name' => '武汉市']);
+    SiteCityPage::factory()->forRegion($city)->create();
+
+    $paths = [
+        '/', '/cases', '/solutions', '/packages', '/products', '/news',
+        '/city', '/city/hubei-seo', '/city/hubei-seo/wuhan-seo',
+    ];
+
+    $titles = [];
+
+    foreach ($paths as $path) {
+        $html = (string) $this->get($path)->assertOk()->getContent();
+
+        preg_match('#<title>(.*?)</title>#s', $html, $t);
+        preg_match('/<meta name="description" content="([^"]*)"/', $html, $d);
+
+        expect(trim($d[1] ?? ''))->not->toBe('', "「{$path}」的 meta description 是空的");
+
+        $title = trim($t[1] ?? '');
+        expect($titles)->not->toHaveKey($title, "「{$path}」与「".($titles[$title] ?? '').'」标题相同');
+
+        $titles[$title] = $path;
+    }
+});
+
+/**
+ * 正文在首字节 HTML 里
+ *
+ * AI 抓取器多数不执行 JS，靠 JS 渲染的内容对 GEO 等于不存在。前台本来就是
+ * 服务端渲染，这条锁的是**没被破坏**——哪天有人把正文塞进 Livewire 组件或
+ * Alpine 的 x-text，页面看起来一模一样，机器那边直接归零。
+ */
+it('正文出现在首字节 HTML 里', function () {
+    $article = NewsArticle::factory()->create([
+        'published_at' => now()->subDay(),
+        'content_zh'   => '<p>无主灯首先是一道算术题，面积乘照度再除以灯具效率。</p>',
+    ]);
+
+    $html = (string) $this->get('/news/'.$article->slug)->assertOk()->getContent();
+
+    expect($html)->toContain('面积乘照度再除以灯具效率');
+});
+
+/**
+ * 每页恰好一个 h1
+ *
+ * 首页的轮播三张全在 DOM 里（x-show 只管显示），每张一个 h1 就是一页三个。
+ * 爬虫读的是整个 DOM，不是当前可见的那一张——静态截图上完全看不出来。
+ */
+it('首页只有一个 h1', function () {
+    SiteBanner::factory()->count(3)->create(['is_enabled' => true, 'position' => 'home_top']);
+
+    $html = (string) $this->get('/')->assertOk()->getContent();
+
+    expect(substr_count($html, '<h1'))->toBe(1);
+});
+
+/**
+ * Organization 的 name 是法定公司名，不是 SEO 标题
+ *
+ * 此前取的是 defaultTitle()（「XX智能家居 - 全屋智能方案设计与施工」这种），
+ * 于是对外声明的实体名与页脚、ICP 备案、工商登记三处全对不上。搜索引擎与 AI
+ * 正是靠实体名消歧决定要不要引用——几处打架就直接跳过。
+ */
+it('Organization 用法定公司名做实体名', function () {
+    $settings                          = app(SiteSettings::class);
+    $settings->company_name_zh         = '某某科技有限公司';
+    $settings->seo_default_title_zh    = '某某智能家居 - 全屋智能方案';
+    $settings->save();
+
+    $organization = extractJsonLdByType((string) $this->get('/')->assertOk()->getContent())['Organization'] ?? [];
+
+    expect($organization['name'] ?? '')->toBe('某某科技有限公司')
+        ->and($organization['alternateName'] ?? '')->toBe('某某智能家居 - 全屋智能方案');
+});
+
+/**
+ * 实体一致性：页脚渲染的公司名与 Organization 的 name 逐字相同
+ *
+ * 两处取值来源不同（页脚读 $siteSettings、JSON-LD 走控制器），改一处漏一处
+ * 不会报错。E2 第 4 条要的就是这个「逐字一致」。
+ */
+it('页脚公司名与 Organization 实体名逐字一致', function () {
+    $settings                  = app(SiteSettings::class);
+    $settings->company_name_zh = '某某科技有限公司';
+    $settings->save();
+
+    $html         = (string) $this->get('/')->assertOk()->getContent();
+    $organization = extractJsonLdByType($html)['Organization'] ?? [];
+
+    expect($organization['name'] ?? '')->toBe('某某科技有限公司')
+        ->and($html)->toContain('某某科技有限公司');
+});
+
+/**
+ * 资讯详情页可见署名与更新时间（EEAT）
+ *
+ * author 与 dateModified 早就在 Article 节点里了，但页面上看不到——
+ * 百度 2026 起的 EEAT 评级看的是页面本身，只写进 JSON-LD 不算数。
+ */
+it('资讯详情页渲染署名与更新时间', function () {
+    $settings                  = app(SiteSettings::class);
+    $settings->company_name_zh = '某某科技有限公司';
+    $settings->save();
+
+    $article = NewsArticle::factory()->create(['published_at' => now()->subMonth()]);
+    $article->forceFill(['updated_at' => now()])->saveQuietly();
+
+    $html = (string) $this->get('/news/'.$article->slug)->assertOk()->getContent();
+
+    expect($html)->toContain('某某科技有限公司')
+        ->and($html)->toContain('更新于');
+});
+
+/**
+ * 同一天保存过的内容不显示「更新于」
+ *
+ * updated_at 会被任何一次保存推到当天——把它当「更新过」是虚假的新鲜度信号，
+ * 而新鲜度正是搜索引擎的排序输入之一。只在**跨天**时才算真的更新过。
+ */
+it('发布当天保存不产生更新时间', function () {
+    $article = NewsArticle::factory()->create(['published_at' => now()->startOfDay()]);
+    $article->forceFill(['updated_at' => now()->startOfDay()->addHours(6)])->saveQuietly();
+
+    $html = (string) $this->get('/news/'.$article->slug)->assertOk()->getContent();
+
+    expect($html)->not->toContain('更新于');
 });

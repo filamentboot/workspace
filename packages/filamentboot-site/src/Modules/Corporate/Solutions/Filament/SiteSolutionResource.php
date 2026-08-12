@@ -232,9 +232,9 @@ class SiteSolutionResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index' => ListSiteSolutions::route('/'),
+            'index'  => ListSiteSolutions::route('/'),
             'create' => CreateSiteSolution::route('/create'),
-            'edit' => EditSiteSolution::route('/{record}/edit'),
+            'edit'   => EditSiteSolution::route('/{record}/edit'),
         ];
     }
 

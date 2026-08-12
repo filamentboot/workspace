@@ -114,7 +114,7 @@ it('产品可按品牌搜到', function () {
 
 it('未发布内容搜不到', function () {
     SiteCase::factory()->draft()->create(['title_zh' => '草稿案例带关键词']);
-    SiteProduct::factory()->unpublished()->create(['title_zh' => '下架产品带关键词']);
+    SiteProduct::factory()->draft()->create(['title_zh' => '下架产品带关键词']);
     SitePage::factory()->draft()->create(['title_zh' => '草稿页面带关键词']);
     NewsArticle::factory()->draft()->create(['title_zh' => '草稿资讯带关键词']);
 
@@ -268,7 +268,7 @@ it('搜索结果页在双主题下渲染命中', function (string $theme) {
         ->and($html)->toContain('/cases/search-hit-case')
         // 关键词回显到输入框
         ->and($html)->toContain('value="智能改造"');
-})->with(['decoration', 'tech-product']);
+})->with(['decoration', 'software']);
 
 it('无结果时在双主题下给出询盘出口', function (string $theme) {
     switchThemeForSearch($theme);
@@ -278,7 +278,7 @@ it('无结果时在双主题下给出询盘出口', function (string $theme) {
     expect($html)->toContain('没有找到')
         // 空结果页不该是死路：登记过的来源标识，能归因
         ->and($html)->toContain('search-empty');
-})->with(['decoration', 'tech-product']);
+})->with(['decoration', 'software']);
 
 it('未带关键词时在双主题下只显示搜索框', function (string $theme) {
     switchThemeForSearch($theme);
@@ -287,7 +287,7 @@ it('未带关键词时在双主题下只显示搜索框', function (string $them
 
     expect($html)->toContain('输入关键词开始搜索')
         ->and($html)->toContain('name="q"');
-})->with(['decoration', 'tech-product']);
+})->with(['decoration', 'software']);
 
 it('两套主题的导航都有搜索入口', function (string $theme) {
     switchThemeForSearch($theme);
@@ -296,4 +296,4 @@ it('两套主题的导航都有搜索入口', function (string $theme) {
 
     expect($html)->toContain('aria-label="站内搜索"')
         ->and($html)->toContain('站内搜索');
-})->with(['decoration', 'tech-product']);
+})->with(['decoration', 'software']);
