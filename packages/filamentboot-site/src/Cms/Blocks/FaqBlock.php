@@ -77,4 +77,58 @@ class FaqBlock extends AbstractBlock
             'items' => [],
         ];
     }
+
+    /**
+     * 转 schema.org FAQPage 节点（七期批次 1 从 BlockRenderer::faqNode() 下沉）
+     *
+     * 问答不完整（缺问或缺答）的条目跳过；一条都不剩则整个节点不输出——
+     * 空 mainEntity 的 FAQPage 会被 Search Console 报为无效结构化数据。
+     * 答案本就存纯文本（见类注释），结构化数据里带 HTML 标签会被搜索引擎
+     * 判为无效，因此不做任何转义外的处理。
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>|null
+     */
+    public function structuredData(array $data): ?array
+    {
+        $items = $data['items'] ?? [];
+
+        if (! is_array($items)) {
+            return null;
+        }
+
+        $entities = [];
+
+        foreach ($items as $item) {
+            if (! is_array($item)) {
+                continue;
+            }
+
+            $question = trim((string) ($item['question'] ?? ''));
+            $answer   = trim((string) ($item['answer'] ?? ''));
+
+            if ($question === '' || $answer === '') {
+                continue;
+            }
+
+            $entities[] = [
+                '@type'          => 'Question',
+                'name'           => $question,
+                'acceptedAnswer' => [
+                    '@type' => 'Answer',
+                    'text'  => $answer,
+                ],
+            ];
+        }
+
+        if ($entities === []) {
+            return null;
+        }
+
+        return [
+            '@context'   => 'https://schema.org',
+            '@type'      => 'FAQPage',
+            'mainEntity' => $entities,
+        ];
+    }
 }

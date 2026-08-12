@@ -609,8 +609,14 @@ class PluginManager
      * 严格验证 composer 包名格式（T-12-02-01 命令注入缓解）
      *
      * 仅允许 lowercase 字母、数字、点、下划线、连字符的 vendor/package 格式。
+     *
+     * 可见性 protected（不是 private）：宿主 `App\Services\PluginManager` 用更严格的
+     * 校验（白名单 + Packagist p2 API + semver）覆写此方法。若声明为 private，
+     * 本类内部 `$this->validatePackageName()` 调用会静态绑定到本类自身，子类的
+     * public 覆写永不触发——private 方法不参与虚方法分派，与对象实际类型无关
+     * （四期基线 §4.1 记录的死代码即此）。
      */
-    private function validatePackageName(string $name): bool
+    protected function validatePackageName(string $name): bool
     {
         return (bool) preg_match('/^[a-z0-9_.-]+\/[a-z0-9_.-]+$/', $name);
     }

@@ -13,10 +13,11 @@
 
 @php
     // 保留另一维筛选、丢掉 page：避免「换了风格还停在第 7 页」
-    $linkTo = function (array $overrides) use ($style, $houseType): string {
+    $linkTo = function (array $overrides) use ($style, $houseType, $category): string {
         $query = array_filter([
             'style'      => $style,
             'house_type' => $houseType,
+            'category'   => $category,
             ...$overrides,
         ], fn ($value): bool => $value !== null && $value !== '');
 
@@ -26,18 +27,26 @@
     $filterGroups = [
         ['label' => '风格', 'key' => 'style', 'active' => $style, 'options' => $styleOptions],
         ['label' => '户型', 'key' => 'house_type', 'active' => $houseType, 'options' => $houseTypeOptions],
+        ['label' => '分类', 'key' => 'category', 'active' => $category, 'options' => $categoryOptions],
     ];
 @endphp
 
 @section('content')
+    {{-- 投放位幻灯片。没有生效中的就整段不渲染，所以这里无条件 include。 --}}
+    @include('filamentboot-site::components.banner-strip', [
+        'position' => \Filamentboot\FilamentbootSite\Modules\Corporate\Banners\Enums\BannerPosition::CASE_INDEX_TOP,
+    ])
+
     <section class="py-16 bg-site-base" aria-labelledby="cases-heading">
         <div class="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-8">
 
             <div class="mb-12">
                 <h1 id="cases-heading" class="text-site-primary text-4xl font-bold mb-4">装修案例</h1>
-                <p class="text-site-secondary text-lg">
-                    探索我们的精选智能家居装修案例，感受设计与科技的完美融合。
-                </p>
+                @if($siteSettings?->list_intro_cases_zh)
+                    <p class="text-site-secondary text-lg">
+                        {{ $siteSettings->list_intro_cases_zh }}
+                    </p>
+                @endif
             </div>
 
             {{-- 筛选 pills --}}

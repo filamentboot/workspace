@@ -2,6 +2,8 @@
 
 namespace Filamentboot\FilamentbootSite\Settings;
 
+use Filamentboot\Settings\UploadSettings;
+use Illuminate\Support\Facades\Storage;
 use Spatie\LaravelSettings\Settings;
 
 /**
@@ -14,29 +16,31 @@ use Spatie\LaravelSettings\Settings;
  * active_theme 控制前台渲染使用的主题目录，取值必须存在于
  * config('filamentboot-site.themes') 白名单中。
  *
- * 英文字段（*_en）为 CMS v1 之前的双语实现遗留。v1 只维护中文内容流，
- * 后台表单与前台渲染均已移除英文入口；此处保留属性仅为兼容既有数据，
- * 删除属性需要额外的 Spatie Settings 迁移且无实际收益。
+ * 双语时代的英文字段（company_name_en / phone_en / address_en /
+ * seo_default_title_en / seo_default_description_en）已于
+ * 2026_08_08_100001_drop_site_legacy_english_settings 删除。v1 只维护中文
+ * 内容流，那 5 个键从英文入口下线之后再没被写过，也没有任何消费方。
+ * 内容表侧的 21 个 `_en` 列在同一批一起清掉了。
  */
 class SiteSettings extends Settings
 {
-    /** 公司名称（中文） */
-    public string $company_name_zh = '湖北晴空妙享科技有限公司';
-
-    /** 公司名称（英文，遗留字段，v1 不再使用） */
-    public string $company_name_en = '';
+    /**
+     * 公司名称（中文）
+     *
+     * 默认空串：本类其余字段一律如此，这一个此前写死了首个接入站点的公司全名，
+     * 下游 composer require 装完会**静默**得到别人的公司名——它会出现在页脚、
+     * Organization 结构化数据与所有页面的标题后缀里，而站点设置页在没人打开过
+     * 之前不会有任何提示。装上包不该凭空多出一个主体。
+     *
+     * 空串时前台走 defaultTitle() 的回退链（站点设置 → 公司名 → app.name）。
+     */
+    public string $company_name_zh = '';
 
     /** 联系电话 */
     public string $phone = '';
 
-    /** 联系电话（英文，遗留字段，v1 不再使用） */
-    public string $phone_en = '';
-
     /** 公司地址 */
     public string $address_zh = '';
-
-    /** 公司地址（英文，遗留字段，v1 不再使用） */
-    public string $address_en = '';
 
     /** ICP 备案号 */
     public string $icp_number = '';
@@ -44,17 +48,47 @@ class SiteSettings extends Settings
     /** 隐私政策链接（站点发布前必填项） */
     public string $privacy_url = '';
 
+    /**
+     * 页脚公司简介
+     *
+     * 与下面五个列表页导语同属 3.5 期 A 段补的「前台文案」一族：这 6 段话原本
+     * 写死在各主题的 blade 里，前台每天都在显示，后台一个字都改不了。
+     *
+     * **默认空串，留空则前台整段不渲染**——不做视图侧兜底。有兜底就等于后台
+     * 空着、前台仍有字，正是这一批改动要修的毛病。演示文案由 SiteDemoSeeder 填。
+     */
+    public string $footer_intro_zh = '';
+
+    /** 案例列表页导语 */
+    public string $list_intro_cases_zh = '';
+
+    /** 方案列表页导语 */
+    public string $list_intro_solutions_zh = '';
+
+    /** 产品列表页导语 */
+    public string $list_intro_products_zh = '';
+
+    /** 套餐列表页导语 */
+    public string $list_intro_packages_zh = '';
+
+    /** 资讯列表页导语 */
+    public string $list_intro_news_zh = '';
+
     /** SEO 默认标题 */
     public string $seo_default_title_zh = '';
-
-    /** SEO 默认标题（英文，遗留字段，v1 不再使用） */
-    public string $seo_default_title_en = '';
 
     /** SEO 默认描述 */
     public string $seo_default_description_zh = '';
 
-    /** SEO 默认描述（英文，遗留字段，v1 不再使用） */
-    public string $seo_default_description_en = '';
+    /**
+     * SEO 默认关键词
+     *
+     * 内容记录的 seo_keywords 留空时的回退值，也是首页与各列表页唯一的关键词来源
+     * ——这两类页面没有对应记录，此前 keywords 恒为空串，meta 标签整条不输出。
+     *
+     * 留空即全站不输出 keywords，与此前行为一致。
+     */
+    public string $seo_default_keywords_zh = '';
 
     /**
      * 当前激活主题标识（D-10-13）
@@ -169,6 +203,15 @@ class SiteSettings extends Settings
     public string $bing_verify_code = '';
 
     /**
+     * 搜狗站长平台验证串
+     *
+     * 单独说明它为什么值得占一个字段：搜狗不只是一个份额不大的搜索引擎，
+     * 它同时是**腾讯元宝的检索源之一**。要让生成式引擎有机会引用本站，
+     * 搜狗那边的收录就不能缺。
+     */
+    public string $sogou_verify_code = '';
+
+    /**
      * 百度主动推送准入密钥（B4）
      *
      * 在百度搜索资源平台「普通收录 - API 提交」页获取。留空即关闭推送：
@@ -190,5 +233,63 @@ class SiteSettings extends Settings
     public static function group(): string
     {
         return 'site';
+    }
+
+    /**
+     * 公司 LOGO 的可用地址
+     */
+    public function logoUrl(): ?string
+    {
+        return $this->mediaUrl($this->logo);
+    }
+
+    /**
+     * 微信二维码的可用地址
+     */
+    public function wechatQrcodeUrl(): ?string
+    {
+        return $this->mediaUrl($this->wechat_qrcode);
+    }
+
+    /**
+     * 全局 Open Graph 默认图的可用地址
+     */
+    public function ogDefaultImageUrl(): ?string
+    {
+        return $this->mediaUrl($this->og_default_image);
+    }
+
+    /**
+     * 把媒体字段归一成可以直接放进 src / og:image 的地址
+     *
+     * 这三个字段的取值有两种来源，形状完全不同：后台 FileUpload 存的是相对磁盘根的
+     * 路径（形如 01K2....png），而直接写库配置时填的是完整 URL（og_default_image
+     * 一直是这么配的）。视图此前不加区分地塞进 src——拿到相对路径时浏览器按当前页面
+     * 路径去解析，详情页上的 LOGO 请求就打到 /cases/01K2....png，404。
+     *
+     * 这个缺陷只在「有人从后台传过图」的站点上出现，装完包不配就永远看不见，
+     * 属于典型的静默失效，因此归一放在设置类里由所有读取方共用，
+     * 而不是让每个视图各写一遍判断。
+     *
+     * 空值统一返回 null，视图据此整块不渲染。
+     */
+    protected function mediaUrl(?string $value): ?string
+    {
+        $value = trim((string) $value);
+
+        if ($value === '') {
+            return null;
+        }
+
+        // 完整 URL、协议相对地址、站点根相对路径都已经能直接用
+        if (preg_match('#^(?:[a-z][a-z0-9+.-]*:)?//#i', $value) === 1 || str_starts_with($value, '/')) {
+            return $value;
+        }
+
+        return rescue(
+            fn (): string => Storage::disk(app(UploadSettings::class)->default_disk)->url($value),
+            null,
+            report: false,
+        );
     }
 }

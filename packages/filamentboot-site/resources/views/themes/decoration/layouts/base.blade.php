@@ -1,12 +1,15 @@
 {{--
  * decoration 主题基础布局
  *
- * <html class="dark"> 固定深色模式（UI-SPEC §Dark Mode）。
  * 包含 SEO meta 组件、询盘面板 Store、Google Fonts、vite 主题 CSS 注入。
  * skip-nav 无障碍快捷链接（UI-SPEC §Accessibility）。
+ *
+ * 二期浅色化后 <html> 不再加 class="dark"（与 software 一致）。
+ * 那个 class 唯一服务的是 decoration.css 里的 @custom-variant dark (.dark &)，
+ * 而全仓库没有任何视图用过 dark: 变体，指令与 class 已一并删除。
  --}}
 <!DOCTYPE html>
-<html lang="zh-CN" class="dark">
+<html lang="zh-CN">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -44,7 +47,7 @@
 
     {{-- 跳到主内容（无障碍快捷链接，UI-SPEC §Accessibility skip-nav） --}}
     <a href="#main-content"
-       class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-site-surface focus:text-site-primary focus:rounded-lg focus:ring-2 focus:ring-[--color-primary] focus:outline-none">
+       class="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-[9999] focus:px-4 focus:py-2 focus:bg-site-surface focus:text-site-primary focus:rounded-lg focus:ring-2 focus:ring-(--color-primary) focus:outline-none">
         跳到主内容
     </a>
 

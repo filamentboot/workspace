@@ -25,7 +25,7 @@
         "filament/filament": "^5.0",
         "filament/spatie-laravel-media-library-plugin": "^5.6",
         "filament/spatie-laravel-settings-plugin": "^5.6",
-        "filamentboot/filamentboot": "*",
+        "filamentboot/filamentboot": "^0.13",
         "livewire/livewire": "^4.3",
         "mews/purifier": "^3.4",
         "spatie/laravel-settings": "^3.9"
@@ -80,7 +80,7 @@
             }
         },
         "branch-alias": {
-            "dev-main": "0.5.x-dev"
+            "dev-main": "0.13.x-dev"
         }
     },
     "scripts": {

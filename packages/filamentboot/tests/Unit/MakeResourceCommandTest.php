@@ -12,7 +12,7 @@ use Symfony\Component\Console\Command\Command;
  * MakeFilamentbootResourceCommand 行为测试
  *
  * 验证 `make:filamentboot-resource` 命令的各项行为（FEAT-03）：
- * - 生成 Resource 主文件及 3 个 Page 文件到正确路径
+ * - 生成 Resource 主文件、3 个 Page 文件及 Policy 骨架到正确路径
  * - 目标文件已存在时跳过（无 --force），输出含 Skipped:
  * - 带 --force 时覆盖已存在的 Resource 主文件
  * - 非 PascalCase name 参数返回 FAILURE
@@ -121,7 +121,7 @@ class MakeResourceCommandTest extends TestCase
     }
 
     /**
-     * 验证 make:filamentboot-resource Product 生成 Resource 主文件及 3 个 Page 文件
+     * 验证 make:filamentboot-resource Product 生成 Resource 主文件、3 个 Page 文件及 Policy 骨架
      */
     public function test_resource_generates_file_with_correct_namespace(): void
     {
@@ -150,6 +150,15 @@ class MakeResourceCommandTest extends TestCase
         // 验证 Resource 文件命名空间
         $resourceContent = File::get($base.'/ProductResource.php');
         self::assertStringContainsString('namespace App\\Filament\\Resources\\Products;', $resourceContent);
+
+        // 验证 Policy 骨架：固定落在 app/Policies/，与 Laravel 策略自动发现约定对齐
+        $policyPath = $this->tempBase.'/app/Policies/ProductPolicy.php';
+        self::assertTrue(File::exists($policyPath), '期望生成 app/Policies/ProductPolicy.php');
+
+        $policyContent = File::get($policyPath);
+        self::assertStringContainsString('namespace App\\Policies;', $policyContent);
+        self::assertStringContainsString('class ProductPolicy extends BasePolicy', $policyContent);
+        self::assertStringContainsString('view_any_product', $policyContent);
     }
 
     /**

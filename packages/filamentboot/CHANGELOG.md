@@ -5,6 +5,70 @@
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-08-12
+
+> **跨度说明**：上一个正式版本是 2026-06-24 的 [0.5.3]，中间跨越一年多——本仓库到七期批次 5 为止从未真正对外发布过一次，`[Unreleased]` 段积累的是这整段时间的变更。**沿用五期已定口径继续 0.x（不打 1.0）**：1.0 是对下游的 API 稳定承诺，而这份承诺至今没有经过真实安装场景检验，要等真实安装场景（下面的分流试装）跑完才成立。
+
+### Added
+
+- **API 统一响应格式**：`Illuminate\Http\Response` 新增三个宏 `api()` / `apiError()` /
+  `apiPaginated()`，统一 `{success, message, data}`、`{success, message, error_code, data}`、
+  分页 `{data, meta, links}` 三种 JSON 响应形状；`Enums\ApiErrorCode`
+  （`defaultMessage()` / `httpStatus()`）与 `Exceptions\ApiException` 随之进包
+- **包级 API / Web 路由**（`routes/api.php` / `routes/web.php`，随
+  `FilamentbootServiceProvider::boot()` 的 `loadRoutesFrom` 无条件加载，不依赖宿主
+  `bootstrap/app.php` 是否声明了 `withRouting(api:)`，`composer require` 本包即生效，
+  当前无开关）：
+  - `POST /api/v1/admin/login`、`GET /api/v1/admin/me`、`DELETE /api/v1/admin/logout`
+    （Sanctum Bearer Token 鉴权，`Http\Controllers\Api\V1\Admin\AuthController` +
+    `Http\Requests\Api\V1\Admin\LoginRequest`）
+  - `GET /plugin-market/index.json`（`Http\Controllers\OfficialMarketIndexController`，
+    插件市场索引，`web` 中间件组）
+- **插件市场后台 UI**：`Filament\Resources\Plugins\PluginResource`（含 List / View 两个
+  Page）+ `Filament\Pages\Marketplace\MarketplacePage`，随 `FilamentbootPlugin::register()`
+  自动挂载到面板，无需在下游 `AdminPanelProvider` 手工注册；`Policies\PluginPolicy`、
+  `Services\MarketplaceService`、`Services\PackagistService` 随之进包
+- 两个新增可发布配置文件：`config/official-market.php`（官方插件市场条目清单）、
+  `config/plugin-platform.php`（`plugin_platform.official_market_index_url`，默认拼
+  `APP_URL` + `/plugin-market/index.json`），随 `filamentboot-config` publish tag 一并发布
+- `install_plugin` / `uninstall_plugin` 两个权限点补进 `AdminFoundationPermissionSeeder`
+  （此前只在宿主 `PluginPolicy` 里被引用，seeder 里从未声明过，下游即便拿到插件管理 UI
+  也无法通过角色授予这两个操作）
+- **插件管理 / 插件市场 / API 鉴权相关的 14 个测试文件从宿主 `tests/` 迁入包内**（七期批次
+  4e）：这些测试验证的能力（`PluginManager` 初始化与依赖检查、Composer 安装/卸载 Job、
+  混合发现、插件市场浏览与安装、Packagist 检索、面板动态注册、管理员 API 登录/鉴权、
+  统一响应格式）已在 4a/4b/4c 批次随类文件一起搬进包，测试若继续留在宿主，下游
+  `composer require filamentboot/filamentboot` 之后这些能力完全没有回归测试保护。原
+  Pest 语法改写为包既有的 PHPUnit 经典类语法（`extends Orchestra\Testbench\TestCase`），
+  新增两个测试专用基础设施：`Filamentboot\Tests\Support\TestAdminPanelProvider`（最小
+  Filament 管理面板 Provider，供需要真实 Panel 注册环境的用例复用）与
+  `StabilizeLivewireDataStoreProvider`（修复 Testbench 环境下 `Livewire::test()` 渲染
+  完整 Filament Page 时 `Livewire\Mechanisms\DataStore` 单例丢失导致 `getErrorBag()`
+  返回 `null` 的问题）
+
+### Changed
+
+- **BREAKING**：`FilamentbootPlugin::register()` 现在无条件挂载 2FA
+  （`TwoFactorAuthenticationPlugin`）、角色权限（`FilamentShieldPlugin`）、操作日志
+  （`ActivityLogPlugin`）三个面板插件——三者本就是 `composer.json` 的硬依赖，此前
+  `filamentboot:install` 生成的 `AdminPanelProvider` stub 只在注释里提示"如需扩展请参阅文档
+  后手动添加"，从未真正接线。**若下游此前已按旧提示在自己的 `AdminPanelProvider` 里手动
+  注册过这三个插件，升级后会与包自动挂载的实例重复**，需要下游自查并删除手工注册的那一份
+- **BREAKING**：包新增全局 API 异常渲染——`ExceptionHandler::renderable()` 在包
+  `boot()` 阶段为 `ApiException` / `ValidationException` / `AuthenticationException` /
+  `Throwable` 四类异常注册统一 JSON 错误响应回调，命中条件是请求路径匹配 `api/*` 或
+  `$request->expectsJson()`。**若下游此前在 `bootstrap/app.php` 的 `withExceptions()`
+  里已经为同样条件写过自定义 JSON 错误格式，两份回调会并存**——Laravel 按注册顺序取第一个
+  返回非 null 的结果，需要下游确认新旧回调的注册顺序与预期是否一致
+
+### Fixed
+
+- **4 个 Dashboard Widget 的 `$view` 补齐 `filamentboot::` 命名空间前缀**（`QuickActionsWidget`
+  / `QuickGuideWidget` / `WelcomeWidget` / `RecentActivityWidget`）：此前不带前缀，只在宿主
+  `resources/views/filament/widgets/` 恰好有逐字副本时能解析到；下游仅 `composer require`
+  本包、不带这份副本时，后台首页会直接 `ViewNotFoundException`。删掉了早期宿主项目里
+  那份不再需要的重复副本
+
 ---
 
 ## [0.5.3] - 2026-06-24
@@ -117,10 +181,12 @@
 
 ---
 
-[Unreleased]: https://github.com/john-captain/filament-admin/compare/v0.5.0...HEAD
-[0.5.0]: https://github.com/john-captain/filament-admin/compare/v0.4.1...v0.5.0
-[0.4.1]: https://github.com/john-captain/filament-admin/compare/v0.4.0...v0.4.1
-[0.4.0]: https://github.com/john-captain/filament-admin/releases/tag/v0.4.0
-[0.3.0]: https://github.com/john-captain/filament-admin/releases/tag/v0.3.0
-[0.2.0]: https://github.com/john-captain/filament-admin/releases/tag/v0.2.0
-[0.1.0]: https://github.com/john-captain/filament-admin/releases/tag/v0.1.0
+[Unreleased]: https://github.com/filamentboot/filamentboot/compare/v0.13.0...HEAD
+[0.13.0]: https://github.com/filamentboot/filamentboot/compare/v0.5.3...v0.13.0
+[0.5.3]: https://github.com/filamentboot/filamentboot/compare/v0.5.0...v0.5.3
+[0.5.0]: https://github.com/filamentboot/filamentboot/compare/v0.4.1...v0.5.0
+[0.4.1]: https://github.com/filamentboot/filamentboot/compare/v0.4.0...v0.4.1
+[0.4.0]: https://github.com/filamentboot/filamentboot/releases/tag/v0.4.0
+[0.3.0]: https://github.com/filamentboot/filamentboot/releases/tag/v0.3.0
+[0.2.0]: https://github.com/filamentboot/filamentboot/releases/tag/v0.2.0
+[0.1.0]: https://github.com/filamentboot/filamentboot/releases/tag/v0.1.0

@@ -92,9 +92,34 @@ trait HasCoverImage
     /**
      * 注册封面图转换尺寸
      *
-     * thumb：后台表格缩略图；card：前台列表卡片；og：社交分享图（1200x630 是
-     * Open Graph 通行比例）。此前 Resource 表格已引用 ->conversion('thumb')
-     * 但模型从未注册任何转换，缩略图 URL 指向不存在的文件。
+     * thumb：后台表格缩略图；card：前台列表卡片与详情主图；og：社交分享图。
+     * 此前 Resource 表格已引用 ->conversion('thumb') 但模型从未注册任何转换，
+     * 缩略图 URL 指向不存在的文件。
+     *
+     * thumb / card 用 Fit::Max 的**正方形框**，不是固定比例
+     * ------------------------------------------------------
+     * 原先两档都是 Fit::Crop 到 4:3（400x300 / 800x600），而前台三类卡片容器
+     * 比例各不相同且都带 object-cover：产品 aspect-square、案例与方案
+     * aspect-[4/3]、资讯 aspect-[16/9]。于是一张产品图会被裁两次——服务端先
+     * 硬裁成 4:3 切掉两侧，浏览器再按正方容器切掉上下，上传时框好的构图两道
+     * 都保不住。
+     *
+     * Fit::Max 的语义是 PreserveAspectRatio + DoNotUpsize 且不改画布
+     * （Spatie\Image\Enums\Fit::calculateSize()），传正方形框等于「最长边不
+     * 超过 N，比例原样保留，小图不放大」。各 Resource 的
+     * imageEditorAspectRatios() 已把上传比例对齐到各自的卡片容器，所以前台的
+     * object-cover 退化成空操作，用户框的构图就是最终构图。
+     *
+     * 800 这一档同时要喂产品详情页的主图轮播（aspect-square，视图里已经写着
+     * width="800" height="800"），所以框取 800x800 而不是 800x600。
+     *
+     * og 是刻意的例外，保持 Fit::Crop
+     * -------------------------------
+     * Open Graph 要求固定 1.91:1，任何单一上传比例都喂不了它，裁切无法回避。
+     * 另外它不只用于社交卡片：案例 / 方案 / 资讯三个详情页的顶部大图也读
+     * coverUrl('og')，容器是 16/9 + object-cover，与 1.91:1 只差一点侧边裁切。
+     * **别把这条也改成 Max**，那会让详情页大图退回原始比例、在 16/9 容器里
+     * 被二次裁切。
      *
      * nonQueued()：官网内容量小，同步生成避免未跑队列时前台长期无图。
      *
@@ -111,12 +136,12 @@ trait HasCoverImage
         $this->addMediaConversion('thumb')
             ->performOnCollections('cover', 'gallery')
             ->nonQueued()
-            ->fit(Fit::Crop, 400, 300);
+            ->fit(Fit::Max, 400, 400);
 
         $this->addMediaConversion('card')
             ->performOnCollections('cover', 'gallery')
             ->nonQueued()
-            ->fit(Fit::Crop, 800, 600);
+            ->fit(Fit::Max, 800, 800);
 
         $this->addMediaConversion('og')
             ->performOnCollections('cover')

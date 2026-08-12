@@ -17,6 +17,7 @@ use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
@@ -24,12 +25,15 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Filamentboot\FilamentbootSite\Cms\Enums\PageStatus;
+use Filamentboot\FilamentbootSite\Cms\Filament\RelationManagers\RevisionsRelationManager;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Enums\CaseStyle;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Enums\HouseType;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Filament\SiteCaseResource\Pages\CreateSiteCase;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Filament\SiteCaseResource\Pages\EditSiteCase;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Filament\SiteCaseResource\Pages\ListSiteCases;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Models\SiteCase;
+use Filamentboot\FilamentbootSite\SiteServiceProvider;
 use Filamentboot\Settings\UploadSettings;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -54,9 +58,21 @@ class SiteCaseResource extends Resource
 
     protected static ?int $navigationSort = 10;
 
-    protected static ?string $modelLabel = '装修案例';
+    /**
+     * 「案例」是两套模板都用的内容类型，「装修案例」是 decoration 专属叫法
+     * （六期批次 9 实测发现：这个标签不分主题、后台侧边栏与页面标题全局生效，
+     * software 模板管理员天天看到错误标签）。按 active_theme 动态取，而不是
+     * 静态属性——参照 Filament `HasLabels` trait 的实现，覆写方法优先级高于属性。
+     */
+    public static function getModelLabel(): string
+    {
+        return SiteServiceProvider::resolveActiveTheme() === 'software' ? '案例' : '装修案例';
+    }
 
-    protected static ?string $pluralModelLabel = '装修案例';
+    public static function getPluralModelLabel(): string
+    {
+        return static::getModelLabel();
+    }
 
     /**
      * 表单定义（内容 Tab + SEO + 图片 + 分类标签 + 发布置顶）
@@ -107,11 +123,26 @@ class SiteCaseResource extends Resource
                             ->maxLength(100),
                         Textarea::make('smart_features')
                             ->label('智能亮点')
-                            ->rows(3),
+                            ->rows(3)
+                            ->helperText('详情页正文之前会渲染成一组「这套做了什么」。顿号、逗号或换行分隔都行，留空则整块不显示'),
                         Toggle::make('is_featured')
                             ->label('置顶/精选'),
+                        TextInput::make('sort')
+                            ->label('排序权重')
+                            ->numeric()
+                            ->default(0)
+                            ->helperText('列表页先按它升序排，同值再按发布时间倒序。想把某条钉在最前面就填负数'),
+                        Select::make('status')
+                            ->label('发布状态')
+                            ->options(PageStatus::options())
+                            ->default(PageStatus::DRAFT->value)
+                            ->required()
+                            ->native(false)
+                            ->live()
+                            ->helperText('选「定时发布」并填写下方发布时间，到点后前台自动可见，无需队列或定时任务'),
                         DateTimePicker::make('published_at')
-                            ->label('发布时间（留空=草稿）'),
+                            ->label('发布时间（留空=草稿）')
+                            ->required(fn (Get $get): bool => $get('status') === PageStatus::SCHEDULED->value),
                     ]),
                     Tab::make('内容')->schema([
                         TextInput::make('title_zh')
@@ -167,13 +198,18 @@ class SiteCaseResource extends Resource
                             ->collection('cover')
                             ->disk($defaultDisk)
                             ->image()
-                            ->imageEditor(),
+                            ->imageEditor()
+                            ->imageEditorAspectRatios(['4:3'])
+                            ->helperText('建议不小于 1200×900，比例 4:3。裁剪框内就是最终构图，系统只做等比缩放、不再自动裁切；详情页顶部大图会另裁一版 1.91:1，主体请留在画面中部。'),
                         SpatieMediaLibraryFileUpload::make('gallery')
                             ->label('图集')
                             ->collection('gallery')
                             ->disk($defaultDisk)
                             ->multiple()
-                            ->image(),
+                            ->image()
+                            ->imageEditor()
+                            ->imageEditorAspectRatios(['4:3'])
+                            ->helperText('建议不小于 800×600，比例 4:3。'),
                     ]),
                 ])
                 ->columnSpanFull(),
@@ -199,14 +235,15 @@ class SiteCaseResource extends Resource
                 TextColumn::make('category.name_zh')
                     ->label('分类')
                     ->default('-'),
-                IconColumn::make('publication_status')
+                TextColumn::make('status')
                     ->label('状态')
-                    ->getStateUsing(fn (SiteCase $record): bool => $record->published_at !== null && $record->published_at <= now())
-                    ->boolean()
-                    ->trueColor('success')
-                    ->falseColor('gray')
-                    ->trueIcon('heroicon-o-check-circle')
-                    ->falseIcon('heroicon-o-clock'),
+                    ->badge()
+                    ->formatStateUsing(fn (mixed $state): string => $state instanceof PageStatus
+                        ? $state->label()
+                        : (string) (PageStatus::tryFrom((string) $state)?->label() ?? $state))
+                    ->color(fn (mixed $state): string => $state instanceof PageStatus
+                        ? $state->color()
+                        : (PageStatus::tryFrom((string) $state)?->color() ?? 'gray')),
                 IconColumn::make('is_featured')
                     ->label('置顶')
                     ->boolean()
@@ -220,6 +257,9 @@ class SiteCaseResource extends Resource
             ])
             ->filters([
                 TrashedFilter::make(),
+                SelectFilter::make('status')
+                    ->label('状态')
+                    ->options(PageStatus::options()),
                 SelectFilter::make('style')
                     ->label('风格')
                     ->options(
@@ -255,6 +295,18 @@ class SiteCaseResource extends Resource
     }
 
     /**
+     * 关系管理器（批次 1.5c 版本历史）
+     *
+     * @return array<int, mixed>
+     */
+    public static function getRelations(): array
+    {
+        return [
+            RevisionsRelationManager::class,
+        ];
+    }
+
+    /**
      * 路由页面映射
      *
      * @return array<string, mixed>
@@ -262,9 +314,9 @@ class SiteCaseResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListSiteCases::route('/'),
+            'index' => ListSiteCases::route('/'),
             'create' => CreateSiteCase::route('/create'),
-            'edit'   => EditSiteCase::route('/{record}/edit'),
+            'edit' => EditSiteCase::route('/{record}/edit'),
         ];
     }
 

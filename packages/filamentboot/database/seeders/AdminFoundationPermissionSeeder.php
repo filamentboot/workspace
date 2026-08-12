@@ -68,6 +68,8 @@ class AdminFoundationPermissionSeeder extends Seeder
             'view_plugin',
             'update_plugin',
             'initialize_plugin',
+            'install_plugin',
+            'uninstall_plugin',
             // 导出权限点（FINAL-04）
             'export_admin_user',
             'export_department',

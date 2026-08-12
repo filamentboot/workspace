@@ -13,8 +13,8 @@
     $address      = $siteSettings?->address_zh ?: '';
     $icpNumber    = $siteSettings?->icp_number ?: '';
     $privacyUrl   = $siteSettings?->privacy_url ?: '';
-    $logoPath     = $siteSettings?->logo;
-    $wechatQrcode = $siteSettings?->wechat_qrcode;
+    $logoPath     = $siteSettings?->logoUrl();
+    $wechatQrcode = $siteSettings?->wechatQrcodeUrl();
 
     // 三项联系方式全空时整列不渲染
     $hasContactInfo = $phone !== '' || $address !== '' || ! empty($wechatQrcode);
@@ -22,11 +22,20 @@
     // 后台配了 footer 菜单就用它，没配则回退下面这份硬编码列表（#17）。
     // 兜底数组留在各主题的 blade 里而不是抽进 PHP：抽出去会把两个主题的
     // 页脚结构焊死。删光菜单必须回退而不是白屏，这是升级安全的硬要求。
+    // 内容类型条目的文案取自 ContentTypeLabels（七期批次 2），非内容类型的项
+    // （服务城市之后那几项）不属于这套词表，仍然留字面量。
     $quickLinks = app(\Filamentboot\FilamentbootSite\Cms\Services\MenuResolver::class)->resolveFlat('footer') ?? [
-        ['href' => route('site.cases.index'),     'label' => '装修案例'],
-        ['href' => route('site.solutions.index'), 'label' => '智能方案'],
-        ['href' => route('site.products.index'),  'label' => '智能产品'],
-        ['href' => route('site.news.index'),      'label' => '资讯中心'],
+        ['href' => route('site.cases.index'),     'label' => \Filamentboot\FilamentbootSite\Support\ContentTypeLabels::case()],
+        ['href' => route('site.solutions.index'), 'label' => \Filamentboot\FilamentbootSite\Support\ContentTypeLabels::solution()],
+        ['href' => route('site.packages.index'),  'label' => \Filamentboot\FilamentbootSite\Support\ContentTypeLabels::package()],
+        ['href' => route('site.products.index'),  'label' => \Filamentboot\FilamentbootSite\Support\ContentTypeLabels::product()],
+        ['href' => route('site.news.index'),      'label' => \Filamentboot\FilamentbootSite\Support\ContentTypeLabels::news()],
+        // 城市页的枢纽。三百多个城市页只靠站点地图被抓到不够——爬虫按内链权重
+        // 分配抓取预算，没有站内入口的整片子树会被当成低价值区（三期批次 6）
+        ['href' => route('site.city.index'),      'label' => \Filamentboot\FilamentbootSite\Support\ContentTypeLabels::city()],
+        // services 是 SiteDemoSeeder 建的五个静态页之一，却一直没有任何入口——
+        // 全站零内链，只能靠站点地图被抓到。补进来，孤岛清零（三期批次 3）
+        ['href' => route('site.page', 'services'), 'label' => '我们的服务'],
         ['href' => route('site.page', 'about'),   'label' => '关于我们'],
         ['href' => route('site.page', 'faq'),     'label' => '常见问题'],
         ['href' => route('site.page', 'contact'), 'label' => '联系我们'],
@@ -47,9 +56,11 @@
                     <div class="text-site-accent font-bold text-lg mb-4">{{ $companyName }}</div>
                 @endif
 
-                <p class="text-site-secondary text-sm leading-relaxed">
-                    我们将智能科技与精致设计融为一体，为您打造真正属于未来的家居空间。
-                </p>
+                @if($siteSettings?->footer_intro_zh)
+                    <p class="text-site-secondary text-sm leading-relaxed">
+                        {{ $siteSettings->footer_intro_zh }}
+                    </p>
+                @endif
             </div>
 
             {{-- 第二列：快速链接 --}}

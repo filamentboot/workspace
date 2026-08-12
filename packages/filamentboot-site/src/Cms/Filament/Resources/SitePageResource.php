@@ -23,10 +23,10 @@ use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
 use Filamentboot\FilamentbootSite\Cms\Blocks\BlockRegistry;
 use Filamentboot\FilamentbootSite\Cms\Enums\PageStatus;
+use Filamentboot\FilamentbootSite\Cms\Filament\RelationManagers\RevisionsRelationManager;
 use Filamentboot\FilamentbootSite\Cms\Filament\Resources\SitePageResource\Pages\CreateSitePage;
 use Filamentboot\FilamentbootSite\Cms\Filament\Resources\SitePageResource\Pages\EditSitePage;
 use Filamentboot\FilamentbootSite\Cms\Filament\Resources\SitePageResource\Pages\ListSitePages;
-use Filamentboot\FilamentbootSite\Cms\Filament\Resources\SitePageResource\RelationManagers\RevisionsRelationManager;
 use Filamentboot\FilamentbootSite\Cms\Models\SitePage;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -101,6 +101,11 @@ class SitePageResource extends Resource
                             ->required()
                             ->native(false)
                             ->helperText('当前主题没有对应版式视图时自动回退标准页面，不会 404'),
+                        TextInput::make('sort')
+                            ->label('排序权重')
+                            ->numeric()
+                            ->default(0)
+                            ->helperText('只影响后台列表的默认顺序（数字越小越靠前）。页面没有前台列表，前台不受它影响'),
                         TextInput::make('title_zh')
                             ->label('标题')
                             ->required()

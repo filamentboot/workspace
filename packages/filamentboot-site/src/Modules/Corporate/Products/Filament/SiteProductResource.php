@@ -6,6 +6,7 @@ use BackedEnum;
 use Filament\Actions\DeleteAction;
 use Filament\Actions\EditAction;
 use Filament\Actions\RestoreAction;
+use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\RichEditor as RichEditorField;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\SpatieMediaLibraryFileUpload;
@@ -15,16 +16,21 @@ use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Filamentboot\FilamentbootSite\Cms\Enums\PageStatus;
+use Filamentboot\FilamentbootSite\Cms\Filament\RelationManagers\RevisionsRelationManager;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Products\Filament\SiteProductResource\Pages\CreateSiteProduct;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Products\Filament\SiteProductResource\Pages\EditSiteProduct;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Products\Filament\SiteProductResource\Pages\ListSiteProducts;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Products\Models\SiteProduct;
+use Filamentboot\FilamentbootSite\SiteServiceProvider;
 use Filamentboot\Settings\UploadSettings;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -34,7 +40,7 @@ use UnitEnum;
  * 智能产品后台资源
  *
  * 提供产品 CRUD，含内容 Tab（基本信息/内容/SEO/图片）、
- * 分类、标签、is_published 布尔发布、置顶、封面图与图集（UploadSettings 磁盘）。
+ * 分类、标签、published_at 发布、置顶、封面图与图集（UploadSettings 磁盘）。
  *
  * 封面图与图集集中在「图片」Tab，与 SiteCaseResource 保持一致：
  * 图集是多图上传控件，放在字段密集的「基本信息」里会把那一屏撑得很长。
@@ -52,9 +58,19 @@ class SiteProductResource extends Resource
 
     protected static ?int $navigationSort = 30;
 
-    protected static ?string $modelLabel = '智能产品';
+    /**
+     * 「智能产品」是 decoration 专属叫法，software 模板卖的是软件插件，
+     * 不是智能家居设备（六期双向边界梳理，批次 9 顺手扩到 Resource 标签）
+     */
+    public static function getModelLabel(): string
+    {
+        return SiteServiceProvider::resolveActiveTheme() === 'software' ? '产品' : '智能产品';
+    }
 
-    protected static ?string $pluralModelLabel = '智能产品';
+    public static function getPluralModelLabel(): string
+    {
+        return static::getModelLabel();
+    }
 
     /**
      * 表单定义（内容 Tab + SEO + 分类标签 + 发布置顶 + 封面图）
@@ -89,11 +105,27 @@ class SiteProductResource extends Resource
                             ->step(0.01),
                         TextInput::make('brand')
                             ->label('品牌')
-                            ->maxLength(100),
+                            ->maxLength(100)
+                            ->helperText('留空则前台整栏不显示：卡片、详情页与首页「在售品牌」行都带守卫。集成商类站点通常留空，经销商类站点才填'),
                         Toggle::make('is_featured')
-                            ->label('置顶/精选'),
-                        Toggle::make('is_published')
-                            ->label('已发布'),
+                            ->label('置顶/精选')
+                            ->helperText('首页「智能产品」区块只取打了这个标的'),
+                        TextInput::make('sort')
+                            ->label('排序权重')
+                            ->numeric()
+                            ->default(0)
+                            ->helperText('产品列表、标签页、相关推荐都按它升序排（数字越小越靠前），同值再按新旧'),
+                        Select::make('status')
+                            ->label('发布状态')
+                            ->options(PageStatus::options())
+                            ->default(PageStatus::DRAFT->value)
+                            ->required()
+                            ->native(false)
+                            ->live()
+                            ->helperText('选「定时发布」并填写下方发布时间，到点后前台自动可见，无需队列或定时任务'),
+                        DateTimePicker::make('published_at')
+                            ->label('发布时间（留空=草稿）')
+                            ->required(fn (Get $get): bool => $get('status') === PageStatus::SCHEDULED->value),
                     ]),
                     Tab::make('内容')->schema([
                         TextInput::make('title_zh')
@@ -125,7 +157,9 @@ class SiteProductResource extends Resource
                             ->collection('cover')
                             ->disk($defaultDisk)
                             ->image()
-                            ->imageEditor(),
+                            ->imageEditor()
+                            ->imageEditorAspectRatios(['1:1'])
+                            ->helperText('建议不小于 800×800，比例 1:1。裁剪框内就是最终构图，系统只做等比缩放、不再自动裁切。'),
                         SpatieMediaLibraryFileUpload::make('gallery')
                             ->label('图集')
                             ->collection('gallery')
@@ -133,7 +167,9 @@ class SiteProductResource extends Resource
                             ->multiple()
                             ->reorderable()
                             ->image()
-                            ->helperText('详情页主图轮播，可拖拽排序；第一张为轮播默认展示'),
+                            ->imageEditor()
+                            ->imageEditorAspectRatios(['1:1'])
+                            ->helperText('详情页主图轮播，可拖拽排序；第一张为轮播默认展示。建议不小于 800×800，比例 1:1。'),
                     ]),
                 ])
                 ->columnSpanFull(),
@@ -163,22 +199,34 @@ class SiteProductResource extends Resource
                     ->label('价格')
                     ->money('CNY')
                     ->placeholder('-'),
-                IconColumn::make('is_published')
-                    ->label('已发布')
-                    ->boolean()
-                    ->trueColor('success')
-                    ->falseColor('gray'),
+                TextColumn::make('status')
+                    ->label('状态')
+                    ->badge()
+                    ->formatStateUsing(fn (mixed $state): string => $state instanceof PageStatus
+                        ? $state->label()
+                        : (string) (PageStatus::tryFrom((string) $state)?->label() ?? $state))
+                    ->color(fn (mixed $state): string => $state instanceof PageStatus
+                        ? $state->color()
+                        : (PageStatus::tryFrom((string) $state)?->color() ?? 'gray')),
                 IconColumn::make('is_featured')
                     ->label('置顶')
                     ->boolean()
                     ->trueColor('warning')
                     ->falseColor('gray'),
+                TextColumn::make('published_at')
+                    ->label('发布时间')
+                    ->dateTime('Y-m-d H:i')
+                    ->sortable()
+                    ->placeholder('草稿'),
                 TextColumn::make('sort')
                     ->label('排序')
                     ->sortable(),
             ])
             ->filters([
                 TrashedFilter::make(),
+                SelectFilter::make('status')
+                    ->label('状态')
+                    ->options(PageStatus::options()),
             ])
             ->recordActions([
                 EditAction::make(),
@@ -200,6 +248,18 @@ class SiteProductResource extends Resource
     }
 
     /**
+     * 关系管理器（批次 1.5c 版本历史）
+     *
+     * @return array<int, mixed>
+     */
+    public static function getRelations(): array
+    {
+        return [
+            RevisionsRelationManager::class,
+        ];
+    }
+
+    /**
      * 路由页面映射
      *
      * @return array<string, mixed>
@@ -207,9 +267,9 @@ class SiteProductResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListSiteProducts::route('/'),
+            'index' => ListSiteProducts::route('/'),
             'create' => CreateSiteProduct::route('/create'),
-            'edit'   => EditSiteProduct::route('/{record}/edit'),
+            'edit' => EditSiteProduct::route('/{record}/edit'),
         ];
     }
 

@@ -2,6 +2,9 @@
 
 namespace Filamentboot\FilamentbootSite\Modules\News\Models;
 
+use Filamentboot\FilamentbootSite\Cms\Enums\PageStatus;
+use Filamentboot\FilamentbootSite\Cms\Revisions\HasRevisions;
+use Filamentboot\FilamentbootSite\Cms\Revisions\Revisionable;
 use Filamentboot\FilamentbootSite\Concerns\HasCoverImage;
 use Filamentboot\FilamentbootSite\Database\Factories\NewsArticleFactory;
 use Filamentboot\FilamentbootSite\Models\SiteTag;
@@ -30,30 +33,29 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  *
  * @property int $id
  * @property string $title_zh
- * @property string|null $title_en
  * @property string $slug
  * @property string|null $excerpt_zh
- * @property string|null $excerpt_en
  * @property string|null $content_zh
- * @property string|null $content_en
  * @property int|null $category_id
  * @property string|null $seo_title
  * @property string|null $seo_description
  * @property string|null $seo_keywords
  * @property bool $is_featured
  * @property int $sort
+ * @property PageStatus $status
  * @property Carbon|null $published_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
  */
-class NewsArticle extends Model implements HasMedia
+class NewsArticle extends Model implements HasMedia, Revisionable
 {
     use HasCoverImage;
 
     /** @use HasFactory<NewsArticleFactory> */
     use HasFactory;
 
+    use HasRevisions;
     use InteractsWithMedia;
     use SoftDeletes;
 
@@ -81,6 +83,7 @@ class NewsArticle extends Model implements HasMedia
         return [
             'published_at' => 'datetime',
             'is_featured'  => 'boolean',
+            'status'       => PageStatus::class,
         ];
     }
 
@@ -126,6 +129,67 @@ class NewsArticle extends Model implements HasMedia
     }
 
     /**
+     * 进入快照的字段（批次 1.5c）
+     *
+     * @return list<string>
+     */
+    public static function revisionTrackedFields(): array
+    {
+        return [
+            'title_zh',
+            'slug',
+            'excerpt_zh',
+            'content_zh',
+            'category_id',
+            'seo_title',
+            'seo_description',
+            'seo_keywords',
+            'status',
+            'published_at',
+        ];
+    }
+
+    /**
+     * 回滚时会被恢复的字段（批次 1.5c）
+     *
+     * @return list<string>
+     */
+    public static function revisionRestorableFields(): array
+    {
+        return [
+            'title_zh',
+            'slug',
+            'excerpt_zh',
+            'content_zh',
+            'category_id',
+            'seo_title',
+            'seo_description',
+            'seo_keywords',
+        ];
+    }
+
+    /**
+     * 字段名 → 中文标签（批次 1.5c）
+     *
+     * @return array<string, string>
+     */
+    public static function revisionFieldLabels(): array
+    {
+        return [
+            'title_zh'        => '标题',
+            'slug'            => 'URL Slug',
+            'excerpt_zh'      => '摘要',
+            'content_zh'      => '正文',
+            'category_id'     => '所属分类',
+            'seo_title'       => 'SEO 标题',
+            'seo_description' => 'SEO 描述',
+            'seo_keywords'    => 'SEO 关键词',
+            'status'          => '发布状态',
+            'published_at'    => '发布时间',
+        ];
+    }
+
+    /**
      * 作用域：仅返回已发布文章（published_at 不为 null 且不晚于当前时间）
      *
      * @param  Builder<NewsArticle>  $query
@@ -133,7 +197,10 @@ class NewsArticle extends Model implements HasMedia
      */
     public function scopePublished(Builder $query): Builder
     {
-        return $query->whereNotNull('published_at')->where('published_at', '<=', now());
+        return $query
+            ->where('status', PageStatus::PUBLISHED)
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now());
     }
 
     /**

@@ -64,15 +64,24 @@
 @if($position === 'body')
     {{-- 表单提交成功的转化事件上报（供广告投放侧回传）。
          事件由 shared/components/contact-form.blade.php 的 Alpine 提交逻辑
-         直接 window.dispatchEvent('site-contact-submitted')（#29 之前是 Livewire 转发的）。--}}
+         直接 window.dispatchEvent('site-contact-submitted')（#29 之前是 Livewire 转发的）。
+
+         事件标签取 detail.source，也就是入库的那个来源标识——**统计后台与
+         询盘列表因此说的是同一套话**，「城市页带来多少访问」与「城市页带来
+         多少询盘」能对得上号，不用两边各猜一次。
+
+         detail 缺失时回落到 site-contact-form：宿主可能自己派发这个事件，
+         少一个字段不该让整条上报断掉。 --}}
     <script>
-        window.addEventListener('site-contact-submitted', function () {
+        window.addEventListener('site-contact-submitted', function (event) {
+            var source = (event && event.detail && event.detail.source) || 'site-contact-form';
+
             if (typeof window._hmt !== 'undefined') {
-                window._hmt.push(['_trackEvent', 'contact', 'submit', 'site-contact-form']);
+                window._hmt.push(['_trackEvent', 'contact', 'submit', source]);
             }
 
             if (typeof window.gtag === 'function') {
-                window.gtag('event', 'generate_lead', { method: 'site-contact-form' });
+                window.gtag('event', 'generate_lead', { method: source });
             }
         });
     </script>

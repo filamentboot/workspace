@@ -11,7 +11,7 @@
  * 切完主题内容悄悄消失）。
  */
 return [
-    'label' => '科技装修（深色）',
+    'label' => '科技装修（浅色）',
 
     // pages/templates/{key}.blade.php；default 走 pages/show.blade.php
     'templates' => [
@@ -30,6 +30,7 @@ return [
         'contact-form',
         'map',
         'gated-download',
+        'roadmap',
     ],
 
     'features' => [

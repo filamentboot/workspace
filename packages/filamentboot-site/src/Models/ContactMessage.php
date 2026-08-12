@@ -4,6 +4,7 @@ namespace Filamentboot\FilamentbootSite\Models;
 
 use Filamentboot\FilamentbootSite\Database\Factories\ContactMessageFactory;
 use Filamentboot\FilamentbootSite\Enums\ContactMessageStatus;
+use Filamentboot\FilamentbootSite\Services\ContactSourceLabel;
 use Filamentboot\Models\AdminUser;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -96,8 +97,9 @@ class ContactMessage extends Model
     /**
      * 转化入口的中文名
      *
-     * 未在 config('filamentboot-site.contact.sources') 登记的来源回落原始 key，
-     * 保证新增 CTA 未同步配置时后台仍能看到来源而不是空白。
+     * 解析规则见 Services\ContactSourceLabel：全等表 → 前缀表 → 原样返回。
+     * 三步都不命中也不会是空白，所以新增 CTA 忘了登记配置只是少个中文名，
+     * 不会让后台的来源列变空。
      */
     public function sourceLabel(): ?string
     {
@@ -105,10 +107,7 @@ class ContactMessage extends Model
             return null;
         }
 
-        /** @var array<string, string> $labels */
-        $labels = config('filamentboot-site.contact.sources', []);
-
-        return $labels[$this->source] ?? $this->source;
+        return app(ContactSourceLabel::class)->label($this->source);
     }
 
     /**
@@ -117,12 +116,19 @@ class ContactMessage extends Model
      * 配置中登记的来源 + 库里实际出现过的来源取并集，
      * 避免历史数据里的来源因未登记而无法筛选。
      *
+     * 库里出现过的那批**也过一遍 ContactSourceLabel**：城市页与套餐页用的是
+     * 记录级来源（`city-{区划代码}` / `pkg-{slug}`），不翻译的话筛选下拉里
+     * 会是一串 `city-420100`，而这个下拉恰恰是「哪个城市带来了询盘」
+     * 唯一的入口。
+     *
      * @return array<string, string>
      */
     public static function sourceFilterOptions(): array
     {
         /** @var array<string, string> $labels */
         $labels = config('filamentboot-site.contact.sources', []);
+
+        $resolver = app(ContactSourceLabel::class);
 
         /** @var list<string> $used */
         $used = static::query()
@@ -132,7 +138,7 @@ class ContactMessage extends Model
             ->all();
 
         foreach ($used as $source) {
-            $labels[$source] ??= $source;
+            $labels[$source] ??= $resolver->label($source);
         }
 
         return $labels;

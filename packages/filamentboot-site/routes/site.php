@@ -32,7 +32,7 @@ use Illuminate\Support\Facades\Route;
 |   PUBLIC_STACK  内容页与 sitemap/robots。**不含 StartSession / CSRF**——起了 session
 |                 就有 Set-Cookie，共享缓存直接失效。SiteCacheHeaders 负责打
 |                 `public, max-age`，且只在响应确实没有 Cookie 时才打。
-|   web           只有 /preview/{page} 用。它靠 auth('admin') 判权，没 session 就永远 403。
+|   web           只有 /preview/{type}/{id} 用。它靠 auth('admin') 判权，没 session 就永远 403。
 |   无状态 POST    询盘提交端点。没有 session 就发不出 CSRF token，所以那条路由不挂 web，
 |                 防刷靠 throttle + 蜜罐 + 客户端耗时 + IP 限流（见 Services\ContactSubmission）。
 */
@@ -87,8 +87,16 @@ $applyMode = static function (RouteRegistrar $registrar) use ($mode, $domain, $r
 // 固定系统路径：必须先于动态 /{slug} 注册，且已列入 reserved_slugs
 $applyMode(Route::middleware($publicStack)->controller(SitemapController::class))
     ->group(function (): void {
+        // /sitemap.xml 是**索引**，不再直接列 URL。分片的理由不是「太大了」
+        // （四百来条离 50000 条上限差得远），是**站长平台按分片单独报收录率**——
+        // 城市页铺不铺第二批要靠这个数字决定，混在一份里就看不出来了。
         Route::get('/sitemap.xml', 'sitemap')->name('site.sitemap');
+        Route::get('/sitemap-content.xml', 'sitemapContent')->name('site.sitemap.content');
+        Route::get('/sitemap-city.xml', 'sitemapCity')->name('site.sitemap.city');
         Route::get('/robots.txt', 'robots')->name('site.robots');
+        // 给大模型看的站点索引（llmstxt.org 约定）。与 sitemap 同组同栈：
+        // 公开、可缓存、不起 session。已列入 reserved_slugs。
+        Route::get('/llms.txt', 'llms')->name('site.llms');
     });
 
 // 内容页。首触归因已搬到客户端 localStorage（#29），这里不再挂归因中间件
@@ -105,12 +113,36 @@ $applyMode(Route::middleware($publicStack)->controller(SiteFrontController::clas
         Route::get('/solutions', 'solutionIndex')->name('site.solutions.index');
         Route::get('/solutions/{slug}', 'solutionShow')->name('site.solutions.show');
 
+        // 全屋套餐。**不用加进 reserved_slugs**：/{slug} 在本组的最后注册，
+        // 先匹配先赢，一个叫 packages 的静态页永远走不到这里来
+        Route::get('/packages', 'packageIndex')->name('site.packages.index');
+        Route::get('/packages/{slug}', 'packageShow')->name('site.packages.show');
+
         // 智能产品
         Route::get('/products', 'productIndex')->name('site.products.index');
         Route::get('/products/{slug}', 'productShow')->name('site.products.show');
 
         // 站内搜索。已列入 reserved_slugs，/{slug} 不会吞掉它
         Route::get('/search', 'search')->name('site.search');
+
+        // 城市页三段层级。**不用加进 reserved_slugs**，理由同 /packages：
+        // /{slug} 在本组最后注册，一个叫 city 的静态页永远走不到这里来。
+        //
+        // 省页在前、城市页在后，段数不同本不会冲突，但保持「越具体越靠后」的顺序，
+        // 读起来就是 URL 的层级本身。
+        //
+        // ⚠️ /city/{province} 有两种产出：该省级区划自己有城市页就渲染城市页
+        // （直辖市），否则渲染下辖城市列表。见 SiteFrontController::cityProvince()。
+        Route::get('/city', 'cityIndex')->name('site.city.index');
+        Route::get('/city/{province}', 'cityProvince')->name('site.city.province');
+        Route::get('/city/{province}/{city}', 'cityShow')->name('site.city.show');
+
+        // 标签聚合。**不用加进 reserved_slugs**，理由同 /packages：本条是两段路径，
+        // 单段的 /{slug} 压根匹配不上。
+        //
+        // 刻意**不注册 /tags 索引页**：全站只有 8 个标签，一页 8 个链接是典型的
+        // thin page，且标签页本身已由各内容详情页链到，不缺入口。
+        Route::get('/tags/{slug}', 'tagShow')->name('site.tags.show');
 
         // 资讯：归档先于详情注册。两者段数不同本不会冲突，但保持「越具体越靠前」，
         // 日后若把归档改成 /news/{year}/{month} 也不必回头调顺序。
@@ -126,14 +158,19 @@ $applyMode(Route::middleware($publicStack)->controller(SiteFrontController::clas
             ->where('slug', $slugPattern);
     });
 
-// 草稿预览（#16）：**留在 web 组**——授权走「有效签名 或 已登录管理员」，
-// 后者要 session。preview 已在 reserved_slugs 里，/{slug} 不会吞掉它。
-// 不挂 signed 中间件：那会把已登录管理员挡在门外。
+// 草稿预览（/preview/{type}/{id}，#16，批次 1.5b 起覆盖 SitePage 与批次 1.5a
+// 新增状态机的 6 类内容，共 7 类）：**留在 web 组**——授权走「有效签名 或
+// 已登录管理员」，后者要 session。preview 已在 reserved_slugs 里，/{slug}
+// 不会吞掉它。不挂 signed 中间件：那会把已登录管理员挡在门外。
+//
+// type 只认 SiteFrontController::PREVIEW_TYPES 里的键，不在表里的一律 404
+// （控制器里判断，这里的正则只卡字符集）。
 $applyMode(Route::middleware('web')->controller(SiteFrontController::class))
     ->group(function (): void {
-        Route::get('/preview/{page}', 'preview')
-            ->name('site.page.preview')
-            ->where('page', '[0-9]+');
+        Route::get('/preview/{type}/{id}', 'preview')
+            ->name('site.preview')
+            ->where('type', '[a-z_]+')
+            ->where('id', '[0-9]+');
     });
 
 // 资料下载（gated content）：只接受限时签名链接，签名由询盘提交成功后现签下发。

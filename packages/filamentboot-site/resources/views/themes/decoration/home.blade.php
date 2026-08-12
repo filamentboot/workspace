@@ -7,8 +7,17 @@
 
 @section('content')
 
-    {{-- Hero 组件 --}}
-    @include('filamentboot-site::components.hero')
+    {{-- 首屏：有启用中的 HOME_TOP 幻灯片就用它，否则降级回单图 hero。
+         降级分支不能删——没配幻灯片的下游站首页不能空一块。 --}}
+    @php
+        $heroBanners = app(\Filamentboot\FilamentbootSite\Modules\Corporate\Banners\BannerProvider::class)
+            ->forPosition(\Filamentboot\FilamentbootSite\Modules\Corporate\Banners\Enums\BannerPosition::HOME_TOP);
+    @endphp
+    @if($heroBanners->isNotEmpty())
+        @include('filamentboot-site::components.banner-hero', ['banners' => $heroBanners])
+    @else
+        @include('filamentboot-site::components.hero')
+    @endif
 
     {{-- 服务亮点（Section 2） --}}
     <section class="py-20 bg-site-base" aria-labelledby="services-heading">
@@ -39,7 +48,7 @@
                     精选案例
                 </h2>
                 <a href="{{ route('site.cases.index') }}"
-                   class="text-site-accent text-sm hover:underline focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:outline-none rounded-sm">
+                   class="text-site-accent text-sm hover:underline focus-visible:ring-2 focus-visible:ring-(--color-primary) focus-visible:outline-none rounded-sm">
                     查看全部
                 </a>
             </div>
@@ -70,7 +79,7 @@
                         智能方案
                     </h2>
                     <a href="{{ route('site.solutions.index') }}"
-                       class="text-site-accent text-sm hover:underline focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:outline-none rounded-sm">
+                       class="text-site-accent text-sm hover:underline focus-visible:ring-2 focus-visible:ring-(--color-primary) focus-visible:outline-none rounded-sm">
                         查看全部
                     </a>
                 </div>
@@ -122,7 +131,7 @@
                     智能产品
                 </h2>
                 <a href="{{ route('site.products.index') }}"
-                   class="text-site-accent text-sm hover:underline focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:outline-none rounded-sm">
+                   class="text-site-accent text-sm hover:underline focus-visible:ring-2 focus-visible:ring-(--color-primary) focus-visible:outline-none rounded-sm">
                     查看全部
                 </a>
             </div>
@@ -133,6 +142,20 @@
                         @include('filamentboot-site::components.product-card', ['product' => $product])
                     @endforeach
                 </div>
+
+                {{-- 在售品牌行。表达的是业态：本站卖各品牌的智能产品，不是自有品牌。
+                     **只出文字，不放第三方 logo** —— 商标授权是另一回事。
+                     没有任何产品填了 brand 时整段不渲染。 --}}
+                @if(! empty($productBrands))
+                    <div class="mt-12 pt-8 border-t border-site">
+                        <p class="text-site-secondary text-sm mb-4">在售品牌</p>
+                        <ul class="flex flex-wrap gap-x-8 gap-y-3">
+                            @foreach($productBrands as $brand)
+                                <li class="text-site-primary text-base font-medium">{{ $brand }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
             @else
                 <div class="py-16 text-center">
                     <p class="text-site-secondary text-base">暂无产品展示，敬请期待</p>
@@ -193,7 +216,7 @@
                         </div>
 
                         <a href="{{ route('site.cases.show', $testimonial->slug) }}"
-                           class="inline-block mt-6 text-site-accent text-sm hover:underline focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:outline-none rounded-sm">
+                           class="inline-block mt-6 text-site-accent text-sm hover:underline focus-visible:ring-2 focus-visible:ring-(--color-primary) focus-visible:outline-none rounded-sm">
                             查看这个案例 &rarr;
                         </a>
                     </div>
@@ -204,7 +227,7 @@
                     <div class="flex items-center justify-center gap-4 mt-8">
                         <button type="button"
                                 class="w-10 h-10 rounded-full bg-site-elevated border border-site text-site-primary flex items-center justify-center
-                                       focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:outline-none"
+                                       focus-visible:ring-2 focus-visible:ring-(--color-primary) focus-visible:outline-none"
                                 @click="active = (active - 1 + total) % total"
                                 aria-label="上一条见证">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
@@ -212,19 +235,22 @@
                             </svg>
                         </button>
 
-                        <div class="flex gap-2">
+                        {{-- 可视的点 10px、可点的按钮 24px（WCAG 2.5.8）。同 banner-hero。 --}}
+                        <div class="flex">
                             @foreach($testimonials as $index => $testimonial)
                                 <button type="button"
-                                        class="w-2.5 h-2.5 rounded-full transition-colors focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:outline-none"
-                                        :class="active === {{ $index }} ? 'bg-[--color-primary]' : 'bg-site-elevated'"
+                                        class="w-6 h-6 flex items-center justify-center rounded-full focus-visible:ring-2 focus-visible:ring-(--color-primary) focus-visible:outline-none"
                                         @click="active = {{ $index }}"
-                                        aria-label="查看第 {{ $index + 1 }} 条见证"></button>
+                                        aria-label="查看第 {{ $index + 1 }} 条见证">
+                                    <span class="w-2.5 h-2.5 rounded-full transition-colors"
+                                          :class="active === {{ $index }} ? 'bg-(--color-primary)' : 'bg-site-elevated'"></span>
+                                </button>
                             @endforeach
                         </div>
 
                         <button type="button"
                                 class="w-10 h-10 rounded-full bg-site-elevated border border-site text-site-primary flex items-center justify-center
-                                       focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:outline-none"
+                                       focus-visible:ring-2 focus-visible:ring-(--color-primary) focus-visible:outline-none"
                                 @click="active = (active + 1) % total"
                                 aria-label="下一条见证">
                             <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor" aria-hidden="true">
@@ -242,20 +268,24 @@
          两段同色相邻会失去分段感。 --}}
     <section class="py-20 bg-site-subtle" aria-labelledby="contact-cta-heading">
         <div class="max-w-2xl mx-auto px-4 sm:px-6 text-center">
-            <h2 id="contact-cta-heading" class="text-site-primary text-3xl font-bold mb-6">联系我们</h2>
+            {{-- 文案说的是访客能拿到什么，不是「联系我们」。
+                 「免费咨询」对访客不构成理由——他不知道咨询完手上会多出什么东西；
+                 「一版配置清单与预算」是个具体的、拿得走的产物。
+                 措辞与 software 的同一段对齐（两套主题各存副本，但对外承诺得一致）。 --}}
+            <h2 id="contact-cta-heading" class="text-site-primary text-3xl font-bold mb-6">先说户型，再谈方案</h2>
             <p class="text-site-secondary text-lg mb-10">
-                想了解更多方案？欢迎随时联系我们，专业团队为您提供免费咨询。
+                说一下户型和现在的装修进度，我们按你家的实际情况出一版配置清单与预算，不收费。
             </p>
 
             <button
                 type="button"
                 data-contact-trigger="home-cta"
                 class="btn-site-primary inline-flex items-center justify-center min-h-[44px] px-10 py-4 rounded-full font-bold text-lg mb-10
-                       focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:ring-offset-2 focus-visible:ring-offset-[--color-bg-base] focus-visible:outline-none"
+                       focus-visible:ring-2 focus-visible:ring-(--color-primary) focus-visible:ring-offset-2 focus-visible:ring-offset-(--color-bg-base) focus-visible:outline-none"
                 @click="$store.contactPanel.show('home-cta')"
                 aria-controls="contact-panel"
-                aria-label="立即预约咨询">
-                立即预约咨询
+                aria-label="免费获取配置清单与预算">
+                免费获取配置清单
             </button>
 
             {{-- 联系信息行（未配置时不渲染，避免空白区） --}}

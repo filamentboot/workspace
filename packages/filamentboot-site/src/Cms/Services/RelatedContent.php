@@ -27,8 +27,7 @@ use Illuminate\Database\Eloquent\Model;
  *
  * ⚠️ 查询由**调用方**用具体模型类构造并传入（已套 published() 与排序）。
  * 本服务不自己调 published()：那是模型的局部作用域，在泛型 Builder 上
- * 静态分析解析不出来，且各模型的「已发布」判据不同——SiteProduct 用
- * is_published 布尔列，其余用 published_at 时间列。
+ * 静态分析解析不出来。
  */
 class RelatedContent
 {

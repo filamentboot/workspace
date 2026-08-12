@@ -16,6 +16,7 @@ use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
@@ -23,6 +24,8 @@ use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Filamentboot\FilamentbootSite\Cms\Enums\PageStatus;
+use Filamentboot\FilamentbootSite\Cms\Filament\RelationManagers\RevisionsRelationManager;
 use Filamentboot\FilamentbootSite\Modules\News\Filament\NewsArticleResource\Pages\CreateNewsArticle;
 use Filamentboot\FilamentbootSite\Modules\News\Filament\NewsArticleResource\Pages\EditNewsArticle;
 use Filamentboot\FilamentbootSite\Modules\News\Filament\NewsArticleResource\Pages\ListNewsArticles;
@@ -86,11 +89,26 @@ class NewsArticleResource extends Resource
                             ->multiple()
                             ->preload(),
                         Toggle::make('is_featured')
-                            ->label('置顶/精选'),
+                            ->label('置顶')
+                            ->helperText('列表页排在最前面。资讯不进首页，这个开关只影响 /news 的顺序'),
+                        TextInput::make('sort')
+                            ->label('排序权重')
+                            ->numeric()
+                            ->default(0)
+                            ->helperText('置顶之后再按它升序排，同值最后按发布时间倒序'),
+                        Select::make('status')
+                            ->label('发布状态')
+                            ->options(PageStatus::options())
+                            ->default(PageStatus::DRAFT->value)
+                            ->required()
+                            ->native(false)
+                            ->live()
+                            ->helperText('选「定时发布」并填写下方发布时间，到点后前台自动可见，无需队列或定时任务'),
                         DateTimePicker::make('published_at')
                             ->label('发布时间（留空=草稿）')
                             ->seconds(false)
-                            ->helperText('填未来时间即定时发布，到点后前台自动可见'),
+                            ->helperText('填未来时间即定时发布，到点后前台自动可见')
+                            ->required(fn (Get $get): bool => $get('status') === PageStatus::SCHEDULED->value),
                     ]),
                     Tab::make('内容')->schema([
                         TextInput::make('title_zh')
@@ -123,7 +141,9 @@ class NewsArticleResource extends Resource
                             ->collection('cover')
                             ->disk($defaultDisk)
                             ->image()
-                            ->imageEditor(),
+                            ->imageEditor()
+                            ->imageEditorAspectRatios(['16:9'])
+                            ->helperText('建议不小于 1600×900，比例 16:9。裁剪框内就是最终构图，系统只做等比缩放、不再自动裁切。'),
                     ]),
                 ])
                 ->columnSpanFull(),
@@ -148,14 +168,15 @@ class NewsArticleResource extends Resource
                 TextColumn::make('category.name_zh')
                     ->label('分类')
                     ->default('-'),
-                IconColumn::make('publication_status')
+                TextColumn::make('status')
                     ->label('状态')
-                    ->getStateUsing(fn (NewsArticle $record): bool => $record->published_at !== null && $record->published_at <= now())
-                    ->boolean()
-                    ->trueColor('success')
-                    ->falseColor('gray')
-                    ->trueIcon('heroicon-o-check-circle')
-                    ->falseIcon('heroicon-o-clock'),
+                    ->badge()
+                    ->formatStateUsing(fn (mixed $state): string => $state instanceof PageStatus
+                        ? $state->label()
+                        : (string) (PageStatus::tryFrom((string) $state)?->label() ?? $state))
+                    ->color(fn (mixed $state): string => $state instanceof PageStatus
+                        ? $state->color()
+                        : (PageStatus::tryFrom((string) $state)?->color() ?? 'gray')),
                 IconColumn::make('is_featured')
                     ->label('置顶')
                     ->boolean()
@@ -169,6 +190,9 @@ class NewsArticleResource extends Resource
             ])
             ->filters([
                 TrashedFilter::make(),
+                SelectFilter::make('status')
+                    ->label('状态')
+                    ->options(PageStatus::options()),
                 SelectFilter::make('category_id')
                     ->label('分类')
                     ->relationship('category', 'name_zh')
@@ -191,6 +215,18 @@ class NewsArticleResource extends Resource
     {
         return parent::getEloquentQuery()
             ->withoutGlobalScopes([SoftDeletingScope::class]);
+    }
+
+    /**
+     * 关系管理器（批次 1.5c 版本历史）
+     *
+     * @return array<int, mixed>
+     */
+    public static function getRelations(): array
+    {
+        return [
+            RevisionsRelationManager::class,
+        ];
     }
 
     /**

@@ -9,9 +9,10 @@ use Symfony\Component\Console\Command\Command as CommandExitCode;
 /**
  * 生成 Filamentboot Resource stub 命令（FEAT-03 / D-28 薄包装）
  *
- * 薄包装命令，构造注入 StubGenerator，将 Resource stub 及三个 Page 文件渲染后写入用户项目。
- * 接受 Product 或 ProductResource 两种形式的 name 参数，自动剥离 Resource 后缀。
- * 页面构建方法统一委托 StubGenerator::buildListPageContent/buildCreatePageContent/buildEditPageContent，
+ * 薄包装命令，构造注入 StubGenerator，将 Resource stub、三个 Page 文件与一个 Policy 骨架
+ * 渲染后写入用户项目。接受 Product 或 ProductResource 两种形式的 name 参数，自动剥离
+ * Resource 后缀。页面构建方法统一委托
+ * StubGenerator::buildListPageContent/buildCreatePageContent/buildEditPageContent，
  * 不在命令层保留副本（D-28 单一来源）。
  *
  * 使用示例：
@@ -37,7 +38,7 @@ class MakeFilamentbootResourceCommand extends Command
      *
      * @var string
      */
-    protected $description = '生成 Filamentboot Resource stub（含三个 Page 文件）到用户项目（FEAT-03）';
+    protected $description = '生成 Filamentboot Resource stub（含三个 Page 文件与 Policy 骨架）到用户项目（FEAT-03）';
 
     /**
      * 构造函数，注入 StubGenerator 服务（D-28）
@@ -160,6 +161,34 @@ class MakeFilamentbootResourceCommand extends Command
             $this->info("已生成: {$editPath}");
         } else {
             $this->warn("Skipped: {$editPath} (use --force to overwrite)");
+        }
+
+        // 生成 Policy 骨架（四期功能清单第 1 档 #4）：固定落在 app/Policies/，
+        // 与 Laravel 策略自动发现约定（App\Models\X -> App\Policies\XPolicy）对齐，
+        // 零额外注册代码。命令当前 modelNamespace 恒为 App\Models（未接 --path 的
+        // 面板前缀），Policy 命名空间同步恒为 App\Policies。
+        $policyClass     = $baseName.'Policy';
+        $policyNamespace = 'App\\Policies';
+        $policyContent   = $this->generator->renderStub('Policy', [
+            'namespace'    => $policyNamespace,
+            'class'        => $policyClass,
+            'model'        => $baseName,
+            'resourceName' => $this->generator->toSnakeCase($baseName),
+        ]);
+
+        if ($policyContent === '') {
+            $this->error('Stub 渲染失败：Policy.stub 不存在');
+
+            return CommandExitCode::FAILURE;
+        }
+
+        $policyPath    = base_path('app/Policies/'.$policyClass.'.php');
+        $policyWritten = $this->generator->writeFile($policyPath, $policyContent, $force);
+
+        if ($policyWritten) {
+            $this->info("已生成: {$policyPath}");
+        } else {
+            $this->warn("Skipped: {$policyPath} (use --force to overwrite)");
         }
 
         return CommandExitCode::SUCCESS;

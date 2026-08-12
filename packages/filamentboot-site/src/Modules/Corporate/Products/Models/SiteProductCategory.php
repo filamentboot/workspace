@@ -13,7 +13,6 @@ use Illuminate\Support\Carbon;
  *
  * @property int $id
  * @property string $name_zh
- * @property string|null $name_en
  * @property string $slug
  * @property int|null $parent_id
  * @property int $sort
@@ -44,5 +43,19 @@ class SiteProductCategory extends Model
     public function products(): HasMany
     {
         return $this->hasMany(SiteProduct::class, 'category_id');
+    }
+
+    /**
+     * 已发布的产品
+     *
+     * 存在的理由是给 withCount 用（与 NewsCategory::publishedArticles() 同理）：
+     * withCount(['products' => fn (Builder $q) => $q->published()]) 里闭包参数只能被
+     * 推成 Builder<Model>，PHPStan 看不见 published() 这个作用域。
+     *
+     * @return HasMany<SiteProduct, $this>
+     */
+    public function publishedProducts(): HasMany
+    {
+        return $this->products()->published();
     }
 }

@@ -2,6 +2,9 @@
 
 namespace Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Models;
 
+use Filamentboot\FilamentbootSite\Cms\Enums\PageStatus;
+use Filamentboot\FilamentbootSite\Cms\Revisions\HasRevisions;
+use Filamentboot\FilamentbootSite\Cms\Revisions\Revisionable;
 use Filamentboot\FilamentbootSite\Concerns\HasCoverImage;
 use Filamentboot\FilamentbootSite\Database\Factories\SiteCaseFactory;
 use Filamentboot\FilamentbootSite\Models\SiteTag;
@@ -29,7 +32,6 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  *
  * @property int $id
  * @property string $title_zh
- * @property string|null $title_en
  * @property string $slug
  * @property CaseStyle|null $style
  * @property HouseType|null $house_type
@@ -37,9 +39,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property string|null $budget_range
  * @property string|null $smart_features
  * @property string|null $description_zh
- * @property string|null $description_en
  * @property string|null $content_zh
- * @property string|null $content_en
  * @property string|null $customer_name
  * @property string|null $customer_quote
  * @property string|null $customer_meta
@@ -50,18 +50,20 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property array<int, mixed>|null $gallery
  * @property bool $is_featured
  * @property int $sort
+ * @property PageStatus $status
  * @property Carbon|null $published_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
  */
-class SiteCase extends Model implements HasMedia
+class SiteCase extends Model implements HasMedia, Revisionable
 {
     use HasCoverImage;
 
     /** @use HasFactory<SiteCaseFactory> */
     use HasFactory;
 
+    use HasRevisions;
     use InteractsWithMedia;
     use SoftDeletes;
 
@@ -84,9 +86,9 @@ class SiteCase extends Model implements HasMedia
     protected function casts(): array
     {
         return [
-            'gallery'      => 'array',
             'published_at' => 'datetime',
             'is_featured'  => 'boolean',
+            'status'       => PageStatus::class,
             'style'        => CaseStyle::class,
             'house_type'   => HouseType::class,
         ];
@@ -159,14 +161,102 @@ class SiteCase extends Model implements HasMedia
     }
 
     /**
-     * 作用域：仅返回已发布内容（published_at 不为 null 且不晚于当前时间）
+     * 进入快照的字段（批次 1.5c）
+     *
+     * @return list<string>
+     */
+    public static function revisionTrackedFields(): array
+    {
+        return [
+            'title_zh',
+            'slug',
+            'style',
+            'house_type',
+            'area',
+            'budget_range',
+            'smart_features',
+            'description_zh',
+            'content_zh',
+            'customer_name',
+            'customer_quote',
+            'customer_meta',
+            'category_id',
+            'seo_title',
+            'seo_description',
+            'seo_keywords',
+            'status',
+            'published_at',
+        ];
+    }
+
+    /**
+     * 回滚时会被恢复的字段（批次 1.5c）
+     *
+     * @return list<string>
+     */
+    public static function revisionRestorableFields(): array
+    {
+        return [
+            'title_zh',
+            'slug',
+            'style',
+            'house_type',
+            'area',
+            'budget_range',
+            'smart_features',
+            'description_zh',
+            'content_zh',
+            'customer_name',
+            'customer_quote',
+            'customer_meta',
+            'category_id',
+            'seo_title',
+            'seo_description',
+            'seo_keywords',
+        ];
+    }
+
+    /**
+     * 字段名 → 中文标签（批次 1.5c）
+     *
+     * @return array<string, string>
+     */
+    public static function revisionFieldLabels(): array
+    {
+        return [
+            'title_zh'        => '标题',
+            'slug'            => 'URL Slug',
+            'style'           => '装修风格',
+            'house_type'      => '户型',
+            'area'            => '面积',
+            'budget_range'    => '预算区间',
+            'smart_features'  => '智能配置',
+            'description_zh'  => '简介',
+            'content_zh'      => '正文',
+            'customer_name'   => '业主姓名',
+            'customer_quote'  => '业主评价',
+            'customer_meta'   => '业主信息',
+            'category_id'     => '所属分类',
+            'seo_title'       => 'SEO 标题',
+            'seo_description' => 'SEO 描述',
+            'seo_keywords'    => 'SEO 关键词',
+            'status'          => '发布状态',
+            'published_at'    => '发布时间',
+        ];
+    }
+
+    /**
+     * 作用域：仅返回已发布内容（status=published 且 published_at 不为 null 且不晚于当前时间）
      *
      * @param  Builder<SiteCase>  $query
      * @return Builder<SiteCase>
      */
     public function scopePublished(Builder $query): Builder
     {
-        return $query->whereNotNull('published_at')->where('published_at', '<=', now());
+        return $query
+            ->where('status', PageStatus::PUBLISHED)
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now());
     }
 
     /**

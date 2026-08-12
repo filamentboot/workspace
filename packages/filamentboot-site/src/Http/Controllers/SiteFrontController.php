@@ -5,17 +5,30 @@ namespace Filamentboot\FilamentbootSite\Http\Controllers;
 use Filamentboot\FilamentbootSite\Cms\Models\SitePage;
 use Filamentboot\FilamentbootSite\Cms\Rendering\BlockRenderer;
 use Filamentboot\FilamentbootSite\Cms\Services\RelatedContent;
+use Filamentboot\FilamentbootSite\Cms\Services\SearchTermLog;
 use Filamentboot\FilamentbootSite\Cms\Services\SiteSearch;
+use Filamentboot\FilamentbootSite\Cms\Services\TagContent;
+use Filamentboot\FilamentbootSite\Models\SiteTag;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Enums\CaseStyle;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Enums\HouseType;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Models\SiteCase;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Models\SiteCaseCategory;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Cities\CityDirectory;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Cities\CityProfile;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Cities\Models\SiteCityPage;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Cities\Models\SiteRegion;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Home\HomeSectionProvider;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Packages\Enums\HouseLayout;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Packages\Models\SitePackage;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Products\Models\SiteProduct;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Products\Models\SiteProductCategory;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Solutions\Models\SiteSolution;
 use Filamentboot\FilamentbootSite\Modules\News\Models\NewsArticle;
 use Filamentboot\FilamentbootSite\Modules\News\Models\NewsCategory;
 use Filamentboot\FilamentbootSite\Settings\SiteSettings;
+use Filamentboot\FilamentbootSite\Support\ContentTypeLabels;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
@@ -41,6 +54,25 @@ use Illuminate\View\View;
 class SiteFrontController extends Controller
 {
     /**
+     * 草稿预览的类型标识 → 模型类（/preview/{type}/{id}，批次 1.5b）
+     *
+     * 键与各 Policy::resourceName() 推导出的权限点前缀一致（后者对 SiteCasePolicy
+     * 之类的类名做 Str::snake() 就是这份键），HasPreviewAction trait 生成签名链接
+     * 时按同一规则从记录类名反推 type，两边不需要另外同步一张映射表。
+     *
+     * @var array<string, class-string<Model>>
+     */
+    protected const PREVIEW_TYPES = [
+        'site_page'      => SitePage::class,
+        'site_case'      => SiteCase::class,
+        'news_article'   => NewsArticle::class,
+        'site_solution'  => SiteSolution::class,
+        'site_product'   => SiteProduct::class,
+        'site_package'   => SitePackage::class,
+        'site_city_page' => SiteCityPage::class,
+    ];
+
+    /**
      * 官网首页
      *
      * 各区块的数据由 Modules\Corporate\Home\HomeSectionProvider 提供（#27）：
@@ -53,7 +85,11 @@ class SiteFrontController extends Controller
 
         // Organization 只在首页输出：品牌词知识面板锚在首页，详情页里它已经
         // 作为 publisher / author 嵌在 Article 与 Product 节点内部。
-        $seoData['jsonLd'] = [$this->organizationSchema()];
+        // WebSite 同理只在首页，它承载站内搜索声明（sitelinks searchbox）。
+        $seoData['jsonLd'] = [
+            $this->organizationSchema(),
+            $this->webSiteSchema(),
+        ];
 
         return view('filamentboot-site::home', [
             ...app(HomeSectionProvider::class)->sections(),
@@ -79,9 +115,28 @@ class SiteFrontController extends Controller
             HouseType::class
         );
 
+        // 分类前台展示（四期功能清单第 1 档 #3）：分类模型和后台管理早就有，
+        // 缺的只是前台展示，参照 NewsCategory::publishedArticles() 那套机制。
+        // 0 篇已发布内容的分类不出筛选按钮，直链进来仍应正确过滤（哪怕列表是空的）。
+        $caseCategories = SiteCaseCategory::query()
+            ->withCount('publishedCases as cases_count')
+            ->orderBy('sort')
+            ->get();
+
+        $categorySlug   = (string) $request->query('category', '');
+        $activeCategory = $categorySlug !== '' ? $caseCategories->firstWhere('slug', $categorySlug) : null;
+        $category       = $activeCategory?->slug;
+
+        $categoryOptions = $caseCategories
+            ->filter(fn (SiteCaseCategory $caseCategory): bool => $caseCategory->cases_count > 0)
+            ->pluck('name_zh', 'slug')
+            ->all();
+
         $records = SiteCase::published()
             ->when($style !== null, fn (Builder $query): Builder => $query->where('style', $style))
             ->when($houseType !== null, fn (Builder $query): Builder => $query->where('house_type', $houseType))
+            ->when($activeCategory !== null, fn (Builder $query): Builder => $query->where('category_id', $activeCategory->id))
+            ->orderBy('sort')
             ->latest('published_at')
             ->paginate(12)
             ->withQueryString();
@@ -89,14 +144,23 @@ class SiteFrontController extends Controller
         $styleOptions     = $this->enumOptions(CaseStyle::class);
         $houseTypeOptions = $this->enumOptions(HouseType::class);
 
-        $seoData = $this->buildListSeo('装修案例');
+        // 筛选后的地址是自指 canonical 的，标题必须跟着筛选条件走——
+        // 否则 5 种风格 × 7 种户型 × N 个分类全叫「装修案例」，几十个同名页面互相稀释。
+        // 套餐列表（?layout=）早就是这个做法，这次把案例对齐
+        $filterLabel = ($style !== null ? ($styleOptions[$style] ?? '') : '')
+            .($houseType !== null ? ($houseTypeOptions[$houseType] ?? '') : '')
+            .($activeCategory?->name_zh ?? '');
+
+        $seoData = $this->buildListSeo($filterLabel.ContentTypeLabels::case(), collection: true);
 
         return view('filamentboot-site::cases.index', compact(
             'records',
             'style',
             'houseType',
+            'category',
             'styleOptions',
             'houseTypeOptions',
+            'categoryOptions',
             'seoData'
         ));
     }
@@ -143,7 +207,18 @@ class SiteFrontController extends Controller
      */
     public function caseShow(string $slug): View
     {
-        $record  = SiteCase::published()->where('slug', $slug)->firstOrFail();
+        $record = SiteCase::published()->with('tags')->where('slug', $slug)->firstOrFail();
+
+        return view('filamentboot-site::cases.show', $this->caseViewData($record));
+    }
+
+    /**
+     * 组装案例详情视图数据，供 caseShow() 与草稿预览（#16）共用
+     *
+     * @return array<string, mixed>
+     */
+    protected function caseViewData(SiteCase $record): array
+    {
         $seoData = $this->buildSeo($record);
 
         // 案例的亲和维度按「看的人在意什么」排：同风格与同户型比同分类更能说明
@@ -159,7 +234,7 @@ class SiteFrontController extends Controller
         );
 
         $breadcrumbs = $this->breadcrumbs([
-            ['label' => '装修案例', 'url' => route('site.cases.index')],
+            ['label' => ContentTypeLabels::case(), 'url' => route('site.cases.index')],
             ['label' => $record->title_zh, 'url' => null],
         ]);
 
@@ -168,7 +243,7 @@ class SiteFrontController extends Controller
             $this->breadcrumbSchema($breadcrumbs),
         ];
 
-        return view('filamentboot-site::cases.show', compact('record', 'related', 'breadcrumbs', 'seoData'));
+        return compact('record', 'related', 'breadcrumbs', 'seoData');
     }
 
     /**
@@ -176,8 +251,8 @@ class SiteFrontController extends Controller
      */
     public function solutionIndex(): View
     {
-        $records = SiteSolution::published()->latest('published_at')->paginate(12);
-        $seoData = $this->buildListSeo('智能方案');
+        $records = SiteSolution::published()->orderBy('sort')->latest('published_at')->paginate(12);
+        $seoData = $this->buildListSeo(ContentTypeLabels::solution(), collection: true);
 
         return view('filamentboot-site::solutions.index', compact('records', 'seoData'));
     }
@@ -189,7 +264,18 @@ class SiteFrontController extends Controller
      */
     public function solutionShow(string $slug): View
     {
-        $record  = SiteSolution::published()->where('slug', $slug)->firstOrFail();
+        $record = SiteSolution::published()->with('tags')->where('slug', $slug)->firstOrFail();
+
+        return view('filamentboot-site::solutions.show', $this->solutionViewData($record));
+    }
+
+    /**
+     * 组装方案详情视图数据，供 solutionShow() 与草稿预览（#16）共用
+     *
+     * @return array<string, mixed>
+     */
+    protected function solutionViewData(SiteSolution $record): array
+    {
         $seoData = $this->buildSeo($record);
 
         // 方案没有分类也没有枚举维度，唯一的亲和信号是标签（由服务自行读取）；
@@ -200,24 +286,175 @@ class SiteFrontController extends Controller
         );
 
         $breadcrumbs = $this->breadcrumbs([
-            ['label' => '智能方案', 'url' => route('site.solutions.index')],
+            ['label' => ContentTypeLabels::solution(), 'url' => route('site.solutions.index')],
             ['label' => $record->title_zh, 'url' => null],
         ]);
 
-        $seoData['jsonLd'] = [$this->breadcrumbSchema($breadcrumbs)];
+        $seoData['jsonLd'] = [
+            $this->serviceSchema($seoData, $record),
+            $this->breadcrumbSchema($breadcrumbs),
+        ];
 
-        return view('filamentboot-site::solutions.show', compact('record', 'related', 'breadcrumbs', 'seoData'));
+        return compact('record', 'related', 'breadcrumbs', 'seoData');
+    }
+
+    /**
+     * 全屋套餐列表页
+     *
+     * 排序走 `orderedForCompare()`（户型小→大、档位低→高）而不是发布时间倒序：
+     * 这一页存在的意义就是横向比，按时间排会让同户型的三档散在不同位置。
+     *
+     * 户型筛选走查询参数、不用 Livewire——公开页要能整页缓存就不能起 session，
+     * 每个筛选组合各自是一个可缓存的静态 URL（与资讯分类筛选同一套做法）。
+     * 非法的户型值直接当「全部」处理，不 404：筛选参数是可分享的 URL，
+     * 拼错一个字母就给 404 太不友好。
+     */
+    public function packageIndex(Request $request): View
+    {
+        $layout = HouseLayout::tryFrom((string) $request->query('layout', ''));
+
+        $records = SitePackage::published()
+            ->when($layout !== null, fn (Builder $query): Builder => $query->where('house_layout', $layout))
+            ->orderByDesc('is_featured')
+            ->orderedForCompare()
+            ->paginate(12)
+            ->withQueryString();
+
+        // 筛选条只列**真的有已发布套餐**的户型：列出空档位等于让访客点进一个空页面。
+        //
+        // 顺序必须按枚举声明（小 → 大）重排，不能直接用 distinct 的返回顺序——
+        // 那是 MySQL 的结果顺序，实测出来是「四室一厅 / 四室两厅 / 一室一厅 / 三室…」
+        // 这种没有规律的排列。卡片是按 orderedForCompare() 排好的，筛选条却乱着，
+        // 两者对不上。
+        $present = SitePackage::published()
+            ->whereNotNull('house_layout')
+            ->distinct()
+            ->pluck('house_layout')
+            ->all();
+
+        $layouts = array_values(array_filter(
+            HouseLayout::cases(),
+            static fn (HouseLayout $case): bool => in_array($case, $present, true)
+        ));
+
+        $seoData = $this->buildListSeo(($layout?->label() ?? '').ContentTypeLabels::package(), collection: true);
+
+        return view('filamentboot-site::packages.index', compact('records', 'layouts', 'layout', 'seoData'));
+    }
+
+    /**
+     * 全屋套餐详情页
+     *
+     * @param  string  $slug  套餐 slug（参数绑定防注入，T-10-04-03）
+     */
+    public function packageShow(string $slug): View
+    {
+        $record = SitePackage::published()->with('tags')->where('slug', $slug)->firstOrFail();
+
+        return view('filamentboot-site::packages.show', $this->packageViewData($record));
+    }
+
+    /**
+     * 组装套餐详情视图数据，供 packageShow() 与草稿预览（#16）共用
+     *
+     * @return array<string, mixed>
+     */
+    protected function packageViewData(SitePackage $record): array
+    {
+        $seoData = $this->buildSeo($record);
+
+        // 相关内容取**同户型的其它档位**，不用 RelatedContent 的标签亲和：
+        // 看完「三室两厅豪华款」的人，下一步最想看的是同户型的舒适款和定制款，
+        // 而不是另一个户型里打了同样标签的套餐
+        $related = SitePackage::published()
+            ->where('slug', '!=', $record->slug)
+            ->when(
+                $record->house_layout !== null,
+                fn (Builder $query): Builder => $query->where('house_layout', $record->house_layout)
+            )
+            ->orderedForCompare()
+            ->limit(3)
+            ->get();
+
+        $breadcrumbs = $this->breadcrumbs([
+            ['label' => ContentTypeLabels::package(), 'url' => route('site.packages.index')],
+            ['label' => $record->title_zh, 'url' => null],
+        ]);
+
+        $seoData['jsonLd'] = [
+            $this->breadcrumbSchema($breadcrumbs),
+            ...array_filter([$this->packageSchema($record)]),
+        ];
+
+        return compact('record', 'related', 'breadcrumbs', 'seoData');
+    }
+
+    /**
+     * 套餐的 schema.org/Product 结构化数据
+     *
+     * 套餐本质上是「一件带价格的可购买商品」，Product + Offer 是搜索引擎认得的形状，
+     * 富媒体摘要里能直接显示价格。
+     *
+     * **没有价格就不输出整个节点**（返回 null）：Offer 的 price 是必填，
+     * 硬塞 0 会被判为无效，还可能在搜索结果里显示成「¥0」。
+     *
+     * 不写 brand：这是本公司提供的服务组合，不是某个品牌的产品——
+     * 二期已经因为把公司名当 Brand 输出而修过一次（见 2026_08_05_110000 的迁移）。
+     *
+     * @return array<string, mixed>|null
+     */
+    protected function packageSchema(SitePackage $record): ?array
+    {
+        if ($record->price === null || (float) $record->price <= 0) {
+            return null;
+        }
+
+        return [
+            '@context'    => 'https://schema.org',
+            '@type'       => 'Product',
+            'name'        => $record->title_zh,
+            'description' => (string) ($record->description_zh ?? ''),
+            'offers'      => array_filter([
+                '@type'         => 'Offer',
+                'price'         => (string) $record->price,
+                'priceCurrency' => 'CNY',
+                'availability'  => 'https://schema.org/InStock',
+                'url'           => route('site.packages.show', ['slug' => $record->slug]),
+                // 这一档套餐卖到哪。未配置服务范围时不输出该属性
+                'eligibleRegion' => $this->areaServedNode(),
+            ], static fn (mixed $value): bool => $value !== null),
+        ];
     }
 
     /**
      * 智能产品列表页
      */
-    public function productIndex(): View
+    public function productIndex(Request $request): View
     {
-        $records = SiteProduct::published()->paginate(12);
-        $seoData = $this->buildListSeo('智能产品');
+        // 分类前台展示（四期功能清单第 1 档 #3）：与案例分类同一套机制，
+        // 0 件已发布产品的分类不出筛选按钮。
+        $categories = SiteProductCategory::query()
+            ->withCount('publishedProducts as products_count')
+            ->orderBy('sort')
+            ->get();
 
-        return view('filamentboot-site::products.index', compact('records', 'seoData'));
+        $categorySlug   = (string) $request->query('category', '');
+        $activeCategory = $categorySlug !== '' ? $categories->firstWhere('slug', $categorySlug) : null;
+
+        // ⚠️ 这条查询原来没有任何 ORDER BY。分页 + 无序在 MySQL 下不保证跨页稳定，
+        // 同一条记录可能在第 1、2 页各出现一次，也可能一次都不出现；而且后台表格
+        // 按 `sort` 排、标签页与相关推荐也按 `sort` 排，唯独这一页不排——
+        // 运营调了顺序，产品列表页岿然不动。排序口径与 TagContent::products() 对齐。
+        $records = SiteProduct::published()
+            ->when($activeCategory !== null, fn (Builder $query): Builder => $query->where('category_id', $activeCategory->id))
+            ->orderBy('sort')
+            ->latest('id')
+            ->paginate(12)
+            ->withQueryString();
+
+        $seoData = $this->buildListSeo(($activeCategory->name_zh ?? '').ContentTypeLabels::product(), collection: true);
+
+        return view('filamentboot-site::products.index', compact('records', 'categories', 'activeCategory', 'seoData'));
     }
 
     /**
@@ -227,10 +464,21 @@ class SiteFrontController extends Controller
      */
     public function productShow(string $slug): View
     {
-        $record  = SiteProduct::published()->where('slug', $slug)->firstOrFail();
+        $record = SiteProduct::published()->with('tags')->where('slug', $slug)->firstOrFail();
+
+        return view('filamentboot-site::products.show', $this->productViewData($record));
+    }
+
+    /**
+     * 组装产品详情视图数据，供 productShow() 与草稿预览（#16）共用
+     *
+     * @return array<string, mixed>
+     */
+    protected function productViewData(SiteProduct $record): array
+    {
         $seoData = $this->buildSeo($record);
 
-        // 产品没有 published_at，排序照列表页的口径走 sort，同 sort 再按新的在前。
+        // 排序照列表页的口径走 sort，同 sort 再按新的在前（与列表页排序一致）。
         // 同品牌也算相关：买智能开关的人多半在比同一个品牌的其它型号
         $related = app(RelatedContent::class)->for(
             SiteProduct::published()->orderBy('sort')->latest('id'),
@@ -242,7 +490,7 @@ class SiteFrontController extends Controller
         );
 
         $breadcrumbs = $this->breadcrumbs([
-            ['label' => '智能产品', 'url' => route('site.products.index')],
+            ['label' => ContentTypeLabels::product(), 'url' => route('site.products.index')],
             ['label' => $record->title_zh, 'url' => null],
         ]);
 
@@ -251,7 +499,7 @@ class SiteFrontController extends Controller
             $this->breadcrumbSchema($breadcrumbs),
         ];
 
-        return view('filamentboot-site::products.show', compact('record', 'related', 'breadcrumbs', 'seoData'));
+        return compact('record', 'related', 'breadcrumbs', 'seoData');
     }
 
     /**
@@ -280,13 +528,15 @@ class SiteFrontController extends Controller
                 fn (Builder $query): Builder => $query->where('category_id', $activeCategory?->id)
             )
             ->with('category')
+            ->orderByDesc('is_featured')
+            ->orderBy('sort')
             ->latest('published_at')
             ->paginate(12)
             ->withQueryString();
 
         $archiveMonths = $this->newsArchiveMonths();
         // ?? 已经吞掉 null 基对象上的属性读取，再写 ?-> 是多余的（phpstan nullsafe.neverNull）
-        $seoData = $this->buildListSeo(($activeCategory->name_zh ?? '') ?: '智能家居资讯');
+        $seoData = $this->buildListSeo(($activeCategory->name_zh ?? '') ?: ContentTypeLabels::news(), collection: true);
 
         return view('filamentboot-site::news.index', compact(
             'records',
@@ -306,6 +556,16 @@ class SiteFrontController extends Controller
     {
         $record = NewsArticle::published()->with(['category', 'tags'])->where('slug', $slug)->firstOrFail();
 
+        return view('filamentboot-site::news.show', $this->newsViewData($record));
+    }
+
+    /**
+     * 组装资讯详情视图数据，供 newsShow() 与草稿预览（#16）共用
+     *
+     * @return array<string, mixed>
+     */
+    protected function newsViewData(NewsArticle $record): array
+    {
         // ⚠️ 资讯**刻意不走 Cms\Services\RelatedContent**：那个服务会在亲和维度不足时
         // 用最新内容补齐，而「相关阅读」是阅读推荐，跨分类补进来的文章会误导读者。
         // 案例 / 方案 / 产品底部那三块是浏览出口，宁可给最新内容也不要断头路——
@@ -328,7 +588,7 @@ class SiteFrontController extends Controller
 
         // 未归类文章跳过分类层，不留一个指向 /news?category= 的空链接
         $breadcrumbs = $this->breadcrumbs(array_values(array_filter([
-            ['label' => '资讯中心', 'url' => route('site.news.index')],
+            ['label' => ContentTypeLabels::news(), 'url' => route('site.news.index')],
             $record->category !== null ? [
                 'label' => $record->category->name_zh,
                 'url'   => route('site.news.index', ['category' => $record->category->slug]),
@@ -341,7 +601,7 @@ class SiteFrontController extends Controller
             $this->breadcrumbSchema($breadcrumbs),
         ];
 
-        return view('filamentboot-site::news.show', compact('record', 'related', 'breadcrumbs', 'seoData'));
+        return compact('record', 'related', 'breadcrumbs', 'seoData');
     }
 
     /**
@@ -367,7 +627,7 @@ class SiteFrontController extends Controller
         $seoData       = $this->buildListSeo($start->format('Y 年 n 月').'资讯归档');
 
         $breadcrumbs = $this->breadcrumbs([
-            ['label' => '资讯中心', 'url' => route('site.news.index')],
+            ['label' => ContentTypeLabels::news(), 'url' => route('site.news.index')],
             ['label' => $start->format('Y 年 n 月'), 'url' => null],
         ]);
 
@@ -399,6 +659,253 @@ class SiteFrontController extends Controller
     }
 
     /**
+     * 城市总索引（/city）
+     *
+     * 按省分组列出全部已发布城市页。**刻意做成一页平铺而不是「先选省再选市」**：
+     * 城市页最怕的就是入口深——三百多页要是都藏在省页底下，等于让抓取器多走一跳，
+     * 而这一页把它们全都拉到离首页两跳的位置。
+     *
+     * 一条已发布城市页都没有就 404。空索引是典型 thin page，
+     * 而城市页的发布是分批的，「机制上线了但还没铺量」是正常的中间状态。
+     */
+    public function cityIndex(): View
+    {
+        $groups = app(CityDirectory::class)->groupedByProvince();
+
+        abort_if($groups === [], 404);
+
+        $seoData = $this->buildListSeo(ContentTypeLabels::city(), collection: true);
+
+        $breadcrumbs = $this->breadcrumbs([
+            ['label' => ContentTypeLabels::city(), 'url' => null],
+        ]);
+
+        $seoData['jsonLd'] = [
+            ...($seoData['jsonLd'] ?? []),
+            $this->breadcrumbSchema($breadcrumbs),
+        ];
+
+        return view('filamentboot-site::city.index', compact('groups', 'breadcrumbs', 'seoData'));
+    }
+
+    /**
+     * 省级页（/city/{province}）
+     *
+     * ⚠️ **这条路由有两种产出**，取决于该省级区划自己有没有城市页：
+     *
+     *   有 → 直接渲染城市页。直辖市走这条：北京没有「下辖地级市」那一层，
+     *        再套一层 /city/beijing/beijing 只会造出两个内容一样的地址。
+     *   无 → 渲染下辖城市列表。
+     *
+     * @param  string  $province  省级 slug（参数绑定防注入，T-10-04-03）
+     */
+    public function cityProvince(string $province): View
+    {
+        $region = SiteRegion::query()
+            ->level(SiteRegion::LEVEL_PROVINCE)
+            ->where('slug', $province)
+            ->firstOrFail();
+
+        $ownPage = SiteCityPage::published()->where('region_code', $region->code)->first();
+
+        if ($ownPage !== null) {
+            return $this->cityPageView($ownPage, $region, null);
+        }
+
+        $pages = app(CityDirectory::class)->citiesIn($region);
+
+        // 一个已发布城市页都没有的省不成页。区划表里躺着 31 个省，
+        // 不能因此就有 31 个空页面进站点地图
+        abort_if($pages === [], 404);
+
+        $label   = $region->displayName().'全屋智能';
+        $seoData = $this->buildListSeo($label, collection: true);
+
+        $breadcrumbs = $this->breadcrumbs([
+            ['label' => ContentTypeLabels::city(), 'url' => route('site.city.index')],
+            ['label' => $region->displayName(), 'url' => null],
+        ]);
+
+        $seoData['jsonLd'] = [
+            ...($seoData['jsonLd'] ?? []),
+            $this->breadcrumbSchema($breadcrumbs),
+        ];
+
+        return view('filamentboot-site::city.province', compact('region', 'pages', 'breadcrumbs', 'seoData'));
+    }
+
+    /**
+     * 城市页（/city/{province}/{city}）
+     *
+     * 三段都要对上才算数：省级 slug → 该省下的地级 slug → 该区划的已发布页面。
+     * 少一层校验就会让 /city/hubei/hangzhou 渲染出杭州页——层级本身也是内容的一部分。
+     *
+     * @param  string  $province  省级 slug（参数绑定防注入，T-10-04-03）
+     * @param  string  $city  地级 slug
+     */
+    public function cityShow(string $province, string $city): View
+    {
+        $provinceRegion = SiteRegion::query()
+            ->level(SiteRegion::LEVEL_PROVINCE)
+            ->where('slug', $province)
+            ->firstOrFail();
+
+        $region = SiteRegion::query()
+            ->level(SiteRegion::LEVEL_CITY)
+            ->where('parent_code', $provinceRegion->code)
+            ->where('slug', $city)
+            ->firstOrFail();
+
+        $record = SiteCityPage::published()->where('region_code', $region->code)->firstOrFail();
+
+        return $this->cityPageView($record, $region, $provinceRegion);
+    }
+
+    /**
+     * 渲染一个城市页（省级与地级两条入口共用）
+     *
+     * 关系是**手工塞进去**的：两个调用方都已经把区划查出来了，
+     * 让模型再查一遍纯属浪费，而城市页上 `url()` 会被调用多次。
+     *
+     * @param  SiteRegion|null  $province  上级省份，直辖市传 null
+     */
+    protected function cityPageView(SiteCityPage $record, SiteRegion $region, ?SiteRegion $province): View
+    {
+        return view('filamentboot-site::city.show', $this->cityPageViewData($record, $region, $province));
+    }
+
+    /**
+     * 组装城市页视图数据（省级与地级两条正式入口、草稿预览共用）
+     *
+     * 关系是**手工塞进去**的：正式入口的调用方已经把区划查出来了，让模型再查
+     * 一遍纯属浪费，而城市页上 `url()` 会被调用多次；草稿预览（cityPagePreviewData）
+     * 反过来是先有 record 再反查 region/province，同样靠 setRelation 补齐，
+     * 两条路径殊途同归到这一个方法。
+     *
+     * @param  SiteRegion|null  $province  上级省份，直辖市传 null
+     * @return array<string, mixed>
+     */
+    protected function cityPageViewData(SiteCityPage $record, SiteRegion $region, ?SiteRegion $province): array
+    {
+        $record->setRelation('region', $region);
+
+        if ($province !== null) {
+            $region->setRelation('parent', $province);
+        }
+
+        $directory = app(CityDirectory::class);
+
+        $profileRows = app(CityProfile::class)->rows($record);
+        $counties    = $directory->countiesOf($region);
+        $siblings    = $directory->siblingsOf($record);
+
+        $seoData = $this->buildSeo($record);
+
+        $breadcrumbs = $this->breadcrumbs(array_values(array_filter([
+            ['label' => ContentTypeLabels::city(), 'url' => route('site.city.index')],
+            $province !== null ? [
+                'label' => $province->displayName(),
+                'url'   => route('site.city.province', ['province' => $province->slug]),
+            ] : null,
+            ['label' => $region->displayName(), 'url' => null],
+        ])));
+
+        $seoData['jsonLd'] = [
+            $this->cityServiceSchema($seoData, $record, $region),
+            $this->breadcrumbSchema($breadcrumbs),
+        ];
+
+        return compact('record', 'region', 'province', 'profileRows', 'counties', 'siblings', 'breadcrumbs', 'seoData');
+    }
+
+    /**
+     * 城市页草稿预览专用：record 已知，反过来查区划
+     *
+     * 正式入口（cityProvince/cityShow）是先按 slug 查出 region 才找到 record；
+     * 预览走 /preview/{type}/{id}，顺序反过来。
+     *
+     * @return array<string, mixed>
+     */
+    protected function cityPagePreviewData(SiteCityPage $record): array
+    {
+        $region = $record->region;
+
+        abort_if($region === null, 404);
+
+        $province = $region->level === SiteRegion::LEVEL_CITY ? $region->parent : null;
+
+        return $this->cityPageViewData($record, $region, $province);
+    }
+
+    /**
+     * 城市页的 Service 结构化数据
+     *
+     * 与方案详情同型（`serviceSchema`），差别只在 `areaServed` 指向的是**这一个城市**
+     * 而不是 config 里的全局服务范围。
+     *
+     * ⚠️ **明确不用 `LocalBusiness`。** 那个类型要求 `address`，而我们在这三百多个
+     * 城市里没有一处实体经营场所，填进去就是编一个不存在的地址。areaServed 恰好是
+     * schema.org 为「服务范围比经营场所大」准备的属性，说的是真话。
+     *
+     * @param  array{title: string, description: string, ogImage: string|null, ...}  $seo  已构建的 SEO 数据
+     * @return array<string, mixed>
+     */
+    protected function cityServiceSchema(array $seo, SiteCityPage $record, SiteRegion $region): array
+    {
+        return array_filter([
+            '@context'    => 'https://schema.org',
+            '@type'       => 'Service',
+            'name'        => $record->title_zh,
+            'description' => $seo['description'],
+            'url'         => $record->url(),
+            'image'       => $seo['ogImage'],
+            'provider'    => $this->organizationNode(),
+            'areaServed'  => [
+                '@type' => $region->schemaAreaType(),
+                'name'  => $region->name,
+            ],
+        ], static fn (mixed $value): bool => $value !== null);
+    }
+
+    /**
+     * 标签聚合页（/tags/{slug}）
+     *
+     * 站上唯一一条**跨内容类型**的通路：一个「节能环保」能把案例、方案、套餐、
+     * 资讯串到一起，分类 / 户型 / 风格那些维度都只在自己那一类里有效。
+     * 加它是为了内链——之前 58 条标签关联只在资讯详情渲染成不可点的灰色文字。
+     *
+     * @param  string  $slug  标签 slug（参数绑定防注入，T-10-04-03）
+     */
+    public function tagShow(string $slug): View
+    {
+        $record = SiteTag::query()->where('slug', $slug)->firstOrFail();
+
+        $groups     = app(TagContent::class)->groups($record);
+        $totalCount = app(TagContent::class)->countHits($groups);
+
+        // 该标签下一条已发布内容都没有就当它不存在。空聚合页是典型的 thin page，
+        // 被收录只会稀释整站权重——标签在后台是可以随手建的，不该建一个就多一个
+        // 空页面进站点地图。
+        //
+        // 详情页上的标签链接不会指到这里来：链接本身出自一篇已发布且带该标签的
+        // 内容，那篇内容必然落在某个分组里。
+        abort_if($groups === [], 404);
+
+        $seoData = $this->buildListSeo($record->name_zh, collection: true);
+
+        $breadcrumbs = $this->breadcrumbs([
+            ['label' => $record->name_zh, 'url' => null],
+        ]);
+
+        $seoData['jsonLd'] = [
+            ...($seoData['jsonLd'] ?? []),
+            $this->breadcrumbSchema($breadcrumbs),
+        ];
+
+        return view('filamentboot-site::tags.show', compact('record', 'groups', 'totalCount', 'breadcrumbs', 'seoData'));
+    }
+
+    /**
      * 站内搜索结果页（/search?q=）
      *
      * 返回 Response 而非 View 只为一件事：打 `X-Robots-Tag: noindex`。
@@ -422,6 +929,10 @@ class SiteFrontController extends Controller
             $groups
         ));
 
+        // 记搜索词。只累计「词 + 次数 + 结果条数」，不碰身份信息，也不起 session。
+        // 结果条数一并记下：为 0 的词就是内容缺口，比热词榜有用得多。
+        app(SearchTermLog::class)->record($term, $resultCount);
+
         $seoData = $this->buildListSeo($term !== '' ? '搜索「'.$term.'」' : '站内搜索');
         // 无限 URL 空间不该有自指 canonical
         $seoData['canonical'] = false;
@@ -444,34 +955,66 @@ class SiteFrontController extends Controller
     }
 
     /**
-     * 草稿预览（/preview/{page}，#16）
+     * 草稿预览（/preview/{type}/{id}，#16，批次 1.5b 起覆盖 SitePage 与批次
+     * 1.5a 新增状态机的 6 类内容，共 7 类）
      *
      * 这是全站唯一**不走 scopePublished()** 的内容读取入口——它存在的理由
-     * 就是让编辑在发布前看到草稿。软删除全局作用域保留：隐式绑定让已删除的
-     * 页面直接 404，删掉的东西不该还能预览。
+     * 就是让编辑在发布前看到草稿。软删除全局作用域保留：隐式查询让已删除的
+     * 记录直接 404，删掉的东西不该还能预览。
      *
      * 双通道授权，两条都不满足才 403：
      *   1. 带有效签名（后台生成的 15 分钟临时链接，可发给不登录后台的人过目）
-     *   2. 已登录管理员且对该页面有 view 权限（编辑自己点进来不必先要签名）
+     *   2. 已登录管理员且对该记录有 view 权限（编辑自己点进来不必先要签名）
      *
      * 只挂 signed 中间件会把已登录管理员挡在门外，所以签名校验在这里手工做。
+     *
+     * $type 只认 self::PREVIEW_TYPES 里的键，其余一律 404——不接受任意字符串
+     * 探测出「这个类型存在与否」之外的信息。
      */
-    public function preview(Request $request, SitePage $page): Response
+    public function preview(Request $request, string $type, int $id): Response
     {
+        $modelClass = self::PREVIEW_TYPES[$type] ?? null;
+
+        abort_if($modelClass === null, 404);
+
+        /** @var Model $record */
+        $record = $modelClass::query()->findOrFail($id);
+
         $viaSignature = URL::hasValidSignature($request);
-        $viaAdmin     = auth('admin')->check() && auth('admin')->user()?->can('view', $page);
+        $viaAdmin     = auth('admin')->check() && auth('admin')->user()?->can('view', $record);
 
         abort_unless($viaSignature || $viaAdmin, 403);
 
-        $data = $this->pageViewData($page);
+        [$view, $data] = $this->previewViewAndData($record);
 
         // 预览页不输出 canonical / og:url：已经 noindex，再自指规范地址是矛盾信号
         $data['seoData']['canonical'] = false;
 
         return response()
-            ->view($this->pageTemplate($page), $data)
+            ->view($view, $data)
             // 签名 URL 一旦外泄被抓取，草稿就进了搜索结果
             ->header('X-Robots-Tag', 'noindex, nofollow');
+    }
+
+    /**
+     * 按类型分发到各自的视图名与渲染数据
+     *
+     * 渲染数据组装每类不同（SitePage 走区块渲染，其余各有自己的关联与结构化
+     * 数据），不能直接复用同一份逻辑，所以按具体类分支而不是指望一个通用方法。
+     *
+     * @return array{0: string, 1: array<string, mixed>}
+     */
+    protected function previewViewAndData(Model $record): array
+    {
+        return match (true) {
+            $record instanceof SitePage     => [$this->pageTemplate($record), $this->pageViewData($record)],
+            $record instanceof SiteCase     => ['filamentboot-site::cases.show', $this->caseViewData($record)],
+            $record instanceof SiteSolution => ['filamentboot-site::solutions.show', $this->solutionViewData($record)],
+            $record instanceof SitePackage  => ['filamentboot-site::packages.show', $this->packageViewData($record)],
+            $record instanceof SiteProduct  => ['filamentboot-site::products.show', $this->productViewData($record)],
+            $record instanceof NewsArticle  => ['filamentboot-site::news.show', $this->newsViewData($record)],
+            $record instanceof SiteCityPage => ['filamentboot-site::city.show', $this->cityPagePreviewData($record)],
+        };
     }
 
     /**
@@ -625,7 +1168,7 @@ class SiteFrontController extends Controller
         return [
             'title'         => $title,
             'description'   => $description,
-            'keywords'      => (string) ($record->seo_keywords ?? ''),
+            'keywords'      => ((string) ($record->seo_keywords ?? '')) ?: $this->defaultKeywords(),
             'ogTitle'       => $title,
             'ogDescription' => $description,
             'ogImage'       => $ogImage,
@@ -646,7 +1189,7 @@ class SiteFrontController extends Controller
         return [
             'title'         => $title,
             'description'   => $description,
-            'keywords'      => '',
+            'keywords'      => $this->defaultKeywords(),
             'ogTitle'       => $title,
             'ogDescription' => $description,
             'ogImage'       => $this->defaultOgImage(),
@@ -659,22 +1202,69 @@ class SiteFrontController extends Controller
      *
      * 描述始终经 defaultDescription() 兜底，确保列表页 meta description 不为空。
      *
+     * $collection 传 true 时附带 CollectionPage 结构化数据。**默认关闭**：
+     * 站内搜索结果页也走这个方法，而它是 noindex 且 URL 空间无限的，
+     * 给它声明 CollectionPage 没有意义。
+     *
+     * 第 2 页起标题带上页码。分页地址是**自指 canonical** 的（只有 page=1 被
+     * 归并回不带参数的地址），所以它们各自是独立的索引对象，共用一个 title
+     * 就是几十个同名页面互相稀释。页码后缀是最小的区分手段，加在这里
+     * 而不是各个调用点，是因为每个列表页都分页、漏一个不会报错只会静默重复。
+     *
      * @param  string  $label  列表名称（如 '装修案例'）
-     * @return array{title: string, description: string, keywords: string, ogTitle: string, ogDescription: string, ogImage: string|null, ogType: string}
+     * @param  bool  $collection  是否附带 CollectionPage 节点
+     * @return array{title: string, description: string, keywords: string, ogTitle: string, ogDescription: string, ogImage: string|null, ogType: string, jsonLd?: list<array<string, mixed>>}
      */
-    protected function buildListSeo(string $label): array
+    protected function buildListSeo(string $label, bool $collection = false): array
     {
+        $page = (int) request()->query('page', '1');
+
+        if ($page > 1) {
+            $label .= '（第 '.$page.' 页）';
+        }
+
         $title       = $label.' - '.$this->defaultTitle();
         $description = $this->defaultDescription();
 
-        return [
+        $seo = [
             'title'         => $title,
             'description'   => $description,
-            'keywords'      => '',
+            'keywords'      => $this->defaultKeywords(),
             'ogTitle'       => $title,
             'ogDescription' => $description,
             'ogImage'       => $this->defaultOgImage(),
             'ogType'        => 'website',
+        ];
+
+        if ($collection) {
+            $seo['jsonLd'] = [$this->collectionPageSchema($seo)];
+        }
+
+        return $seo;
+    }
+
+    /**
+     * 列表页的 CollectionPage 结构化数据
+     *
+     * **有意不输出 url**：列表页带筛选参数时（如 /packages?layout=3r2h），canonical
+     * 指向的是带参数的地址，而这里能拿到的只有不含查询串的路由地址，两者对不上
+     * 就是自相矛盾的信号。页面身份由 canonical 声明即可，CollectionPage 只负责
+     * 说明「这一页是个集合」。
+     *
+     * isPartOf 指回首页的 WebSite 节点，让几个顶层节点连成一张图而不是各说各话。
+     *
+     * @param  array{title: string, description: string, ...}  $seo  已构建的 SEO 数据
+     * @return array<string, mixed>
+     */
+    protected function collectionPageSchema(array $seo): array
+    {
+        return [
+            '@context'    => 'https://schema.org',
+            '@type'       => 'CollectionPage',
+            'name'        => $seo['title'],
+            'description' => $seo['description'],
+            'inLanguage'  => 'zh-CN',
+            'isPartOf'    => ['@id' => $this->webSiteId()],
         ];
     }
 
@@ -767,20 +1357,127 @@ class SiteFrontController extends Controller
         // ?? 已经吞掉 null 上的属性读取，再写 ?-> 是多余的（phpstan nullsafe.neverNull）
         $phone   = trim((string) ($settings->phone ?? ''));
         $address = trim((string) ($settings->address_zh ?? ''));
-        $logo    = $settings?->logo;
+        $logo    = $settings?->logoUrl();
+
+        // name 取**法定名称**而不是 defaultTitle()。后者是 SEO 默认标题
+        // （「XX智能家居 - 全屋智能方案设计与施工」这种），拿它当 Organization.name
+        // 等于对外声明的实体名与页脚、ICP 备案、工商登记三处都对不上——
+        // 而搜索引擎与 AI 正是靠实体名消歧决定要不要引用你。
+        // 营销标题不丢，降级成 alternateName。
+        $legalName    = trim((string) ($settings->company_name_zh ?? ''));
+        $displayTitle = $this->defaultTitle();
+        $name         = $legalName !== '' ? $legalName : $displayTitle;
 
         return array_filter([
-            '@context'  => 'https://schema.org',
-            '@type'     => 'Organization',
-            'name'      => $this->defaultTitle(),
-            'url'       => route('site.home'),
-            'logo'      => ($logo !== null && $logo !== '') ? $logo : null,
-            'telephone' => $phone !== '' ? $phone : null,
-            'address'   => $address !== '' ? [
+            '@context'      => 'https://schema.org',
+            '@type'         => 'Organization',
+            'name'          => $name,
+            'alternateName' => $displayTitle !== $name ? $displayTitle : null,
+            'url'           => route('site.home'),
+            'logo'          => $logo,
+            'telephone'     => $phone !== '' ? $phone : null,
+            'address'       => $address !== '' ? [
                 '@type'          => 'PostalAddress',
                 'streetAddress'  => $address,
                 'addressCountry' => 'CN',
             ] : null,
+            'areaServed' => $this->areaServedNode(),
+        ], static fn (mixed $value): bool => $value !== null);
+    }
+
+    /**
+     * 服务覆盖范围节点（schema.org areaServed），未配置时返回 null
+     *
+     * 存在的理由是「服务范围比经营场所大」这一类站点：它需要声明服务到哪，
+     * 又**不能伪造本地存在**。areaServed 正是 schema.org 为这个场景准备的属性，
+     * 而 LocalBusiness 不是——那个类型要求 address，没有实体经营场所就填不出真值。
+     *
+     * 配置留空则整个属性不出现，而不是输出一个空对象。
+     *
+     * @return array<string, string>|null
+     */
+    protected function areaServedNode(): ?array
+    {
+        $name = trim((string) config('filamentboot-site.seo.area_served', ''));
+
+        if ($name === '') {
+            return null;
+        }
+
+        $type = trim((string) config('filamentboot-site.seo.area_served_type', 'Country'));
+
+        return [
+            '@type' => $type !== '' ? $type : 'Country',
+            'name'  => $name,
+        ];
+    }
+
+    /**
+     * WebSite 节点的稳定 @id
+     *
+     * 用锚点而不是裸首页地址：裸地址会与 WebPage 之类的节点撞 @id，
+     * `#website` 后缀让它在整张图里唯一。
+     */
+    protected function webSiteId(): string
+    {
+        return route('site.home').'#website';
+    }
+
+    /**
+     * WebSite + SearchAction 结构化数据（仅首页输出）
+     *
+     * SearchAction 声明的是站内搜索入口。搜索页早就有了（site.search），
+     * 缺的只是这段声明——没有它，搜索引擎不知道站内能搜，也就不会在品牌词
+     * 结果下展示搜索框（sitelinks searchbox）。
+     *
+     * urlTemplate 里的 {search_term_string} 是 schema.org 规定的占位符写法，
+     * 必须与 query-input 里声明的 name 一致，不能改成别的名字。
+     *
+     * @return array<string, mixed>
+     */
+    protected function webSiteSchema(): array
+    {
+        return [
+            '@context'        => 'https://schema.org',
+            '@type'           => 'WebSite',
+            '@id'             => $this->webSiteId(),
+            'name'            => $this->defaultTitle(),
+            'url'             => route('site.home'),
+            'inLanguage'      => 'zh-CN',
+            'potentialAction' => [
+                '@type'  => 'SearchAction',
+                'target' => [
+                    '@type'       => 'EntryPoint',
+                    'urlTemplate' => route('site.search').'?q={search_term_string}',
+                ],
+                'query-input' => 'required name=search_term_string',
+            ],
+        ];
+    }
+
+    /**
+     * 方案详情的 Service 结构化数据
+     *
+     * 方案卖的是「做这件事的能力」而不是一件带价格的商品，所以是 Service
+     * 而不是 Product——套餐才是 Product（见 packageSchema）。此前方案详情页
+     * 只有面包屑，主体内容在结构化数据里完全没有表达。
+     *
+     * areaServed 声明服务覆盖到哪，未配置则不输出该属性（见 areaServedNode）。
+     *
+     * @param  array{title: string, description: string, ogImage: string|null, ...}  $seo  已构建的 SEO 数据
+     * @return array<string, mixed>
+     */
+    protected function serviceSchema(array $seo, SiteSolution $record): array
+    {
+        return array_filter([
+            '@context'    => 'https://schema.org',
+            '@type'       => 'Service',
+            'name'        => $record->title_zh,
+            'description' => $seo['description'],
+            'url'         => route('site.solutions.show', ['slug' => $record->slug]),
+            'image'       => $seo['ogImage'],
+            'provider'    => $this->organizationNode(),
+            'areaServed'  => $this->areaServedNode(),
         ], static fn (mixed $value): bool => $value !== null);
     }
 
@@ -791,13 +1488,10 @@ class SiteFrontController extends Controller
      */
     protected function organizationNode(): array
     {
-        $settings = $this->resolveSettings();
-        $logo     = $settings?->logo;
-
         return array_filter([
             '@type' => 'Organization',
             'name'  => $this->defaultTitle(),
-            'logo'  => ($logo !== null && $logo !== '') ? $logo : null,
+            'logo'  => $this->resolveSettings()?->logoUrl(),
         ], static fn (mixed $value): bool => $value !== null);
     }
 
@@ -828,6 +1522,18 @@ class SiteFrontController extends Controller
     }
 
     /**
+     * 全局默认关键词
+     *
+     * 首页与列表页没有对应内容记录，这里是它们唯一的关键词来源；
+     * 详情页则在记录自身 seo_keywords 留空时回退到这里。
+     * 未配置时返回空串，视图据此整条不输出 meta keywords。
+     */
+    protected function defaultKeywords(): string
+    {
+        return (string) ($this->resolveSettings()?->seo_default_keywords_zh ?? '');
+    }
+
+    /**
      * 全局默认 Open Graph 图片
      *
      * 未配置时返回 null，视图据此不输出 og:image，
@@ -835,9 +1541,7 @@ class SiteFrontController extends Controller
      */
     protected function defaultOgImage(): ?string
     {
-        $image = $this->resolveSettings()?->og_default_image;
-
-        return ($image !== null && $image !== '') ? $image : null;
+        return $this->resolveSettings()?->ogDefaultImageUrl();
     }
 
     /**

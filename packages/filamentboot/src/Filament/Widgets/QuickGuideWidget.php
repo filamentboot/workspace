@@ -13,7 +13,7 @@ use Filamentboot\Models\AdminUser;
  */
 class QuickGuideWidget extends Widget
 {
-    protected string $view = 'filament.widgets.quick-guide-widget';
+    protected string $view = 'filamentboot::filament.widgets.quick-guide-widget';
 
     protected static ?int $sort = 5;
 

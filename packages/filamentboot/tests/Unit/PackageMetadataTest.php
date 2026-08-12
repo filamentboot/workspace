@@ -81,7 +81,7 @@ class PackageMetadataTest extends TestCase
     {
         $composer = $this->loadComposerJson();
 
-        self::assertSame('0.5.x-dev', $composer['extra']['branch-alias']['dev-main']);
+        self::assertSame('0.13.x-dev', $composer['extra']['branch-alias']['dev-main']);
     }
 
     /**

@@ -4,6 +4,7 @@ namespace Filamentboot\FilamentbootSite\Cms\Blocks;
 
 use Filament\Forms\Components\RichEditor;
 use Filament\Forms\Components\TextInput;
+use Filamentboot\FilamentbootSite\Support\RichText;
 
 /**
  * 富文本区块（#12）
@@ -62,5 +63,25 @@ class RichContentBlock extends AbstractBlock
             'title'   => '',
             'content' => '',
         ];
+    }
+
+    /**
+     * 保存前净化 content 字段（七期批次 1 从 BlockSanitizer::sanitizeOne() 下沉）
+     *
+     * content 是本区块唯一允许 HTML 的字段，见类注释；净化两侧都过
+     * （渲染侧视图里也调 RichText::purify()）是有意重复，见 BlockSanitizer 类注释。
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    public function sanitize(array $data): array
+    {
+        if (! isset($data['content'])) {
+            return $data;
+        }
+
+        $data['content'] = RichText::purify((string) $data['content']);
+
+        return $data;
     }
 }

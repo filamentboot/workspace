@@ -34,9 +34,9 @@ use UnitEnum;
 /**
  * 官网设置页面
  *
- * 管理公司基本信息、SEO 默认值、主题切换及媒体上传（D-10-14），
+ * 管理公司基本信息、前台文案、SEO 默认值、主题切换及媒体上传（D-10-14），
  * 另含线索通知邮箱（A2）与统计代码注入（A3）。
- * CMS v1 为中文单语言，表单不再提供英文字段（数据库列保留兼容既有数据）。
+ * CMS v1 为中文单语言，英文字段与对应数据列已在 3.5 期 A 段整批删除。
  *
  * 保存后执行 view:clear 确保主题切换立即生效（RESEARCH Pitfall 3）。
  * 上传字段使用 UploadSettings.default_disk 磁盘（SITE-04 跨切）。
@@ -146,6 +146,42 @@ class SiteSettingsPage extends SettingsPage
                                         ->helperText('多个邮箱用英文逗号分隔，留空关闭通知。通知走队列异步发送，发送失败不会影响访客提交。'),
                                 ]),
                         ]),
+                    Tab::make('前台文案')
+                        ->schema([
+                            Section::make('页脚')
+                                ->description('页脚品牌列下面那段介绍。留空则整段不渲染。')
+                                ->schema([
+                                    Textarea::make('footer_intro_zh')
+                                        ->label('公司简介')
+                                        ->maxLength(300)
+                                        ->rows(3),
+                                ]),
+                            Section::make('列表页导语')
+                                ->description('五个列表页标题下面那一句话。这里是它们唯一的来源——留空则该页标题下不显示任何导语，前台不会退回主题自带的文案。')
+                                ->schema([
+                                    Textarea::make('list_intro_cases_zh')
+                                        ->label('案例列表导语')
+                                        ->maxLength(300)
+                                        ->rows(2),
+                                    Textarea::make('list_intro_solutions_zh')
+                                        ->label('方案列表导语')
+                                        ->maxLength(300)
+                                        ->rows(2),
+                                    Textarea::make('list_intro_products_zh')
+                                        ->label('产品列表导语')
+                                        ->maxLength(300)
+                                        ->rows(2),
+                                    Textarea::make('list_intro_packages_zh')
+                                        ->label('套餐列表导语')
+                                        ->maxLength(300)
+                                        ->rows(2),
+                                    Textarea::make('list_intro_news_zh')
+                                        ->label('资讯列表导语')
+                                        ->maxLength(300)
+                                        ->rows(2)
+                                        ->helperText('按分类筛选时标题会变成分类名，导语不跟着变'),
+                                ]),
+                        ]),
                     Tab::make('SEO 默认值')
                         ->schema([
                             Section::make('搜索与分享')
@@ -160,6 +196,10 @@ class SiteSettingsPage extends SettingsPage
                                         ->maxLength(160)
                                         ->rows(3)
                                         ->helperText('建议不超过 160 个字符'),
+                                    TextInput::make('seo_default_keywords_zh')
+                                        ->label('默认关键词')
+                                        ->maxLength(255)
+                                        ->helperText('首页与各列表页唯一的关键词来源，内容自身未填关键词时也回退到这里。多个词用空格或英文逗号分隔，留空则全站不输出 keywords'),
                                     FileUpload::make('og_default_image')
                                         ->label('默认 Open Graph 图')
                                         ->image()
@@ -179,6 +219,10 @@ class SiteSettingsPage extends SettingsPage
                                     TextInput::make('bing_verify_code')
                                         ->label('Bing 站长验证串')
                                         ->maxLength(128),
+                                    TextInput::make('sogou_verify_code')
+                                        ->label('搜狗站长验证串')
+                                        ->maxLength(128)
+                                        ->helperText('搜狗站长平台「网站验证 - 添加 meta 标签」给出的 content 值。搜狗同时是腾讯元宝的检索源，做 AI 引用绕不开它'),
                                 ]),
                             Section::make('百度主动推送')
                                 ->description('新内容发布时主动推给百度，比等抓取快一个数量级。留空即关闭，不影响其它功能。')

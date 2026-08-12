@@ -4,6 +4,8 @@
 
 ![Filamentboot 后台首页](art/dashboard.png)
 
+> 🏠 **官网**：https://www.xitongapp.com/ —— 功能矩阵 / Roadmap、下载与安装、社区
+>
 > 🌐 **在线体验**：https://demo.xitongapp.com  ·  演示账号 `demo@example.com` / `demo123`
 > （演示环境每日凌晨 4:00 重置；高危操作已屏蔽）
 
@@ -225,7 +227,7 @@ filamentboot 提供开箱即用的插件市场（后台"插件市场"Tab），�
 |------|------------------|------|
 | 阿里云 OSS 存储 | `composer require filamentboot/filamentboot-oss` | Flysystem OSS 磁盘驱动，后台凭证管理页 |
 | 腾讯云 COS 存储 | `composer require filamentboot/filamentboot-cos` | Flysystem COS 磁盘驱动，后台凭证管理页 |
-| 富文本编辑器 | `composer require filamentboot/filamentboot-rich-editor` | 基于 Quill.js 的富文本编辑器 Field |
+| 富文本编辑器 | `composer require filamentboot/filamentboot-rich-editor` | 基于 Filament 5 内置 Tiptap 的增强版富文本编辑器 Field |
 | Markdown 编辑器 | `composer require filamentboot/filamentboot-markdown-editor` | Markdown 编辑器 Field，实时预览 |
 | WangEditor 编辑器 | `composer require filamentboot/filamentboot-wang-editor` | 基于 WangEditor 5 的中文富文本编辑器 Field |
 | 官网插件 | `composer require filamentboot/filamentboot-site` | 企业官网内容管理（页面、文章、联系信息） |

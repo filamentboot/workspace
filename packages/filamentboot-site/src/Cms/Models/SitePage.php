@@ -3,12 +3,13 @@
 namespace Filamentboot\FilamentbootSite\Cms\Models;
 
 use Filamentboot\FilamentbootSite\Cms\Enums\PageStatus;
+use Filamentboot\FilamentbootSite\Cms\Revisions\HasRevisions;
+use Filamentboot\FilamentbootSite\Cms\Revisions\Revisionable;
 use Filamentboot\FilamentbootSite\Cms\Services\GatedAssetRegistry;
 use Filamentboot\FilamentbootSite\Database\Factories\SitePageFactory;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Support\Carbon;
 
@@ -23,11 +24,9 @@ use Illuminate\Support\Carbon;
  *
  * @property int $id
  * @property string $title_zh
- * @property string|null $title_en
  * @property string $slug
  * @property string $template
  * @property string|null $content_zh
- * @property string|null $content_en
  * @property array<int, mixed>|null $blocks 区块 payload 列表 [{type, data}, ...]（Filament Builder 存的就是列表）
  * @property string|null $seo_title
  * @property string|null $seo_description
@@ -40,11 +39,12 @@ use Illuminate\Support\Carbon;
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
  */
-class SitePage extends Model
+class SitePage extends Model implements Revisionable
 {
     /** @use HasFactory<SitePageFactory> */
     use HasFactory;
 
+    use HasRevisions;
     use SoftDeletes;
 
     /** @var list<string> */
@@ -97,13 +97,70 @@ class SitePage extends Model
     }
 
     /**
-     * 版本快照（#15 版本回滚使用）
+     * 进入快照的字段（批次 1.5c，原 SitePageObserver::TRACKED）
      *
-     * @return HasMany<SitePageRevision, $this>
+     * @return list<string>
      */
-    public function revisions(): HasMany
+    public static function revisionTrackedFields(): array
     {
-        return $this->hasMany(SitePageRevision::class, 'page_id')->latest('id');
+        return [
+            'title_zh',
+            'slug',
+            'template',
+            'content_zh',
+            'blocks',
+            'seo_title',
+            'seo_description',
+            'seo_keywords',
+            'seo_og_image',
+            'status',
+            'published_at',
+        ];
+    }
+
+    /**
+     * 回滚时会被恢复的字段（批次 1.5c，原 SitePageObserver::RESTORABLE）
+     *
+     * status 与 published_at **不在**其中：回滚一篇已归档页的旧版本
+     * 不该把它偷偷重新发布，发布与否始终是当下的独立决定。
+     *
+     * @return list<string>
+     */
+    public static function revisionRestorableFields(): array
+    {
+        return [
+            'title_zh',
+            'slug',
+            'template',
+            'content_zh',
+            'blocks',
+            'seo_title',
+            'seo_description',
+            'seo_keywords',
+            'seo_og_image',
+        ];
+    }
+
+    /**
+     * 字段名 → 中文标签（批次 1.5c，原 RevisionsRelationManager::FIELD_LABELS）
+     *
+     * @return array<string, string>
+     */
+    public static function revisionFieldLabels(): array
+    {
+        return [
+            'title_zh'        => '标题',
+            'slug'            => 'URL Slug',
+            'template'        => '页面版式',
+            'content_zh'      => '正文',
+            'blocks'          => '页面区块',
+            'seo_title'       => 'SEO 标题',
+            'seo_description' => 'SEO 描述',
+            'seo_keywords'    => 'SEO 关键词',
+            'seo_og_image'    => '社交分享图',
+            'status'          => '发布状态',
+            'published_at'    => '发布时间',
+        ];
     }
 
     /**

@@ -1,3 +1,15 @@
+## ⚠️ 冻结与回流说明（2026-08-12，八期批次 2）
+
+**本仓库 `packages/filamentboot`、`packages/filamentboot-site` 曾长期冻结**，真正的开发地是另一个独立仓库 `filamentboot-web`（`~/src/personal/filamentboot-web`，站点 `www.xitongapp.com` 的官方产品站）。冻结期间那边完成了本文件完全不知情的多期架构演进（含内容模型命名空间搬迁、双主题共享层下沉、CMS 可配置内容类型系统等）——**本文件下面关于代码状态、命名空间、架构方向的描述可能已经过期**，与 `packages/` 下的实际代码对不上时，以代码和 `filamentboot-web` 仓库自己的 `CLAUDE.md` 为准。
+
+2026-08-12 执行了一次性整目录回流：删除本仓库 `packages/filamentboot`、`packages/filamentboot-site` 两个目录后，用 `filamentboot-web` 当时的最新版本整体覆盖（本仓库 workspace 侧回流前的状态打了本地分支 `pre-reflow-2026-08-12-backup` 留底）。回流不是逐 commit 合并——`filamentboot-web` 那边的完整开发历史不会体现在本仓库的 git log 里，只有回流那一刻的最终代码状态。
+
+回流之后，本仓库重新成为**发版**的地方（`release.yml` 的 subtree-split + Gitee 镜像 + Packagist 校验都在这里、也只有这里有 git remote 和 tag 历史）——但这不等于本仓库自动变回**开发**地：`filamentboot-web` 那边是否会继续作为下一阶段的包开发地，取决于该仓库自己 `CLAUDE.md` 的记录，打开本仓库时先去确认。
+
+本仓库自己的宿主测试套件（`tests/Feature`、`tests/Unit`，不在 `packages/` 下）冻结期间没有跟上包的演进，回流后跑全量测试有约 70 个失败集中在这一层（包自身测试全绿）——这是已知的存量技术债，不是回流引入的新问题，处理前先读 `filamentboot-web` 仓库 `docs/上线账本.md` 里"八期（分流）批次 2"那一段的记录。
+
+---
+
 ## Project
 
 **Filamentboot**

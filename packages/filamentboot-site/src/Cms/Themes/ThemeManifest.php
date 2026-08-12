@@ -10,7 +10,7 @@ use Filamentboot\FilamentbootSite\SiteServiceProvider;
  * 读 resources/views/themes/{theme}/theme.php，形如：
  *
  *   return [
- *       'label'     => '科技装修（深色）',
+ *       'label'     => '科技装修（浅色）',
  *       'templates' => ['default', 'landing'],
  *       'blocks'    => ['hero', 'rich-content', …],
  *       'features'  => ['nested_menu' => true],

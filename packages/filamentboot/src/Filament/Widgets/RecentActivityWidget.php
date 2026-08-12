@@ -13,7 +13,7 @@ use Spatie\Activitylog\Models\Activity;
  */
 class RecentActivityWidget extends Widget
 {
-    protected string $view = 'filament.widgets.recent-activity-widget';
+    protected string $view = 'filamentboot::filament.widgets.recent-activity-widget';
 
     protected static ?int $sort = 4;
 

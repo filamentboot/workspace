@@ -1,0 +1,4 @@
+/tests export-ignore
+/phpunit.xml.dist export-ignore
+/bootstrap-test.php export-ignore
+/.gitattributes export-ignore

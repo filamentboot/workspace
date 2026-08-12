@@ -2,6 +2,7 @@
 
 namespace Filamentboot\FilamentbootSite\Database\Factories;
 
+use Filamentboot\FilamentbootSite\Cms\Enums\PageStatus;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Products\Models\SiteProduct;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
@@ -27,29 +28,61 @@ class SiteProductFactory extends Factory
 
         return [
             'title_zh'        => $titleZh,
-            'title_en'        => $this->faker->words(3, true),
             'slug'            => Str::slug($titleZh).'-'.$this->faker->unique()->numberBetween(1, 99999),
             'description_zh'  => $this->faker->paragraph(),
-            'description_en'  => $this->faker->paragraph(),
             'price'           => $this->faker->randomFloat(2, 100, 50000),
             'brand'           => $this->faker->company(),
             'category_id'     => null,
-            'seo_title'       => $titleZh.' - 晴空妙享智能家居',
+            'seo_title'       => $titleZh,
             'seo_description' => $this->faker->sentence(),
             'seo_keywords'    => implode(',', $this->faker->words(5)),
             'is_featured'     => false,
             'sort'            => $this->faker->numberBetween(0, 100),
-            'is_published'    => true,
+            'status'          => PageStatus::PUBLISHED,
+            'published_at'    => now(),
         ];
     }
 
     /**
-     * 未发布状态
+     * 草稿状态
      */
-    public function unpublished(): static
+    public function draft(): static
     {
         return $this->state([
-            'is_published' => false,
+            'status'       => PageStatus::DRAFT,
+            'published_at' => null,
+        ]);
+    }
+
+    /**
+     * 待审核
+     */
+    public function review(): static
+    {
+        return $this->state([
+            'status'       => PageStatus::REVIEW,
+            'published_at' => null,
+        ]);
+    }
+
+    /**
+     * 定时发布（默认发布时间在未来，前台不可见）
+     */
+    public function scheduled(?\DateTimeInterface $at = null): static
+    {
+        return $this->state([
+            'status'       => PageStatus::SCHEDULED,
+            'published_at' => $at ?? now()->addDay(),
+        ]);
+    }
+
+    /**
+     * 已归档
+     */
+    public function archived(): static
+    {
+        return $this->state([
+            'status' => PageStatus::ARCHIVED,
         ]);
     }
 

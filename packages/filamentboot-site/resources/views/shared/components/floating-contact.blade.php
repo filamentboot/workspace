@@ -15,6 +15,20 @@
     $triggerLabel = '打开询盘表单';
     $panelTitle   = '预约咨询';
     $closeLabel   = '关闭表单';
+
+    // 面板的额外问题走配置（filamentboot-site.contact.panel_fields），默认空。
+    //
+    // 为什么面板需要这个：$extraFields 此前只有页面里内嵌的询盘表单区块会传，
+    // 而**大部分线索是从这个面板进来的**（导航栏、移动端操作条、各详情页 CTA 全开它），
+    // 结果销售拿到的永远只有姓名 / 电话 / 留言，没有任何上下文。
+    //
+    // 归一复用 ContactFormBlock::normalizedFields()，不在这里另写一份：配置项的形状
+    // 与区块的「额外问题」完全一致，两处各解析一遍迟早漂移成两套「什么算合法问题」。
+    $panelFields = config('filamentboot-site.contact.panel_fields', []);
+    $panelFields = is_array($panelFields) ? $panelFields : [];
+
+    $panelExtraFields = app(\Filamentboot\FilamentbootSite\Cms\Blocks\ContactFormBlock::class)
+        ->normalizedFields(['fields' => $panelFields]);
 @endphp
 
 {{-- 必须带 x-data：Alpine 只初始化 x-data 根之内的元素，
@@ -28,7 +42,7 @@
         type="button"
         class="btn-site-primary fixed right-4 sm:right-6 lg:right-8 z-50
                w-14 h-14 rounded-full shadow-lg hidden sm:inline-flex items-center justify-center
-               focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:ring-offset-2 focus-visible:ring-offset-[--color-bg-base] focus-visible:outline-none"
+               focus-visible:ring-2 focus-visible:ring-(--color-primary) focus-visible:ring-offset-2 focus-visible:ring-offset-(--color-bg-base) focus-visible:outline-none"
         style="bottom: calc(1.5rem + env(safe-area-inset-bottom, 0px));"
         {{-- 面板打开时隐藏，避免悬浮气泡压在表单上 --}}
         x-show="! $store.contactPanel.open"
@@ -42,9 +56,14 @@
         </svg>
     </button>
 
-    {{-- 背景遮罩 --}}
+    {{-- 背景遮罩。本视图两套主题共用，所以遮罩色不能写死在这里——
+         `bg-site-scrim` 由各主题的 CSS 自己声明取值（当前 software 是
+         decoration 的复制，取值一致；换皮后可能分化）。原先写的是调色板的
+         纯黑加斜杠透明度，既是 decoration 的取色泄漏进共用视图，也把
+         Tailwind 默认调色板拖进产物。
+         （刻意不写出原类名的完整形态：v4 的内容探测扫原始文本，注释也算。） --}}
     <div
-        class="fixed inset-0 z-[55] bg-black/40"
+        class="fixed inset-0 z-[55] bg-site-scrim"
         x-show="$store.contactPanel.open"
         @click="$store.contactPanel.hide()"
         style="display: none;"
@@ -71,7 +90,7 @@
                 type="button"
                 class="inline-flex items-center justify-center min-w-[44px] min-h-[44px]
                        text-site-muted hover:text-site-primary transition-colors duration-200
-                       focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:outline-none rounded-lg"
+                       focus-visible:ring-2 focus-visible:ring-(--color-primary) focus-visible:outline-none rounded-lg"
                 @click="$store.contactPanel.hide()"
                 aria-label="{{ $closeLabel }}">
                 {{-- Heroicons x-mark --}}
@@ -83,7 +102,10 @@
 
         {{-- 面板内容：询盘表单（#29 起是纯 Alpine + fetch，不再是 Livewire 组件） --}}
         <div class="flex-1 overflow-y-auto p-6">
-            @include('filamentboot-site::components.contact-form', ['formKey' => 'panel'])
+            @include('filamentboot-site::components.contact-form', [
+                'formKey'     => 'panel',
+                'extraFields' => $panelExtraFields,
+            ])
         </div>
     </div>
 </div>

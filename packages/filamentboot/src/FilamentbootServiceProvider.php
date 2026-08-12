@@ -6,31 +6,46 @@ use Filament\Forms\Components\FileUpload;
 use Filament\Support\Assets\Css;
 use Filament\Support\Exceptions\Halt;
 use Filament\Support\Facades\FilamentAsset;
+use Filamentboot\Enums\ApiErrorCode;
+use Filamentboot\Exceptions\ApiException;
+use Filamentboot\Http\Middleware\ResetAuthGuards;
 use Filamentboot\Models\AdminUser;
 use Filamentboot\Models\Department;
 use Filamentboot\Models\LoginLog;
 use Filamentboot\Models\Menu;
+use Filamentboot\Models\Plugin;
 use Filamentboot\Observers\ActivityLogObserver;
 use Filamentboot\Policies\ActivityLogPolicy;
 use Filamentboot\Policies\AdminUserPolicy;
 use Filamentboot\Policies\DepartmentPolicy;
 use Filamentboot\Policies\LoginLogPolicy;
 use Filamentboot\Policies\MenuPolicy;
+use Filamentboot\Policies\PluginPolicy;
 use Filamentboot\Policies\RolePolicy;
 use Filamentboot\Settings\UploadSettings;
 use Filamentboot\Support\UploadValidator;
+use Illuminate\Auth\AuthenticationException;
 use Illuminate\Auth\Events\Failed;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Contracts\Debug\ExceptionHandler as ExceptionHandlerContract;
+use Illuminate\Contracts\Http\Kernel as KernelContract;
+use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Foundation\Http\Kernel;
+use Illuminate\Http\Request;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Response;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Validation\ValidationException;
 use Spatie\Activitylog\Models\Activity;
 use Spatie\Permission\Models\Role;
 use STS\FilamentImpersonate\Events\EnterImpersonation;
 use STS\FilamentImpersonate\Events\LeaveImpersonation;
+use Throwable;
 
 /**
  * Filamentboot 包服务提供者
@@ -51,11 +66,14 @@ class FilamentbootServiceProvider extends ServiceProvider
         Department::class => DepartmentPolicy::class,
         Activity::class   => ActivityLogPolicy::class,
         Role::class       => RolePolicy::class,
+        Plugin::class     => PluginPolicy::class,
     ];
 
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__.'/../config/filamentboot.php', 'filamentboot');
+        $this->mergeConfigFrom(__DIR__.'/../config/official-market.php', 'official-market');
+        $this->mergeConfigFrom(__DIR__.'/../config/plugin-platform.php', 'plugin-platform');
 
         // Resolve factory class names for Filamentboot models:
         // Laravel's default resolver guesses Database\Factories\{Model}Factory,
@@ -82,6 +100,7 @@ class FilamentbootServiceProvider extends ServiceProvider
     public function boot(): void
     {
         $this->registerMigrations();
+        $this->registerRoutes();
         $this->registerCommands();
         $this->registerViews();
         $this->registerTranslations();
@@ -91,6 +110,18 @@ class FilamentbootServiceProvider extends ServiceProvider
         $this->registerThemeAsset();
         $this->registerPublishes();
         $this->registerUploadGuards();
+        $this->registerApiResponseMacros();
+        $this->registerApiExceptionHandling();
+        $this->registerApiMiddleware();
+    }
+
+    /**
+     * 注册包级路由（API 鉴权路由 routes/api.php + 插件市场索引 routes/web.php）
+     */
+    protected function registerRoutes(): void
+    {
+        $this->loadRoutesFrom(__DIR__.'/../routes/api.php');
+        $this->loadRoutesFrom(__DIR__.'/../routes/web.php');
     }
 
     /**
@@ -305,7 +336,9 @@ class FilamentbootServiceProvider extends ServiceProvider
 
         // D-07: config tag — 将包内配置文件发布到用户项目 config/ 目录
         $this->publishes([
-            __DIR__.'/../config/filamentboot.php' => config_path('filamentboot.php'),
+            __DIR__.'/../config/filamentboot.php'    => config_path('filamentboot.php'),
+            __DIR__.'/../config/official-market.php' => config_path('official-market.php'),
+            __DIR__.'/../config/plugin-platform.php' => config_path('plugin-platform.php'),
         ], 'filamentboot-config');
 
         // D-08: migrations tag — 使用 publishesMigrations 自动追加时间戳前缀（Laravel 13 原生 API）
@@ -362,7 +395,7 @@ class FilamentbootServiceProvider extends ServiceProvider
                 if (! empty($uploadSettings->default_disk)) {
                     config(['media-library.disk_name' => $uploadSettings->default_disk]);
                 }
-            } catch (\Throwable) {
+            } catch (Throwable) {
                 // settings 表不存在（首次迁移前）或 UploadSettings 未注册，静默跳过
             }
 
@@ -376,7 +409,7 @@ class FilamentbootServiceProvider extends ServiceProvider
                     try {
                         $uploadSettings = app(UploadSettings::class);
                         $validator      = new UploadValidator($uploadSettings);
-                    } catch (\Throwable) {
+                    } catch (Throwable) {
                         return;
                     }
 
@@ -398,5 +431,138 @@ class FilamentbootServiceProvider extends ServiceProvider
                 });
             });
         });
+    }
+
+    /**
+     * 注册 API 统一响应 Macro（api / apiError / apiPaginated）
+     */
+    protected function registerApiResponseMacros(): void
+    {
+        Response::macro('api', function (
+            mixed $data = null,
+            string $message = '操作成功',
+            int $status = 200,
+        ) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'data'    => $data,
+            ], $status);
+        });
+
+        Response::macro('apiError', function (
+            ApiErrorCode $errorCode,
+            ?string $message = null,
+            mixed $data = null,
+        ) {
+            return response()->json([
+                'success'    => false,
+                'message'    => $message ?? $errorCode->defaultMessage(),
+                'error_code' => $errorCode->value,
+                'data'       => $data,
+            ], $errorCode->httpStatus());
+        });
+
+        Response::macro('apiPaginated', function (
+            LengthAwarePaginator $paginator,
+            string $message = '获取成功',
+        ) {
+            return response()->json([
+                'success' => true,
+                'message' => $message,
+                'data'    => $paginator->items(),
+                'meta'    => [
+                    'current_page' => $paginator->currentPage(),
+                    'per_page'     => $paginator->perPage(),
+                    'total'        => $paginator->total(),
+                    'last_page'    => $paginator->lastPage(),
+                    'from'         => $paginator->firstItem(),
+                    'to'           => $paginator->lastItem(),
+                ],
+                'links' => [
+                    'first' => $paginator->url(1),
+                    'last'  => $paginator->url($paginator->lastPage()),
+                    'prev'  => $paginator->previousPageUrl(),
+                    'next'  => $paginator->nextPageUrl(),
+                ],
+            ], 200);
+        });
+    }
+
+    /**
+     * 注册 API 统一异常渲染
+     *
+     * 通过 ExceptionHandler::renderable() 在运行时注册，不依赖宿主
+     * bootstrap/app.php 的 withExceptions()（那个闭包只在启动阶段跑一次，
+     * 包的 ServiceProvider::boot() 够不到）。四个回调按 ApiException →
+     * ValidationException → AuthenticationException → Throwable 顺序注册，
+     * 顺序不可颠倒：Handler 按注册顺序尝试，先命中且返回非 null 的胜出，
+     * 颠倒会让后两个更宽泛的兜底回调抢在具体异常类型前面命中。
+     */
+    protected function registerApiExceptionHandling(): void
+    {
+        // 必须按容器绑定的抽象键解析，才能拿到框架实际使用的那个单例；
+        // 直接 make(具体类) 会绕过 singleton 绑定，reflection 出一个新实例，
+        // renderable() 注册到一个没人用的对象上，静默不生效。
+        /** @var ExceptionHandler $handler */
+        $handler = $this->app->make(ExceptionHandlerContract::class);
+
+        // 捕获 ApiException，返回标准错误格式
+        $handler->renderable(function (ApiException $e, Request $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->apiError(
+                    errorCode: $e->errorCode,
+                    message: $e->getMessage(),
+                    data: $e->data,
+                );
+            }
+        });
+
+        // 捕获 ValidationException（Laravel 表单校验失败）
+        $handler->renderable(function (ValidationException $e, Request $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->apiError(
+                    errorCode: ApiErrorCode::VALIDATION_FAILED,
+                    message: $e->getMessage(),
+                    data: $e->errors(),
+                );
+            }
+        });
+
+        // 捕获未认证异常
+        $handler->renderable(function (AuthenticationException $e, Request $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->apiError(
+                    errorCode: ApiErrorCode::UNAUTHENTICATED,
+                );
+            }
+        });
+
+        // 捕获未预期的服务器异常
+        $handler->renderable(function (Throwable $e, Request $request) {
+            if ($request->is('api/*') || $request->expectsJson()) {
+                return response()->apiError(
+                    errorCode: ApiErrorCode::SERVER_ERROR,
+                    message: app()->isProduction()
+                        ? ApiErrorCode::SERVER_ERROR->defaultMessage()
+                        : $e->getMessage(),
+                );
+            }
+        });
+    }
+
+    /**
+     * 把 ResetAuthGuards 挂进 api 中间件组最前面
+     *
+     * 通过 Kernel::prependMiddlewareToGroup() 在运行时挂载，效果与宿主
+     * bootstrap/app.php 里 withMiddleware() 的 prependToGroup() 相同，
+     * 但不需要宿主写任何一行代码。
+     */
+    protected function registerApiMiddleware(): void
+    {
+        // 同上，按容器绑定的抽象键解析实际单例，不直接 make(具体类)。
+        /** @var Kernel $kernel */
+        $kernel = $this->app->make(KernelContract::class);
+        $kernel->prependMiddlewareToGroup('api', ResetAuthGuards::class);
     }
 }

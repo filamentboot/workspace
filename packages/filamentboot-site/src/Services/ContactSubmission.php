@@ -34,7 +34,18 @@ class ContactSubmission
     public const MIN_FILL_SECONDS = 3;
 
     /**
-     * 每 IP 允许的提交次数与窗口（秒）
+     * 每 IP 允许的提交次数与窗口（秒）—— **默认值**，可被配置覆盖
+     *
+     * 这两个数原本是硬常量。做成可配是因为「一个站该放多松」取决于站上有几个转化钩子：
+     * 只有一个「预约咨询」按钮时，同一个 IP 五分钟内提交三次基本就是脚本；而钩子按
+     * 上下文铺开之后（套餐页问报价、案例页问户型、资讯页问方案），**同一个真实访客
+     * 在一次浏览里提交两三次是正常行为**，第 4 次被挡就是白丢一条线索。
+     *
+     * ⚠️ 被挡时前台把「提交过于频繁，请稍后再试。」渲染在**电话字段下面**
+     * （`ContactSubmissionController` 回的是 `errors.phone`，表单只有字段级错误位）。
+     * 读起来像「这个号码提交太频繁」，其实是按 IP 算的。实测确认过这个表现；
+     * 没有改成表单级提示是因为那要动前后端的错误契约，超出本次范围——
+     * **所以阈值宁可给宽一点，让真实访客压根碰不到它。**
      */
     public const RATE_LIMIT = 3;
 
@@ -140,7 +151,10 @@ class ContactSubmission
     }
 
     /**
-     * IP 限流：每 IP RATE_WINDOW 秒内最多 RATE_LIMIT 次（D-10-15，T-10-04-02）
+     * IP 限流：每 IP 一个窗口内最多几次（D-10-15，T-10-04-02）
+     *
+     * 阈值读 `filamentboot-site.contact.rate_limit` / `rate_window`，
+     * 缺配置或配了非正数时回落到常量（见常量注释）。
      *
      * IP 取不到时不限流：没有 IP 就没有可靠的限流维度，按 IP 为空归一到同一个桶
      * 会让所有取不到 IP 的真实访客互相挤额度。
@@ -153,13 +167,33 @@ class ContactSubmission
 
         $key = 'site-contact:'.$ip;
 
-        if (RateLimiter::tooManyAttempts($key, self::RATE_LIMIT)) {
+        if (RateLimiter::tooManyAttempts($key, $this->rateLimit())) {
             return true;
         }
 
-        RateLimiter::hit($key, self::RATE_WINDOW);
+        RateLimiter::hit($key, $this->rateWindow());
 
         return false;
+    }
+
+    /**
+     * 生效的每 IP 提交次数上限
+     */
+    protected function rateLimit(): int
+    {
+        $configured = (int) config('filamentboot-site.contact.rate_limit', self::RATE_LIMIT);
+
+        return $configured > 0 ? $configured : self::RATE_LIMIT;
+    }
+
+    /**
+     * 生效的限流窗口（秒）
+     */
+    protected function rateWindow(): int
+    {
+        $configured = (int) config('filamentboot-site.contact.rate_window', self::RATE_WINDOW);
+
+        return $configured > 0 ? $configured : self::RATE_WINDOW;
     }
 
     /**

@@ -4,6 +4,7 @@ namespace Filamentboot\FilamentbootSite\Cms\Services;
 
 use Filamentboot\FilamentbootSite\Cms\Models\SitePage;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Models\SiteCase;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Packages\Models\SitePackage;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Products\Models\SiteProduct;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Solutions\Models\SiteSolution;
 use Filamentboot\FilamentbootSite\Modules\News\Models\NewsArticle;
@@ -14,8 +15,8 @@ use Illuminate\Database\Eloquent\Model;
 /**
  * 站内搜索（跨模块）
  *
- * 前台 /search?q= 的取数。五类内容各查一次、各自限流，按类型分组返回——
- * 不做跨表 UNION：五张表的列不同名，UNION 要先投影成统一列集，写法与各驱动的
+ * 前台 /search?q= 的取数。六类内容各查一次、各自限流，按类型分组返回——
+ * 不做跨表 UNION：六张表的列不同名，UNION 要先投影成统一列集，写法与各驱动的
  * 类型推断纠缠，收益只是「能真分页」，而企业站的搜索每类给五条已经够用。
  *
  * 宿主要换内容源就 bind 掉这个类（同 Modules\Corporate\Home\HomeSectionProvider
@@ -79,6 +80,7 @@ class SiteSearch
             $this->pages($term),
             $this->cases($term),
             $this->solutions($term),
+            $this->packages($term),
             $this->products($term),
             $this->news($term),
         ];
@@ -157,6 +159,31 @@ class SiteSearch
             'title'   => $record->title_zh,
             'excerpt' => $this->snippet((string) ($record->description_zh ?: $record->content_zh), $term),
             'url'     => route('site.solutions.show', ['slug' => $record->slug]),
+        ]);
+    }
+
+    /**
+     * 全屋套餐
+     *
+     * ⚠️ **只搜标题 / 简介 / 正文，搜不到包含清单。** `items` 是 JSON 列，
+     * 与 `site_pages.blocks` 同一个原因（见类注释）：中文被存成 `\uXXXX`
+     * 转义序列，`LIKE '%中文%'` 命不中。所以想让某个设备名可被搜到，
+     * 得同时写进简介或正文。
+     *
+     * @return array{key: string, label: string, hasMore: bool, hits: list<array{title: string, excerpt: string, url: string}>}|null
+     */
+    protected function packages(string $term): ?array
+    {
+        $records = $this->constrain(
+            SitePackage::published()->orderedForCompare(),
+            $term,
+            ['title_zh', 'description_zh', 'content_zh']
+        )->limit(self::PER_GROUP + 1)->get();
+
+        return $this->group('package', '全屋套餐', $records, fn (SitePackage $record): array => [
+            'title'   => $record->title_zh,
+            'excerpt' => $this->snippet((string) ($record->description_zh ?: $record->content_zh), $term),
+            'url'     => route('site.packages.show', ['slug' => $record->slug]),
         ]);
     }
 

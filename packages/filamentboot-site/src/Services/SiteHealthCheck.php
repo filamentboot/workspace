@@ -47,9 +47,16 @@ class SiteHealthCheck
             return [];
         }
 
+        // 明确决定不填的字段不计入缺失，见 config 的 health.optional_fields 那段注释。
+        $optional = (array) config('filamentboot-site.health.optional_fields', []);
+
         $missing = [];
 
         foreach (self::REQUIRED_FIELDS as $field => $label) {
+            if (in_array($field, $optional, true)) {
+                continue;
+            }
+
             $value = $settings->{$field} ?? null;
 
             if ($value === null || trim((string) $value) === '') {

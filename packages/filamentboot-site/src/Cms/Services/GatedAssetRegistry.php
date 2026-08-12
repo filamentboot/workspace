@@ -27,8 +27,8 @@ use Illuminate\Support\Facades\Cache;
  * key 本身不泄露信息，且没有登记过的 key 一律 404。
  *
  * 缓存与 MenuResolver 同一套路：rememberForever + 页面变更时失效
- * （SitePageObserver 里调 forget()）。改一次页面清一次，不靠 TTL 熬——
- * 靠 TTL 会让「刚发布的资料下不了」变成常态投诉。
+ * （SitePage::booted() 的 saved/deleted 钩子里调 forget()）。改一次页面清
+ * 一次，不靠 TTL 熬——靠 TTL 会让「刚发布的资料下不了」变成常态投诉。
  */
 class GatedAssetRegistry
 {

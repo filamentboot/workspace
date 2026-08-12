@@ -2,6 +2,9 @@
 
 namespace Filamentboot\FilamentbootSite\Modules\Corporate\Products\Models;
 
+use Filamentboot\FilamentbootSite\Cms\Enums\PageStatus;
+use Filamentboot\FilamentbootSite\Cms\Revisions\HasRevisions;
+use Filamentboot\FilamentbootSite\Cms\Revisions\Revisionable;
 use Filamentboot\FilamentbootSite\Concerns\HasCoverImage;
 use Filamentboot\FilamentbootSite\Database\Factories\SiteProductFactory;
 use Filamentboot\FilamentbootSite\Models\SiteTag;
@@ -19,18 +22,14 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 /**
  * 智能产品内容模型
  *
- * 支持软删除、媒体库（cover/gallery）、is_published 发布布尔 scope、置顶 scope，
+ * 支持软删除、媒体库（cover/gallery）、published_at 发布 scope、置顶 scope，
  * 关联分类（BelongsTo）与多态标签（MorphToMany）。
- * 产品无 published_at，使用布尔 is_published（RESEARCH Pattern 2）。
  *
  * @property int $id
  * @property string $title_zh
- * @property string|null $title_en
  * @property string $slug
  * @property string|null $description_zh
- * @property string|null $description_en
  * @property string|null $content_zh
- * @property string|null $content_en
  * @property float|null $price
  * @property string|null $brand
  * @property int|null $category_id
@@ -39,18 +38,20 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property string|null $seo_keywords
  * @property bool $is_featured
  * @property int $sort
- * @property bool $is_published
+ * @property PageStatus $status
+ * @property Carbon|null $published_at
  * @property Carbon|null $created_at
  * @property Carbon|null $updated_at
  * @property Carbon|null $deleted_at
  */
-class SiteProduct extends Model implements HasMedia
+class SiteProduct extends Model implements HasMedia, Revisionable
 {
     use HasCoverImage;
 
     /** @use HasFactory<SiteProductFactory> */
     use HasFactory;
 
+    use HasRevisions;
     use InteractsWithMedia;
     use SoftDeletes;
 
@@ -74,8 +75,9 @@ class SiteProduct extends Model implements HasMedia
     {
         return [
             'is_featured'  => 'boolean',
-            'is_published' => 'boolean',
+            'published_at' => 'datetime',
             'price'        => 'decimal:2',
+            'status'       => PageStatus::class,
         ];
     }
 
@@ -127,14 +129,84 @@ class SiteProduct extends Model implements HasMedia
     }
 
     /**
-     * 作用域：仅返回已发布产品（is_published = true）
+     * 进入快照的字段（批次 1.5c）
+     *
+     * @return list<string>
+     */
+    public static function revisionTrackedFields(): array
+    {
+        return [
+            'title_zh',
+            'slug',
+            'description_zh',
+            'content_zh',
+            'price',
+            'brand',
+            'category_id',
+            'seo_title',
+            'seo_description',
+            'seo_keywords',
+            'status',
+            'published_at',
+        ];
+    }
+
+    /**
+     * 回滚时会被恢复的字段（批次 1.5c）
+     *
+     * @return list<string>
+     */
+    public static function revisionRestorableFields(): array
+    {
+        return [
+            'title_zh',
+            'slug',
+            'description_zh',
+            'content_zh',
+            'price',
+            'brand',
+            'category_id',
+            'seo_title',
+            'seo_description',
+            'seo_keywords',
+        ];
+    }
+
+    /**
+     * 字段名 → 中文标签（批次 1.5c）
+     *
+     * @return array<string, string>
+     */
+    public static function revisionFieldLabels(): array
+    {
+        return [
+            'title_zh'        => '标题',
+            'slug'            => 'URL Slug',
+            'description_zh'  => '简介',
+            'content_zh'      => '正文',
+            'price'           => '价格',
+            'brand'           => '品牌',
+            'category_id'     => '所属分类',
+            'seo_title'       => 'SEO 标题',
+            'seo_description' => 'SEO 描述',
+            'seo_keywords'    => 'SEO 关键词',
+            'status'          => '发布状态',
+            'published_at'    => '发布时间',
+        ];
+    }
+
+    /**
+     * 作用域：仅返回已发布产品（published_at 非空且不晚于当前时间）
      *
      * @param  Builder<SiteProduct>  $query
      * @return Builder<SiteProduct>
      */
     public function scopePublished(Builder $query): Builder
     {
-        return $query->where('is_published', true);
+        return $query
+            ->where('status', PageStatus::PUBLISHED)
+            ->whereNotNull('published_at')
+            ->where('published_at', '<=', now());
     }
 
     /**

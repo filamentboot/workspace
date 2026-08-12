@@ -5,6 +5,8 @@ namespace Filamentboot\FilamentbootSite\Observers;
 use Filamentboot\FilamentbootSite\Cms\Models\SitePage;
 use Filamentboot\FilamentbootSite\Jobs\PushUrlsToBaidu;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Models\SiteCase;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Cities\Models\SiteCityPage;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Packages\Models\SitePackage;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Products\Models\SiteProduct;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Solutions\Models\SiteSolution;
 use Filamentboot\FilamentbootSite\Modules\News\Models\NewsArticle;
@@ -18,8 +20,8 @@ use Illuminate\Database\Eloquent\Model;
  * 百度普通站每天配额 3000 条，改一个错别字就烧一条不划算。
  *
  * 「是否可见」一律回查各模型自己的 published() 作用域，不在这里复刻一遍
- * 发布判据——四个模型的判据本就不同（SitePage 看 status、产品看 is_published、
- * 其余看 published_at），复刻等于给自己埋两套会漂移的规则。
+ * 发布判据——批次 1.5a 起六类内容全部同时看 status 与 published_at，
+ * 复刻等于给自己埋两套会漂移的规则。
  */
 class SearchPushObserver
 {
@@ -31,6 +33,7 @@ class SearchPushObserver
     protected const ROUTES = [
         SiteCase::class     => 'site.cases.show',
         SiteSolution::class => 'site.solutions.show',
+        SitePackage::class  => 'site.packages.show',
         SiteProduct::class  => 'site.products.show',
         SitePage::class     => 'site.page',
         NewsArticle::class  => 'site.news.show',
@@ -44,7 +47,7 @@ class SearchPushObserver
      *
      * @var list<string>
      */
-    protected const PUBLISH_COLUMNS = ['status', 'published_at', 'is_published'];
+    protected const PUBLISH_COLUMNS = ['status', 'published_at'];
 
     /**
      * 模型保存后
@@ -87,9 +90,19 @@ class SearchPushObserver
      */
     public static function publicUrl(Model $model): ?string
     {
+        if (! self::isVisible($model)) {
+            return null;
+        }
+
+        // 城市页没有 slug 列，URL 由 region 关联拼出（SiteCityPage::url()，
+        // province/city 两段式），套不进下面「路由名 + slug」的统一形状，单独分支。
+        if ($model instanceof SiteCityPage) {
+            return rescue(fn (): string => $model->url(), null, report: false);
+        }
+
         $routeName = self::ROUTES[$model::class] ?? null;
 
-        if ($routeName === null || ! self::isVisible($model)) {
+        if ($routeName === null) {
             return null;
         }
 
@@ -117,9 +130,11 @@ class SearchPushObserver
         return match ($model::class) {
             SiteCase::class     => SiteCase::published()->whereKey($key)->exists(),
             SiteSolution::class => SiteSolution::published()->whereKey($key)->exists(),
+            SitePackage::class  => SitePackage::published()->whereKey($key)->exists(),
             SiteProduct::class  => SiteProduct::published()->whereKey($key)->exists(),
             SitePage::class     => SitePage::published()->whereKey($key)->exists(),
             NewsArticle::class  => NewsArticle::published()->whereKey($key)->exists(),
+            SiteCityPage::class => SiteCityPage::published()->whereKey($key)->exists(),
             default             => false,
         };
     }
@@ -138,6 +153,7 @@ class SearchPushObserver
         $sources = [
             'site.cases.show'     => SiteCase::published()->pluck('slug'),
             'site.solutions.show' => SiteSolution::published()->pluck('slug'),
+            'site.packages.show'  => SitePackage::published()->pluck('slug'),
             'site.products.show'  => SiteProduct::published()->pluck('slug'),
             'site.page'           => SitePage::published()->pluck('slug'),
             'site.news.show'      => NewsArticle::published()->pluck('slug'),
@@ -156,6 +172,15 @@ class SearchPushObserver
                 if ($url !== null) {
                     $urls[] = $url;
                 }
+            }
+        }
+
+        // 城市页没有 slug 列，拼不进上面 $sources 的「路由名 + slug」形状，单独取一遍。
+        foreach (SiteCityPage::published()->with('region.parent')->get() as $cityPage) {
+            $url = rescue(fn (): string => $cityPage->url(), null, report: false);
+
+            if ($url !== null) {
+                $urls[] = $url;
             }
         }
 

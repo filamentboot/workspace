@@ -27,7 +27,7 @@
     $seoKeywords = $seoData['keywords'] ?? '';
     $ogTitle     = $seoData['ogTitle'] ?? $seoTitle;
     $ogDesc      = $seoData['ogDescription'] ?? $seoDesc;
-    $ogImage     = $seoData['ogImage'] ?? ($siteSettings?->og_default_image ?: null);
+    $ogImage     = $seoData['ogImage'] ?? $siteSettings?->ogDefaultImageUrl();
     $ogType      = $seoData['ogType'] ?? 'website';
 
     // 标题已在控制器拼好站点名的场景不再重复追加
@@ -43,6 +43,15 @@
         request()->query(),
         array_flip((array) config('filamentboot-site.seo.canonical_ignored_params', []))
     );
+
+    // ?page=1 例外：它与不带参数的地址渲染**完全相同的内容**，自指 canonical
+    // 等于主动声明「这是两个页面」。分页器的「上一页 / 首页」链接就会生成它，
+    // 所以它是站内真实可达的地址，不是只有外部构造才出现的边角。
+    // page=2 起必须保留（上面那段说的就是这件事），只砍第一页。
+    if (($canonicalQuery['page'] ?? null) === '1') {
+        unset($canonicalQuery['page']);
+    }
+
     ksort($canonicalQuery);
 
     $canonical = url()->current()
@@ -89,6 +98,7 @@
         'baidu-site-verification'  => trim((string) ($siteSettings->baidu_verify_code ?? '')),
         'google-site-verification' => trim((string) ($siteSettings->google_verify_code ?? '')),
         'msvalidate.01'            => trim((string) ($siteSettings->bing_verify_code ?? '')),
+        'sogou_site_verification'  => trim((string) ($siteSettings->sogou_verify_code ?? '')),
     ];
 @endphp
 @foreach($verificationMetas as $verifyName => $verifyCode)

@@ -1,5 +1,7 @@
 # AGENTS.md — FilamentAdmin
 
+> ⚠️ **本文件大部分内容已过期**（仍停留在 `app/` Skeleton、`FilamentAdmin\` 命名空间的早期状态）。`packages/` 曾冻结过一段时间，2026-08-12（八期批次 2）刚从 `filamentboot-web` 仓库（`~/src/personal/filamentboot-web`）整目录回流覆盖，当前代码的真实架构、命名空间、约束请以 `CLAUDE.md` 顶部的冻结/回流说明和 `packages/` 下的实际代码为准，不要依赖本文件下面的架构方向描述。
+
 Laravel 13 + Filament 5 后台基础平台。主路线详见 `docs/dev/项目开发规划.md`，历史详细计划见 `docs/superpowers/specs/2026-05-28-filament-admin-v1-development-plan.md`。
 
 ## 架构方向（重要，优先阅读）

@@ -71,6 +71,28 @@ abstract class AbstractBlock implements BlockContract
     }
 
     /**
+     * 结构化数据默认实现：不产出任何节点
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>|null
+     */
+    public function structuredData(array $data): ?array
+    {
+        return null;
+    }
+
+    /**
+     * 净化默认实现：原样返回，不做任何改写
+     *
+     * @param  array<string, mixed>  $data
+     * @return array<string, mixed>
+     */
+    public function sanitize(array $data): array
+    {
+        return $data;
+    }
+
+    /**
      * 校验一段 payload 是否符合本区块规则
      *
      * @param  array<string, mixed>  $data  区块 data 部分

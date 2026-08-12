@@ -16,16 +16,21 @@ use Filament\Forms\Components\Toggle;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Tabs;
 use Filament\Schemas\Components\Tabs\Tab;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\SpatieMediaLibraryImageColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Filters\TrashedFilter;
 use Filament\Tables\Table;
+use Filamentboot\FilamentbootSite\Cms\Enums\PageStatus;
+use Filamentboot\FilamentbootSite\Cms\Filament\RelationManagers\RevisionsRelationManager;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Solutions\Filament\SiteSolutionResource\Pages\CreateSiteSolution;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Solutions\Filament\SiteSolutionResource\Pages\EditSiteSolution;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Solutions\Filament\SiteSolutionResource\Pages\ListSiteSolutions;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Solutions\Models\SiteSolution;
+use Filamentboot\FilamentbootSite\SiteServiceProvider;
 use Filamentboot\Settings\UploadSettings;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\SoftDeletingScope;
@@ -50,9 +55,19 @@ class SiteSolutionResource extends Resource
 
     protected static ?int $navigationSort = 20;
 
-    protected static ?string $modelLabel = '智能方案';
+    /**
+     * 「智能方案」是 decoration 专属叫法，software 模板对应的是「应用场景」
+     * （导航标签同名，六期双向边界梳理，批次 9 顺手扩到 Resource 标签）
+     */
+    public static function getModelLabel(): string
+    {
+        return SiteServiceProvider::resolveActiveTheme() === 'software' ? '应用场景' : '智能方案';
+    }
 
-    protected static ?string $pluralModelLabel = '智能方案';
+    public static function getPluralModelLabel(): string
+    {
+        return static::getModelLabel();
+    }
 
     /**
      * 表单定义（内容 Tab + SEO + 图片 + 标签 + 发布置顶）
@@ -81,8 +96,22 @@ class SiteSolutionResource extends Resource
                             ->maxLength(100),
                         Toggle::make('is_featured')
                             ->label('置顶/精选'),
+                        TextInput::make('sort')
+                            ->label('排序权重')
+                            ->numeric()
+                            ->default(0)
+                            ->helperText('列表页先按它升序排，同值再按发布时间倒序。想把某条钉在最前面就填负数'),
+                        Select::make('status')
+                            ->label('发布状态')
+                            ->options(PageStatus::options())
+                            ->default(PageStatus::DRAFT->value)
+                            ->required()
+                            ->native(false)
+                            ->live()
+                            ->helperText('选「定时发布」并填写下方发布时间，到点后前台自动可见，无需队列或定时任务'),
                         DateTimePicker::make('published_at')
-                            ->label('发布时间（留空=草稿）'),
+                            ->label('发布时间（留空=草稿）')
+                            ->required(fn (Get $get): bool => $get('status') === PageStatus::SCHEDULED->value),
                     ]),
                     Tab::make('内容')->schema([
                         TextInput::make('title_zh')
@@ -113,7 +142,9 @@ class SiteSolutionResource extends Resource
                             ->collection('cover')
                             ->disk($defaultDisk)
                             ->image()
-                            ->imageEditor(),
+                            ->imageEditor()
+                            ->imageEditorAspectRatios(['4:3'])
+                            ->helperText('建议不小于 1200×900，比例 4:3。裁剪框内就是最终构图，系统只做等比缩放、不再自动裁切；详情页顶部大图会另裁一版 1.91:1，主体请留在画面中部。'),
                     ]),
                 ])
                 ->columnSpanFull(),
@@ -136,14 +167,15 @@ class SiteSolutionResource extends Resource
                     ->label('标题')
                     ->searchable()
                     ->limit(30),
-                IconColumn::make('is_published')
+                TextColumn::make('status')
                     ->label('状态')
-                    ->getStateUsing(fn (SiteSolution $record): bool => $record->published_at !== null && $record->published_at <= now())
-                    ->boolean()
-                    ->trueColor('success')
-                    ->falseColor('gray')
-                    ->trueIcon('heroicon-o-check-circle')
-                    ->falseIcon('heroicon-o-clock'),
+                    ->badge()
+                    ->formatStateUsing(fn (mixed $state): string => $state instanceof PageStatus
+                        ? $state->label()
+                        : (string) (PageStatus::tryFrom((string) $state)?->label() ?? $state))
+                    ->color(fn (mixed $state): string => $state instanceof PageStatus
+                        ? $state->color()
+                        : (PageStatus::tryFrom((string) $state)?->color() ?? 'gray')),
                 IconColumn::make('is_featured')
                     ->label('置顶')
                     ->boolean()
@@ -157,6 +189,9 @@ class SiteSolutionResource extends Resource
             ])
             ->filters([
                 TrashedFilter::make(),
+                SelectFilter::make('status')
+                    ->label('状态')
+                    ->options(PageStatus::options()),
             ])
             ->recordActions([
                 EditAction::make(),
@@ -178,6 +213,18 @@ class SiteSolutionResource extends Resource
     }
 
     /**
+     * 关系管理器（批次 1.5c 版本历史）
+     *
+     * @return array<int, mixed>
+     */
+    public static function getRelations(): array
+    {
+        return [
+            RevisionsRelationManager::class,
+        ];
+    }
+
+    /**
      * 路由页面映射
      *
      * @return array<string, mixed>
@@ -185,9 +232,9 @@ class SiteSolutionResource extends Resource
     public static function getPages(): array
     {
         return [
-            'index'  => ListSiteSolutions::route('/'),
+            'index' => ListSiteSolutions::route('/'),
             'create' => CreateSiteSolution::route('/create'),
-            'edit'   => EditSiteSolution::route('/{record}/edit'),
+            'edit' => EditSiteSolution::route('/{record}/edit'),
         ];
     }
 

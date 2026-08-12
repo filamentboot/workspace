@@ -12,15 +12,35 @@ use Filamentboot\FilamentbootSite\Cms\Blocks\HeroBlock;
 use Filamentboot\FilamentbootSite\Cms\Blocks\MapBlock;
 use Filamentboot\FilamentbootSite\Cms\Blocks\MediaTextBlock;
 use Filamentboot\FilamentbootSite\Cms\Blocks\RichContentBlock;
+use Filamentboot\FilamentbootSite\Cms\Blocks\RoadmapBlock;
+use Filamentboot\FilamentbootSite\Cms\ContentTypes\BuiltinContentTypes;
+use Filamentboot\FilamentbootSite\Cms\ContentTypes\ContentTypeRegistry;
+use Filamentboot\FilamentbootSite\Cms\ContentTypes\FieldTypeRegistry;
+use Filamentboot\FilamentbootSite\Cms\ContentTypes\FieldTypes\BooleanFieldType;
+use Filamentboot\FilamentbootSite\Cms\ContentTypes\FieldTypes\DateFieldType;
+use Filamentboot\FilamentbootSite\Cms\ContentTypes\FieldTypes\ImageFieldType;
+use Filamentboot\FilamentbootSite\Cms\ContentTypes\FieldTypes\NumberFieldType;
+use Filamentboot\FilamentbootSite\Cms\ContentTypes\FieldTypes\RichTextFieldType;
+use Filamentboot\FilamentbootSite\Cms\ContentTypes\FieldTypes\SelectFieldType;
+use Filamentboot\FilamentbootSite\Cms\ContentTypes\FieldTypes\TextareaFieldType;
+use Filamentboot\FilamentbootSite\Cms\ContentTypes\FieldTypes\TextFieldType;
+use Filamentboot\FilamentbootSite\Cms\ContentTypes\FieldTypes\UrlFieldType;
 use Filamentboot\FilamentbootSite\Cms\Models\SitePage;
-use Filamentboot\FilamentbootSite\Cms\Observers\SitePageObserver;
+use Filamentboot\FilamentbootSite\Cms\Observers\ContentRevisionObserver;
 use Filamentboot\FilamentbootSite\Cms\Routing\SiteRedirectMiddleware;
+use Filamentboot\FilamentbootSite\Console\Commands\CrawlerStatsCommand;
+use Filamentboot\FilamentbootSite\Console\Commands\ImportRegionsCommand;
+use Filamentboot\FilamentbootSite\Console\Commands\PublishCityPagesCommand;
 use Filamentboot\FilamentbootSite\Console\Commands\PushBaiduCommand;
+use Filamentboot\FilamentbootSite\Console\Commands\SyncContentTypesCommand;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Cases\Models\SiteCase;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Cities\Models\SiteCityPage;
+use Filamentboot\FilamentbootSite\Modules\Corporate\Packages\Models\SitePackage;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Products\Models\SiteProduct;
 use Filamentboot\FilamentbootSite\Modules\Corporate\Solutions\Models\SiteSolution;
 use Filamentboot\FilamentbootSite\Modules\News\Models\NewsArticle;
 use Filamentboot\FilamentbootSite\Observers\SearchPushObserver;
+use Filamentboot\FilamentbootSite\Services\ContactSourceLabel;
 use Filamentboot\FilamentbootSite\Settings\SiteSettings;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Contracts\View\View as ViewContract;
@@ -70,6 +90,12 @@ class SiteServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__.'/../config/filamentboot-site.php', 'filamentboot-site');
 
         $this->registerBlockRegistry();
+        $this->registerFieldTypeRegistry();
+        $this->registerContentTypeRegistry();
+
+        // 单例：内部按请求缓存区划名表。非单例的话后台询盘列表一页 25 行
+        // 就是 25 次全表查询（三期批次 8）
+        $this->app->singleton(ContactSourceLabel::class);
     }
 
     /**
@@ -96,7 +122,55 @@ class SiteServiceProvider extends ServiceProvider
                 new ContactFormBlock,
                 new MapBlock,
                 new GatedDownloadBlock,
+                new RoadmapBlock,
             ]);
+
+            return $registry;
+        });
+    }
+
+    /**
+     * 注册字段类型注册表（批次 5，可配置内容类型系统）
+     *
+     * 单例，同 BlockRegistry：既是查找表也是白名单。内置字段类型在此一次性
+     * 注册；宿主可在自己的 ServiceProvider::boot() 里用
+     * app(FieldTypeRegistry::class)->register(new MyFieldType) 追加自定义字段类型。
+     */
+    protected function registerFieldTypeRegistry(): void
+    {
+        $this->app->singleton(FieldTypeRegistry::class, function (): FieldTypeRegistry {
+            $registry = new FieldTypeRegistry;
+
+            $registry->registerMany([
+                new TextFieldType,
+                new TextareaFieldType,
+                new RichTextFieldType,
+                new NumberFieldType,
+                new BooleanFieldType,
+                new DateFieldType,
+                new SelectFieldType,
+                new ImageFieldType,
+                new UrlFieldType,
+            ]);
+
+            return $registry;
+        });
+    }
+
+    /**
+     * 注册内容类型注册表（批次 5，可配置内容类型系统）
+     *
+     * 单例，收集 ContentTypeDefinition 声明。内置友情链接、广告位两个内容类型
+     * （BuiltinContentTypes，批次 5 验收），宿主/包在自己的 ServiceProvider::boot()
+     * 里用 app(ContentTypeRegistry::class)->register(...) 可追加更多声明。
+     * SyncContentTypesCommand 与前台通用渲染器都读这份注册表。
+     */
+    protected function registerContentTypeRegistry(): void
+    {
+        $this->app->singleton(ContentTypeRegistry::class, function (): ContentTypeRegistry {
+            $registry = new ContentTypeRegistry;
+
+            $registry->registerMany(BuiltinContentTypes::all());
 
             return $registry;
         });
@@ -129,25 +203,28 @@ class SiteServiceProvider extends ServiceProvider
             $this->registerRedirectMiddleware();
         }
 
-        // 页面版本快照（#15）：与前台无关，插件禁用时后台仍在用，故不放进上面的分支
-        $this->registerPageRevisionObserver();
+        // 内容版本快照（#15，批次 1.5c 起覆盖全 7 类内容）：与前台无关，
+        // 插件禁用时后台仍在用，故不放进上面的分支
+        $this->registerContentRevisionObserver();
 
         // 无论启用与否，均注册迁移与视图发布
         $this->registerMigrationsAndViews();
 
-        // 控制台命令（存量内容回推）
+        // 控制台命令（存量内容回推、爬虫统计、区划导入）
         $this->registerCommands();
     }
 
     /**
      * 注册内容发布推送观察器（B4）
      *
-     * 五类内容共用一个观察器：它只关心「发布状态变了没有」与「现在可见吗」，
-     * 后者回查各模型自己的 published() 作用域，不需要按模型分支。
+     * 七类内容共用一个观察器：它只关心「发布状态变了没有」与「现在可见吗」，
+     * 后者回查各模型自己的 published() 作用域。⚠️ 2026-08-11 补上 SiteCityPage——
+     * 此前这份清单历史上漏过它。它没有 slug 列，URL 形状与其余六类不同，
+     * SearchPushObserver 内部按模型类型单独分支处理，不是「不需要按模型分支」。
      */
     protected function registerSearchPushObserver(): void
     {
-        foreach ([SiteCase::class, SiteSolution::class, SiteProduct::class, SitePage::class, NewsArticle::class] as $model) {
+        foreach ([SiteCase::class, SiteSolution::class, SitePackage::class, SiteProduct::class, SitePage::class, NewsArticle::class, SiteCityPage::class] as $model) {
             $model::observe(SearchPushObserver::class);
         }
     }
@@ -170,14 +247,20 @@ class SiteServiceProvider extends ServiceProvider
     }
 
     /**
-     * 注册页面版本快照观察器（#15）
+     * 注册内容版本快照观察器（#15，批次 1.5c 起覆盖全部 7 类内容）
      *
      * 走 Observer 而不是 Filament 钩子：钩子只覆盖后台表单，Observer 连 seeder、
      * tinker、状态流转 Action 与未来的 API 一起覆盖。
+     *
+     * 与 registerSearchPushObserver() 同一个模式，但这里显式列全 7 类
+     * （含 SiteCityPage）——那份清单历史上漏过 SiteCityPage，这里不照抄，
+     * 单独维护一份完整的。
      */
-    protected function registerPageRevisionObserver(): void
+    protected function registerContentRevisionObserver(): void
     {
-        SitePage::observe(SitePageObserver::class);
+        foreach ([SitePage::class, SiteCase::class, NewsArticle::class, SiteSolution::class, SiteProduct::class, SitePackage::class, SiteCityPage::class] as $model) {
+            $model::observe(ContentRevisionObserver::class);
+        }
     }
 
     /**
@@ -191,6 +274,10 @@ class SiteServiceProvider extends ServiceProvider
 
         $this->commands([
             PushBaiduCommand::class,
+            CrawlerStatsCommand::class,
+            ImportRegionsCommand::class,
+            PublishCityPagesCommand::class,
+            SyncContentTypesCommand::class,
         ]);
     }
 
@@ -262,7 +349,42 @@ class SiteServiceProvider extends ServiceProvider
 
         $this->callAfterResolving('view', function ($view) use ($paths): void {
             $view->replaceNamespace(self::VIEW_NAMESPACE, $paths);
+
+            $this->registerThemeErrorViews($paths);
         });
+    }
+
+    /**
+     * 让框架的错误页解析到主题里的 errors/
+     *
+     * 两套主题各带一份 `errors/404.blade.php`，但**从来没被渲染过**：框架的
+     * `RegisterErrorViewPaths` 在渲染 HttpException 时会把 `errors` 命名空间
+     * 重置成 `config('view.paths')` 逐个拼 `/errors` 再加框架自带那份，
+     * 命名空间视图（`filamentboot-site::errors.404`）根本不在候选里。
+     * 于是任何 404 都落到框架那张白底 "Not Found" ——写好的 404 页是死代码。
+     *
+     * 修法是把主题目录**追加**进 `config('view.paths')`：
+     *
+     * - 追加而不是前插，宿主自己的 `resources/views/errors/404.blade.php`
+     *   仍然优先，覆盖能力不变
+     * - 在 `callAfterResolving('view')` 里改，此时视图查找器已经拿着自己那份
+     *   路径数组建好了，改 config 只影响错误页解析这一处，不会让主题里的
+     *   其它视图变成可以不带命名空间直接引用
+     * - 只在插件启用时调用（调用方在启用分支内），禁用时宿主保持框架默认行为
+     *
+     * @param  list<string>  $paths  主题视图路径，顺序同命名空间
+     */
+    protected function registerThemeErrorViews(array $paths): void
+    {
+        $viewPaths = (array) config('view.paths', []);
+
+        foreach ($paths as $path) {
+            if (! in_array($path, $viewPaths, true) && is_dir($path.'/errors')) {
+                $viewPaths[] = $path;
+            }
+        }
+
+        config(['view.paths' => $viewPaths]);
     }
 
     /**

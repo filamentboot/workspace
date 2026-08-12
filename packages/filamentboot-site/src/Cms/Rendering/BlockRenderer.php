@@ -44,11 +44,12 @@ class BlockRenderer
     /**
      * 从区块中提取结构化数据节点（B1 的 FAQPage 部分，由 #13 承接）
      *
-     * 目前只有 faq 区块产出节点。FaqBlock 的答案本就存纯文本（见该类注释），
-     * 结构化数据里带 HTML 标签会被搜索引擎判为无效，因此不做任何转义外的处理。
+     * 七期批次 1 起不再硬编码只认 faq——改成调每个区块自己的
+     * BlockContract::structuredData()（默认实现返回 null），新增一个也想
+     * 贡献结构化数据的区块只需要改自己的类，不用回来改这个渲染器。
      *
-     * 返回列表而非单节点：一页可以放多个 FAQ 区块，也为日后其它区块贡献
-     * 自己的节点类型留口子。调用方并入 $seoData['jsonLd']（已支持节点列表）。
+     * 返回列表而非单节点：一页可以放多个产出节点的区块，也可以是同一区块
+     * 出多个节点。调用方并入 $seoData['jsonLd']（已支持节点列表）。
      *
      * @param  array<int, mixed>|null  $blocks
      * @return list<array<string, mixed>>
@@ -58,11 +59,13 @@ class BlockRenderer
         $nodes = [];
 
         foreach ($this->normalize($blocks) as $entry) {
-            if ($entry['type'] !== 'faq') {
+            $block = $this->registry->get($entry['type']);
+
+            if ($block === null) {
                 continue;
             }
 
-            $node = $this->faqNode($entry['data']);
+            $node = $block->structuredData($entry['data']);
 
             if ($node !== null) {
                 $nodes[] = $node;
@@ -146,57 +149,5 @@ class BlockRenderer
         }
 
         return $entries;
-    }
-
-    /**
-     * 单个 faq 区块转 schema.org FAQPage 节点
-     *
-     * 问答不完整（缺问或缺答）的条目跳过；一条都不剩则整个节点不输出——
-     * 空 mainEntity 的 FAQPage 会被 Search Console 报为无效结构化数据。
-     *
-     * @param  array<string, mixed>  $data
-     * @return array<string, mixed>|null
-     */
-    protected function faqNode(array $data): ?array
-    {
-        $items = $data['items'] ?? [];
-
-        if (! is_array($items)) {
-            return null;
-        }
-
-        $entities = [];
-
-        foreach ($items as $item) {
-            if (! is_array($item)) {
-                continue;
-            }
-
-            $question = trim((string) ($item['question'] ?? ''));
-            $answer   = trim((string) ($item['answer'] ?? ''));
-
-            if ($question === '' || $answer === '') {
-                continue;
-            }
-
-            $entities[] = [
-                '@type'          => 'Question',
-                'name'           => $question,
-                'acceptedAnswer' => [
-                    '@type' => 'Answer',
-                    'text'  => $answer,
-                ],
-            ];
-        }
-
-        if ($entities === []) {
-            return null;
-        }
-
-        return [
-            '@context'   => 'https://schema.org',
-            '@type'      => 'FAQPage',
-            'mainEntity' => $entities,
-        ];
     }
 }

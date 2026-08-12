@@ -15,7 +15,6 @@ use Illuminate\Support\Carbon;
  *
  * @property int $id
  * @property string $name_zh
- * @property string|null $name_en
  * @property string $slug
  * @property int|null $parent_id
  * @property int $sort

@@ -1,0 +1,15 @@
+<?php
+
+namespace {{ namespace }};
+
+use Filamentboot\Policies\BasePolicy;
+
+/**
+ * {{ model }} 权限策略
+ *
+ * 继承 BasePolicy，自动推导权限点：
+ * - view_any_{{ resourceName }} / view_{{ resourceName }}
+ * - create_{{ resourceName }} / update_{{ resourceName }} / delete_{{ resourceName }}
+ * - restore_{{ resourceName }} / force_delete_{{ resourceName }}
+ */
+class {{ class }} extends BasePolicy {}

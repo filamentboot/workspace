@@ -27,7 +27,6 @@ class SiteProductCategoryFactory extends Factory
 
         return [
             'name_zh'   => $nameZh,
-            'name_en'   => $this->faker->words(2, true),
             'slug'      => Str::slug($nameZh).'-'.$this->faker->unique()->numberBetween(1, 9999),
             'parent_id' => null,
             'sort'      => $this->faker->numberBetween(0, 100),

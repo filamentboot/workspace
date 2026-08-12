@@ -89,8 +89,12 @@
                     this.filename = payload.filename ?? '';
                     this.form = { name: '', phone: '', message: '', website: '', extra: { ...this.extraBlank } };
 
-                    // A3：统计侧监听这个事件上报转化
-                    window.dispatchEvent(new Event('site-contact-submitted'));
+                    // A3：统计侧监听这个事件上报转化。
+                    // detail 里带上来源，统计后台才分得清转化来自哪个入口——
+                    // 只报「有人提交了」的话，站上十几个 CTA 的效果一个都比不出来。
+                    window.dispatchEvent(new CustomEvent('site-contact-submitted', {
+                        detail: { source: this.source() },
+                    }));
 
                     return;
                 }
@@ -124,7 +128,7 @@
             <template x-if="download">
                 <a :href="download"
                    class="btn-site-primary inline-flex items-center justify-center gap-2 min-h-[44px] mt-6 px-6 py-3 rounded-xl font-bold text-base
-                          focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:outline-none"
+                          focus-visible:ring-2 focus-visible:ring-(--color-primary) focus-visible:outline-none"
                    target="_blank" rel="noopener">
                     <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
@@ -158,8 +162,12 @@
                 class="w-full bg-site-base border border-site rounded-xl px-4 py-2 text-site-primary
                        placeholder:text-site-muted text-base min-h-[44px]
                        focus:outline-none focus:border-site-glow focus:ring-1"
-                :class="error('name') && 'border-[--color-destructive]'"
-                style="--tw-ring-color: rgba(0, 212, 255, 0.3);"
+                :class="error('name') && 'border-(--color-destructive)'"
+                {{-- 焦点环取主题主色而非硬编码。原值 rgba(0, 212, 255, 0.3) 是
+                     decoration 深色时代的亮青，本文件却是跨主题共享的：硬编码在
+                     decoration 改浅色后在白底上几乎看不见（焦点指示器需要 3:1），
+                     换个主题配色更是直接对不上。 --}}
+                style="--tw-ring-color: var(--color-primary);"
                 placeholder="请输入您的姓名"
                 aria-required="true">
             <template x-if="error('name')">
@@ -180,7 +188,7 @@
                 class="w-full bg-site-base border border-site rounded-xl px-4 py-2 text-site-primary
                        placeholder:text-site-muted text-base min-h-[44px]
                        focus:outline-none focus:border-site-glow focus:ring-1"
-                :class="error('phone') && 'border-[--color-destructive]'"
+                :class="error('phone') && 'border-(--color-destructive)'"
                 placeholder="请输入联系电话"
                 aria-required="true">
             <template x-if="error('phone')">
@@ -244,7 +252,7 @@
                 class="w-full bg-site-base border border-site rounded-xl px-4 py-2 text-site-primary
                        placeholder:text-site-muted text-base
                        focus:outline-none focus:border-site-glow focus:ring-1"
-                :class="error('message') && 'border-[--color-destructive]'"
+                :class="error('message') && 'border-(--color-destructive)'"
                 placeholder="请简要描述您的需求（选填）"></textarea>
             <template x-if="error('message')">
                 <span class="mt-1 text-xs block" style="color: var(--color-destructive);" role="alert" x-text="error('message')"></span>
@@ -255,7 +263,7 @@
         <button
             type="submit"
             class="btn-site-primary w-full inline-flex items-center justify-center gap-2 min-h-[44px] py-4 rounded-xl font-bold text-base
-                   focus-visible:ring-2 focus-visible:ring-[--color-primary] focus-visible:ring-offset-2 focus-visible:ring-offset-[--color-bg-surface] focus-visible:outline-none"
+                   focus-visible:ring-2 focus-visible:ring-(--color-primary) focus-visible:ring-offset-2 focus-visible:ring-offset-(--color-bg-surface) focus-visible:outline-none"
             :disabled="sending"
             :class="sending && 'opacity-70 cursor-not-allowed'">
             <template x-if="sending">

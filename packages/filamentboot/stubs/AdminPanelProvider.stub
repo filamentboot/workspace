@@ -26,7 +26,9 @@ use Illuminate\View\Middleware\ShareErrorsFromSession;
  * 管理员面板服务提供者（由 filamentboot:install 生成）
  *
  * 最简化配置：注册 FilamentbootPlugin 核心插件，使用 admin guard。
- * 如需扩展（Shield / 2FA / ActivityLog），请参阅文档后手动添加插件。
+ * 插件管理 Resource、插件市场页、2FA / 角色权限（Shield） / 操作日志三个面板插件、
+ * 按 plugins.is_enabled 动态挂载第三方插件，均已收进 FilamentbootPlugin::register()，
+ * 随这一行 ->plugin(FilamentbootPlugin::make()) 自动生效，无需在本文件里额外配置。
  */
 class AdminPanelProvider extends PanelProvider
 {

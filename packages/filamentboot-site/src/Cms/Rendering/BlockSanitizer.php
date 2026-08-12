@@ -2,25 +2,25 @@
 
 namespace Filamentboot\FilamentbootSite\Cms\Rendering;
 
-use Filamentboot\FilamentbootSite\Support\RichText;
+use Filamentboot\FilamentbootSite\Cms\Blocks\BlockRegistry;
 
 /**
  * 区块 payload 保存侧净化（#13）
  *
  * 由 SitePageResource 的 mutateFormDataBeforeCreate/Save 调用，
- * 对 rich-content 区块的 content 跑一遍富文本白名单。
+ * 对每个区块调它自己的 BlockContract::sanitize()（七期批次 1 起——此前
+ * 硬编码只认 rich-content，新增一个含 HTML 字段的区块得回来改这个类；
+ * 现在只需要改自己的区块类，默认实现（AbstractBlock）原样放行）。
  *
  * 渲染侧（区块视图里的 RichText::purify()）已经过一遍，这里再过是有意重复：
  * 只在渲染侧过，数据库里就一直躺着未净化的 HTML，任何绕过前台视图的出口
  * （API、导出、日后的搜索索引）都会把它原样带出去。保存侧过一遍等于让
  * 存量数据随每次编辑逐步被治理。
- *
- * content 是页面里唯一允许 HTML 的字段（见 RichContentBlock 的类注释），
- * 因此这里只处理它——其余字段在视图侧一律 {{ }} 转义，不需要也不应该
- * 在保存时改写作者输入。
  */
 class BlockSanitizer
 {
+    public function __construct(protected BlockRegistry $registry) {}
+
     /**
      * 净化整页区块 payload
      *
@@ -45,20 +45,27 @@ class BlockSanitizer
     /**
      * 净化单个区块条目
      *
+     * 未注册的区块 type 原样放行——净化不是白名单校验（那是 BlockRenderer
+     * 渲染时的事），遇到不认识的 key 在这里拦下来只会让保存流程凭空报错。
+     *
      * @param  array<string, mixed>  $block
      * @return array<string, mixed>
      */
     protected function sanitizeOne(array $block): array
     {
-        if (($block['type'] ?? null) !== 'rich-content') {
+        $type = $block['type'] ?? null;
+
+        if (! is_string($type)) {
             return $block;
         }
 
-        if (! is_array($block['data'] ?? null) || ! isset($block['data']['content'])) {
+        $definition = $this->registry->get($type);
+
+        if ($definition === null || ! is_array($block['data'] ?? null)) {
             return $block;
         }
 
-        $block['data']['content'] = RichText::purify((string) $block['data']['content']);
+        $block['data'] = $definition->sanitize($block['data']);
 
         return $block;
     }

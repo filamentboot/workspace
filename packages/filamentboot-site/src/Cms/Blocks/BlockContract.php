@@ -82,4 +82,33 @@ interface BlockContract
      * 后台改了默认磁盘不会出现「上传到 A、前台从 B 读」的错位。
      */
     public function disk(): string;
+
+    /**
+     * 从本区块的一条 payload 提取结构化数据节点（七期批次 1 从 BlockRenderer 下沉）
+     *
+     * 此前这段逻辑硬编码在 `BlockRenderer::structuredData()` 里，只认
+     * `type === 'faq'`——新增一个也想贡献结构化数据的区块，得回去改渲染器，
+     * 而不是只改自己的类。默认实现（AbstractBlock）返回 null：多数区块
+     * 不产出结构化数据，不用每个区块都重复写一遍空实现。
+     *
+     * 不完整/不合规的数据（比如问答不全）应返回 null 而不是抛异常——
+     * 结构化数据是锦上添花，不该让一条脏数据把整页渲染打断。
+     *
+     * @param  array<string, mixed>  $data  区块 data 部分（未经 withDefaults()）
+     * @return array<string, mixed>|null schema.org 节点，无节点可产出时返回 null
+     */
+    public function structuredData(array $data): ?array;
+
+    /**
+     * 保存前净化本区块的 payload（七期批次 1 从 BlockSanitizer 下沉）
+     *
+     * 此前这段逻辑硬编码在 `BlockSanitizer::sanitizeOne()` 里，只认
+     * `type === 'rich-content'`——新增一个含 HTML 字段的区块，得回去改净化器，
+     * 而不是只改自己的类。默认实现（AbstractBlock）原样返回：多数区块的
+     * 字段在渲染侧一律 {{ }} 转义，不需要保存时净化。
+     *
+     * @param  array<string, mixed>  $data  区块 data 部分
+     * @return array<string, mixed> 净化后的 data，形状必须与输入一致
+     */
+    public function sanitize(array $data): array;
 }

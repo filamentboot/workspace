@@ -1,0 +1,463 @@
+/**
+ * 两套主题共享的 CSS 定义（design token + 语义类 + .prose 排版）
+ *
+ * ⚠️ 七期批次 1（2026-08-11）实测：decoration.css 与 software.css 除了
+ * 注释里互换主题名之外**逐字节相同**——不是"两套需要共享的主题"，是同一份
+ * 文件被复制了两份，且复制品之间已经零漂移。构建产物层面这早就是既成事实：
+ * Vite/Rollup 按内容哈希去重，两份源码此前编译出来的就已经是**同一个物理文件**
+ * （manifest.json 里 decoration.css 与 software.css 两个 key 一直指向同一个
+ * `assets/decoration-*.css`）。这份文件把源码层面也理顺，不改变任何产物。
+ *
+ * `decoration.css` / `software.css` 各自只剩一行 `@import './shared.css'`，
+ * 仍然各自是独立的 Vite 入口——两套主题各自完整的约定在**入口文件数量**上
+ * 没有变，变的只是内容不再物理复制。真要让两套主题在这一层出现差异（比如
+ * 换配色而不换版式），在各自的入口文件里 `@import` 完共享文件之后
+ * 追加覆盖 `@theme` 的具体 token 即可，不需要先跟这份文件解耦。
+ *
+ * 浏览器基线、用色纪律、各 token 取值理由，见文件末尾附注与两个入口文件的
+ * 文件头注释。
+ *
+ * ## 浏览器基线
+ *
+ * **Chrome / Chromium 内核 111+、iOS Safari 15.4+**，这是本主题保证如设计渲染的下限。
+ *
+ * 下限不是拍的，是 Tailwind v4 自己的地板：产物整个包在 `@layer theme/base/
+ * components/utilities` 里，而**级联层要 Chrome 99 / Safari 15.4 / Firefox 97**，
+ * 低于这条线的浏览器会把整份样式表当不认识的 at-rule 跳过——**页面完全无样式**，
+ * 不是"某处颜色不对"。Tailwind v4 不生成非 layer 的回退产物，这一段在 v4 架构下
+ * 无解（真要救只能降 v3 或加一层 postcss-cascade-layers）。
+ *
+ * Chrome 99–110 / iOS 15.4–16.1 这一档版式是好的，但下面这些特性会被丢：
+ *
+ * | 特性 | 门槛 | 本主题的处置 |
+ * |---|---|---|
+ * | `@layer` | Chrome 99 / Safari 15.4 | 地板，见上 |
+ * | `color-mix()` | Chrome 111 / Safari 16.2 | **不用**，半透明一律走 bg-site-*-NN |
+ * | `oklch()` | Chrome 111 / Safari 15.4 | **不用**，token 全是 hex；`source(none)` 挡掉默认调色板 |
+ * | `dvh` | Chrome 108 / Safari 15.4 | min-h-site-screen* 同一规则里带 vh 回退 |
+ * | `@property` | Chrome 85 / Safari 16.4 | Tailwind 自己发的，缺了只影响过渡动画 |
+ *
+ * 这一档正是**微信 Android 的 XWeb 长期停留的位置**（Chromium 107 一档）与
+ * iOS 15.4–16.1，对 to C 站点不是边角流量，所以上表第 2~4 行是硬要求。
+ *
+ * 自查（应无输出，两个入口各自的产物都要查）：
+ *   grep -n 'color-mix\|oklch' public/build/assets/decoration-*.css public/build/assets/software-*.css
+ */
+
+/* `source(none)` 关掉 Tailwind 的自动内容探测，扫描范围只认下面的 @source。
+ *
+ * 不关的后果不是「多扫几个文件」而是**整个宿主项目都被扫进前台产物**：
+ * 自动探测的基准目录是 Vite root，于是 Filament 后台视图、welcome.blade.php、
+ * 连 storage/framework/views/ 的编译缓存都算内容源。实测本主题产物里因此带上了
+ * `.ring-gray-950/5` 这类只有后台在用的类，以及 **Tailwind 默认调色板 242 个
+ * `oklch()` token 定义**——前台一个都用不上，却让老 WebView 的兼容排查
+ * 每次都要先分辨哪些是真用到的。
+ *
+ * 顺带解决 CLAUDE.md 记的那个坑：改完视图不 view:clear 就 build，
+ * 旧类名会从编译缓存里被捞回 CSS。扫描范围收紧之后这条路径不存在了。
+ *
+ * ⚠️ @source 的相对路径是相对**引用它的这份文件**（shared.css）算的，
+ * 与 decoration.css / software.css 同目录，所以路径写法不变。 */
+@import 'tailwindcss' source(none);
+
+/* Pitfall 5 防 purge：扫描包内主题视图、跨主题共享视图与宿主发布后的视图。
+   ⚠️ 上面关了自动探测，**新增视图目录必须在这里登记**，否则类名静默消失。 */
+@source '../../views/themes/**/*.blade.php';
+@source '../../views/shared/**/*.blade.php';
+@source '../../views/livewire/**/*.blade.php';
+@source '../../../../../../resources/views/vendor/filamentboot-site/**/*.blade.php';
+
+@theme {
+    /* === 浅色 · 中性灰 + 单一强调色 ===
+       用色纪律：**全站只有一个强调色**（--color-primary），其余一律中性灰。
+       深蓝的"高级感"不来自色值本身，来自大面积平涂 + 大量留白 + 不引第二个
+       彩色。往里加第二个强调色，这套东西立刻就散。 */
+
+    /* 背景层（60% 主色调）
+       中性灰阶，取自 Material grey（小米官网用的就是这一套：#fafafa / #757575）。
+       原先用的是冷调偏蓝的灰（#f4f8fd / #e9f1fa），那个蓝底是"clinical、机房"
+       观感的来源；改中性之后，唯一的颜色就只剩下强调色本身。
+       由浅到深：base → subtle → surface → elevated，与原深色版的层级顺序一致。 */
+    --color-bg-base:       #ffffff;
+    --color-bg-surface:    #f5f5f5;
+    --color-bg-elevated:   #eeeeee;
+    --color-bg-subtle:     #fafafa;
+
+    /* 上面两个背景色的通道分量，供下面 bg-site-*-NN 那批半透明工具类使用。
+       为什么不直接 color-mix()：它要 Chrome 111 / Safari 16.2，低于门槛时
+       **整条声明被丢弃**——固定导航条会变成完全透明。见文件头「浏览器基线」。
+       ⚠️ 改上面的 hex 必须同步改这两行。对不上不报错、不告警，只是老浏览器
+       上的半透明底色跟新浏览器不是一个颜色。 */
+    --site-bg-base-rgb:    255 255 255;  /* = #ffffff */
+    --site-bg-surface-rgb: 245 245 245;  /* = #f5f5f5 */
+
+    /* 遮罩底色的通道分量。用纯黑：抽屉 / 弹层背后的页面要被压暗，
+       这一层刻意不跟主题背景色走（浅色主题里用浅色遮罩等于没遮）。 */
+    --site-scrim-rgb:      0 0 0;        /* = #000000 */
+
+    /* 边框 */
+    --color-border:        #e0e0e0;
+    /* hover / focus 态高亮边框。必须比 --color-border 更显眼，否则 hover 反而
+       "变弱"。取主色的半透明，不引新色相。 */
+    --color-border-glow:   #002FA755;
+
+    /* 主品牌色 — 克莱因蓝（International Klein Blue，通行近似值 #002FA7）
+       选它的实际理由是**一档通吃**，不必像亮色那样拆成"填充档"和"文字档"：
+         · 当文字            白底 10.69:1（过 AAA 7:1）
+         · 当焦点环 / 激活边框 10.69:1（远超非文字 3:1）
+         · 平涂 CTA 压白字    10.69:1
+       最坏情况（对最暗背景 #eeeeee）仍有 9.21:1。
+       对比一下被否掉的两个候选：亮青 #00d4ff 白底仅 1.77:1，连 3:1 都不到；
+       小米橙 #ff6900 白底 2.89:1，压白字同样不达标（小米官网自己也没解决）。
+       另一条理由与本站内容有关：案例与产品图是暖调的（木色、布艺、暖光），
+       暖色强调会和照片混在一起失去强调作用，深蓝能从暖调照片里跳出来。 */
+    --color-primary:       #002FA7;
+    --color-primary-dim:   #0A2A8C;  /* 最低 10.51:1，用于 hover */
+    --color-primary-glow:  rgba(0, 47, 167, 0.08);
+
+    /* 点缀色。**当前全仓库无引用，刻意不启用**——见文件头的用色纪律：
+       这套配色只允许一个强调色。留着定义是为了不破坏 token 契约，
+       要用之前先想清楚它凭什么存在。 */
+    --color-accent:        #002FA7;
+    --color-accent-dim:    #0A2A8C;
+
+    /* 原有 --color-gradient-start / -end 已删除。
+       它们唯一的消费者是 .btn-site-primary 的 linear-gradient，而"预约咨询"
+       按钮正是因为那个亮青→亮蓝的双色渐变才显得抢眼。CTA 已改纯色平涂
+       （小米、苹果和多数正经站点都是平涂），渐变 token 随之失去消费者。 */
+
+    /* 文本
+       比值按 WCAG 2.1 相对亮度算，取的都是最坏情况——深色文字对最暗的背景，
+       也就是 --color-bg-elevated (#eeeeee)。取值不得再调浅。
+       注意：小米那套灰阶不能照抄——它的 #757575 在 #eeeeee 上只有 3.97:1、
+       #b0b0b0 只有 2.17:1，两个都不达标。这里取的是比它深一档的值。 */
+    --color-text-primary:   #212121;  /* 最低 13.88:1（bg-elevated） */
+    --color-text-secondary: #616161;  /* 最低  5.34:1（bg-elevated） */
+    --color-text-muted:     #6b6b6b;  /* 最低  4.59:1（bg-elevated） */
+    --color-text-accent:    #002FA7;  /* 最低  9.21:1（bg-elevated） */
+
+    /* 语义状态色
+       全部取深两档：原来的 #ef4444 / #22c55e / #f59e0b 在浅底上分别只有
+       3.30 / 2.00 / 1.88:1。destructive 与 success 是 shared/components/
+       contact-form.blade.php 里的表单校验提示文字，属关键信息，必须过 AA。
+       主色是蓝色，所以这三个暖色语义色与它天然可区分，不会误读。 */
+    --color-destructive:    #b91c1c;  /* 最低 5.58:1（bg-elevated） */
+    --color-success:        #166534;  /* 最低 6.15:1（bg-elevated） */
+    --color-warning:        #92400e;  /* 最低 6.11:1（bg-elevated） */
+
+    /* 字体 */
+    --font-sans: 'Inter', 'Noto Sans SC', ui-sans-serif, system-ui, -apple-system, sans-serif;
+    --font-mono: ui-monospace, 'SFMono-Regular', monospace;
+
+    /* 间距缩放（4px 倍数） */
+    --spacing-1:  4px;
+    --spacing-2:  8px;
+    --spacing-4:  16px;
+    --spacing-6:  24px;
+    --spacing-8:  32px;
+    --spacing-12: 48px;
+    --spacing-20: 80px;
+    --spacing-32: 128px;
+}
+
+/* 语义类：**必须用 `@utility` 声明，不能包在 utilities 层里手写普通规则**
+ *
+ * 这是「类名在、样式一条都没生成」那一族的第三种，同样不报错、不告警：
+ * 手写进那一层的只是**一条普通 CSS 规则**，Tailwind 并不知道
+ * 它是个工具类，于是 `hover:` / `focus:` / `md:` 这些变体一律生成不出来——
+ * 类名照样出现在 HTML 里，产物里却连规则都没有。
+ *
+ * 2026-08-07 实测：两套主题共 **86 处** `hover:{bg,text,border}-site-*`，
+ * 产物里 **0 条对应规则**。表现是全站所有次级链接、筛选按钮、分页按钮
+ * **hover 没有任何反馈**——不是颜色不对，是压根没变化。
+ * （用 `@utility` 声明后变体才被注册，同一批类名立即生效。）
+ *
+ * 相邻的两个坑见根 CLAUDE.md：`[--var]` 简写已在 v4 移除、
+ * 这一族语义类不吃斜杠透明度。三个是同一件事的不同面：
+ * **Tailwind 不认识的东西，写错了只会静默消失。** */
+
+/* 背景 */
+@utility bg-site-base     { background-color: var(--color-bg-base); }
+@utility bg-site-surface  { background-color: var(--color-bg-surface); }
+@utility bg-site-elevated { background-color: var(--color-bg-elevated); }
+@utility bg-site-subtle   { background-color: var(--color-bg-subtle); }
+
+/* 半透明背景（磨砂面板、固定条、图上遮罩）
+ *
+ * 这一批取代了原先散在视图 style="" 里的 27 处内联 `color-mix(in srgb, …)`。
+ * 换掉的理由是浏览器门槛：`color-mix()` 要 Chrome 111 / Safari 16.2，
+ * 低于门槛**整条声明被丢弃**——固定导航条、移动端底部操作条、图上文案面板
+ * 会变成完全透明，页面内容直接透过去。这正是 CLAUDE.md 记的那个坑，
+ * 只是触发条件从「写法错了」变成「浏览器旧了」。
+ * `rgb(<通道> / <alpha>)` 从 Chrome 65 / Safari 12.1 起就有，稳。
+ *
+ * 数值 = 原内联写法里的百分比，一个没改，观感与之前完全一致。
+ * 档位之间差 2%~5% 是历史遗留的设计噪声，本期不动它——统一档位是改设计，
+ * 不是改兼容性。 */
+@utility bg-site-base-35    { background-color: rgb(var(--site-bg-base-rgb) / 0.35); }
+@utility bg-site-base-45    { background-color: rgb(var(--site-bg-base-rgb) / 0.45); }
+@utility bg-site-base-85    { background-color: rgb(var(--site-bg-base-rgb) / 0.85); }
+@utility bg-site-base-90    { background-color: rgb(var(--site-bg-base-rgb) / 0.90); }
+@utility bg-site-base-92    { background-color: rgb(var(--site-bg-base-rgb) / 0.92); }
+@utility bg-site-base-94    { background-color: rgb(var(--site-bg-base-rgb) / 0.94); }
+@utility bg-site-surface-80 { background-color: rgb(var(--site-bg-surface-rgb) / 0.80); }
+@utility bg-site-surface-82 { background-color: rgb(var(--site-bg-surface-rgb) / 0.82); }
+@utility bg-site-surface-90 { background-color: rgb(var(--site-bg-surface-rgb) / 0.90); }
+@utility bg-site-surface-95 { background-color: rgb(var(--site-bg-surface-rgb) / 0.95); }
+
+/* 抽屉 / 弹层背板遮罩。原先写的是 `bg-black/40`、`bg-black/50`，
+   两个问题：一是 Tailwind 调色板色，把 `oklch()` token 拖进产物；
+   二是 shared/ 下的浮动咨询组件也在用它——一个主题的取色
+   泄漏进了两套主题共用的视图。改成语义类之后由各主题自己定遮罩色。 */
+@utility bg-site-scrim        { background-color: rgb(var(--site-scrim-rgb) / 0.40); }
+@utility bg-site-scrim-strong { background-color: rgb(var(--site-scrim-rgb) / 0.50); }
+
+/* 首屏高度：`dvh` 要 Chrome 108 / Safari 15.4，低于门槛整条 min-height 丢掉，
+   首屏塌成内容高度。
+   回退**必须包在 `@supports` 里，不能写成同一条规则里的两行 min-height**：
+   Tailwind v4 的 Lightning CSS 用的是它自己写死的目标（Chrome 111 / Safari 16.4），
+   不读 package.json 的 browserslist——在它看来 dvh 一定支持，于是把前面那条
+   `100vh` 当成冗余声明**直接删掉**，产物里只剩 dvh。2026-08-08 实测如此。
+   这又是一个「写了没报错、产物里没有」的静默失效，只是这次删它的是压缩器。 */
+@utility min-h-site-screen {
+    min-height: 100vh;
+
+    @supports (min-height: 100dvh) {
+        min-height: 100dvh;
+    }
+}
+
+/* 减掉 4rem 固定导航条的首屏高度，理由见 components/banner-hero.blade.php */
+@utility min-h-site-screen-nav {
+    min-height: calc(100vh - 4rem);
+
+    @supports (min-height: 100dvh) {
+        min-height: calc(100dvh - 4rem);
+    }
+}
+
+/* 文本 */
+@utility text-site-primary   { color: var(--color-text-primary); }
+@utility text-site-secondary { color: var(--color-text-secondary); }
+@utility text-site-muted     { color: var(--color-text-muted); }
+@utility text-site-accent    { color: var(--color-text-accent); }
+
+/* 边框 */
+@utility border-site      { border-color: var(--color-border); }
+@utility border-site-glow { border-color: var(--color-border-glow); }
+
+/* 按钮
+   纯色平涂，不用渐变。原本是 linear-gradient(135deg, 亮青, 亮蓝)——
+   两个高饱和色拼一起，"预约咨询"按钮因此过分抢眼。小米、苹果和多数正经
+   站点的主 CTA 都是平涂，最不吵也最清楚。
+   白字压克莱因蓝 10.69:1，过 AAA。 */
+@utility btn-site-primary {
+    background: var(--color-primary);
+    color: var(--color-bg-base);
+    font-weight: 700;
+}
+
+@utility btn-site-outline {
+    background: transparent;
+    border: 1px solid var(--color-border);
+    color: var(--color-text-primary);
+}
+
+/**
+ * .prose — 富文本正文排版
+ *
+ * 为什么必须手写：本项目没装 @tailwindcss/typography，而 Tailwind 的 preflight
+ * 把 h1~h6 的字号字重清成 inherit、ul/ol 的 list-style 清成 none、通配选择器
+ * 又把所有元素的 margin 清成 0。于是编辑在后台排好的正文，到前台是一坨等大、
+ * 无间距、无项目符号的文字——各详情页视图上那个 class="prose" 此前无人定义。
+ *
+ * 覆盖范围与 Support\RichText 的白名单对齐：白名单放行什么，这里就得有样式，
+ * 否则等于换一种方式丢版式（标签活着但看不出层级）。
+ */
+@layer components {
+    .prose {
+        line-height: 1.8;
+    }
+
+    /* 首尾元素不额外顶开容器，交给外层 spacing 决定 */
+    .prose > :first-child { margin-top: 0; }
+    .prose > :last-child  { margin-bottom: 0; }
+
+    .prose p {
+        margin-block: 1em;
+    }
+
+    /* 标题：字号自己给回来，preflight 已清成 inherit */
+    .prose h1,
+    .prose h2,
+    .prose h3,
+    .prose h4,
+    .prose h5,
+    .prose h6 {
+        color: var(--color-text-primary);
+        font-weight: 700;
+        line-height: 1.35;
+        margin-top: 2em;
+        margin-bottom: 0.8em;
+    }
+    .prose h1 { font-size: 1.75em; }
+    .prose h2 { font-size: 1.45em; }
+    .prose h3 { font-size: 1.2em; }
+    .prose h4,
+    .prose h5,
+    .prose h6 { font-size: 1.05em; }
+
+    /* h2 加一道品牌色左标，长文里层级更容易扫出来 */
+    .prose h2 {
+        border-left: 3px solid var(--color-primary);
+        padding-left: 0.6em;
+    }
+
+    /* 列表：符号与缩进都要显式给回 */
+    .prose ul,
+    .prose ol {
+        margin-block: 1em;
+        padding-left: 1.6em;
+    }
+    .prose ul { list-style: disc; }
+    .prose ol { list-style: decimal; }
+    .prose ul ul { list-style: circle; }
+    .prose li { margin-block: 0.4em; }
+    /* 编辑器把列表项内容包在 <p> 里，这层 p 不该再撑出段间距 */
+    .prose li > p { margin-block: 0; }
+
+    .prose a {
+        color: var(--color-text-accent);
+        text-decoration: underline;
+        text-underline-offset: 2px;
+    }
+    .prose a:hover { color: var(--color-primary-dim); }
+
+    .prose strong,
+    .prose b { color: var(--color-text-primary); font-weight: 700; }
+    .prose em,
+    .prose i { font-style: italic; }
+    .prose s,
+    .prose del { text-decoration: line-through; opacity: 0.7; }
+
+    /* 上下标：preflight 不管这两个，但字号需要压下去才不撑行高 */
+    .prose sub,
+    .prose sup { font-size: 0.75em; line-height: 0; position: relative; }
+    .prose sup { top: -0.5em; }
+    .prose sub { bottom: -0.25em; }
+
+    .prose blockquote {
+        margin-block: 1.5em;
+        padding: 0.8em 1.2em;
+        border-left: 3px solid var(--color-primary);
+        background-color: var(--color-bg-elevated);
+        border-radius: 0 6px 6px 0;
+        color: var(--color-text-secondary);
+    }
+    .prose blockquote > :first-child { margin-top: 0; }
+    .prose blockquote > :last-child  { margin-bottom: 0; }
+
+    .prose code {
+        font-family: var(--font-mono);
+        font-size: 0.9em;
+        padding: 0.15em 0.4em;
+        border-radius: 4px;
+        background-color: var(--color-bg-elevated);
+        color: var(--color-text-accent);
+    }
+    .prose pre {
+        margin-block: 1.5em;
+        padding: 1em 1.2em;
+        border-radius: 8px;
+        border: 1px solid var(--color-border);
+        background-color: var(--color-bg-subtle);
+        /* 长命令不撑破布局，横向自己滚 */
+        overflow-x: auto;
+    }
+    .prose pre code {
+        padding: 0;
+        background: none;
+        color: var(--color-text-primary);
+    }
+
+    /* 表格：宽表在自己的容器里横滚，页面本身不出现横向滚动条 */
+    .prose table {
+        margin-block: 1.5em;
+        width: 100%;
+        border-collapse: collapse;
+        display: block;
+        overflow-x: auto;
+        font-size: 0.95em;
+    }
+    .prose th,
+    .prose td {
+        border: 1px solid var(--color-border);
+        padding: 0.6em 0.9em;
+        text-align: left;
+        vertical-align: top;
+    }
+    .prose th {
+        background-color: var(--color-bg-elevated);
+        color: var(--color-text-primary);
+        font-weight: 700;
+        white-space: nowrap;
+    }
+    .prose th > p,
+    .prose td > p { margin-block: 0; }
+
+    .prose img {
+        margin-block: 1.5em;
+        max-width: 100%;
+        height: auto;
+        border-radius: 8px;
+    }
+
+    .prose hr {
+        margin-block: 2em;
+        border: 0;
+        border-top: 1px solid var(--color-border);
+    }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+    /* 导航链接 hover 下划线动画 */
+    .nav-link-animated {
+        transition: color 200ms ease-out;
+    }
+
+    /* CTA 按钮 hover：只换底色，不缩放、不发光。
+       原来是 transform: scale(1.02) + 0 0 20px 发光圈——那套是配深色底亮渐变
+       按钮的，在浅底纯色平涂上会显得廉价。 */
+    .btn-site-primary {
+        transition: background-color 150ms ease-out;
+    }
+    .btn-site-primary:hover {
+        background: var(--color-primary-dim);
+    }
+
+    /* 卡片 hover 上浮 */
+    .card-hover {
+        transition: transform 200ms ease-out, border-color 200ms ease-out, box-shadow 200ms ease-out;
+    }
+    .card-hover:hover {
+        transform: translateY(-4px);
+        border-color: var(--color-border-glow);
+        /* 原来是 rgba(0, 212, 255, 0.08) 的青色阴影，白底上完全看不出来。
+           浅色主题的卡片上浮要靠中性阴影，带色阴影会把白底染脏 */
+        box-shadow: 0 8px 24px rgba(33, 33, 33, 0.10);
+    }
+
+    /* 图片模糊渐入 */
+    .img-blur-up {
+        transition: filter 300ms ease-out;
+        filter: blur(8px);
+    }
+    .img-blur-up.loaded {
+        filter: blur(0);
+    }
+
+    /* 滚动淡入 */
+    .fade-in-up {
+        transition: opacity 400ms ease-out, transform 400ms ease-out;
+    }
+}
