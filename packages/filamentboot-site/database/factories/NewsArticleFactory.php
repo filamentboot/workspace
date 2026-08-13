@@ -29,7 +29,7 @@ class NewsArticleFactory extends Factory
         return [
             'title_zh'        => $titleZh,
             'slug'            => Str::slug($titleZh).'-'.$this->faker->unique()->numberBetween(1, 99999),
-            'excerpt_zh'      => $this->faker->sentence(),
+            'description_zh'  => $this->faker->sentence(),
             'content_zh'      => '<p>'.$this->faker->paragraph().'</p>',
             'category_id'     => null,
             'seo_title'       => $titleZh,

@@ -26,12 +26,29 @@ class SiteDemoSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call(match (SiteServiceProvider::resolveActiveTheme()) {
+        $theme = SiteServiceProvider::resolveActiveTheme();
+
+        $this->call(match ($theme) {
             'software' => SoftwareDemoSeeder::class,
             default    => DecorationDemoSeeder::class,
         });
 
         $this->call(SiteFrontMenuSeeder::class);
         $this->call(SiteIntroCopySeeder::class);
+
+        $this->command?->info("演示内容已按当前主题（{$theme}）播种：案例/方案/产品/静态页/导航/导语，按 slug 增量补种，已有记录不受影响");
+    }
+
+    /**
+     * 当前主题会写入的内容 slug 清单，按模型分组（批次 3，供后台「清空演示数据」使用）
+     *
+     * @return array<class-string, list<string>>
+     */
+    public static function seededSlugs(): array
+    {
+        return match (SiteServiceProvider::resolveActiveTheme()) {
+            'software' => SoftwareDemoSeeder::seededSlugs(),
+            default    => DecorationDemoSeeder::seededSlugs(),
+        };
     }
 }

@@ -17,7 +17,7 @@
     $title       = $article->title_zh ?? '';
     $slug        = $article->slug ?? '';
     $cover       = $article->coverUrl('card');
-    $excerpt     = $article->excerpt_zh ?? '';
+    $excerpt     = $article->description_zh ?? '';
     $category    = $article->category?->name_zh ?? '';
     $publishedAt = $article->published_at;
     $detailUrl   = route('site.news.show', $slug);

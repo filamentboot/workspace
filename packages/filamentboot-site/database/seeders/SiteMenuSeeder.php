@@ -53,7 +53,9 @@ class SiteMenuSeeder extends Seeder
             ],
         );
 
-        foreach ($this->menus() as $index => $menu) {
+        $items = $this->menus();
+
+        foreach ($items as $index => $menu) {
             Menu::query()->updateOrCreate(
                 [
                     'title'     => $menu['title'],
@@ -71,6 +73,8 @@ class SiteMenuSeeder extends Seeder
                 ],
             );
         }
+
+        $this->command?->info('后台导航「'.self::GROUP_TITLE.'」分组已写入，含子菜单 '.count($items).' 项');
     }
 
     /**

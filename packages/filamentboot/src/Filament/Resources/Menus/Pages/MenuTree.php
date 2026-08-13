@@ -2,6 +2,7 @@
 
 namespace Filamentboot\Filament\Resources\Menus\Pages;
 
+use Filament\Schemas\Components\Component;
 use Filamentboot\Filament\Resources\Menus\MenuResource;
 use Filamentboot\Models\Menu;
 use Filamentboot\Services\ActivityLogger;
@@ -16,6 +17,28 @@ use SolutionForest\FilamentTree\Resources\Pages\TreePage;
 class MenuTree extends TreePage
 {
     protected static string $resource = MenuResource::class;
+
+    /**
+     * 模态动作的表单组件
+     *
+     * 必须覆写。基类 TreePage::getFormSchema() 的实现是
+     * `static::getResource()::form(Schema::make($this))->getComponents()`——它先把组件绑到一个
+     * 临时的、statePath 为空的 Schema 上，Filament 5 在这次解析里就把每个字段的绝对状态路径
+     * 缓存成裸字段名。之后 CreateAction/EditAction 再用 `mountedActions.0.data` 作为状态路径
+     * 重新收容这批组件，缓存值不会重算——本类尤其严重：裸字段名 `title` 与
+     * `Filament\Pages\BasePage::$title` 撞名，Livewire 用旧缓存路径直接
+     * `data_set($this, 'title', ...)` 写这个受保护属性，服务端直接抛
+     * "Cannot access protected property" 致命错误（其余字段不撞名的资源
+     * 只会表现成前端 Entangle Error，见 SiteMenuItemTree 的同类注释）。
+     *
+     * 直接拿一批**没被容器绑过**的新组件交给动作，让动作自己的 Schema 成为它们的第一个容器。
+     *
+     * @return array<int, Component>
+     */
+    protected function getFormSchema(): array
+    {
+        return MenuResource::formComponents();
+    }
 
     /**
      * 默认全部折叠

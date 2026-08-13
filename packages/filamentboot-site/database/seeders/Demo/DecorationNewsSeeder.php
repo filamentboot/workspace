@@ -57,7 +57,7 @@ class DecorationNewsSeeder extends Seeder
             unset($data['tag_slugs']);
 
             $data['seo_title']       = $data['title_zh'].' - 示例装修智能家居';
-            $data['seo_description'] = $data['excerpt_zh'];
+            $data['seo_description'] = $data['description_zh'];
             $data['status']          = $data['published_at'] !== null ? PageStatus::PUBLISHED : PageStatus::DRAFT;
 
             $article = $this->firstOrCreateBySlug(NewsArticle::class, $data);
@@ -69,6 +69,27 @@ class DecorationNewsSeeder extends Seeder
                 $tags->whereIn('slug', $tagSlugs)->pluck('id')->all()
             );
         }
+    }
+
+    /**
+     * 本 Seeder 会写入的资讯 slug 清单（批次 3，供后台「清空演示数据」使用）
+     *
+     * 分类（NewsCategory）与标签不在清单内，理由与 DecorationDemoSeeder::seededSlugs()
+     * 一致——共享词表，不按本清单清空。
+     *
+     * @return array<class-string, list<string>>
+     */
+    public static function seededSlugs(): array
+    {
+        return [
+            NewsArticle::class => [
+                'when-to-involve-smart-home-installer', 'camera-storage-options',
+                'gateway-single-or-dual-protocol', 'no-main-light-illuminance',
+                'do-you-need-ethernet', 'curtain-motor-for-wide-windows',
+                'smart-lock-buying-pitfalls', 'is-voice-control-useful',
+                'handover-checklist', 'service-coverage', 'h1-selection-review-draft',
+            ],
+        ];
     }
 
     /**
@@ -121,16 +142,16 @@ class DecorationNewsSeeder extends Seeder
 
         return [
             [
-                'title_zh'     => '装修到哪一步该找智能家居公司',
-                'slug'         => 'when-to-involve-smart-home-installer',
-                'category_id'  => $renovation,
-                'is_featured'  => true,
-                'sort'         => 1,
-                'published_at' => now()->subDays(2),
-                'seo_keywords' => '智能家居,装修流程,水电阶段,弱电设计,武汉',
-                'tag_slugs'    => ['full-custom', 'smart-home'],
-                'excerpt_zh'   => '答案比大多数人想的都早：在水电进场之前。晚一步，能选的方案就少一半。',
-                'content_zh'   => <<<'HTML'
+                'title_zh'       => '装修到哪一步该找智能家居公司',
+                'slug'           => 'when-to-involve-smart-home-installer',
+                'category_id'    => $renovation,
+                'is_featured'    => true,
+                'sort'           => 1,
+                'published_at'   => now()->subDays(2),
+                'seo_keywords'   => '智能家居,装修流程,水电阶段,弱电设计,武汉',
+                'tag_slugs'      => ['full-custom', 'smart-home'],
+                'description_zh' => '答案比大多数人想的都早：在水电进场之前。晚一步，能选的方案就少一半。',
+                'content_zh'     => <<<'HTML'
                     <p>这是我们被问得最多的问题，也是最容易错过的时间点。不少业主在软装快收尾时才想起智能，那时候能做的只剩「插在插座上的那一类」。</p>
                     <p><strong>三个关键节点</strong></p>
                     <ul>
@@ -145,16 +166,16 @@ class DecorationNewsSeeder extends Seeder
                     HTML,
             ],
             [
-                'title_zh'     => '摄像头不买存储卡能回看吗',
-                'slug'         => 'camera-storage-options',
-                'category_id'  => $faq,
-                'is_featured'  => false,
-                'sort'         => 2,
-                'published_at' => now()->subDay(),
-                'seo_keywords' => '摄像头存储,云存储,NVR,监控回看,存储卡',
-                'tag_slugs'    => ['home-security'],
-                'excerpt_zh'   => '能，但代价不一样。三种存储方式的实际成本和丢录风险，一次说清。',
-                'content_zh'   => <<<'HTML'
+                'title_zh'       => '摄像头不买存储卡能回看吗',
+                'slug'           => 'camera-storage-options',
+                'category_id'    => $faq,
+                'is_featured'    => false,
+                'sort'           => 2,
+                'published_at'   => now()->subDay(),
+                'seo_keywords'   => '摄像头存储,云存储,NVR,监控回看,存储卡',
+                'tag_slugs'      => ['home-security'],
+                'description_zh' => '能，但代价不一样。三种存储方式的实际成本和丢录风险，一次说清。',
+                'content_zh'     => <<<'HTML'
                     <p>这是询盘里出现频率最高的问题之一。答案是能回看，但要看你选哪一种存储——三种方式的成本结构差别很大。</p>
                     <p><strong>三种存储怎么选</strong></p>
                     <ul>
@@ -169,16 +190,16 @@ class DecorationNewsSeeder extends Seeder
                     HTML,
             ],
             [
-                'title_zh'     => '网关选单模还是双模',
-                'slug'         => 'gateway-single-or-dual-protocol',
-                'category_id'  => $guide,
-                'is_featured'  => true,
-                'sort'         => 3,
-                'published_at' => now()->subMonthNoOverflow()->startOfMonth()->addDays(11),
-                'seo_keywords' => '智能网关,Zigbee,蓝牙Mesh,协议选型,全屋智能',
-                'tag_slugs'    => ['smart-home', 'full-custom'],
-                'excerpt_zh'   => '协议选错，后面每加一台设备都是一次妥协。先想清楚三年后的规模，再决定网关买哪一款。',
-                'content_zh'   => <<<'HTML'
+                'title_zh'       => '网关选单模还是双模',
+                'slug'           => 'gateway-single-or-dual-protocol',
+                'category_id'    => $guide,
+                'is_featured'    => true,
+                'sort'           => 3,
+                'published_at'   => now()->subMonthNoOverflow()->startOfMonth()->addDays(11),
+                'seo_keywords'   => '智能网关,Zigbee,蓝牙Mesh,协议选型,全屋智能',
+                'tag_slugs'      => ['smart-home', 'full-custom'],
+                'description_zh' => '协议选错，后面每加一台设备都是一次妥协。先想清楚三年后的规模，再决定网关买哪一款。',
+                'content_zh'     => <<<'HTML'
                     <p>装全屋智能，第一个绕不过去的问题是网关。设备清单可以随时加，协议底座换一次却要把已经装好的面板全拆下来——这是我们回访时听到最多的返工原因。</p>
                     <p><strong>三种协议各适合什么</strong></p>
                     <ul>
@@ -193,16 +214,16 @@ class DecorationNewsSeeder extends Seeder
                     HTML,
             ],
             [
-                'title_zh'     => '无主灯不是拆掉吸顶灯：照度该怎么算',
-                'slug'         => 'no-main-light-illuminance',
-                'category_id'  => $renovation,
-                'is_featured'  => false,
-                'sort'         => 4,
-                'published_at' => now()->subMonthNoOverflow()->startOfMonth()->addDays(4),
-                'seo_keywords' => '无主灯,照度计算,射灯,防眩光,灯光设计',
-                'tag_slugs'    => ['lighting-design'],
-                'excerpt_zh'   => '无主灯做失败的十套里有九套是照度不够。先算够不够亮，再谈好不好看。',
-                'content_zh'   => <<<'HTML'
+                'title_zh'       => '无主灯不是拆掉吸顶灯：照度该怎么算',
+                'slug'           => 'no-main-light-illuminance',
+                'category_id'    => $renovation,
+                'is_featured'    => false,
+                'sort'           => 4,
+                'published_at'   => now()->subMonthNoOverflow()->startOfMonth()->addDays(4),
+                'seo_keywords'   => '无主灯,照度计算,射灯,防眩光,灯光设计',
+                'tag_slugs'      => ['lighting-design'],
+                'description_zh' => '无主灯做失败的十套里有九套是照度不够。先算够不够亮，再谈好不好看。',
+                'content_zh'     => <<<'HTML'
                     <p>无主灯这两年被讲成了审美问题，实际上它首先是一道算术题。射灯数量不够、光束角选错，装完就是「氛围有了，看书不行」。</p>
                     <p><strong>先算总光通量</strong></p>
                     <p>居家空间的推荐照度大致是：客厅 100-150lx、书房和厨房 300lx、卧室 75-100lx。面积乘照度再除以灯具效率，就是这个空间需要的总光通量。20㎡ 的客厅按 150lx 算大约需要 4500lm，折成常见的 800lm 射灯是六只左右——这也是为什么四只射灯的方案永远差一档。</p>
@@ -221,16 +242,16 @@ class DecorationNewsSeeder extends Seeder
                     HTML,
             ],
             [
-                'title_zh'     => '全屋智能到底要不要提前走网线',
-                'slug'         => 'do-you-need-ethernet',
-                'category_id'  => $guide,
-                'is_featured'  => false,
-                'sort'         => 5,
-                'published_at' => now()->subMonthsNoOverflow(2)->startOfMonth()->addDays(17),
-                'seo_keywords' => '弱电布线,网线预埋,AP面板,水电改造,全屋智能',
-                'tag_slugs'    => ['smart-home', 'full-custom'],
-                'excerpt_zh'   => '无线方案越来越能打，但有三个位置的网线省不掉——省下来的钱，后期会以明线的形式还回来。',
-                'content_zh'   => <<<'HTML'
+                'title_zh'       => '全屋智能到底要不要提前走网线',
+                'slug'           => 'do-you-need-ethernet',
+                'category_id'    => $guide,
+                'is_featured'    => false,
+                'sort'           => 5,
+                'published_at'   => now()->subMonthsNoOverflow(2)->startOfMonth()->addDays(17),
+                'seo_keywords'   => '弱电布线,网线预埋,AP面板,水电改造,全屋智能',
+                'tag_slugs'      => ['smart-home', 'full-custom'],
+                'description_zh' => '无线方案越来越能打，但有三个位置的网线省不掉——省下来的钱，后期会以明线的形式还回来。',
+                'content_zh'     => <<<'HTML'
                     <p>「都无线了还走什么网线」是水电阶段最常听到的一句话。无线确实够用了，但有几个位置一旦漏埋，后期只能走明线，或者放弃功能。</p>
                     <p><strong>这三个位置的网线不能省</strong></p>
                     <ul>
@@ -245,16 +266,16 @@ class DecorationNewsSeeder extends Seeder
                     HTML,
             ],
             [
-                'title_zh'     => '4 米以上的窗帘，一个电机够不够',
-                'slug'         => 'curtain-motor-for-wide-windows',
-                'category_id'  => $faq,
-                'is_featured'  => false,
-                'sort'         => 6,
-                'published_at' => now()->subMonthsNoOverflow(2)->startOfMonth()->addDays(7),
-                'seo_keywords' => '电动窗帘,窗帘电机,双电机对开,轨道,拉力',
-                'tag_slugs'    => ['smart-home'],
-                'excerpt_zh'   => '看重量不看长度。同样 4 米宽，遮光布和纱帘对电机的要求差一倍。',
-                'content_zh'   => <<<'HTML'
+                'title_zh'       => '4 米以上的窗帘，一个电机够不够',
+                'slug'           => 'curtain-motor-for-wide-windows',
+                'category_id'    => $faq,
+                'is_featured'    => false,
+                'sort'           => 6,
+                'published_at'   => now()->subMonthsNoOverflow(2)->startOfMonth()->addDays(7),
+                'seo_keywords'   => '电动窗帘,窗帘电机,双电机对开,轨道,拉力',
+                'tag_slugs'      => ['smart-home'],
+                'description_zh' => '看重量不看长度。同样 4 米宽，遮光布和纱帘对电机的要求差一倍。',
+                'content_zh'     => <<<'HTML'
                     <p>客厅落地窗普遍超过 3 米，这个问题几乎每单都会遇到。判断依据不是长度，是帘布总重量和轨道形式。</p>
                     <p><strong>先估重量</strong></p>
                     <p>常见遮光布约 250-400g/㎡，按 2.8m 高、4m 宽双层褶皱估算，帘布重量大约落在 12-18kg。常规窗帘电机的额定拉力在 20-30N，对应顺滑轨道上 10-15kg 的负载——4 米宽的双层遮光帘已经踩在临界点上。</p>
@@ -269,16 +290,16 @@ class DecorationNewsSeeder extends Seeder
                     HTML,
             ],
             [
-                'title_zh'     => '智能门锁选购避坑：锁体、天地钩与锁芯',
-                'slug'         => 'smart-lock-buying-pitfalls',
-                'category_id'  => $guide,
-                'is_featured'  => false,
-                'sort'         => 7,
-                'published_at' => now()->subMonthsNoOverflow(3)->startOfMonth()->addDays(13),
-                'seo_keywords' => '智能门锁,锁体,天地钩,C级锁芯,上门安装',
-                'tag_slugs'    => ['home-security'],
-                'excerpt_zh'   => '门锁是唯一「装错了要换门」的智能设备。下单前先量三个数：门厚、锁体开孔、有没有天地钩。',
-                'content_zh'   => <<<'HTML'
+                'title_zh'       => '智能门锁选购避坑：锁体、天地钩与锁芯',
+                'slug'           => 'smart-lock-buying-pitfalls',
+                'category_id'    => $guide,
+                'is_featured'    => false,
+                'sort'           => 7,
+                'published_at'   => now()->subMonthsNoOverflow(3)->startOfMonth()->addDays(13),
+                'seo_keywords'   => '智能门锁,锁体,天地钩,C级锁芯,上门安装',
+                'tag_slugs'      => ['home-security'],
+                'description_zh' => '门锁是唯一「装错了要换门」的智能设备。下单前先量三个数：门厚、锁体开孔、有没有天地钩。',
+                'content_zh'     => <<<'HTML'
                     <p>门锁的退货率在智能家居里排第一，原因几乎都不是功能不好，而是装不上。三个尺寸没量清楚，货到了才发现门开不了孔。</p>
                     <p><strong>下单前先量三个数</strong></p>
                     <ul>
@@ -293,16 +314,16 @@ class DecorationNewsSeeder extends Seeder
                     HTML,
             ],
             [
-                'title_zh'     => '语音控制到底实用吗',
-                'slug'         => 'is-voice-control-useful',
-                'category_id'  => $faq,
-                'is_featured'  => false,
-                'sort'         => 8,
-                'published_at' => now()->subMonthsNoOverflow(3)->startOfMonth()->addDays(5),
-                'seo_keywords' => '语音控制,智能音箱,场景联动,中控屏,使用体验',
-                'tag_slugs'    => ['smart-home'],
-                'excerpt_zh'   => '装完半年还在用的语音指令，通常不超过五条。知道是哪五条，就知道该不该为它加预算。',
-                'content_zh'   => <<<'HTML'
+                'title_zh'       => '语音控制到底实用吗',
+                'slug'           => 'is-voice-control-useful',
+                'category_id'    => $faq,
+                'is_featured'    => false,
+                'sort'           => 8,
+                'published_at'   => now()->subMonthsNoOverflow(3)->startOfMonth()->addDays(5),
+                'seo_keywords'   => '语音控制,智能音箱,场景联动,中控屏,使用体验',
+                'tag_slugs'      => ['smart-home'],
+                'description_zh' => '装完半年还在用的语音指令，通常不超过五条。知道是哪五条，就知道该不该为它加预算。',
+                'content_zh'     => <<<'HTML'
                     <p>演示的时候语音最出彩，日常反而用得最少。这不是产品问题，是场景问题——手能碰到开关的地方，人不会开口说话。</p>
                     <p><strong>语音真正好用的三种场景</strong></p>
                     <ul>
@@ -317,16 +338,16 @@ class DecorationNewsSeeder extends Seeder
                     HTML,
             ],
             [
-                'title_zh'     => '智能家居竣工验收清单：12 项逐条确认',
-                'slug'         => 'handover-checklist',
-                'category_id'  => $renovation,
-                'is_featured'  => false,
-                'sort'         => 9,
-                'published_at' => now()->subMonthsNoOverflow(4)->startOfMonth()->addDays(19),
-                'seo_keywords' => '竣工验收,交付清单,场景调试,质保,智能家居',
-                'tag_slugs'    => ['acceptance', 'full-custom'],
-                'excerpt_zh'   => '交付不是「都能用」就算完。这 12 项每一项都对应我们踩过的一次返工。',
-                'content_zh'   => <<<'HTML'
+                'title_zh'       => '智能家居竣工验收清单：12 项逐条确认',
+                'slug'           => 'handover-checklist',
+                'category_id'    => $renovation,
+                'is_featured'    => false,
+                'sort'           => 9,
+                'published_at'   => now()->subMonthsNoOverflow(4)->startOfMonth()->addDays(19),
+                'seo_keywords'   => '竣工验收,交付清单,场景调试,质保,智能家居',
+                'tag_slugs'      => ['acceptance', 'full-custom'],
+                'description_zh' => '交付不是「都能用」就算完。这 12 项每一项都对应我们踩过的一次返工。',
+                'content_zh'     => <<<'HTML'
                     <p>智能家居的验收和装修验收不一样：功能当场都能演示成功，问题往往两周后才冒出来。下面这份清单是我们自己的交付标准，业主可以照着逐条验。</p>
                     <p><strong>基础</strong></p>
                     <ul>
@@ -352,16 +373,16 @@ class DecorationNewsSeeder extends Seeder
                     HTML,
             ],
             [
-                'title_zh'     => '服务范围说明：周边县镇能不能上门',
-                'slug'         => 'service-coverage',
-                'category_id'  => $company,
-                'is_featured'  => false,
-                'sort'         => 10,
-                'published_at' => now()->subMonthsNoOverflow(5)->startOfMonth()->addDays(15),
-                'seo_keywords' => '服务范围,上门安装,武汉周边,远程指导,售后',
-                'tag_slugs'    => ['smart-home'],
-                'excerpt_zh'   => '能做，但要提前说清路程和响应时间。把边界讲明白，比含糊接单再拖工期负责。',
-                'content_zh'   => <<<'HTML'
+                'title_zh'       => '服务范围说明：周边县镇能不能上门',
+                'slug'           => 'service-coverage',
+                'category_id'    => $company,
+                'is_featured'    => false,
+                'sort'           => 10,
+                'published_at'   => now()->subMonthsNoOverflow(5)->startOfMonth()->addDays(15),
+                'seo_keywords'   => '服务范围,上门安装,武汉周边,远程指导,售后',
+                'tag_slugs'      => ['smart-home'],
+                'description_zh' => '能做，但要提前说清路程和响应时间。把边界讲明白，比含糊接单再拖工期负责。',
+                'content_zh'     => <<<'HTML'
                     <p>「镇上的能不能做」是我们后台真实出现过的提问。这里把服务半径和响应时间一次讲清楚，省得来回问。</p>
                     <p><strong>上门服务范围</strong></p>
                     <ul>
@@ -377,16 +398,16 @@ class DecorationNewsSeeder extends Seeder
             ],
             [
                 // 草稿：验证前台不泄露未发布内容（T-10-04-04），也给后台状态筛选留一条样本
-                'title_zh'     => '上半年选品复盘（未定稿）',
-                'slug'         => 'h1-selection-review-draft',
-                'category_id'  => $company,
-                'is_featured'  => false,
-                'sort'         => 11,
-                'published_at' => null,
-                'seo_keywords' => '选品复盘,主推型号,售后回访',
-                'tag_slugs'    => ['smart-home'],
-                'excerpt_zh'   => '半年里换掉了三个品类的主推型号，记录一下换的原因。',
-                'content_zh'   => <<<'HTML'
+                'title_zh'       => '上半年选品复盘（未定稿）',
+                'slug'           => 'h1-selection-review-draft',
+                'category_id'    => $company,
+                'is_featured'    => false,
+                'sort'           => 11,
+                'published_at'   => null,
+                'seo_keywords'   => '选品复盘,主推型号,售后回访',
+                'tag_slugs'      => ['smart-home'],
+                'description_zh' => '半年里换掉了三个品类的主推型号，记录一下换的原因。',
+                'content_zh'     => <<<'HTML'
                     <p>本文尚未定稿，正在补充退换与故障数据。</p>
                     <p>上半年主推型号有三处调整：入门网关从单模换成双模、室内摄像头从固定款换成云台款、窗帘电机在 4 米以上默认改为双电机对开。三处调整都来自售后回访，具体数据整理完再发。</p>
                     HTML,

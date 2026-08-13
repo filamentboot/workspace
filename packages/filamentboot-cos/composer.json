@@ -22,7 +22,7 @@
     "require": {
         "php": "^8.3",
         "filament/spatie-laravel-settings-plugin": "^5.6",
-        "filamentboot/filamentboot": "^0.13",
+        "filamentboot/filamentboot": "^0.14",
         "overtrue/laravel-filesystem-cos": "^4.0",
         "spatie/laravel-settings": "^3.9"
     },
@@ -69,7 +69,7 @@
             }
         },
         "branch-alias": {
-            "dev-main": "0.13.x-dev"
+            "dev-main": "0.14.x-dev"
         }
     },
     "scripts": {

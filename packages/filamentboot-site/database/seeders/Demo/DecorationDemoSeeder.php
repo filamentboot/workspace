@@ -736,6 +736,50 @@ class DecorationDemoSeeder extends Seeder
     }
 
     /**
+     * 本 Seeder 会写入的内容 slug 清单，按模型分组（批次 3，供后台「清空演示数据」使用）
+     *
+     * 只列按 slug 幂等写入、且需要精确删除的内容模型。分类（SiteCaseCategory/
+     * SiteProductCategory）与标签（SiteTag）不在清单内——它们是共享词表，演示内容
+     * 与用户日后自建的内容可能复用同一个 slug（如 smart-home），删标签会连带断开
+     * 用户内容的关联，风险大于留着不清空。城市页（SiteCityPage）按 region_code
+     * 动态生成、没有固定 slug；示例询盘（ContactMessage）本身没有 slug 字段——
+     * 两者都不适合按本清单清空，见 seedCityPages() 与 run() 对应段落的注释。
+     *
+     * 与 casesData()/solutionsData()/productsData()/pagesData()/bannersData()/
+     * packagesData() 里的字面量各自独立维护（换取不用把这些方法签名改成能在
+     * 播种之外单独调用），改其中任一处 slug 时记得同步这里。
+     *
+     * @return array<class-string, list<string>>
+     */
+    public static function seededSlugs(): array
+    {
+        return [
+            SiteCase::class => [
+                'modern-3bed-smart', 'villa-full-smart', 'old-apt-lighting',
+                'new-home-security', 'duplex-chinese-smart', 'studio-nordic',
+            ],
+            SiteSolution::class => [
+                'full-smart-solution', 'smart-lighting-solution',
+                'home-security-solution', 'av-entertainment-solution',
+            ],
+            SiteProduct::class => [
+                'qk-ceiling-light-pro', 'smart-panel-switch', 'linear-magnetic-light',
+                'smart-downlight', 'rgb-led-strip', 'smart-fingerprint-lock',
+                'video-doorbell', 'indoor-hd-camera', 'outdoor-ptz-camera',
+                'presence-sensor', 'gas-smoke-alarm', 'smart-control-panel',
+                'multimode-gateway', 'smart-curtain-motor', 'smart-ac-controller',
+                'ir-remote-hub', 'metering-socket', 'ac-companion',
+            ],
+            SitePage::class    => ['about', 'contact', 'services', 'faq', 'privacy'],
+            SiteBanner::class  => ['home-hero', 'home-cases', 'home-solutions'],
+            SitePackage::class => [
+                'three-one-custom', 'three-one-comfort', 'three-one-deluxe',
+                'three-two-custom', 'three-two-comfort', 'three-two-deluxe',
+            ],
+        ];
+    }
+
+    /**
      * 城市页演示数据：仅在已有区划（省级/地级、且有 slug）时才创建
      *
      * 取前 3 个即可——这是「demo 长什么样」的样本，不是要把区划表铺满。

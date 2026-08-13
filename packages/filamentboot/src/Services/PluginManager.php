@@ -22,6 +22,16 @@ use Symfony\Component\Process\Process;
 class PluginManager
 {
     /**
+     * 插件启用状态的缓存键——本类与各插件 ServiceProvider 的 pluginIsEnabled()
+     * 必须用同一个键才能互相失效，此前两边各自硬编码 "{$slug}:is_enabled" 字面量，
+     * 改一处很容易漏改另一处（批次 4 起提成共享方法）。
+     */
+    public static function isEnabledCacheKey(string $slug): string
+    {
+        return "{$slug}:is_enabled";
+    }
+
+    /**
      * 启用插件
      *
      * @throws \RuntimeException 当 compatibility 不满足时抛出
@@ -37,7 +47,7 @@ class PluginManager
 
         $plugin->update(['is_enabled' => true]);
         Cache::forget('plugins.enabled_list');
-        Cache::forget("{$plugin->slug}:is_enabled");
+        Cache::forget(self::isEnabledCacheKey($plugin->slug));
     }
 
     /**
@@ -47,7 +57,7 @@ class PluginManager
     {
         $plugin->update(['is_enabled' => false]);
         Cache::forget('plugins.enabled_list');
-        Cache::forget("{$plugin->slug}:is_enabled");
+        Cache::forget(self::isEnabledCacheKey($plugin->slug));
     }
 
     /**

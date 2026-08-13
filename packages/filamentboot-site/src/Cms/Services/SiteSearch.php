@@ -217,12 +217,12 @@ class SiteSearch
         $records = $this->constrain(
             NewsArticle::published()->latest('published_at'),
             $term,
-            ['title_zh', 'excerpt_zh', 'content_zh']
+            ['title_zh', 'description_zh', 'content_zh']
         )->limit(self::PER_GROUP + 1)->get();
 
         return $this->group('news', '资讯', $records, fn (NewsArticle $record): array => [
             'title'   => $record->title_zh,
-            'excerpt' => $this->snippet((string) ($record->excerpt_zh ?: $record->content_zh), $term),
+            'excerpt' => $this->snippet((string) ($record->description_zh ?: $record->content_zh), $term),
             'url'     => route('site.news.show', ['slug' => $record->slug]),
         ]);
     }

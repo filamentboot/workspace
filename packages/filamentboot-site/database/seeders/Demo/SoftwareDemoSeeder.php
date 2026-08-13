@@ -531,6 +531,40 @@ class SoftwareDemoSeeder extends Seeder
     }
 
     /**
+     * 本 Seeder 会写入的内容 slug 清单，按模型分组（批次 3，供后台「清空演示数据」使用）
+     *
+     * 分类/标签不在清单内，城市页本主题不建、示例询盘没有 slug——
+     * 排除理由与 DecorationDemoSeeder::seededSlugs() 完全一致，见其注释。
+     *
+     * @return array<class-string, list<string>>
+     */
+    public static function seededSlugs(): array
+    {
+        return [
+            SiteCase::class => [
+                'cross-border-ecommerce-data-sync', 'manufacturing-workorder-automation',
+                'law-firm-knowledge-permission-rebuild', 'education-multi-campus-integration',
+            ],
+            SiteSolution::class => [
+                'data-integration-automation-solution',
+                'unified-customer-data-permission-solution',
+                'on-premise-security-compliance-solution',
+            ],
+            SiteProduct::class => [
+                'workflow-engine', 'reporting-dashboard', 'permission-audit-center',
+                'api-gateway-connector', 'wecom-dingtalk-integration', 'webhook-event-bus',
+                'on-premise-deployment-package', 'advanced-security-audit-module',
+                'dedicated-customer-success-service',
+            ],
+            SitePage::class    => ['about', 'contact', 'services', 'faq', 'privacy'],
+            SiteBanner::class  => ['home-hero', 'home-cases', 'home-solutions'],
+            SitePackage::class => [
+                'personal-annual-license', 'team-annual-license', 'enterprise-annual-license',
+            ],
+        ];
+    }
+
+    /**
      * 首页幻灯片数据（3 张，全部投放 HOME_TOP）
      *
      * @return list<array<string, mixed>>

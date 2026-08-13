@@ -1136,12 +1136,7 @@ class SiteFrontController extends Controller
         // 使用 isset() 检查 Eloquent 动态属性（property_exists 对 __get 魔术属性无效）
         $titleFallback = isset($record->title_zh) ? ($record->title_zh ?: '') : '';
 
-        // 案例/方案/产品用 description_zh 承载简介，资讯用 excerpt_zh
         $descFallback = isset($record->description_zh) ? ($record->description_zh ?: '') : '';
-
-        if ($descFallback === '') {
-            $descFallback = isset($record->excerpt_zh) ? ($record->excerpt_zh ?: '') : '';
-        }
 
         $title = ($record->seo_title ?: '')
             ?: $titleFallback

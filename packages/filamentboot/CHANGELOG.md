@@ -5,6 +5,50 @@
 
 ## [Unreleased]
 
+> 九期·完善包批次 2 的成果，跟随 monorepo 下一次 tag 与其余 6 个包一起发布为 `v0.14.0`，不单独起版本序列。
+
+### Added
+
+- **`filamentboot:install` 一键安装命令**成为两份 README 的安装主线：依次生成
+  `AdminPanelProvider`（含 `authGuard('admin')`、`FilamentbootPlugin::make()`）→
+  注入 `config/auth.php` 的 `admin` guard 与 `admin_users` provider → 发布配置/
+  多语言/品牌资源 → 执行迁移 → 创建超级管理员，全程幂等。此前两份 README 只写手工
+  流程，从未提过这条命令
+- `composer.json` 补 `"ext-intl": "*"` 到 `require`：`filament/support` 硬依赖
+  `ext-intl`，缺失时批量删除/恢复/强删/导入通知抛 `RuntimeException`，此前
+  只在 `deploy.sh` 里挂 `--ignore-platform-req=ext-intl` 绕过，未在 composer 层面声明
+- `wiki/` 收进包（`packages/filamentboot/wiki/`），`subtree-split` 发版后
+  `github.com/filamentboot/filamentboot/wiki` 不再是空的——此前 4 个 README 链接
+  指向一个从未写过内容的 wiki，实测全部 404
+
+### Changed
+
+- **`HasDataScope`** 加两个可覆盖方法：`personalScopeColumn()`（`personal` 档比对
+  的属主列名，默认 `created_by`）、`personalScopeAllowsUnassigned()`（是否放行该列
+  为 `NULL` 的未分配记录，默认不放行）
+- README「数据权限」一节改成如实的 `personal`/`department` 两档说明——此前写的
+  "5 种权限范围枚举 + `DataScopeResolver`"全仓库不存在（承载它的
+  `role_data_scopes` 表建了又被删）
+
+### Fixed
+
+- **`MenuTree`（后台"菜单规则"树页）的 Livewire Entangle 崩溃**：`getFormSchema()`
+  把表单组件绑到 statePath 为空的临时 Schema 上，裸字段名 `title` 与
+  `Filament\Pages\BasePage::$title` 撞名，触发 `Cannot access protected property`
+  致命错误（不只是前端报错）。新增 `MenuResource::formComponents()`，
+  `MenuTree`/`CreateMenu`/`EditMenu` 统一改用它，修法同构已在
+  `filamentboot-site` 的 `SiteMenuItemTree` 验证过的方案
+
+### Removed
+
+- **BREAKING**：删除 `filamentboot-migrations` publish tag。本包的
+  `hasMigrations()` 已自动加载全部 27 个迁移，发布这个 tag 会把文件原样复制到
+  `database/migrations/`，其中 `activity_log` 三件套与
+  `spatie/laravel-activitylog` 自带的 stub **类名相撞**，`migrate` 直接编译期
+  `Cannot redeclare class`；`settings` 表迁移同理撞表名。**升级注意**：若项目里
+  已经发布过这个 tag，删除 `database/migrations/` 下对应的已发布迁移文件即可，
+  本包自带的自动加载不受影响；需要自定义迁移请手写新文件，不要整包复制
+
 ## [0.13.0] - 2026-08-12
 
 > **跨度说明**：上一个正式版本是 2026-06-24 的 [0.5.3]，中间跨越一年多——本仓库到七期批次 5 为止从未真正对外发布过一次，`[Unreleased]` 段积累的是这整段时间的变更。**沿用五期已定口径继续 0.x（不打 1.0）**：1.0 是对下游的 API 稳定承诺，而这份承诺至今没有经过真实安装场景检验，要等真实安装场景（下面的分流试装）跑完才成立。

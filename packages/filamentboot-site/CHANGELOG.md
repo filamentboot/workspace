@@ -8,6 +8,57 @@
 
 ## [Unreleased]
 
+> 九期·完善包（批次 2-9）的成果，跟随 monorepo 下一次 tag 与其余 6 个包一起发布为
+> `v0.14.0`，不单独起版本序列。
+
+### Added
+
+- **`filamentboot-site:install` 一键安装命令**：依次发布配置/前端资源 → 执行迁移
+  （25 张内容表）→ 写入权限点/三层角色/后台导航菜单三项结构性数据 → 扫描并启用
+  插件 → 清缓存，全程幂等。加 `--with-demo` 顺带播种案例/方案/产品/资讯示例内容
+- **`filamentboot-site:doctor` 健康检查命令**：七项检查——插件启用状态、迁移完整性
+  （23 张核心表）、结构性种子（权限点）、关键路由（26 个 route name）、内容配置
+  完整性（复用 `SiteHealthCheck`）、首页 HTTP 响应头（`Cache-Control`/无
+  `Set-Cookie`）、媒体磁盘可写。任意一项不通过退出码非零，报告为 Markdown 清单
+- **演示数据后台开关**：`SiteSettingsPage` 新增"种入演示数据"/"清空演示数据"两个
+  超管专属 Header Action（背后是 `Services\DemoDataToggle::seed()`/`clear()`）。
+  `clear()` 按各 Seeder 的 `seededSlugs()` 精确 `forceDelete()`（非软删，避免孤儿
+  媒体文件）+ 删除 `main`/`footer` 两条导航菜单 + 复位列表页导语字段，种入/清空/
+  再种入幂等
+- **`filamentboot-site-tests` publish tag**：把 `tests/e2e/`（6 个 Playwright
+  spec + `global-setup.cjs`）与根目录的 `playwright.config.site.cjs` 发布到宿主
+  项目，`packages/filamentboot-site/tests/e2e/` 是唯一源。刻意不进
+  `post_install.publish_tags` 自动发布清单（需要下游装 Node + Playwright 才能跑，
+  不该跟着每次安装强行落地）
+- `composer.json` 补 `"ext-intl": "*"` 到 `require`：`SiteProductResource`/
+  `SitePackageResource` 的价格列（`->money('CNY')`）依赖它，缺失时 500
+- `HasDataScope` 真实接入示范：`ContactMessageResource` 用 `personal` 档 + 属主列
+  `assigned_to`，且放行未分配（`NULL`）的线索——新询盘在分配之前对跟进人也可见
+
+### Changed
+
+- **BREAKING**：资讯摘要字段 `excerpt_zh` 改名为 `description_zh`，与其余五类
+  内容统一命名。硬改，不留 accessor 兼容——下游若在覆盖视图里直接读
+  `$article->excerpt_zh`，迁移后会静默变成 `null`。迁移
+  `2026_08_13_150000_rename_excerpt_zh_to_description_zh_in_site_news_articles_table.php`
+  除改列名外，**同步改写 `site_revisions` 里已存资讯快照 payload 的 JSON 键**，
+  否则回滚到改名前的历史版本时 `description_zh` 会静默恢复不生效
+- `composer.json` 的 `extra.filamentboot.post_install.seeders` 摘掉
+  `SiteDemoSeeder`/`SiteNewsSeeder`：此前"插件市场"一键安装路径会无条件跑这两个
+  演示种子，与命令行 `filamentboot-site:install` 的 `--with-demo`（默认不种）行为
+  不一致，现两条安装路径统一为默认不种演示数据，需要时用上面的后台开关或
+  `--with-demo`
+- 5 个 site Seeder（`SitePermissionSeeder`/`SiteRoleSeeder`/`SiteMenuSeeder`/
+  `SiteDemoSeeder`/`SiteNewsSeeder`）补跑完输出确认信息，此前跑完零反馈无法确认
+  是否成功
+
+### Removed
+
+- **BREAKING**：删除 `filamentboot-site-migrations` publish tag。本包的
+  `loadMigrationsFrom()` 已自动加载全部迁移，发布这个 tag 会导致 `migrate` 重复
+  扫描同一批文件。**升级注意**：若项目里已经发布过这个 tag，删除
+  `database/migrations/` 下对应的已发布迁移文件即可，本包自带的自动加载不受影响
+
 ## [0.13.0] - 2026-08-12
 
 > **本包首次正式发布。** 版本号与主包 `filamentboot/filamentboot` 保持一致——两者随

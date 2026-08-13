@@ -21,20 +21,43 @@
 
 ## 快速开始
 
+**新项目**（还没有任何 Filament 面板）推荐用一条命令走完全部安装步骤；如果项目里**已经有** `AdminPanelProvider` 或需要逐步接管每一处配置，跳到下面的[手动模式](#手动模式)。
+
 ### 第一步：安装
 
 ```bash
 composer require filamentboot/filamentboot
 ```
 
-### 第二步：发布资源
+### 第二步：一条命令起站
+
+```bash
+php artisan filamentboot:install
+```
+
+这条命令依次做完：生成 `app/Providers/Filament/AdminPanelProvider.php`（已含 `authGuard('admin')`、`FilamentbootPlugin::make()`）→ 向 `config/auth.php` 注入 `admin` guard 与 `admin_users` provider → 发布配置与多语言文件 → 复制 favicon / 品牌 Logo 到 `public/` → 执行数据库迁移 → 创建超级管理员账号。全程幂等，重复执行不会覆盖已存在的文件（除非加 `--force`）。
+
+> **安全提示：** 默认账号为 `admin@example.com`，密码为 `password`，仅供初始化使用。
+> **首次登录后请立即修改默认密码，请勿将默认账号用于生产环境。**
+
+### 第三步：访问后台
+
+启动开发服务器后，访问 `/admin`，使用以下账号登录：
+
+- **邮箱：** `admin@example.com`
+- **密码：** `password`
+
+> **再次提示：** 首次登录后请立即前往个人资料页修改默认密码。
+
+---
+
+### 手动模式
+
+适合项目里已有 `AdminPanelProvider`、或只想要某一项资源（配置/视图/多语言/品牌）的场景。**不含迁移 tag**：本包依赖 `loadMigrationsFrom()` 自动加载全部迁移，不提供 `vendor:publish` 迁移出口——发布一份到 `database/migrations/` 会被 `migrate` 同时扫描到两份，其中 `activity_log` 三件套是具名类，直接编译期报 `Cannot redeclare class`。需要自定义迁移就手写新迁移文件，不要整包复制。
 
 ```bash
 # 发布配置文件
 php artisan vendor:publish --tag=filamentboot-config
-
-# 发布数据库迁移
-php artisan vendor:publish --tag=filamentboot-migrations
 
 # 发布视图文件（如需自定义界面）
 php artisan vendor:publish --tag=filamentboot-views
@@ -52,8 +75,6 @@ php artisan vendor:publish --tag=filamentboot-brand
 php artisan vendor:publish --tag=filamentboot-theme
 ```
 
-### 第三步：执行迁移与初始化
-
 ```bash
 # 执行数据库迁移
 php artisan migrate
@@ -61,11 +82,6 @@ php artisan migrate
 # 创建超级管理员账号
 php artisan db:seed --class="Filamentboot\\Database\\Seeders\\SuperAdminSeeder"
 ```
-
-> **安全提示：** 默认账号为 `admin@example.com`，密码为 `password`，仅供初始化使用。
-> **首次登录后请立即修改默认密码，请勿将默认账号用于生产环境。**
-
-### 第四步：注册插件
 
 在 `app/Providers/Filament/AdminPanelProvider.php` 中注册 Filamentboot 插件：
 
@@ -92,16 +108,9 @@ class AdminPanelProvider extends PanelProvider
 
 更多详细安装配置，请参阅 [安装文档](https://github.com/filamentboot/filamentboot/blob/main/wiki/installation.md)。
 
-### 第五步：访问后台
+---
 
-启动开发服务器后，访问 `/admin`，使用以下账号登录：
-
-- **邮箱：** `admin@example.com`
-- **密码：** `password`
-
-> **再次提示：** 首次登录后请立即前往个人资料页修改默认密码。
-
-### 第六步：生产环境优化
+### 生产环境优化
 
 上线前在服务器上执行：
 
@@ -157,8 +166,11 @@ php artisan optimize              # 已含 filament:optimize（组件缓存 + Bl
 
 ### 数据权限
 
-- 5 种权限范围枚举：全部数据 / 本部门 / 本部门及下级 / 仅本人 / 指定部门
-- DataScopeResolver 统一解析
+- `HasDataScope` trait，Resource 按需接入两档记录级过滤：`personal`（仅本人/本人负责）、
+  `department`（本部门及所有子部门，基于 `DepartmentTree` 服务层）
+- 超级管理员在 trait 内直接放行，不受分档限制
+- 不接入的 Resource 默认不做任何过滤（与旧行为一致），接入方式见
+  [`HasDataScope`](src/Filament/Resources/Concerns/HasDataScope.php) 的类文档注释
 
 ### 操作日志
 
@@ -209,7 +221,7 @@ php artisan filamentboot:publish --model=Product --force
 ## 更多文档
 
 - [详细安装指南](https://github.com/filamentboot/filamentboot/blob/main/wiki/installation.md)
-- [v0.4 → v0.5 升级指南](UPGRADING.md)
+- [升级指南](UPGRADING.md)
 - [变更记录](CHANGELOG.md)
 - [贡献指南](https://github.com/filamentboot/filamentboot/blob/main/CONTRIBUTING.md)
 - [问题反馈](https://github.com/filamentboot/filamentboot/issues)

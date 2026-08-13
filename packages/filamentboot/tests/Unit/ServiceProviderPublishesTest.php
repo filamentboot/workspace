@@ -10,9 +10,13 @@ use Orchestra\Testbench\TestCase;
 /**
  * ServiceProvider publishes 注册测试
  *
- * 验证 FilamentbootServiceProvider 注册了 7 个 vendor:publish 标签（COMPLY-01）：
- * filamentboot-config / filamentboot-migrations / filamentboot-views /
+ * 验证 FilamentbootServiceProvider 注册了 6 个 vendor:publish 标签（COMPLY-01）：
+ * filamentboot-config / filamentboot-views /
  * filamentboot-lang / filamentboot-stubs / filamentboot-theme / filamentboot-brand
+ *
+ * 不含迁移 tag：loadMigrationsFrom() 已自动加载全部迁移，publish 一份到
+ * database/migrations/ 会被 migrate 同时扫描到两份，见
+ * FilamentbootServiceProvider::registerPublishes() 的说明。
  */
 class ServiceProviderPublishesTest extends TestCase
 {
@@ -54,29 +58,17 @@ class ServiceProviderPublishesTest extends TestCase
     }
 
     /**
-     * 验证 filamentboot-migrations 发布标签已注册，且源目录与目标目录映射正确
+     * 验证不再注册迁移 publish tag（本包依赖 loadMigrationsFrom 自动加载，
+     * 不提供 publish 出口，避免同一份迁移被 migrate 扫描到两份）
      */
-    public function test_service_provider_registers_filament_admin_migrations_publish_tag(): void
+    public function test_service_provider_does_not_register_migrations_publish_tag(): void
     {
         $paths = ServiceProvider::pathsToPublish(
             FilamentbootServiceProvider::class,
             'filamentboot-migrations'
         );
 
-        self::assertNotEmpty($paths, '迁移 publish tag 未在 ServiceProvider 中注册');
-
-        $found = false;
-
-        foreach ($paths as $source => $target) {
-            if ((str_ends_with($source, 'database/migrations') || str_ends_with($source, 'database/migrations/'))
-                && $target === database_path('migrations')) {
-                $found = true;
-
-                break;
-            }
-        }
-
-        self::assertTrue($found, '未找到 database/migrations → database_path(migrations) 的映射');
+        self::assertEmpty($paths, 'filamentboot-migrations tag 应已删除，不应再注册任何映射');
     }
 
     /**

@@ -12,7 +12,7 @@
 
 @php
     $title       = $record->title_zh ?? '';
-    $excerpt     = $record->excerpt_zh ?? '';
+    $excerpt     = $record->description_zh ?? '';
     $cover       = $record->coverUrl('og');
     $content     = $record->content_zh ?? '';
     $category    = $record->category;

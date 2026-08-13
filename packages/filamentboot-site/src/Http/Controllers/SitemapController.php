@@ -420,9 +420,6 @@ class SitemapController extends Controller
     /**
      * 把一批记录转成 llms.txt 的条目
      *
-     * 摘要字段各内容类型不统一（资讯是 excerpt_zh，其余是 description_zh），
-     * 这里按顺序取第一个非空的——字段命名统一是九期的事，不在这里绕。
-     *
      * @param  Collection<int, covariant \Illuminate\Database\Eloquent\Model>  $records
      * @return list<array{title: string, url: string, summary: string}>
      */
@@ -431,9 +428,7 @@ class SitemapController extends Controller
         $items = [];
 
         foreach ($records as $record) {
-            $summary = trim((string) ($record->getAttribute('description_zh')
-                ?? $record->getAttribute('excerpt_zh')
-                ?? ''));
+            $summary = trim((string) ($record->getAttribute('description_zh') ?? ''));
 
             $items[] = [
                 'title' => (string) $record->getAttribute('title_zh'),

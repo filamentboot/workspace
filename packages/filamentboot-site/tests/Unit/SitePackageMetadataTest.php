@@ -118,6 +118,35 @@ class SitePackageMetadataTest extends TestCase
     }
 
     /**
+     * Playwright 冒烟测试的 filamentboot-site-tests tag 已注册，但刻意不进
+     * post_install.publish_tags 自动发布清单（批次 5）
+     *
+     * 与 filamentboot-site-views 同一个先例：真实存在的 tag，但要求 Node +
+     * Playwright 才用得上，不该跟着每一次安装强行落地。这条测试锁的是这个
+     * 设计决定本身——tag 必须存在（手动 vendor:publish 能用），但不能悄悄被加进
+     * 自动发布清单里（一旦加进去，每次安装都会往下游项目根目录扔一批 .cjs 文件）。
+     */
+    public function test_e2e_tests_publish_tag_is_registered_but_not_auto_published(): void
+    {
+        $providerSource = (string) file_get_contents(__DIR__.'/../../src/SiteServiceProvider.php');
+
+        self::assertStringContainsString(
+            "'filamentboot-site-tests'",
+            $providerSource,
+            'filamentboot-site-tests tag 未在 SiteServiceProvider 中注册',
+        );
+
+        /** @var list<string> $autoPublished */
+        $autoPublished = $this->composer['extra']['filamentboot']['post_install']['publish_tags'];
+
+        self::assertNotContains(
+            'filamentboot-site-tests',
+            $autoPublished,
+            'filamentboot-site-tests 不应进入 post_install.publish_tags 自动发布清单',
+        );
+    }
+
+    /**
      * post_install 声明的 Seeder 类必须真实存在
      *
      * 此前声明的是 SiteSeeder，实际类名为 SiteDemoSeeder，

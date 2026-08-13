@@ -18,7 +18,10 @@
 ## 要求
 
 - PHP `^8.3`、Laravel `^13`、Filament `^5`
-- 依赖主包 `filamentboot/filamentboot`（`*`，跟随主包版本）
+- `ext-intl`：`filament/support` 的硬依赖，缺失时批量删除/恢复/强删/导入的通知会抛 `RuntimeException`，
+  本包 `SiteProductResource`/`SitePackageResource` 的价格列（`->money('CNY')`）会 500。不要用
+  `--ignore-platform-req=ext-intl` 绕过
+- 依赖主包 `filamentboot/filamentboot`（版本约束跟随主包发布节奏，见 `composer.json`）
 - `livewire/livewire ^4.3`（后台 Filament 页面依赖；前台不用）
 - ⚠️ `danharrin/livewire-rate-limiting ^2.2` 仍在 `composer.json` 里，但**包内已无任何引用**——
   询盘限流改成了框架自带的 `RateLimiter`（前台去 Livewire 化的连带结果）。属可清理项，未动
@@ -43,31 +46,56 @@
 
 ## 安装
 
+**先装主包**（本包依赖 `filamentboot/filamentboot`，且要先完成主包的 `filamentboot:install`，本包的 `SitePlugin` 才有面板可挂）：
+
 ```bash
-composer require filamentboot/filamentboot-site
+composer require filamentboot/filamentboot
+php artisan filamentboot:install
 ```
 
-发布配置文件与静态资源：
+```bash
+composer require filamentboot/filamentboot-site
+php artisan filamentboot-site:install
+```
+
+一条命令依次做完：发布配置与前端资源 → 执行数据库迁移（25 张内容表）→ 写入权限点、三层角色、后台导航菜单三项结构性数据（**均必需**，缺导航菜单登记后台侧边栏不会出现「官网管理」分组，缺权限点/角色除超管外无人能进）→ 扫描并启用插件 → 清缓存。全程幂等，可重复执行。
+
+要顺带看一遍演示效果（案例/方案/产品/资讯示例内容），加 `--with-demo`：
+
+```bash
+php artisan filamentboot-site:install --with-demo
+```
+
+装完之后在 `app/Providers/Filament/AdminPanelProvider.php` 里注册插件（见下面「1. 注册插件」），前台首页即可访问。
+
+装完（或升级完）跑一次体检：
+
+```bash
+php artisan filamentboot-site:doctor
+```
+
+七项检查——插件是否启用、迁移是否完整（23 张核心表）、结构性种子（权限点）是否跑过、
+26 个关键路由能否解析、内容配置完整性（联系电话/ICP 备案号/默认 SEO 等发布前必填项）、
+首页 HTTP 响应头（`Cache-Control: public` 且无 `Set-Cookie`）、媒体磁盘是否可写。任意一项
+不通过退出码非零，报告里会指出具体是哪一条。
+
+### 手动模式
 
 ```bash
 php artisan vendor:publish --tag=filamentboot-site-config
 php artisan vendor:publish --tag=filamentboot-site-assets
-```
-
-执行数据库迁移（25 张内容表）：
-
-```bash
 php artisan migrate
-```
 
-写入权限点与三层角色（**必需**，否则除超管外无人能进官网管理）：
-
-```bash
 php artisan db:seed --class="Filamentboot\FilamentbootSite\Database\Seeders\SitePermissionSeeder"
 php artisan db:seed --class="Filamentboot\FilamentbootSite\Database\Seeders\SiteRoleSeeder"
+php artisan db:seed --class="Filamentboot\FilamentbootSite\Database\Seeders\SiteMenuSeeder"
 ```
 
-运行初始化种子数据（可选）：
+三个结构性种子均**必需**：权限点与三层角色决定除超管外谁能进官网管理；后台侧边栏由 `menus` 表驱动而非 Filament 的静态导航属性生成（`SitePlugin` 注册的资源即使路由已就绪，未在 `menus` 表登记也不会出现在导航中）——漏跑 `SiteMenuSeeder` 的直接症状是「装完插件权限都对，但侧边栏找不到入口」。
+
+**不含迁移 tag**：本包依赖 `loadMigrationsFrom()` 自动加载全部迁移（settings 迁移 + 25 张内容表迁移），不提供 `vendor:publish` 迁移出口——发布一份到 `database/migrations/` 会被 `migrate` 同时扫描到两份。需要自定义迁移就手写新迁移文件，不要整包复制。
+
+运行初始化种子数据（可选，等价于 `--with-demo`）：
 
 ```bash
 # 案例 / 方案 / 产品 / 静态页面 / 示例询盘
@@ -82,6 +110,14 @@ php artisan db:seed --class="Filamentboot\FilamentbootSite\Database\Seeders\Site
 
 封面图每次都会重试挂载，所以图片是后补的也没关系——放进
 `storage/app/public/site/{cases,solutions,news,products}/{slug}.jpg` 再跑一遍即可。
+
+### 演示数据后台开关
+
+已经装完、不想再回终端敲命令：「网站设置」页顶部有"种入演示数据"/"清空演示数据"两个
+按钮（仅超管可见）。"种入"等价于上面两个 `db:seed` 命令；"清空"按各 Seeder 精确删除
+自己播种的记录（`forceDelete()`，不留孤儿媒体文件）并复位列表页导语，种入 → 清空 → 再
+种入结果一致。**清空前请确认列表页导语与导航菜单没有被运营改过**——`clear()` 分不出
+"demo 原文"与"改过的真内容"，会一并清空且不可恢复，弹窗确认文案里也写了这条。
 
 ## 使用
 
@@ -168,6 +204,24 @@ input: [
 | 真实 Composer 安装 | `vendor/filamentboot/filamentboot-site/resources/{css,js}/…` |
 | `vendor:publish --tag=filamentboot-site-assets` 之后 | `resources/css/vendor/filamentboot-site/…`、`resources/js/vendor/filamentboot-site/site.js` |
 | monorepo path 仓库（vendor 是符号链接） | `packages/filamentboot-site/resources/{css,js}/…` |
+
+> ⚠️ **第三种形态有一个前提：符号链接指向的目录必须在项目树内。** Vite 算入口的 manifest
+> 键时会把符号链接转换成真实磁盘路径、再相对项目根目录求相对路径——链接目标在根目录内，
+> 算出来正是上表第三行；链接目标在根目录**外**（比如另开一个目录存包源码，用
+> `"repositories": [{"type": "path", "url": "../filamentboot-site", "options": {"symlink": true}}]`
+> 这种写法），算出来的相对路径会带一串 `../`（实测形如
+> `../filamentboot-site/resources/js/site.js`），三个候选一个都对不上，直接抛
+> `Unable to locate file in Vite manifest`——不是某个候选选错了，是候选列表天然覆盖不到这第四种
+> 形态。规避办法：本地包开发时把包目录放在项目树内（本仓库自己就是这样），或者干脆
+> `symlink: false`（Composer 复制文件落进 `vendor/`，回到第一种形态）。
+>
+> 同一个机制还留了一个目前无害的死角：`shared.css` 里指向宿主覆盖视图的第四条 `@source`
+> 是 6 层 `../` 相对路径，按「真实 Composer 安装」时的物理路径算得数——在 monorepo path
+> 仓库开发形态下，`shared.css` 的真实磁盘路径是 `packages/filamentboot-site/resources/css/
+> themes/`，同样 6 层 `../` 会走出仓库树外，落到一个不存在的目录，Tailwind 的内容扫描**静默
+> 零命中**，不报错。目前两套主题都还没人真的发布过视图覆盖，这条路径从未被真正用到过；
+> 用 path 仓库开发时若要验证宿主覆盖视图能被前台样式正确扫描到，先知道这条路径在这种
+> 安装形态下不生效。
 
 ### 公开页缓存
 
@@ -469,9 +523,25 @@ draft → review → scheduled → published → archived
 | Tag | 内容 | 目标路径 |
 |-----|------|----------|
 | `filamentboot-site-config` | 配置文件 | `config/filamentboot-site.php` |
-| `filamentboot-site-migrations` | 内容与设置迁移 | `database/migrations/` |
 | `filamentboot-site-views` | 主题视图 | `resources/views/vendor/filamentboot-site/themes/` |
 | `filamentboot-site-assets` | 主题 CSS | `resources/css/vendor/filamentboot-site/` |
+| `filamentboot-site-tests` | Playwright 冒烟测试（6 个 spec + `global-setup.cjs`）+ `playwright.config.site.cjs` | `tests/e2e/` + 项目根目录 |
+
+不提供迁移 tag：内容与设置迁移由 `loadMigrationsFrom()` 自动加载，不走 `vendor:publish`（避免与自动加载重复扫描，见上文「手动模式」的说明）。
+
+`filamentboot-site-tests` 刻意不进安装命令的自动发布清单（需要下游装了 Node + Playwright
+才能跑），要单独执行：
+
+```bash
+php artisan vendor:publish --tag=filamentboot-site-tests
+npx playwright test --config=playwright.config.site.cjs
+```
+
+## 升级
+
+从 v0.13 升级到 v0.14：资讯摘要字段 `excerpt_zh` 改名为 `description_zh`（硬改，不留
+兼容），另有一个 publish tag 被移除。**升级前请先看
+[UPGRADING.md](UPGRADING.md)**，按清单逐项确认。完整变更见 [CHANGELOG.md](CHANGELOG.md)。
 
 ## 许可
 

@@ -28,6 +28,16 @@ use Illuminate\Database\Seeder;
 class SiteIntroCopySeeder extends Seeder
 {
     /**
+     * 6 段演示文案对应的设置字段名——两套主题字段名相同，只是文案内容不同（见 copy()）
+     *
+     * @var list<string>
+     */
+    private const FIELDS = [
+        'footer_intro_zh', 'list_intro_cases_zh', 'list_intro_solutions_zh',
+        'list_intro_products_zh', 'list_intro_packages_zh', 'list_intro_news_zh',
+    ];
+
+    /**
      * 把空着的文案设置填上
      */
     public function run(): void
@@ -45,6 +55,24 @@ class SiteIntroCopySeeder extends Seeder
         if ($changed) {
             $settings->save();
         }
+    }
+
+    /**
+     * 清空演示数据用：把 6 个字段无条件复位为空字符串
+     *
+     * 与 run() 的「只填空值」相反——run() 不覆盖运营改过的文案，这里反过来直接清空，
+     * 不判断当前值是不是 demo 原文。调用方（后台「清空演示数据」按钮）必须在确认
+     * 文案里说清楚这一条，不能让操作者以为只清的是没改过的默认文案。
+     */
+    public static function resetToEmpty(): void
+    {
+        $settings = app(SiteSettings::class);
+
+        foreach (self::FIELDS as $name) {
+            $settings->{$name} = '';
+        }
+
+        $settings->save();
     }
 
     /**

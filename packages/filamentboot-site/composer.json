@@ -16,16 +16,16 @@
     "support": {
         "issues": "https://github.com/filamentboot/filamentboot-site/issues",
         "source": "https://github.com/filamentboot/filamentboot-site",
-        "docs": "https://github.com/filamentboot/filamentboot-site/blob/main/wiki/site.md",
-        "wiki": "https://github.com/filamentboot/filamentboot-site/tree/main/wiki"
+        "docs": "https://github.com/filamentboot/filamentboot-site/blob/main/README.md"
     },
     "require": {
         "php": "^8.3",
+        "ext-intl": "*",
         "danharrin/livewire-rate-limiting": "^2.2",
         "filament/filament": "^5.0",
         "filament/spatie-laravel-media-library-plugin": "^5.6",
         "filament/spatie-laravel-settings-plugin": "^5.6",
-        "filamentboot/filamentboot": "^0.13",
+        "filamentboot/filamentboot": "^0.14",
         "livewire/livewire": "^4.3",
         "mews/purifier": "^3.4",
         "spatie/laravel-settings": "^3.9"
@@ -73,14 +73,12 @@
                 "seeders": [
                     "Filamentboot\\FilamentbootSite\\Database\\Seeders\\SitePermissionSeeder",
                     "Filamentboot\\FilamentbootSite\\Database\\Seeders\\SiteRoleSeeder",
-                    "Filamentboot\\FilamentbootSite\\Database\\Seeders\\SiteMenuSeeder",
-                    "Filamentboot\\FilamentbootSite\\Database\\Seeders\\SiteDemoSeeder",
-                    "Filamentboot\\FilamentbootSite\\Database\\Seeders\\SiteNewsSeeder"
+                    "Filamentboot\\FilamentbootSite\\Database\\Seeders\\SiteMenuSeeder"
                 ]
             }
         },
         "branch-alias": {
-            "dev-main": "0.13.x-dev"
+            "dev-main": "0.14.x-dev"
         }
     },
     "scripts": {

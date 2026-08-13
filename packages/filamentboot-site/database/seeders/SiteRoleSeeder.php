@@ -81,6 +81,8 @@ class SiteRoleSeeder extends Seeder
         }
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+        $this->command?->info('官网插件三层角色已写入：内容编辑 / 内容发布 / 站点管理（guard: '.self::GUARD.'）');
     }
 
     /**

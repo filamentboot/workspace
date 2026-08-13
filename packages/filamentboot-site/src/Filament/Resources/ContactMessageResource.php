@@ -15,6 +15,7 @@ use Filament\Tables\Columns\SelectColumn;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Filamentboot\Filament\Resources\Concerns\HasDataScope;
 use Filamentboot\FilamentbootSite\Enums\ContactMessageStatus;
 use Filamentboot\FilamentbootSite\Filament\Resources\ContactMessageResource\Pages\ListContactMessages;
 use Filamentboot\FilamentbootSite\Filament\Resources\ContactMessageResource\Pages\ViewContactMessage;
@@ -32,9 +33,15 @@ use UnitEnum;
  *
  * 列表与详情展示 A1 的来源与渠道归因（source / landing_url / referer / utm_*），
  * 来源中文名取 config('filamentboot-site.contact.sources')，未登记时回落原始 key。
+ *
+ * 数据权限（HasDataScope，personal 档）：非超管只看分配给自己的线索与尚未
+ * 分配的线索（assigned_to 为 NULL），看不到分配给其他人的线索——避免多人
+ * 协作时重复联系或抢单。仅超级管理员不受限，能看到全部询盘。
  */
 class ContactMessageResource extends Resource
 {
+    use HasDataScope;
+
     /** @var class-string<ContactMessage> */
     protected static ?string $model = ContactMessage::class;
 
@@ -288,10 +295,36 @@ class ContactMessageResource extends Resource
     }
 
     /**
-     * 询盘列表页无需覆盖 getEloquentQuery（无软删除）
+     * 数据权限档位：personal（跟进人只看自己名下 + 未分配）
+     */
+    protected static function dataScope(): ?string
+    {
+        return 'personal';
+    }
+
+    /**
+     * personal 档比对的属主列是 assigned_to（跟进人），不是 created_by——
+     * 询盘由前台访客创建，created_by 对询盘没有意义
+     */
+    protected static function personalScopeColumn(): string
+    {
+        return 'assigned_to';
+    }
+
+    /**
+     * 未分配的线索（assigned_to 为 NULL）对所有跟进人可见，否则新线索在
+     * 分配之前谁都看不到，比不接入数据权限还糟
+     */
+    protected static function personalScopeAllowsUnassigned(): bool
+    {
+        return true;
+    }
+
+    /**
+     * 询盘列表页套 personal 数据权限（无软删除，不需要额外的 withTrashed 处理）
      */
     public static function getEloquentQuery(): Builder
     {
-        return parent::getEloquentQuery();
+        return static::applyDataScope(parent::getEloquentQuery());
     }
 }

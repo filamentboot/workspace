@@ -115,7 +115,7 @@ class NewsArticleResource extends Resource
                             ->label('标题')
                             ->required()
                             ->maxLength(255),
-                        Textarea::make('excerpt_zh')
+                        Textarea::make('description_zh')
                             ->label('摘要')
                             ->rows(3)
                             ->maxLength(500)

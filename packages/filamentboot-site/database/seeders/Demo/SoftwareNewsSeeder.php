@@ -45,7 +45,7 @@ class SoftwareNewsSeeder extends Seeder
             unset($data['tag_slugs']);
 
             $data['seo_title']       = $data['title_zh'].' - 示例软件有限公司';
-            $data['seo_description'] = $data['excerpt_zh'];
+            $data['seo_description'] = $data['description_zh'];
             $data['status']          = $data['published_at'] !== null ? PageStatus::PUBLISHED : PageStatus::DRAFT;
 
             $article = $this->firstOrCreateBySlug(NewsArticle::class, $data);
@@ -56,6 +56,26 @@ class SoftwareNewsSeeder extends Seeder
                 $tags->whereIn('slug', $tagSlugs)->pluck('id')->all()
             );
         }
+    }
+
+    /**
+     * 本 Seeder 会写入的资讯 slug 清单（批次 3，供后台「清空演示数据」使用）
+     *
+     * 排除范围与 DecorationNewsSeeder::seededSlugs() 一致，见其注释。
+     *
+     * @return array<class-string, list<string>>
+     */
+    public static function seededSlugs(): array
+    {
+        return [
+            NewsArticle::class => [
+                'when-to-adopt-workflow-automation', 'integrating-without-api-docs',
+                'permission-design-role-based', 'on-premise-vs-saas',
+                'avoiding-notification-overload', 'how-detailed-should-audit-logs-be',
+                'manual-to-automation-migration-story', 'wecom-dingtalk-integration-pitfalls',
+                'service-scope-response-time', 'h1-feature-iteration-review-draft',
+            ],
+        ];
     }
 
     /**
@@ -108,16 +128,16 @@ class SoftwareNewsSeeder extends Seeder
 
         return [
             [
-                'title_zh'     => '什么时候该考虑引入工作流自动化',
-                'slug'         => 'when-to-adopt-workflow-automation',
-                'category_id'  => $guide,
-                'is_featured'  => true,
-                'sort'         => 1,
-                'published_at' => now()->subDays(3),
-                'seo_keywords' => '工作流自动化,流程管理,团队效率',
-                'tag_slugs'    => ['automation'],
-                'excerpt_zh'   => '不是团队越大越该上自动化，而是重复操作越多越该上。三个信号帮你判断现在是不是时候。',
-                'content_zh'   => <<<'HTML'
+                'title_zh'       => '什么时候该考虑引入工作流自动化',
+                'slug'           => 'when-to-adopt-workflow-automation',
+                'category_id'    => $guide,
+                'is_featured'    => true,
+                'sort'           => 1,
+                'published_at'   => now()->subDays(3),
+                'seo_keywords'   => '工作流自动化,流程管理,团队效率',
+                'tag_slugs'      => ['automation'],
+                'description_zh' => '不是团队越大越该上自动化，而是重复操作越多越该上。三个信号帮你判断现在是不是时候。',
+                'content_zh'     => <<<'HTML'
                     <p>很多团队犹豫要不要上自动化，纠结的其实不是「值不值」，是「现在是不是时候」。这里给三个比较明确的信号。</p>
                     <p><strong>三个信号</strong></p>
                     <ul>
@@ -130,16 +150,16 @@ class SoftwareNewsSeeder extends Seeder
                     HTML,
             ],
             [
-                'title_zh'     => 'API 接口没有文档怎么办',
-                'slug'         => 'integrating-without-api-docs',
-                'category_id'  => $tips,
-                'is_featured'  => false,
-                'sort'         => 2,
-                'published_at' => now()->subDays(10),
-                'seo_keywords' => 'API集成,接口对接,系统集成',
-                'tag_slugs'    => ['api-integration'],
-                'excerpt_zh'   => '不是每个系统的接口都有齐全的文档。这几种情况下我们通常怎么处理。',
-                'content_zh'   => <<<'HTML'
+                'title_zh'       => 'API 接口没有文档怎么办',
+                'slug'           => 'integrating-without-api-docs',
+                'category_id'    => $tips,
+                'is_featured'    => false,
+                'sort'           => 2,
+                'published_at'   => now()->subDays(10),
+                'seo_keywords'   => 'API集成,接口对接,系统集成',
+                'tag_slugs'      => ['api-integration'],
+                'description_zh' => '不是每个系统的接口都有齐全的文档。这几种情况下我们通常怎么处理。',
+                'content_zh'     => <<<'HTML'
                     <p>理想情况下每个系统都有清晰的 API 文档，但现实中经常遇到文档缺失或过期的情况。</p>
                     <p><strong>常见的三种处理方式</strong></p>
                     <ul>
@@ -151,16 +171,16 @@ class SoftwareNewsSeeder extends Seeder
                     HTML,
             ],
             [
-                'title_zh'     => '权限设计：从「谁都能改」到「按角色分级」',
-                'slug'         => 'permission-design-role-based',
-                'category_id'  => $guide,
-                'is_featured'  => true,
-                'sort'         => 3,
-                'published_at' => now()->subMonthNoOverflow()->startOfMonth()->addDays(11),
-                'seo_keywords' => '权限管理,角色分级,数据安全',
-                'tag_slugs'    => ['permission-management'],
-                'excerpt_zh'   => '权限混乱往往不是设计出来的，是团队变大之后没人回头整理出来的。三步理清一套能长期用的权限体系。',
-                'content_zh'   => <<<'HTML'
+                'title_zh'       => '权限设计：从「谁都能改」到「按角色分级」',
+                'slug'           => 'permission-design-role-based',
+                'category_id'    => $guide,
+                'is_featured'    => true,
+                'sort'           => 3,
+                'published_at'   => now()->subMonthNoOverflow()->startOfMonth()->addDays(11),
+                'seo_keywords'   => '权限管理,角色分级,数据安全',
+                'tag_slugs'      => ['permission-management'],
+                'description_zh' => '权限混乱往往不是设计出来的，是团队变大之后没人回头整理出来的。三步理清一套能长期用的权限体系。',
+                'content_zh'     => <<<'HTML'
                     <p>很多团队早期图省事，所有人共用一套账号权限，等团队变大才发现谁都能改任何数据的问题——这时候再收权限，阻力比一开始就设计好大得多。</p>
                     <p><strong>三步理清权限</strong></p>
                     <ul>
@@ -172,16 +192,16 @@ class SoftwareNewsSeeder extends Seeder
                     HTML,
             ],
             [
-                'title_zh'     => '私有化部署与 SaaS 该怎么选',
-                'slug'         => 'on-premise-vs-saas',
-                'category_id'  => $guide,
-                'is_featured'  => false,
-                'sort'         => 4,
-                'published_at' => now()->subMonthNoOverflow()->startOfMonth()->addDays(4),
-                'seo_keywords' => '私有化部署,SaaS,数据合规',
-                'tag_slugs'    => ['deployment'],
-                'excerpt_zh'   => '不是私有化一定更安全、SaaS 一定更省事，关键要看你的数据出域限制和团队运维能力。',
-                'content_zh'   => <<<'HTML'
+                'title_zh'       => '私有化部署与 SaaS 该怎么选',
+                'slug'           => 'on-premise-vs-saas',
+                'category_id'    => $guide,
+                'is_featured'    => false,
+                'sort'           => 4,
+                'published_at'   => now()->subMonthNoOverflow()->startOfMonth()->addDays(4),
+                'seo_keywords'   => '私有化部署,SaaS,数据合规',
+                'tag_slugs'      => ['deployment'],
+                'description_zh' => '不是私有化一定更安全、SaaS 一定更省事，关键要看你的数据出域限制和团队运维能力。',
+                'content_zh'     => <<<'HTML'
                     <p>这个问题没有统一答案，取决于两个因素：数据能不能出内网，以及团队有没有能力运维一套系统。</p>
                     <p><strong>适合 SaaS 的情况</strong></p>
                     <p>没有明确的数据出域限制，团队没有专职运维人员，希望开通即用、按需扩展坐席，SaaS 通常是更省事的选择。</p>
@@ -192,16 +212,16 @@ class SoftwareNewsSeeder extends Seeder
                     HTML,
             ],
             [
-                'title_zh'     => '数据打通后如何避免「重复通知轰炸」',
-                'slug'         => 'avoiding-notification-overload',
-                'category_id'  => $tips,
-                'is_featured'  => false,
-                'sort'         => 5,
-                'published_at' => now()->subMonthsNoOverflow(2)->startOfMonth()->addDays(17),
-                'seo_keywords' => '消息通知,自动化流程,通知设计',
-                'tag_slugs'    => ['automation'],
-                'excerpt_zh'   => '刚上自动化最容易犯的错，是把所有事件都设成通知，结果群里消息比人工时代还多。',
-                'content_zh'   => <<<'HTML'
+                'title_zh'       => '数据打通后如何避免「重复通知轰炸」',
+                'slug'           => 'avoiding-notification-overload',
+                'category_id'    => $tips,
+                'is_featured'    => false,
+                'sort'           => 5,
+                'published_at'   => now()->subMonthsNoOverflow(2)->startOfMonth()->addDays(17),
+                'seo_keywords'   => '消息通知,自动化流程,通知设计',
+                'tag_slugs'      => ['automation'],
+                'description_zh' => '刚上自动化最容易犯的错，是把所有事件都设成通知，结果群里消息比人工时代还多。',
+                'content_zh'     => <<<'HTML'
                     <p>自动化上线初期很容易矫枉过正：担心漏掉重要信息，把几乎所有事件都设成通知，结果是消息比人工核对时代还多，反而没人认真看了。</p>
                     <p><strong>三个建议</strong></p>
                     <ul>
@@ -212,16 +232,16 @@ class SoftwareNewsSeeder extends Seeder
                     HTML,
             ],
             [
-                'title_zh'     => '审计日志到底该记多细',
-                'slug'         => 'how-detailed-should-audit-logs-be',
-                'category_id'  => $compliance,
-                'is_featured'  => false,
-                'sort'         => 6,
-                'published_at' => now()->subMonthsNoOverflow(2)->startOfMonth()->addDays(7),
-                'seo_keywords' => '审计日志,合规,数据安全',
-                'tag_slugs'    => ['permission-management'],
-                'excerpt_zh'   => '记得太粗查不出问题，记得太细存储和性能都吃不消。按操作风险分级是比较务实的做法。',
-                'content_zh'   => <<<'HTML'
+                'title_zh'       => '审计日志到底该记多细',
+                'slug'           => 'how-detailed-should-audit-logs-be',
+                'category_id'    => $compliance,
+                'is_featured'    => false,
+                'sort'           => 6,
+                'published_at'   => now()->subMonthsNoOverflow(2)->startOfMonth()->addDays(7),
+                'seo_keywords'   => '审计日志,合规,数据安全',
+                'tag_slugs'      => ['permission-management'],
+                'description_zh' => '记得太粗查不出问题，记得太细存储和性能都吃不消。按操作风险分级是比较务实的做法。',
+                'content_zh'     => <<<'HTML'
                     <p>审计日志不是记得越细越好，也不是能省则省——这两个极端我们都遇到过客户踩坑。</p>
                     <p><strong>按风险分级记录</strong></p>
                     <ul>
@@ -233,16 +253,16 @@ class SoftwareNewsSeeder extends Seeder
                     HTML,
             ],
             [
-                'title_zh'     => '从人工核对到自动化：一个真实团队的迁移过程',
-                'slug'         => 'manual-to-automation-migration-story',
-                'category_id'  => $tips,
-                'is_featured'  => false,
-                'sort'         => 7,
-                'published_at' => now()->subMonthsNoOverflow(3)->startOfMonth()->addDays(13),
-                'seo_keywords' => '自动化迁移,团队实践,案例分享',
-                'tag_slugs'    => ['customer-story', 'automation'],
-                'excerpt_zh'   => '不是一次性切换，而是分三步走。记录一个团队从人工核对到自动化的真实迁移节奏。',
-                'content_zh'   => <<<'HTML'
+                'title_zh'       => '从人工核对到自动化：一个真实团队的迁移过程',
+                'slug'           => 'manual-to-automation-migration-story',
+                'category_id'    => $tips,
+                'is_featured'    => false,
+                'sort'           => 7,
+                'published_at'   => now()->subMonthsNoOverflow(3)->startOfMonth()->addDays(13),
+                'seo_keywords'   => '自动化迁移,团队实践,案例分享',
+                'tag_slugs'      => ['customer-story', 'automation'],
+                'description_zh' => '不是一次性切换，而是分三步走。记录一个团队从人工核对到自动化的真实迁移节奏。',
+                'content_zh'     => <<<'HTML'
                     <p>把人工流程搬到自动化，不建议一次性全部切换——风险太高，出问题也不好排查。这里分享一个团队的实际节奏。</p>
                     <p><strong>第一步：并行运行</strong></p>
                     <p>先让自动化流程和人工核对同时跑两周，比对结果是否一致，确认规则没有遗漏边界情况。</p>
@@ -253,16 +273,16 @@ class SoftwareNewsSeeder extends Seeder
                     HTML,
             ],
             [
-                'title_zh'     => '企业微信 / 钉钉集成：消息推送的三个坑',
-                'slug'         => 'wecom-dingtalk-integration-pitfalls',
-                'category_id'  => $tips,
-                'is_featured'  => false,
-                'sort'         => 8,
-                'published_at' => now()->subMonthsNoOverflow(3)->startOfMonth()->addDays(5),
-                'seo_keywords' => '企业微信集成,钉钉集成,消息推送',
-                'tag_slugs'    => ['automation'],
-                'excerpt_zh'   => '接进去只是第一步，真正让人愿意看这些通知，还要避开这三个常见坑。',
-                'content_zh'   => <<<'HTML'
+                'title_zh'       => '企业微信 / 钉钉集成：消息推送的三个坑',
+                'slug'           => 'wecom-dingtalk-integration-pitfalls',
+                'category_id'    => $tips,
+                'is_featured'    => false,
+                'sort'           => 8,
+                'published_at'   => now()->subMonthsNoOverflow(3)->startOfMonth()->addDays(5),
+                'seo_keywords'   => '企业微信集成,钉钉集成,消息推送',
+                'tag_slugs'      => ['automation'],
+                'description_zh' => '接进去只是第一步，真正让人愿意看这些通知，还要避开这三个常见坑。',
+                'content_zh'     => <<<'HTML'
                     <p>企业微信和钉钉集成技术上不难，但用得好不好，往往取决于几个容易忽略的细节。</p>
                     <p><strong>三个常见坑</strong></p>
                     <ul>
@@ -273,16 +293,16 @@ class SoftwareNewsSeeder extends Seeder
                     HTML,
             ],
             [
-                'title_zh'     => '服务范围与响应时间说明',
-                'slug'         => 'service-scope-response-time',
-                'category_id'  => $company,
-                'is_featured'  => false,
-                'sort'         => 9,
-                'published_at' => now()->subMonthsNoOverflow(4)->startOfMonth()->addDays(19),
-                'seo_keywords' => '服务范围,响应时间,技术支持',
-                'tag_slugs'    => ['deployment'],
-                'excerpt_zh'   => '不同版本的支持响应时间不一样，这里一次说清楚，省得来回问。',
-                'content_zh'   => <<<'HTML'
+                'title_zh'       => '服务范围与响应时间说明',
+                'slug'           => 'service-scope-response-time',
+                'category_id'    => $company,
+                'is_featured'    => false,
+                'sort'           => 9,
+                'published_at'   => now()->subMonthsNoOverflow(4)->startOfMonth()->addDays(19),
+                'seo_keywords'   => '服务范围,响应时间,技术支持',
+                'tag_slugs'      => ['deployment'],
+                'description_zh' => '不同版本的支持响应时间不一样，这里一次说清楚，省得来回问。',
+                'content_zh'     => <<<'HTML'
                     <p>不同版本配的支持服务不同，这里统一说明，方便对照「版本与定价」页面选择合适的版本。</p>
                     <p><strong>支持方式</strong></p>
                     <ul>
@@ -295,16 +315,16 @@ class SoftwareNewsSeeder extends Seeder
             ],
             [
                 // 草稿：验证前台不泄露未发布内容，也给后台状态筛选留一条样本
-                'title_zh'     => '上半年功能迭代复盘（未定稿）',
-                'slug'         => 'h1-feature-iteration-review-draft',
-                'category_id'  => $company,
-                'is_featured'  => false,
-                'sort'         => 10,
-                'published_at' => null,
-                'seo_keywords' => '功能迭代,产品复盘',
-                'tag_slugs'    => ['automation'],
-                'excerpt_zh'   => '上半年在工作流引擎和权限中心上做了几处调整，记录一下原因。',
-                'content_zh'   => <<<'HTML'
+                'title_zh'       => '上半年功能迭代复盘（未定稿）',
+                'slug'           => 'h1-feature-iteration-review-draft',
+                'category_id'    => $company,
+                'is_featured'    => false,
+                'sort'           => 10,
+                'published_at'   => null,
+                'seo_keywords'   => '功能迭代,产品复盘',
+                'tag_slugs'      => ['automation'],
+                'description_zh' => '上半年在工作流引擎和权限中心上做了几处调整，记录一下原因。',
+                'content_zh'     => <<<'HTML'
                     <p>本文尚未定稿，正在补充具体的功能变更清单。</p>
                     <p>上半年主要调整集中在工作流引擎的重试机制和权限中心的数据范围粒度，具体细节整理完再发。</p>
                     HTML,

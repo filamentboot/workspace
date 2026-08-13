@@ -322,11 +322,18 @@ class FilamentbootServiceProvider extends ServiceProvider
     }
 
     /**
-     * 注册可发布资源出口（vendor:publish 7 个 tag）
+     * 注册可发布资源出口（vendor:publish 6 个 tag）
      *
-     * 支持 filamentboot-config / filamentboot-migrations / filamentboot-views /
+     * 支持 filamentboot-config / filamentboot-views /
      * filamentboot-lang / filamentboot-stubs / filamentboot-theme / filamentboot-brand
-     * 七个标签，让用户通过 `php artisan vendor:publish --tag=filamentboot-*` 将资源复制到项目。
+     * 六个标签，让用户通过 `php artisan vendor:publish --tag=filamentboot-*` 将资源复制到项目。
+     *
+     * 不提供迁移 publish tag：{@see registerMigrations()} 的 loadMigrationsFrom()
+     * 已自动加载全部迁移，再 publish 一份到 database/migrations/ 会被 migrate 同时
+     * 扫描到两份——其中 3 个具名类（activity_log 三件套）会在编译期报
+     * "Cannot redeclare class"，其余走 Schema::hasTable 守卫的会静默重复执行、
+     * 没守卫的会报 "table already exists"。需要自定义迁移的用户手写新迁移文件，
+     * 不要整包复制。
      */
     protected function registerPublishes(): void
     {
@@ -340,11 +347,6 @@ class FilamentbootServiceProvider extends ServiceProvider
             __DIR__.'/../config/official-market.php' => config_path('official-market.php'),
             __DIR__.'/../config/plugin-platform.php' => config_path('plugin-platform.php'),
         ], 'filamentboot-config');
-
-        // D-08: migrations tag — 使用 publishesMigrations 自动追加时间戳前缀（Laravel 13 原生 API）
-        $this->publishesMigrations([
-            __DIR__.'/../database/migrations/' => database_path('migrations'),
-        ], 'filamentboot-migrations');
 
         // D-09: views tag — 将包内视图目录发布到用户项目 resources/views/vendor/filamentboot
         $this->publishes([

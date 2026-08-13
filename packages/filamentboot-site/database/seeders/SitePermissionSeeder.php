@@ -32,7 +32,9 @@ class SitePermissionSeeder extends Seeder
     {
         app(PermissionRegistrar::class)->forgetCachedPermissions();
 
-        foreach ($this->permissions() as $permission) {
+        $permissions = self::permissions();
+
+        foreach ($permissions as $permission) {
             Permission::firstOrCreate([
                 'name'       => $permission,
                 'guard_name' => self::GUARD,
@@ -40,14 +42,19 @@ class SitePermissionSeeder extends Seeder
         }
 
         app(PermissionRegistrar::class)->forgetCachedPermissions();
+
+        $this->command?->info('官网插件权限点已写入：'.count($permissions).' 个（guard: '.self::GUARD.'）');
     }
 
     /**
-     * 官网插件权限点清单
+     * 官网插件权限点清单（批次 4 起公开：`filamentboot-site:doctor` 用它核对
+     * 结构性种子是否跑完，不再靠猜前缀）
+     *
+     * guard 固定 self::GUARD（admin），与本类 run() 写入 DB 时用的一致。
      *
      * @return list<string>
      */
-    private function permissions(): array
+    public static function permissions(): array
     {
         $resourcePermissions = [];
 
@@ -72,12 +79,12 @@ class SitePermissionSeeder extends Seeder
             // 分类与标签：三张表都没有软删除，各少 restore / force_delete 两个动作。
             // 案例分类 / 产品分类 / 标签三套是 3.5 期 A 段补的——在那之前它们
             // 只能靠 seeder 维护，后台连列表页都没有。
-            ...$this->flatResourcePermissions(['news_category', 'site_case_category', 'site_product_category', 'site_tag']),
+            ...self::flatResourcePermissions(['news_category', 'site_case_category', 'site_product_category', 'site_tag']),
 
             // 友情链接 / 广告位（七期批次 5，可配置内容类型系统验收产物）：
             // 无软删除，但 Resource 的 toolbarActions 带 DeleteBulkAction，
             // 比上面的分类/标签多一个 delete_any，不能套 flatResourcePermissions()
-            ...$this->bulkDeletableResourcePermissions(['friend_link', 'ad_slot']),
+            ...self::bulkDeletableResourcePermissions(['friend_link', 'ad_slot']),
 
             // 询盘：前台写入，后台只读 + 状态流转 + 跟进，无新建
             'view_any_contact_message',
@@ -134,7 +141,7 @@ class SitePermissionSeeder extends Seeder
      * @param  list<string>  $resources
      * @return list<string>
      */
-    private function flatResourcePermissions(array $resources): array
+    private static function flatResourcePermissions(array $resources): array
     {
         $permissions = [];
 
@@ -156,7 +163,7 @@ class SitePermissionSeeder extends Seeder
      * @param  list<string>  $resources
      * @return list<string>
      */
-    private function bulkDeletableResourcePermissions(array $resources): array
+    private static function bulkDeletableResourcePermissions(array $resources): array
     {
         $permissions = [];
 

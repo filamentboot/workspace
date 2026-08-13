@@ -29,7 +29,9 @@ use Filamentboot\FilamentbootSite\Cms\Models\SitePage;
 use Filamentboot\FilamentbootSite\Cms\Observers\ContentRevisionObserver;
 use Filamentboot\FilamentbootSite\Cms\Routing\SiteRedirectMiddleware;
 use Filamentboot\FilamentbootSite\Console\Commands\CrawlerStatsCommand;
+use Filamentboot\FilamentbootSite\Console\Commands\DoctorCommand;
 use Filamentboot\FilamentbootSite\Console\Commands\ImportRegionsCommand;
+use Filamentboot\FilamentbootSite\Console\Commands\InstallCommand;
 use Filamentboot\FilamentbootSite\Console\Commands\PublishCityPagesCommand;
 use Filamentboot\FilamentbootSite\Console\Commands\PushBaiduCommand;
 use Filamentboot\FilamentbootSite\Console\Commands\SyncContentTypesCommand;
@@ -42,6 +44,7 @@ use Filamentboot\FilamentbootSite\Modules\News\Models\NewsArticle;
 use Filamentboot\FilamentbootSite\Observers\SearchPushObserver;
 use Filamentboot\FilamentbootSite\Services\ContactSourceLabel;
 use Filamentboot\FilamentbootSite\Settings\SiteSettings;
+use Filamentboot\Services\PluginManager;
 use Illuminate\Contracts\Http\Kernel;
 use Illuminate\Contracts\View\View as ViewContract;
 use Illuminate\Support\Facades\Cache;
@@ -273,11 +276,13 @@ class SiteServiceProvider extends ServiceProvider
         }
 
         $this->commands([
+            InstallCommand::class,
             PushBaiduCommand::class,
             CrawlerStatsCommand::class,
             ImportRegionsCommand::class,
             PublishCityPagesCommand::class,
             SyncContentTypesCommand::class,
+            DoctorCommand::class,
         ]);
     }
 
@@ -285,8 +290,8 @@ class SiteServiceProvider extends ServiceProvider
      * 查询插件启用状态
      *
      * 优先从缓存读取，缓存写失败时降级为直接查 DB（不把写缓存异常误判为"未启用"）。
-     * 缓存键与 PluginManager::enable()/disable() 的 Cache::forget("{slug}:is_enabled") 同源，
-     * 后台启停插件后立即失效。
+     * 缓存键读 PluginManager::isEnabledCacheKey()（批次 4 起两边共用同一个方法，
+     * 不再各自硬编码 "{slug}:is_enabled" 字面量），后台启停插件后立即失效。
      */
     protected function pluginIsEnabled(): bool
     {
@@ -296,7 +301,7 @@ class SiteServiceProvider extends ServiceProvider
             ->exists();
 
         try {
-            return (bool) Cache::remember(self::PLUGIN_SLUG.':is_enabled', now()->addHours(24), $query);
+            return (bool) Cache::remember(PluginManager::isEnabledCacheKey(self::PLUGIN_SLUG), now()->addHours(24), $query);
         } catch (\Throwable) {
             // 缓存不可用（权限、驱动故障）时直接查 DB
             try {
@@ -434,7 +439,12 @@ class SiteServiceProvider extends ServiceProvider
      * 注册 Settings 与内容迁移文件，并发布资源
      *
      * 仅在 Console 环境中加载迁移，避免影响 HTTP 请求生命周期。
-     * 发布 tag 供用户执行 php artisan vendor:publish 复制配置、迁移文件与主题视图。
+     * 发布 tag 供用户执行 php artisan vendor:publish 复制配置与主题视图。
+     *
+     * 不提供迁移 publish tag：loadMigrationsFrom() 已自动加载全部迁移，
+     * 再 publish 一份到 database/migrations/ 会被 migrate 同时扫描到两份，
+     * 走 Schema::hasTable 守卫的会静默重复执行、没守卫的会报
+     * "table already exists"。需要自定义迁移的用户手写新迁移文件，不要整包复制。
      */
     protected function registerMigrationsAndViews(): void
     {
@@ -448,21 +458,12 @@ class SiteServiceProvider extends ServiceProvider
         ], 'filamentboot-site-config');
 
         // 注册 settings 迁移（Spatie laravel-settings）
-        $settingsMigrationsPath = __DIR__.'/../database/settings';
-        $this->loadMigrationsFrom($settingsMigrationsPath);
-
-        $this->publishes([
-            $settingsMigrationsPath => database_path('migrations'),
-        ], 'filamentboot-site-migrations');
+        $this->loadMigrationsFrom(__DIR__.'/../database/settings');
 
         // 注册内容迁移（site_cases、site_solutions 等表）
         $contentMigrationsPath = __DIR__.'/../database/migrations';
         if (is_dir($contentMigrationsPath)) {
             $this->loadMigrationsFrom($contentMigrationsPath);
-
-            $this->publishes([
-                $contentMigrationsPath => database_path('migrations'),
-            ], 'filamentboot-site-migrations');
         }
 
         // 发布主题视图（tag filamentboot-site-views），供用户覆盖定制（D-10-12）
@@ -490,6 +491,31 @@ class SiteServiceProvider extends ServiceProvider
             $this->publishes([
                 $resourcesJsPath => resource_path('js/vendor/'.self::VIEW_NAMESPACE),
             ], 'filamentboot-site-assets');
+        }
+
+        // Playwright 冒烟测试（tag filamentboot-site-tests，批次 5）。
+        //
+        // 刻意不放进 composer.json 的 post_install.publish_tags——那份清单驱动
+        // 「插件市场初始化」与安装命令的自动发布，这批 .cjs 文件要求下游装了
+        // Node + Playwright 才能跑，不该跟着每一次安装强行落地（同 filamentboot-
+        // site-views 的先例：真实存在的 tag，但不进自动发布清单）。要用自己发：
+        // php artisan vendor:publish --tag=filamentboot-site-tests
+        //
+        // 逐文件映射而非整目录映射：playwright.config.site.cjs 发布到项目根目录
+        // （与本仓库自己的实际布局一致），其余 7 个文件发布到 tests/e2e/——两者
+        // 目的地不同，整目录复制会把配置文件也复制进 tests/e2e/ 里多出一份。
+        $e2ePath = __DIR__.'/../tests/e2e';
+        if (is_dir($e2ePath)) {
+            $this->publishes([
+                $e2ePath.'/global-setup.cjs'                   => base_path('tests/e2e/global-setup.cjs'),
+                $e2ePath.'/site-computed-styles.spec.cjs'      => base_path('tests/e2e/site-computed-styles.spec.cjs'),
+                $e2ePath.'/site-contact-cta.spec.cjs'          => base_path('tests/e2e/site-contact-cta.spec.cjs'),
+                $e2ePath.'/site-contact-panel-fields.spec.cjs' => base_path('tests/e2e/site-contact-panel-fields.spec.cjs'),
+                $e2ePath.'/site-gated-download.spec.cjs'       => base_path('tests/e2e/site-gated-download.spec.cjs'),
+                $e2ePath.'/site-mobile-viewport.spec.cjs'      => base_path('tests/e2e/site-mobile-viewport.spec.cjs'),
+                $e2ePath.'/site-search.spec.cjs'               => base_path('tests/e2e/site-search.spec.cjs'),
+                $e2ePath.'/playwright.config.site.cjs'         => base_path('playwright.config.site.cjs'),
+            ], 'filamentboot-site-tests');
         }
     }
 }

@@ -34,7 +34,7 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
  * @property int $id
  * @property string $title_zh
  * @property string $slug
- * @property string|null $excerpt_zh
+ * @property string|null $description_zh
  * @property string|null $content_zh
  * @property int|null $category_id
  * @property string|null $seo_title
@@ -138,7 +138,7 @@ class NewsArticle extends Model implements HasMedia, Revisionable
         return [
             'title_zh',
             'slug',
-            'excerpt_zh',
+            'description_zh',
             'content_zh',
             'category_id',
             'seo_title',
@@ -159,7 +159,7 @@ class NewsArticle extends Model implements HasMedia, Revisionable
         return [
             'title_zh',
             'slug',
-            'excerpt_zh',
+            'description_zh',
             'content_zh',
             'category_id',
             'seo_title',
@@ -178,7 +178,7 @@ class NewsArticle extends Model implements HasMedia, Revisionable
         return [
             'title_zh'        => '标题',
             'slug'            => 'URL Slug',
-            'excerpt_zh'      => '摘要',
+            'description_zh'  => '摘要',
             'content_zh'      => '正文',
             'category_id'     => '所属分类',
             'seo_title'       => 'SEO 标题',

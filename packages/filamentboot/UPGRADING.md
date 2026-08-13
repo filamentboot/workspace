@@ -4,6 +4,52 @@
 
 ---
 
+## v0.13 → v0.14 升级指南
+
+### 摘要
+
+九期"完善包"把 v0.13 首次正式发布后暴露出的打包缺口一次性收口，其中一项是不兼容变更。
+
+---
+
+### Breaking Change：删除 `filamentboot-migrations` publish tag
+
+**影响：** 曾执行过 `php artisan vendor:publish --tag=filamentboot-migrations` 的用户。
+
+**背景：** 本包的 `hasMigrations()` 一直自动加载全部 27 个迁移，发布这个 tag 会让文件
+被原样复制到 `database/migrations/`——其中 `activity_log` 三件套与
+`spatie/laravel-activitylog` 自带的 stub 类名相撞，`migrate` 直接编译期
+`Cannot redeclare class`；`settings` 表迁移同理撞表名。
+
+**操作：** 删除 `database/migrations/` 下日期前缀是发布时间、内容与
+`vendor/filamentboot/filamentboot/database/migrations/` 重复的文件，本包自带的自动
+加载不受影响。需要自定义迁移请手写新文件，不要整包复制。
+
+---
+
+### 其他变更（非 Breaking，建议一并处理）
+
+- **`composer.json` 新增 `"ext-intl": "*"` 到 `require`**：`filament/support` 一直
+  硬依赖这个扩展，缺失时批量删除/恢复/强删/导入通知会抛 `RuntimeException`，升级前
+  确认 PHP 已装。
+- **`HasDataScope` 加两个可覆盖方法**：`personalScopeColumn()`（属主列名，默认
+  `created_by`）、`personalScopeAllowsUnassigned()`（是否放行该列为 `NULL` 的记录）。
+  文档此前写的"5 种权限范围枚举 + `DataScopeResolver`"已订正为如实的
+  `personal`/`department` 两档，接入方式不变。
+- **`MenuTree`（后台"菜单规则"）的 Livewire Entangle 崩溃已修复**，无需任何操作。
+
+### composer 约束建议
+
+```json
+{
+    "require": {
+        "filamentboot/filamentboot": "^0.14"
+    }
+}
+```
+
+---
+
 ## v0.4 → v0.5 升级指南
 
 ### 摘要

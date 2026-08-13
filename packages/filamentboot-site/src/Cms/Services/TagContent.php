@@ -202,7 +202,7 @@ class TagContent
             $records,
             fn (NewsArticle $record): array => [
                 'title'   => $record->title_zh,
-                'excerpt' => $this->excerpt((string) ($record->excerpt_zh ?: $record->content_zh)),
+                'excerpt' => $this->excerpt((string) ($record->description_zh ?: $record->content_zh)),
                 'url'     => route('site.news.show', ['slug' => $record->slug]),
             ]
         );

@@ -22,9 +22,26 @@ class SiteNewsSeeder extends Seeder
      */
     public function run(): void
     {
-        $this->call(match (SiteServiceProvider::resolveActiveTheme()) {
+        $theme = SiteServiceProvider::resolveActiveTheme();
+
+        $this->call(match ($theme) {
             'software' => SoftwareNewsSeeder::class,
             default    => DecorationNewsSeeder::class,
         });
+
+        $this->command?->info("资讯演示内容已按当前主题（{$theme}）播种：分类与文章，按 slug 增量补种，已有记录不受影响");
+    }
+
+    /**
+     * 当前主题会写入的资讯 slug 清单（批次 3，供后台「清空演示数据」使用）
+     *
+     * @return array<class-string, list<string>>
+     */
+    public static function seededSlugs(): array
+    {
+        return match (SiteServiceProvider::resolveActiveTheme()) {
+            'software' => SoftwareNewsSeeder::seededSlugs(),
+            default    => DecorationNewsSeeder::seededSlugs(),
+        };
     }
 }

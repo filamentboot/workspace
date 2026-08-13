@@ -56,9 +56,9 @@ return new class extends Migration
             $table->string('region_code', 6)->unique()->comment('对应 site_regions.code');
 
             $table->string('title_zh')->comment('页面标题，如「武汉全屋智能装修」');
-            // 叫 description_zh 而不是 summary_zh：六类内容里五类都用这个名字，
-            // SEO 回退链（buildSeo）与 llms.txt 都按它取摘要。多起一个名字就要
-            // 在那两处各加一个分支，而字段命名本来就已经有 excerpt_zh 这个例外了
+            // 叫 description_zh 而不是 summary_zh：六类内容统一用这个名字，
+            // SEO 回退链（buildSeo）与 llms.txt 都按它取摘要，多起一个名字就要
+            // 在那两处各加一个分支
             $table->text('description_zh')->nullable()->comment('一句话简介，列表卡片与 meta description 用');
             $table->longText('content_zh')->nullable()->comment('可选正文覆写，正常为 NULL（见类注释）');
 

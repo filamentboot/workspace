@@ -18,8 +18,9 @@ use Illuminate\Database\Eloquent\Builder;
  * 里 Gate::before() 的超管放行语义保持一致——否则超管在 Policy 层什么都能
  * 做，列表页却看不到自己应该能管的记录。
  *
- * personal 档要求模型表有 created_by 列；department 档要求模型表有
- * department_id 列。两列均不由本 trait 创建，接入的 Resource 自己迁移。
+ * personal 档默认要求模型表有 created_by 列（列名可通过 personalScopeColumn()
+ * 覆盖，例如询盘的属主列是 assigned_to 而非 created_by）；department 档要求
+ * 模型表有 department_id 列。列均不由本 trait 创建，接入的 Resource 自己迁移。
  */
 trait HasDataScope
 {
@@ -29,6 +30,27 @@ trait HasDataScope
     protected static function dataScope(): ?string
     {
         return null;
+    }
+
+    /**
+     * personal 档比对的属主列名，默认 created_by
+     */
+    protected static function personalScopeColumn(): string
+    {
+        return 'created_by';
+    }
+
+    /**
+     * personal 档是否放行该列为 NULL 的记录（如未分配的询盘线索）
+     *
+     * 默认不放行：created_by 语义上创建时必定写入，NULL 属异常数据而非
+     * 合法状态，不该被所有人看见。属主列语义是"待分配"时（如
+     * ContactMessageResource 的 assigned_to）才应覆盖为 true——否则新记录
+     * 在被分配之前，除超管外谁都看不到，比不接入数据权限还糟。
+     */
+    protected static function personalScopeAllowsUnassigned(): bool
+    {
+        return false;
     }
 
     /**
@@ -53,10 +75,26 @@ trait HasDataScope
         }
 
         return match ($scope) {
-            'personal'   => $query->where('created_by', $user->id),
+            'personal'   => static::applyPersonalDataScope($query, $user),
             'department' => static::applyDepartmentDataScope($query, $user),
             default      => $query,
         };
+    }
+
+    /**
+     * personal 档：属主列命中当前用户，或（按需）该列为 NULL 的未分配记录
+     */
+    private static function applyPersonalDataScope(Builder $query, AdminUser $user): Builder
+    {
+        $column = static::personalScopeColumn();
+
+        return $query->where(function (Builder $query) use ($column, $user) {
+            $query->where($column, $user->id);
+
+            if (static::personalScopeAllowsUnassigned()) {
+                $query->orWhereNull($column);
+            }
+        });
     }
 
     /**

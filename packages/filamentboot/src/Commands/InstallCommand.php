@@ -17,8 +17,8 @@ use Illuminate\Support\ServiceProvider;
  * Step 4: vendor:publish filamentboot-lang
  * Step 5: 复制品牌资源到 public/（幂等：已存在时不覆盖）
  * Step 6: migrate（迁移由 FilamentbootServiceProvider::loadMigrationsFrom 自动加载，
- *           不 publish migrations，避免与 loadMigrationsFrom 同名类冲突；
- *           需要自定义迁移的用户可手动运行 vendor:publish --tag=filamentboot-migrations）
+ *           不提供迁移 publish tag，避免与 loadMigrationsFrom 同名类冲突；
+ *           需要自定义迁移的用户手写新迁移文件，不要整包复制）
  * Step 7: db:seed SuperAdminSeeder
  * Step 8: 输出安装报告（T-11-02 缓解：提示修改默认密码）
  */
@@ -65,8 +65,8 @@ class InstallCommand extends Command
         $this->publishBrandAssets();
 
         // Step 6: migrate（迁移由 FilamentbootServiceProvider::loadMigrationsFrom 自动加载，
-        //   不再 publish migrations，避免与 auto-load 产生同名类冲突。
-        //   若需自定义迁移，可手动运行 vendor:publish --tag=filamentboot-migrations）
+        //   不提供迁移 publish tag，避免与 auto-load 产生同名类冲突。
+        //   若需自定义迁移，手写新迁移文件，不要整包复制）
         $this->components->info('正在执行数据库迁移...');
 
         if ($this->call('migrate') !== 0) {

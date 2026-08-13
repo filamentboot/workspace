@@ -3,6 +3,7 @@
 namespace Filamentboot\FilamentbootSite\Filament\Pages;
 
 use BackedEnum;
+use Filament\Actions\Action;
 use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Placeholder;
 use Filament\Forms\Components\Select;
@@ -19,6 +20,7 @@ use Filament\Schemas\Schema;
 use Filament\Support\Exceptions\Halt;
 use Filamentboot\FilamentbootSite\Cms\Themes\ThemeManifest;
 use Filamentboot\FilamentbootSite\Cms\Themes\ThemeSwitchCheck;
+use Filamentboot\FilamentbootSite\Services\DemoDataToggle;
 use Filamentboot\FilamentbootSite\Services\SiteHealthCheck;
 use Filamentboot\FilamentbootSite\Settings\SiteSettings;
 use Filamentboot\FilamentbootSite\SiteServiceProvider;
@@ -66,6 +68,58 @@ class SiteSettingsPage extends SettingsPage
         parent::mount();
 
         $this->notifyMissingSettings();
+    }
+
+    /**
+     * 种入 / 清空演示数据（批次 3）
+     *
+     * 只对超管开放，不走 manage_site_settings 权限点：这是包维护/演示用途的动作，
+     * 不该随「站点管理」角色一起授出去。两个动作都退出面板级 databaseTransaction()——
+     * 种入会连续跑两个 db:seed，清空会对多张表做批量强删，都不该被外层事务包住。
+     */
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('seedDemoData')
+                ->label('种入演示数据')
+                ->icon('heroicon-o-sparkles')
+                ->color('gray')
+                ->databaseTransaction(false)
+                ->requiresConfirmation()
+                ->modalDescription('按当前主题播种案例、方案、产品、静态页、套餐与资讯等演示内容。按 slug 增量补种，已有的同名内容不受影响，可反复点击。')
+                ->authorize(fn (): bool => $this->isSuperAdmin())
+                ->action(function (): void {
+                    abort_unless($this->isSuperAdmin(), 403);
+
+                    app(DemoDataToggle::class)->seed();
+
+                    Notification::make()->success()->title('演示数据已种入')->send();
+                }),
+
+            Action::make('clearDemoData')
+                ->label('清空演示数据')
+                ->icon('heroicon-o-trash')
+                ->color('danger')
+                ->databaseTransaction(false)
+                ->requiresConfirmation()
+                ->modalDescription('按 slug 强制删除演示案例、方案、产品、静态页、套餐与资讯，并重置前台导航菜单与列表页导语。⚠️ 这些内容或菜单一旦被运营改过，改动会一并清空且不可恢复。')
+                ->authorize(fn (): bool => $this->isSuperAdmin())
+                ->action(function (): void {
+                    abort_unless($this->isSuperAdmin(), 403);
+
+                    app(DemoDataToggle::class)->clear();
+
+                    Notification::make()->success()->title('演示数据已清空')->send();
+                }),
+        ];
+    }
+
+    /**
+     * 当前用户是否为超级管理员
+     */
+    protected function isSuperAdmin(): bool
+    {
+        return (bool) Auth::user()?->hasRole(config('filamentboot.super_admin_role', 'super_admin'));
     }
 
     /**
