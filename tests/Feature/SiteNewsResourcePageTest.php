@@ -102,12 +102,12 @@ it('资讯创建页可提交并落库', function () {
 
     Livewire::test(CreateNewsArticle::class)
         ->fillForm([
-            'slug'         => 'quan-wu-zhi-neng-zhi-nan',
-            'category_id'  => $category->id,
-            'title_zh'     => '全屋智能选购指南',
-            'excerpt_zh'   => '从场景出发而不是从单品出发',
-            'content_zh'   => '<p>先定场景，再定设备。</p>',
-            'published_at' => now(),
+            'slug'           => 'quan-wu-zhi-neng-zhi-nan',
+            'category_id'    => $category->id,
+            'title_zh'       => '全屋智能选购指南',
+            'description_zh' => '从场景出发而不是从单品出发',
+            'content_zh'     => '<p>先定场景，再定设备。</p>',
+            'published_at'   => now(),
         ])
         ->call('create')
         ->assertHasNoFormErrors();

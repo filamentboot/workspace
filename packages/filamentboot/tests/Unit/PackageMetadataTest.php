@@ -43,8 +43,8 @@ class PackageMetadataTest extends TestCase
 
         self::assertNotEmpty($composer['support']['docs']);
         self::assertNotEmpty($composer['support']['wiki']);
-        self::assertStringStartsWith('https://github.com/filamentboot/workspace', $composer['support']['docs']);
-        self::assertStringStartsWith('https://github.com/filamentboot/workspace', $composer['support']['wiki']);
+        self::assertStringStartsWith('https://github.com/filamentboot/filamentboot', $composer['support']['docs']);
+        self::assertStringStartsWith('https://github.com/filamentboot/filamentboot', $composer['support']['wiki']);
     }
 
     /**
@@ -81,7 +81,7 @@ class PackageMetadataTest extends TestCase
     {
         $composer = $this->loadComposerJson();
 
-        self::assertSame('0.13.x-dev', $composer['extra']['branch-alias']['dev-main']);
+        self::assertSame('0.14.x-dev', $composer['extra']['branch-alias']['dev-main']);
     }
 
     /**

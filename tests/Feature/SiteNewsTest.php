@@ -44,10 +44,10 @@ beforeEach(function () {
  */
 it('资讯列表页展示已发布文章', function () {
     NewsArticle::factory()->create([
-        'title_zh'     => '全屋智能选型避坑指南',
-        'slug'         => 'quan-wu-zhi-neng-xuan-xing',
-        'excerpt_zh'   => '先定协议再买设备，顺序反了就得返工。',
-        'published_at' => now()->subDay(),
+        'title_zh'       => '全屋智能选型避坑指南',
+        'slug'           => 'quan-wu-zhi-neng-xuan-xing',
+        'description_zh' => '先定协议再买设备，顺序反了就得返工。',
+        'published_at'   => now()->subDay(),
     ]);
 
     $this->get('/news')

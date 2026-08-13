@@ -217,12 +217,12 @@ it('资讯列表详情归档三页在两套主题下均可渲染', function (str
     $published = now()->subMonthNoOverflow()->startOfMonth()->addDays(5);
 
     $article = NewsArticle::factory()->create([
-        'title_zh'     => '网关到底要不要买双模',
-        'slug'         => 'wang-guan-shuang-mo',
-        'excerpt_zh'   => '协议选错，后面每加一个设备都是一次妥协。',
-        'content_zh'   => '<p>结论先给：预算够就上双模。</p>',
-        'category_id'  => $category->id,
-        'published_at' => $published,
+        'title_zh'       => '网关到底要不要买双模',
+        'slug'           => 'wang-guan-shuang-mo',
+        'description_zh' => '协议选错，后面每加一个设备都是一次妥协。',
+        'content_zh'     => '<p>结论先给：预算够就上双模。</p>',
+        'category_id'    => $category->id,
+        'published_at'   => $published,
     ]);
 
     $article->addMediaFromString(tinyPngBytes())
