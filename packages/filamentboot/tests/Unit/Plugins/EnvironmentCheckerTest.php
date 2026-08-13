@@ -97,10 +97,13 @@ class EnvironmentCheckerTest extends TestCase
      */
     public function test_self_check_passes_when_all_conditions_met(): void
     {
+        // vendorPathOverride 不用 base_path('vendor')：Testbench 骨架不保证
+        // 这个目录真实存在（CI 全新环境里确实不存在），用系统临时目录才是
+        // 真正与运行环境无关的"确定可写路径"。
         $checker = new EnvironmentChecker(
             procOpenAvailable: true,
             composerPathOverride: '/usr/local/bin/composer',
-            vendorPathOverride: base_path('vendor'),
+            vendorPathOverride: sys_get_temp_dir(),
         );
 
         $result = $checker->selfCheck();
