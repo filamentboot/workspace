@@ -42,22 +42,28 @@ Laravel 13 + Filament 5 后台基础平台。主路线详见 `docs/dev/项目开
 
 ## 发版流程（Release）
 
-**Gitee 同步是人工步骤**，`release.yml` 只自动推 GitHub 包仓库，不自动推 Gitee。
+> ⚠️ 2026-08-13 订正：本节此前说"Gitee 同步是人工步骤"，与 `release.yml` 实际内容
+> 不符——`mirror-to-gitee` job 一直都在，push `v*` tag 时跟其余 job 一起自动触发，
+> 从来不需要手动推 Gitee。（这个 job 目前会失败，是 `GITEE_SSH_KEY` 失效，见任务
+> #22，不是"没自动化"。）
 
-每次发版前须手动执行：
+**推荐路径：`bin/release-preflight.sh` + `/release` skill**（2026-08-13 起）。
+先跑 `bin/release-preflight.sh vX.Y.Z` 做确定性检查（7 个包 `composer validate`、
+全量测试、CHANGELOG 版本节匹配、qkznj 信息人工复核清单、本地 dry-run subtree
+split、两个 Secret 存在性），再用 `/release` skill 逐步走 push main → 确认 CI 绿 →
+push tag → 盯 `release.yml` 四个 job → 自己 curl 确认 Packagist，每个不可逆步骤单独
+确认。详见 `.claude/skills/release/SKILL.md`。
 
-```bash
-# 本地完整发版（含 Gitee 推送）
-scripts/release-package.sh vX.Y.Z
+CI（`release.yml`）在 push `v*` tag 时自动触发，4 个 job：`subtree-split`（7 个包矩阵）
+→ `release`（只对 `filamentboot/filamentboot` 建 Release）→ `mirror-to-gitee`（8 个仓库
+矩阵，当前失效见任务 #22）→ `verify`（Packagist 同步检查是 warning-only，不能当验收
+依据）。
 
-# 验证安装可用性
-scripts/verify-package-install.sh vX.Y.Z
-
-# 发版出错时回滚
-scripts/release-rollback.sh vX.Y.Z
-```
-
-CI（`release.yml`）在 push `v*` tag 时自动触发：subtree split → 推 GitHub 包仓库 → 打包仓库 tag → 创建 GitHub Release → 验证 tag 存在 + Packagist 同步（warning-only）。
+**`scripts/release-package.sh`/`verify-package-install.sh`/`release-rollback.sh`**
+是这套 CI 自动化出现之前的手工脚本，`release-package.sh` 只手工处理 `filamentboot`
+一个包（不推其余 6 个、也不管 Gitee），跟现在的 CI 自动化有重叠。除非 CI 本身坏了
+需要绕过去发版，否则走上面的推荐路径，不需要用它们。`verify-package-install.sh`
+里硬编码的包名 `laravelstack/filament-admin` 是改名前的旧名字，已经过期。
 
 **所需 GitHub Secrets（一次性配置，参见 GitHub Settings → Secrets and variables → Actions）：**
 - `PACKAGE_GITHUB_TOKEN`：Fine-grained PAT，scope `john-captain/filament-admin` `contents: write`
