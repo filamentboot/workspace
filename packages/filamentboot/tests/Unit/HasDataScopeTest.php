@@ -167,11 +167,18 @@ class HasDataScopeTest extends TestCase
         DataScopeTestResource::$scopeOverride = 'personal';
         $query                                = DataScopeTestResource::scopeQuery($this->newAdminUserQuery());
 
+        // applyPersonalDataScope() 从批次 2 起把条件包进 where(Closure)（为了能按需再
+        // orWhereNull() 未分配记录），产生的是 Nested 类型 where，真正的列条件在
+        // 内层 query 的 wheres 里，不再是 $wheres[0] 本身
         $wheres = $query->getQuery()->wheres;
         $this->assertCount(1, $wheres);
-        $this->assertSame('created_by', $wheres[0]['column']);
-        $this->assertSame('=', $wheres[0]['operator']);
-        $this->assertSame(42, $wheres[0]['value']);
+        $this->assertSame('Nested', $wheres[0]['type']);
+
+        $inner = $wheres[0]['query']->wheres;
+        $this->assertCount(1, $inner);
+        $this->assertSame('created_by', $inner[0]['column']);
+        $this->assertSame('=', $inner[0]['operator']);
+        $this->assertSame(42, $inner[0]['value']);
     }
 
     public function test_department_scope_filters_by_self_and_descendant_ids(): void
